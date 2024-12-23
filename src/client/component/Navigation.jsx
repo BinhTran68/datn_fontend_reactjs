@@ -137,7 +137,7 @@ const Navigation = ({ searchValue, setSearchValue }) => {
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link to="/filter" className="nav-link">
+                                <Link to="/products" className="nav-link">
                                     Sản Phẩm
                                 </Link>
                             </li>
