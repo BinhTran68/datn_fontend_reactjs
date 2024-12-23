@@ -12,6 +12,8 @@
 import { Navigate } from "react-router-dom";
 import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
+import  CartPage  from "../client/page/cart/CartPage.jsx";
+import ProductsPage from "../client/page/products/ProductsPage.jsx";
 
 
 const getRole = () => {
@@ -41,10 +43,17 @@ const CustomerRouters = {
       index: true,
       element: <RoleRedirect element={<HomePage />} />,
     },
-    // {
-    //   path: "sanpham",
-    //   element: <RoleRedirect element={<TrangChu />} />,
-    // },
+    {
+      path: "cart",
+      element: <RoleRedirect element={<CartPage />} />,
+    },
+    {
+      path: "products",
+      element: <RoleRedirect element={<ProductsPage />} />,
+    },
+
+
+
     // {
     //   path: "filter",
     //   element: <RoleRedirect element={<FilterProduct />} />,

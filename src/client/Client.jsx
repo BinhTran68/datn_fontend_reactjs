@@ -15,9 +15,11 @@ const App = () => {
     // }, [clearGuestCart]); // Chỉ gọi lại nếu clearGuestCart thay đổi
 
     return (
-        <div>
+        <div className="">
             <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/>
-             <Outlet  context={{ searchValue }} />
+                <div className="container">
+                 <Outlet  context={{ searchValue }} />
+                </div>
             <Footer />
         </div>
     );
