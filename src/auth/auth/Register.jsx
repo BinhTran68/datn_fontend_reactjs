@@ -1,202 +1,147 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Select, message, Spin } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
-import moment from 'moment';
-import { motion } from 'framer-motion';
-
-const { Option } = Select;
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import CustomInput from "../../client/component/CustomInput.jsx"; // Assuming you have a CustomInput component
 
 const Register = () => {
-  const [form] = Form.useForm();
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSending, setIsEmailSending] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let timer;
-    if (countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown((prevCountdown) => prevCountdown - 1);
-      }, 1000);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+
+    // Basic password match validation
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      setLoading(false);
+      return;
     }
-    return () => clearInterval(timer);
-  }, [countdown]);
 
-  const onFinish = async (values) => {
-    setIsLoading(true);
     try {
-      const signupRequest = {
-        username: values.username.trim(),
-        name: values.name.trim(),
-        email: values.email.trim(),
-        code: values.code.trim(),
-        password: values.password.trim(),  
-      };
-
       const response = await axios.post(
-        "http://localhost:8080/api/v1/auth/sign-up",
-        signupRequest
+          "http://localhost:8080/api/v1/auth/register",
+          {
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            password: formData.password.trim(),
+          }
       );
-      console.log("Signup Success:", response.data);
-      message.success("Signup successful!");
-      navigate("/auth/login");
-    } catch (error) {
-      console.error("Error during signup:", error);
-      if (error.response && error.response.data) {
-        const { code, message: errorMessage } = error.response.data;
-        if (code !== 1000) {
-          message.error(errorMessage || "Signup failed. Please try again.");
-        } else {
-          message.error("An unexpected error occurred. Please try again.");
-        }
+
+      const data = response.data;
+      if (data.code === 1000) {
+        navigate("/auth/login");
       } else {
-        message.error("An unexpected error occurred. Please try again.");
+        setErrorMessage("Failed to register. Please try again.");
       }
+    } catch (error) {
+      setErrorMessage(
+          error.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleEmailVerification = useCallback(async () => {
-    try {
-      const email = form.getFieldValue("email");
-      if (!email) {
-        message.error("Please enter your email first");
-        return;
-      }
-  
-      setIsEmailSending(true);
-      const response = await axios.post("http://localhost:8080/api/v1/auth/via-email", {"email":email}, {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-  
-      if (response.status !== 200) {
-        throw new Error("Failed to send verification code");
-      }
-  
-      console.log("Sending verification code to:", email);
-      setEmailVerified(true);
-      setCountdown(180);
-      message.success("Verification code sent. Please check your email.");
-    } catch (error) {
-      console.error("Error sending verification code:", error);
-      message.error("Failed to send verification code");
-    } finally {
-      setIsEmailSending(false);
-    }
-  }, [form]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md"
-      >
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Sign Up</h2>
-        <Form
-          form={form}
-          name="signup"
-          onFinish={onFinish}
-          layout="vertical"
-        >
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
+      <div>
+        <div className="d-flex align-items-center p-5 justify-content-center bg-light">
+          <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white p-4 mb-5 rounded shadow w-100"
+              style={{ maxWidth: "450px", width: "100%" }}
           >
-            <Input prefix={<UserOutlined />} placeholder="Username" className="rounded-md" />
-          </Form.Item>
+            <h2 className="text-center fw-bold mb-4">Create an Account</h2>
 
-          <Form.Item
-            name="name"
-            rules={[{ required: true, message: 'Please input your name!' }]}
-          >
-            <Input prefix={<IdcardOutlined />} placeholder="Full Name" className="rounded-md" />
-          </Form.Item>
+            {errorMessage && (
+                <div className="alert alert-danger" role="alert">
+                  {errorMessage}
+                </div>
+            )}
 
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
-          >
-            <Input prefix={<MailOutlined />} placeholder="Email" className="rounded-md" />
-          </Form.Item>
+            <form onSubmit={handleSubmit}>
+              <CustomInput
+                  label="Tên đăng nhập"
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
+              <CustomInput
+                  label="Email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
+              <CustomInput
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
+              <CustomInput
+                  label="Confirm Password"
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
 
-          <Form.Item>
-            <Button
-              onClick={handleEmailVerification}
-              disabled={emailVerified || countdown > 0 || isEmailSending}
-              className="w-full mb-2 bg-gradient-to-r from-purple-500 to-pink-500 border-0 rounded-md h-10 font-semibold text-white"
-            >
-              {isEmailSending ? <Spin size="small" /> : countdown > 0 ? `Resend in ${countdown}s` : "Verify Email"}
-            </Button>
-          </Form.Item>
+              <div className="d-grid mb-3">
+                <button
+                    type="submit"
+                    className="btn btn-dark"
+                    disabled={loading}
+                >
+                  {loading ? (
+                      <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                      ></span>
+                  ) : (
+                      "Sign Up"
+                  )}
+                </button>
+              </div>
+            </form>
 
-          {emailVerified && (
-            <Form.Item
-              name="code"
-              rules={[{ required: true, message: 'Please input the verification code!' }]}
-            >
-              <Input placeholder="Verification Code" className="rounded-md" />
-            </Form.Item>
-          )}
+            <div className="text-center my-3">or</div>
 
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 8, message: 'Password must be at least 8 characters!' }
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="Password" className="rounded-md" />
-          </Form.Item>
-
-          <Form.Item
-            name="confirmPassword"
-            dependencies={['password']}
-            rules={[
-              { required: true, message: 'Please confirm your password!' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('password') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error('The two passwords do not match!'));
-                },
-              }),
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} placeholder="Confirm Password" className="rounded-md" />
-          </Form.Item>      
-          <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 border-0 rounded-md h-10 font-semibold text-lg"
-              disabled={isLoading}
-            >
-              {isLoading ? <Spin size="small" /> : "Sign up"}
-            </Button>
-          </Form.Item>
-          <div className="text-center">
-            <Link to="/auth/login" className="text-sm text-purple-600 hover:text-purple-800 transition-colors duration-300">
-              Back to Login
-            </Link>
-          </div>
-        </Form>
-      </motion.div>
-    </div>
+            <div className="d-grid mb-3">
+              <Link
+                  to="/auth/login"
+                  className="btn btn-outline-secondary text-decoration-none"
+              >
+                Already have an account? Log in
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </div>
   );
 };
 
 export default Register;
-
