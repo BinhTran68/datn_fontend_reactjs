@@ -16,6 +16,7 @@ import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
+import PayMent from "../client/page/cart/PayMent.jsx";
 
 
 
@@ -49,6 +50,10 @@ const CustomerRouters = {
     {
       path: "cart",
       element: <RoleRedirect element={<CartPage />} />,
+    },
+    {
+      path: "payment",
+      element: <RoleRedirect element={<PayMent />} />,
     },
     {
       path: "products",
