@@ -3,7 +3,10 @@ import stype from "../HeaderNav/HeaderNav.module.css";
 import clsx from "clsx";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button } from "bootstrap";
+import { FaLocationDot, FaSquareFacebook } from "react-icons/fa6";
+import { FaPhoneAlt } from "react-icons/fa";
+import { IoLogoYoutube, IoMail } from "react-icons/io5";
+import { AiFillTikTok } from "react-icons/ai";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Home() {
@@ -32,23 +35,23 @@ function Home() {
                 <h4>HỆ THỐNG CỬA HÀNG</h4>
               </div>
               <div className="d-flex align-items-center">
-                <div>
-                  <img className="w-50" src="/img/location.png" />
+                <div className="col-1">
+                  <FaLocationDot size={23}/>
                 </div>
-                <div className="col-10">
+                <div className="col-11">
                   Cơ sở 1: 561 Nguyễn Đình Chiểu Phường 2 - Quận3 - TP. Hồ Chí
                   Minh
                 </div>
               </div>
               <div className="d-flex align-items-center">
-                <div>
-                  <img className="w-50" src="/img/phone.png" />
+                <div className="col-1">
+                  <FaPhoneAlt size={23}/>
                 </div>
                 <div className="col-10">0961302699</div>
               </div>
               <div className="d-flex align-items-center">
-                <div>
-                  <img className="w-50" src="/img/mail.png" />
+                <div className="col-1">
+                 <IoMail size={23}/>
                 </div>
                 <div className="col-10">duycongib192@gmail.com</div>
               </div>
@@ -86,27 +89,31 @@ function Home() {
             <div>
               <p>Kết Nối Với Chúng Tôi</p>
               <div className="row gap-0 align-items-center">
-                <div className="col-2">
+                <div className="col-2 p-1">
                   <a>
-                    <img className="w-75 " src="/img/inta.png" />
+                    <img className="w-50 " src="/img/inta.png" />
                   </a>
                 </div>
-                <div className="col-2">
+                <div className="col-2 p-1">
                   <a>
-                    <img className="w-75" src="/img/facebook.png" />
+                  <FaSquareFacebook size={27} />
+
                   </a>
                 </div>
-                <div className="col-2">
+                <div className="col-2 p-1">
                   <a>
-                    <img className="w-75" src="/img/youtube.png" />
+                    <IoLogoYoutube size={27}/>
                   </a>
                 </div>
-                <div className="col-2">
+                <div className="col-2 p-1">
                   <a>
-                    <img className="w-75" src="/img/tiktok.png" />
+                    <AiFillTikTok size={30}/>
                   </a>
                 </div>
               </div>
+            </div>
+            <div>
+              <img className="w-50" src="/img/bocongthuong.png" />
             </div>
           </div>
           <div
@@ -139,7 +146,10 @@ function Home() {
               </a>
             </div>
             <div>
-              <a href="#" className="text-decoration-none text-black fw-normal ">
+              <a
+                href="#"
+                className="text-decoration-none text-black fw-normal "
+              >
                 Chính Sách Vận Chuyển Và Giao Hàng
               </a>
             </div>

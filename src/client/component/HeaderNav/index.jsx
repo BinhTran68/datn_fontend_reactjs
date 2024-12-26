@@ -3,16 +3,34 @@ import stype from "../HeaderNav/HeaderNav.module.css";
 import clsx from "clsx";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button } from "bootstrap";
+import { Link } from "react-router-dom";
+import { PiBellRinging } from "react-icons/pi";
+import { AiOutlineGlobal } from "react-icons/ai";
+import { MdOutlineAccountCircle } from "react-icons/md";
+import { CiSearch, CiShoppingCart } from "react-icons/ci";
+import { RiShoppingCartLine } from "react-icons/ri";
+import { IoIosSearch } from "react-icons/io";
 
 function Home() {
   return (
     <>
       <div className={clsx(stype.header, "container-fluid ")}>
-        <p className="text-light text-center bg-black">
+        <p className="text-light text-center bg-black m-1">
           Authentic Shoes - Nhà sưu tầm và phân phối chính hãng các thương hiệu
           thời trang quốc tế hàng đầu Việt Nam
         </p>
+        <div className="d-flex justify-content-end gap-3 p-0">
+            <div>
+            <PiBellRinging size={23} style={{fontWeight: "bold"}} /> Thông báo
+            </div>
+            <div>
+            <AiOutlineGlobal size={23} style={{fontWeight: "bold"}} /> Tiếng Việt
+
+            </div>
+            <div>
+            <MdOutlineAccountCircle size={23} style={{fontWeight: "bold"}} /> Duycong192
+            </div>
+        </div>
         <div className="row ">
           <div className={clsx(stype.logo, "col-3 d-flex justify-content-end")}>
           <img src="/img/logo.png" alt="mieu-ta-hinh-anh" />
@@ -20,7 +38,7 @@ function Home() {
           <div className={clsx(stype.navContent, "col-6 text-content d-flex align-items-center")}>
             <div className="d-flex gap-3  ">
               <div >
-                <a href="/" className="text-decoration-none text-black"> TRANC CHỦ</a>
+                <Link to ="/home" className="text-decoration-none text-black"> TRANC CHỦ</Link>
               </div>
               <div>
                 <a href="/" className="text-decoration-none text-black"> GIÀY</a>
@@ -33,15 +51,16 @@ function Home() {
               </div>
             </div>
           </div>
-          <div className={clsx(stype.loginAndCart, "col-3 d-flex justify-content-start d-flex align-items-center")}>
+          <div className={clsx(stype.loginAndCart, "col-3 d-flex justify-content-start d-flex align-items-center gap-3")}>
             <div>
-              <img className="w-50" src="/img/Search.png"/>
+            <IoIosSearch size={24} style={{fontWeight: "bold"}} />
             </div>
             <div>
-              <img className="w-50" src="/img/cart.png"></img>
+            <RiShoppingCartLine size={24} style={{fontWeight: "bold"}} />
+         
             </div>
             <div>
-            <a href="/" className="text-decoration-none text-black"> Đăng Nhập</a>
+            <a href="/" className="text-decoration-none text-black fw-normal"> Đăng Nhập</a>
 
             </div>
           </div>
