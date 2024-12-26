@@ -49,3 +49,17 @@
 .toggle {
   margin-left: 15px;
 }
+
+
+@media (max-width: 768px) {
+  .login-form {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-form {
+    width: 90%;
+  }
+}
+
