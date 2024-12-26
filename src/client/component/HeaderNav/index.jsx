@@ -7,14 +7,13 @@ import { Link } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { AiOutlineGlobal } from "react-icons/ai";
 import { MdOutlineAccountCircle } from "react-icons/md";
-import { CiSearch, CiShoppingCart } from "react-icons/ci";
 import { RiShoppingCartLine } from "react-icons/ri";
 import { IoIosSearch } from "react-icons/io";
 
 function Home() {
   return (
     <>
-      <div className={clsx(stype.header, "container-fluid ")}>
+      <div className={clsx(stype.header, "container-fluid ")}>  
         <p className="text-light text-center bg-black m-1">
           Authentic Shoes - Nhà sưu tầm và phân phối chính hãng các thương hiệu
           thời trang quốc tế hàng đầu Việt Nam
