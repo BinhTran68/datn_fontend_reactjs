@@ -14,6 +14,7 @@ import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
 import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
+import PayMent from "../client/page/cart/PayMent.jsx";
 
 
 const getRole = () => {
@@ -46,6 +47,10 @@ const CustomerRouters = {
     {
       path: "cart",
       element: <RoleRedirect element={<CartPage />} />,
+    },
+    {
+      path: "payment",
+      element: <RoleRedirect element={<PayMent />} />,
     },
     {
       path: "products",

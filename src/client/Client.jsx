@@ -16,11 +16,11 @@ const App = () => {
 
     return (
         <div className="">
-            <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/>
+            {/* <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/> */}
                 <div className="container">
                  <Outlet  context={{ searchValue }} />
                 </div>
-            <Footer />
+            {/* <Footer /> */}
         </div>
     );
 };
