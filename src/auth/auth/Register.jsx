@@ -7,14 +7,14 @@ import {validateEmail} from "../../helpers/Helpers.js"; // Assuming you have a C
 
 const Register = () => {
     const [formData, setFormData] = useState({
-        username: "",
+        fullName: "",
         email: "",
         password: "",
         confirmPassword: "",
     });
 
     const [errors, setErrors] = useState({
-        username: "",
+        fullName: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -34,7 +34,7 @@ const Register = () => {
 
     const handClearError = () => {
         setErrors({
-            username: "",
+            fullName: "",
             email: "",
             password: "",
             confirmPassword: "",
@@ -46,14 +46,14 @@ const Register = () => {
 
         // Reset lỗi trước khi kiểm tra
         const newErrors = {
-            username: "",
+            fullName: "",
             email: "",
             password: "",
             confirmPassword: "",
         };
 
-        if (!formData.username.trim()) {
-            newErrors.username = "Tên đăng nhập không được để trống";
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = "Tên đăng nhập không được để trống";
             isValid = false;
         }
         if (!formData.email.trim()) {
@@ -89,7 +89,7 @@ const Register = () => {
             const response = await axios.post(
                 "http://localhost:8080/api/v1/auth/register",
                 {
-                    username: formData.username.trim(),
+                    fullName: formData.fullName.trim(),
                     email: formData.email.trim(),
                     password: formData.password.trim(),
                 }
@@ -130,11 +130,11 @@ const Register = () => {
 
                     <form onSubmit={handleSubmit}>
                         <CustomInput
-                            label="Tên đăng nhập"
+                            label="Họ và tên"
                             type="text"
-                            name="username"
-                            error={errors.username}
-                            value={formData.username}
+                            name="fullName"
+                            error={errors.fullName}
+                            value={formData.fullName}
                             onChange={handleInputChange}
                             disabled={loading}
                         />
@@ -148,7 +148,7 @@ const Register = () => {
                             disabled={loading}
                         />
                         <CustomInput
-                            label="Password"
+                            label="Mật khẩu"
                             type="password"
                             name="password"
                             value={formData.password}
@@ -157,7 +157,7 @@ const Register = () => {
                             disabled={loading}
                         />
                         <CustomInput
-                            label="Confirm Password"
+                            label="Nhập lại mật khẩu"
                             type="password"
                             name="confirmPassword"
                             value={formData.confirmPassword}
