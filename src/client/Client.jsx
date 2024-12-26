@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 import { Outlet } from "react-router-dom";
-import Navigation from "./component/Navigation.jsx";
-import Footer from "./component/Footer.jsx";
+import Footer from "./component/Footer";
+import HeaderNav from "./component/HeaderNav";
 
 
 
@@ -16,9 +16,12 @@ const App = () => {
 
     return (
         <div className="">
-            <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/>
+            {/* <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/> */}
+
+            <HeaderNav/>
                 <div className="container">
-                 <Outlet  context={{ searchValue }} />
+                 {/* <Outlet  context={{ searchValue }} /> */}
+                 <Outlet/>
                 </div>
             <Footer />
         </div>
