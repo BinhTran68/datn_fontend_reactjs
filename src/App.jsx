@@ -1,31 +1,23 @@
 // App.js
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 
-import ProtectedRoute from "./auth/ProtectedRoute";
-import LoginPage from "./public/LoginPage";
-import UnauthorizedPage from "./public/UnauthorizedPage";
-import UserPage from "./client/UserPage";
+
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 
-function App() {
-   
+import ForbiddenPage from "./ForbiddenPage.jsx";
+import AdminRouters from "./routers/AdminRouters.jsx";
+import CustomerRouters from "./routers/CustomerRouters.jsx";
+import AuthRouters from "./routers/AuthRouter.jsx";
 
-    return (
-        <Router>
-
-            <Routes>
-                {/* Trang public */}
-                <Route path="/login" element={<LoginPage />} />
-
-                 Trang client
-                <Route path="/user" element={<ProtectedRoute role="client"><UserPage /></ProtectedRoute>} />
-
-                {/* Trang không có quyền */}
-                <Route path="/unauthorized" element={<UnauthorizedPage />} />
-            </Routes>
-        </Router>
-    );
-}
+const router = createBrowserRouter([AdminRouters, CustomerRouters,AuthRouters,  {
+    path: "/forbidden",
+    element: <ForbiddenPage />,
+},]);
+const App = () => {
+    return <RouterProvider router={router} />;
+};
 
 export default App;
+
+
