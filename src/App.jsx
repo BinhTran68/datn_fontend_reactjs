@@ -6,15 +6,10 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import LoginPage from "./public/LoginPage";
 import UnauthorizedPage from "./public/UnauthorizedPage";
 import UserPage from "./client/UserPage";
-import useAuthStore from "./auth/useAuthStore";
+
 
 function App() {
-    const login = useAuthStore((state) => state.login);
-
-    // Mô phỏng đăng nhập cho mục đích kiểm tra
-    const handleTestLogin = () => {
-
-    };
+   
 
     return (
         <Router>
