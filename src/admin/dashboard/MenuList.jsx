@@ -89,7 +89,7 @@ const MenuList = ({ darkTheme }) => {
                 </Menu.Item>
 
                 <Menu.Item key="ordermanagement" icon={<FaFileInvoice />}>
-                    <Link to={"order-management"}>Danh sách hóa đơn</Link>
+                    <Link to={"BillList"}>Danh sách hóa đơn</Link>
                 </Menu.Item>
 
                 <Menu.SubMenu
@@ -152,11 +152,11 @@ const MenuList = ({ darkTheme }) => {
                 >
 
                     <Menu.Item key="sub3-t1" icon={<MdDiscount />} >
-                        <Link to={"giamgia"}>Phiếu giảm giá</Link>
+                        <Link to={"VoucheList"}>Phiếu giảm giá</Link>
 
                     </Menu.Item>
                     <Menu.Item key="sub3-t2" icon={<CiDiscount1 />}>
-                        <Link to={"sale"}>Đợt giảm giá</Link>
+                        <Link to={"Vouche"}>Đợt giảm giá</Link>
                     </Menu.Item>
                 </Menu.SubMenu>
                 <Menu.Item key="exit" icon={<IoExitOutline />} onClick={handleLogout}>

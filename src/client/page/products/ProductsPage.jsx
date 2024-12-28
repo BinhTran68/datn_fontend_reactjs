@@ -279,9 +279,6 @@ const ProductsPage = () => {
             </Offcanvas.Body>
           </Offcanvas>
         </aside>
-
-
-
         <article className='col-9'>
           <Container className="mt-4">
             <Row>
