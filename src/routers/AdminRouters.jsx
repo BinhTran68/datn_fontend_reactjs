@@ -1,6 +1,10 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import Dashboard from "../admin/dashboard/Dashboard.jsx";
+import BillList from "../admin/dashboard/BillList.jsx";
+import VoucheList from "../admin/dashboard/VoucheList.jsx";
+import Vouche from "../admin/dashboard/Vouche.jsx";
+
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
@@ -67,6 +71,24 @@ const AdminRouters = {
 
       element: <PrivateRoute element={<Dashboard />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },
+    // {
+    //   index: true,
+    //   element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    // },
+    
+    {
+      path: "billlist",
+      element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "vouchelist",
+      element: <PrivateRoute element={<VoucheList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "vouche",
+      element: <PrivateRoute element={<Vouche />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+
   ],
 };
 
