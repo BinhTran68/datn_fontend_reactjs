@@ -64,7 +64,6 @@ const AdminRouters = {
       element: <PrivateRoute element={<Statistical />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },
     {
-      index: true,
 
       element: <PrivateRoute element={<Dashboard />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },

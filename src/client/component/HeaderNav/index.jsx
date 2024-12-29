@@ -40,14 +40,12 @@ function Home() {
                                 <Link to="/home" className="text-decoration-none text-black"> TRANC CHỦ</Link>
                             </div>
                             <div>
-                                <a href="/" className="text-decoration-none text-black"> GIÀY</a>
+                                <Link  to="/products" className="text-decoration-none text-black"> SẢN PHẨM</Link>
                             </div>
                             <div>
-                                <a href="/" className="text-decoration-none text-black"> LIÊN HỆ</a>
+                                <Link  to="/contact" className="text-decoration-none text-black">LIÊN HỆ</Link>
                             </div>
-                            <div>
-                                <a href="/" className="text-decoration-none text-black"> TRA CỨU</a>
-                            </div>
+
                         </div>
                     </div>
                     <div
