@@ -1,7 +1,13 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import Dashboard from "../admin/dashboard/Dashboard.jsx";
+import BillList from "../admin/dashboard/BillList.jsx";
+import VoucheList from "../admin/dashboard/VoucheList.jsx";
+import Vouche from "../admin/dashboard/Vouche.jsx";
+
 import Admin from "../admin/Admin.jsx";
+import SalesPage from "../admin/sales-page/Sales-page.jsx";
+import Statistical from "../admin/statistical/Statistical.jsx";
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -49,86 +55,40 @@ const AdminRouters = {
   path: "/admin",
   element: <Admin />,
   children: [
-    // {
-    //   path: "sanpham",
-    //   element: <PrivateRoute element={<SanPham />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "degiay",
-    //   element: <PrivateRoute element={<DeGiay />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "kichthuoc",
-    //   element: <PrivateRoute element={<KichThuoc />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "chatlieu",
-    //   element: <PrivateRoute element={<ChatLieu />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "thuonghieu",
-    //   element: <PrivateRoute element={<ThuongHieu />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "mausac",
-    //   element: <PrivateRoute element={<MauSac />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "danhmuc",
-    //   element: <PrivateRoute element={<DanhMuc />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "banhang",
-    //   element: <PrivateRoute element={<BanHang />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
-    // },
-    // {
-    //   path: "giamgia",
-    //   element: <PrivateRoute element={<GiamGia />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "nhanvien",
-    //   element: <PrivateRoute element={<Nhanvien />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "khachhang",
-    //   element: <PrivateRoute element={<KhachHang />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
-    // },
-    // {
-    //   path: "thongke",
-    //   element: <PrivateRoute element={<ThongKe />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "sanphamchitiet",
-    //   element: <PrivateRoute element={<SanPhamChiTiet />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "sale",
-    //   element: <PrivateRoute element={<DotGiamGia />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "sale/add",
-    //   element: <PrivateRoute element={<FormAddDotGiamGia />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "sale/edit/:id",
-    //   element: <PrivateRoute element={<ViewEditDotGiamGia />} allowedRoles={["ROLE_ADMIN"]} />,
-    // },
-    // {
-    //   path: "order-management",
-    //   element: <PrivateRoute element={<OrderManagement />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
-    // },
-    // {
-    //   path: "order-detail/:id",
-    //   element: <PrivateRoute element={<OrderDetail />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
-    // },
     {
       path: "dashboard",
       element: <PrivateRoute element={<Dashboard />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },
     {
-      index: true,
+      path: "sales-page",
+      element: <PrivateRoute element={<SalesPage />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "statistical",
+      element: <PrivateRoute element={<Statistical />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+
       element: <PrivateRoute element={<Dashboard />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },
+    // {
+    //   index: true,
+    //   element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    // },
+    
+    {
+      path: "billlist",
+      element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "vouchelist",
+      element: <PrivateRoute element={<VoucheList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "vouche",
+      element: <PrivateRoute element={<Vouche />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+
   ],
 };
 
