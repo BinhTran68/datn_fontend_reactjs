@@ -77,15 +77,15 @@ const MenuList = ({ darkTheme }) => {
             <Menu
                 theme={darkTheme ? "dark" : "light"}
                 mode="inline"
-                className="menu-bar"
+                className="menu-bar "
             >
                 <Menu.Item key="home" icon={<FaEye />}>
-                    <Link to={"tong-quan"}>Tổng quan</Link>
+                    <Link className={"text-decoration-none"} to={"dashboard"}>Tổng quan</Link>
 
                 </Menu.Item>
 
                 <Menu.Item key="activity" icon={<MdLocalShipping />}>
-                    <Link to={"banhang"}>Bán hàng</Link>
+                    <Link className={"text-decoration-none"} to={"sales-page"}>Bán hàng</Link>
                 </Menu.Item>
 
                 <Menu.Item key="ordermanagement" icon={<FaFileInvoice />}>
@@ -143,7 +143,7 @@ const MenuList = ({ darkTheme }) => {
                 </Menu.SubMenu>
 
                 <Menu.Item key="progress" icon={<AreaChartOutlined />}>
-                    <Link to={"thongke"}>Thống kê</Link>
+                    <Link to={"statistical"}>Thống kê</Link>
                 </Menu.Item>
                 <Menu.SubMenu
                     key="submn3"

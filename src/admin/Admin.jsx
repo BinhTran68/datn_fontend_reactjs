@@ -12,7 +12,7 @@ import MenuList from "./dashboard/MenuList.jsx";
 const { Header, Sider } = Layout;
 
 function Admin() {
-    const [darkTheme, setDarkTheme] = useState(true);
+    const [darkTheme, setDarkTheme] = useState(false);
     const [collapse, setCollapse] = useState(false);
     const [userInfo, setUserInfo] = useState({});
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -73,7 +73,7 @@ function Admin() {
                 collapsible
                 trigger={null}
                 theme={darkTheme ? "dark" : "light"}
-                className="sidebar"
+                className="sidebar min-vh-100"
             >
                 {/*<Logo />*/}
                 <MenuList darkTheme={darkTheme} />
