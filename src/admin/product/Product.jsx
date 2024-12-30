@@ -9,8 +9,8 @@ const Product = () => {
             <div className={styles.container}>
                 <h1 className={styles.title}>Danh sách Sản Phẩm</h1>
 
-                <div class="row">
-                    <div class="col-10">
+                <div className="row">
+                    <div className="col-10">
                         <div className={styles.searchBarContainer}>
 
                             <input
@@ -21,7 +21,7 @@ const Product = () => {
                             />
                         </div>
                     </div>
-                    <div class="col-2"><button className={styles.addButton} >
+                    <div className="col-2"><button className={styles.addButton} >
                         <span className={styles.plusIcon}>+</span> Thêm mới
                     </button></div>
 
