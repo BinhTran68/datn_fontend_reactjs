@@ -4,7 +4,8 @@ import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
 import bannerLogin from "../../assets/image/banner_login.jpg";
 import CustomInput from "../../client/component/CustomInput.jsx";
-import Input from "antd";
+import {Input} from "antd";
+
 
 const Login = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
