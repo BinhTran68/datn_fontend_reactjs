@@ -1,90 +1,109 @@
 import React from 'react';
+import { Row, Col, Select, Button, Table, Typography } from 'antd';
 import styles from './ProductManagement.module.css';
 
+const { Option } = Select;
+const { Title } = Typography;
+
 function ProductManagement() {
-    return (
-        <div className={styles.container}>
-            <h1>Quản lý sản phẩm chi tiết</h1>
-            <div class="row">
-                <div class="col-8">
+  const columns = [
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'productName',
+      key: 'productName',
+    },
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'image',
+      key: 'image',
+    },
+    {
+      title: 'Tên màu',
+      dataIndex: 'color',
+      key: 'color',
+    },
+    {
+      title: 'Tên kích thước',
+      dataIndex: 'size',
+      key: 'size',
+    },
+    {
+      title: 'Số lượng còn lại',
+      dataIndex: 'quantity',
+      key: 'quantity',
+    },
+    {
+      title: 'Giá gốc',
+      dataIndex: 'originalPrice',
+      key: 'originalPrice',
+    },
+    {
+      title: 'Giá khuyến mãi',
+      dataIndex: 'salePrice',
+      key: 'salePrice',
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      key: 'actions',
+    },
+  ];
 
-                    <label htmlFor="brand">Sản phẩm</label>
-                    <select id="brand">
-                        <option value="">Tất cả sản phẩm</option>
-                    </select>
+  return (
+    <div className={styles.container}>
+      <Title level={1}>Quản lý sản phẩm chi tiết</Title>
+      <Row gutter={16}>
+        <Col span={16}>
+          <label htmlFor="brand">Sản phẩm</label>
+          <Select id="brand" style={{ width: '100%' }}>
+            <Option value="">Tất cả sản phẩm</Option>
+          </Select>
+        </Col>
+        <Col span={8}>
+          <div className={styles.addButtonContainer}>
+            <Button type="primary" className={styles.addButton}>
+              + Thêm mới sản phẩm chi tiết
+            </Button>
+          </div>
+        </Col>
+      </Row>
 
-                </div>
-                <div class="col-4"><br />
-                    <div class="col-12">
-                        <div className={styles.addButtonContainer}>
-                            <button className={styles.addButton}>+ Thêm mới sản phẩm chi tiết</button>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-
-
-
-            <div>
-                <div className={styles.filters}>
-
-                    <div className={styles.filter} >
-                        <label htmlFor="brand">Thương hiệu</label>
-                        <select id="brand">
-                            <option value="">Tất cả thương hiệu</option>
-                        </select>
-                    </div>
-                    <div className={styles.filter}>
-                        <label htmlFor="category">Danh mục</label>
-                        <select id="category">
-                            <option value="">Tất cả danh mục</option>
-                        </select>
-                    </div>
-                    <div className={styles.filter} >
-                        <label htmlFor="fabric">Chất liệu vải</label>
-                        <select id="fabric">
-                            <option value="">Tất cả chất vải</option>
-                        </select>
-                    </div>
-                    <div className={styles.filter} >
-                        <label htmlFor="sole">Chất liệu đế</label>
-                        <select id="sole">
-                            <option value="">Tất cả chất đế</option>
-                        </select>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tên sản phẩm</th>
-                        <th>Hình ảnh</th>
-                        <th>Tên màu</th>
-                        <th>Tên kích thước</th>
-                        <th>Số lượng còn lại</th>
-                        <th>Giá gốc</th>
-                        <th>Giá khuyến mãi</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colSpan="9" className={styles.noData}>
-                            <div className={styles.noDataIcon}></div>
-                            <p>No data</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div className={styles.watermark}></div>
+      <div className={styles.filters}>
+        <div className={styles.filter}>
+          <label htmlFor="brand">Thương hiệu</label>
+          <Select id="brand">
+            <Option value="">Tất cả thương hiệu</Option>
+          </Select>
         </div>
-    );
+        <div className={styles.filter}>
+          <label htmlFor="category">Danh mục</label>
+          <Select id="category">
+            <Option value="">Tất cả danh mục</Option>
+          </Select>
+        </div>
+        <div className={styles.filter}>
+          <label htmlFor="fabric">Chất liệu vải</label>
+          <Select id="fabric">
+            <Option value="">Tất cả chất vải</Option>
+          </Select>
+        </div>
+        <div className={styles.filter}>
+          <label htmlFor="sole">Chất liệu đế</label>
+          <Select id="sole">
+            <Option value="">Tất cả chất đế</Option>
+          </Select>
+        </div>
+      </div>
+
+      <Table columns={columns} dataSource={[]} locale={{ emptyText: 'No data' }} />
+      <div className={styles.watermark}></div>
+    </div>
+  );
 }
 
 export default ProductManagement;

@@ -5,9 +5,16 @@ import BillList from "../admin/dashboard/BillList.jsx";
 import VoucheList from "../admin/dashboard/VoucheList.jsx";
 import Vouche from "../admin/dashboard/Vouche.jsx";
 
+
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
+import Customer from "../customer/Customer.jsx";
+import AddCustomer from "../customer/AddCustomer.jsx";
+import AddressModal from "../customer/AddressModal.jsx";
+import AddressFormModal from "../customer/AddressFormModal.jsx";
+import UpdateCustomerForm from "../customer/UpdateCustomerForm.jsx";
+
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -88,6 +95,28 @@ const AdminRouters = {
       path: "vouche",
       element: <PrivateRoute element={<Vouche />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
     },
+    {
+      path: "customer",
+      element: <PrivateRoute element={<Customer />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "addCustomer",
+      element: <PrivateRoute element={<AddCustomer />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "addressModal",
+      element: <PrivateRoute element={<AddressModal />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "addressFormModal",
+      element: <PrivateRoute element={<AddressFormModal />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+    {
+      path: "updateCustomerForm",
+      element: <PrivateRoute element={<UpdateCustomerForm />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+    },
+
+
 
   ],
 };
