@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Space, Table, Input, DatePicker, Select } from 'antd';
+import {Space, Table, Input, DatePicker, Select, Card} from 'antd';
 const { Search } = Input;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -109,31 +109,33 @@ const VoucheList = () => {
 
     return (
         <>
-            <h4>Danh sách phiếu giảm giá</h4>
-            <div style={{ padding: '20px' }}>
-                <Search
-                    placeholder="Nhập phiếu giảm giá bạn muốn tìm"
-                    allowClear
-                    enterButton="Search"
-                    size="large"
-                    onSearch={onSearch}
-                    style={{ marginBottom: '20px' }}
-                />
-                <Space style={{ marginBottom: '20px' }}>
-                    <RangePicker format="DD/MM/YYYY" onChange={handleDateChange} />
-                    <Select
-                        placeholder="Chọn trạng thái"
-                        style={{ width: 200 }}
-                        onChange={handleStatusChange}
+            <Card>
+                <h4>Danh sách phiếu giảm giá</h4>
+                <div className={"d-flex flex-column gap-2"}>
+                    <Search
+                        placeholder="Nhập phiếu giảm giá bạn muốn tìm"
                         allowClear
-                    >
-                        <Option value="all">Tất cả</Option>
-                        <Option value="active">Hoạt động</Option>
-                        <Option value="inactive">Tạm ngưng</Option>
-                    </Select>
-                </Space>
-            </div>
-            <Table columns={columns} dataSource={data} />
+                        enterButton="Search"
+                        size="large"
+                        onSearch={onSearch}
+                        style={{marginBottom: '20px'}}
+                    />
+                    <Space style={{marginBottom: '20px'}}>
+                        <RangePicker format="DD/MM/YYYY" onChange={handleDateChange}/>
+                        <Select
+                            placeholder="Chọn trạng thái"
+                            style={{width: 200}}
+                            onChange={handleStatusChange}
+                            allowClear
+                        >
+                            <Option value="all">Tất cả</Option>
+                            <Option value="active">Hoạt động</Option>
+                            <Option value="inactive">Tạm ngưng</Option>
+                        </Select>
+                    </Space>
+                </div>
+                <Table columns={columns} dataSource={data}/>
+            </Card>
         </>
     );
 };

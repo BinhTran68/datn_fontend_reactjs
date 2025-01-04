@@ -1,109 +1,87 @@
-import React from 'react';
-import { Table, Input, Button, Row, Col, Typography, Space, Empty } from 'antd';
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
-import styles from './Category.module.css';
+import {Table, Input, Button, Row, Col, Typography, Card} from 'antd';
+import {SearchOutlined, PlusOutlined} from '@ant-design/icons';
 
-const { Title } = Typography;
+const Category = () => {
+    const {Title} = Typography;
 
-function Category() {
-    // Define table columns
     const columns = [
         {
             title: 'STT',
             dataIndex: 'stt',
             key: 'stt',
-            width: '10%',
         },
         {
             title: 'Danh mục',
-            dataIndex: 'category',
-            key: 'category',
-            width: '30%',
+            dataIndex: 'danhMuc',
+            key: 'danhMuc',
         },
         {
             title: 'Ngày tạo',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            width: '20%',
+            dataIndex: 'ngayTao',
+            key: 'ngayTao',
         },
         {
             title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            width: '20%',
-            render: (status) => (
-                <span
-                    className={
-                        status === 'Active' ? styles.activeStatus : styles.inactiveStatus
-                    }
-                >
-                    {status}
-                </span>
-            ),
+            dataIndex: 'trangThai',
+            key: 'trangThai',
         },
         {
             title: 'Thao tác',
-            key: 'action',
-            width: '20%',
-            render: (_, record) => (
-                <Space size="middle">
-                    <Button type="link">Edit</Button>
-                    <Button type="link" danger>
-                        Delete
-                    </Button>
-                </Space>
-            ),
+            dataIndex: 'thaoTac',
+            key: 'thaoTac',
+            render: () => <Button type="link">Sửa</Button>,
         },
     ];
 
-    // Sample data
-    const data = []; // Replace this with your actual data
+    const data = []; // Dữ liệu của bảng, hiện tại để trống
 
     return (
-        <div className={styles.container}>
-            <Title level={2} className={styles.title}>
-                Danh sách danh mục
-            </Title>
-            <Row gutter={[16, 16]} className={styles.searchRow}>
-                <Col xs={24} sm={24} md={10} lg={10}>
-                    <Input
-                    
-                        placeholder="Nhập vào chất liệu đế của giày mà bạn muốn tìm!"
-                        prefix={<SearchOutlined />}
-                        allowClear
-                        className={styles.searchInput}
-                        // Add your search handler here
-                        // onChange={handleSearch}
-                    />
-                </Col>
-                <Col xs={24} sm={24} md={14} lg={14} style={{ textAlign: 'right' }}>
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        className={styles.addButton}
-                        // Add your button handler here
-                        // onClick={handleAdd}
-                    >
-                        Tìm kiếm
-                    </Button>
-                </Col>
-            </Row>
-
-            <Table
-                columns={columns}
-                dataSource={data}
-                pagination={{ pageSize: 10 }}
-                locale={{
-                    emptyText: (
-                        <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description="Không có dữ liệu"
+        <Card style={{padding: '20px'}}>
+            <Title level={2}>Danh sách danh mục</Title>
+            <div className={"d-flex justify-content-center gap-5 flex-column"}>
+                <Row gutter={[16, 16]} style={{marginBottom: '20px'}}>
+                    <Col span={20}>
+                        <Input
+                            placeholder="Nhập vào chất liệu đế của giày mà bạn muốn tìm!"
+                            prefix={<SearchOutlined/>}
+                            allowClear
                         />
-                    ),
-                }}
-                className={styles.table}
-            />
-        </div>
+                    </Col>
+                    <Col span={4}>
+                        <Button type="primary" icon={<PlusOutlined/>} block>
+                            Tìm kiếm
+                        </Button>
+                    </Col>
+                </Row>
+
+                <Table
+                    columns={columns}
+                    dataSource={data}
+                    locale={{
+                        emptyText: (
+                            <div style={{textAlign: 'center'}}>
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{width: '50px', height: '50px', marginBottom: '10px'}}
+                                >
+                                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                                </svg>
+                                <p>No data</p>
+                            </div>
+                        ),
+                    }}
+                />
+
+            </div>
+
+        </Card>
     );
 }
 
