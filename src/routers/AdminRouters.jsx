@@ -1,7 +1,7 @@
 import React from "react";
 import {Navigate} from "react-router-dom";
 import Dashboard from "../admin/dashboard/Dashboard.jsx";
-import BillList from "../admin/dashboard/BillList.jsx";
+import BillList from "../admin/bill/BillList.jsx";
 import VoucheList from "../admin/dashboard/VoucheList.jsx";
 import Vouche from "../admin/dashboard/Vouche.jsx";
 
@@ -9,6 +9,7 @@ import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
 import Category from "../admin/product/Category.jsx";
+import BillDetail from "../admin/bill/BillDetail.jsx";
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -93,8 +94,12 @@ const AdminRouters = {
         // },
 
         {
-            path: "billlist",
+            path: "bill",
             element: <PrivateRoute element={<BillList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "bill/bill-detail/:id",
+            element: <PrivateRoute element={<BillDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
             path: "vouchelist",

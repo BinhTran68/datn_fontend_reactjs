@@ -86,7 +86,7 @@ const MenuList = ({darkTheme}) => {
                 </Menu.Item>
 
                 <Menu.Item key="ordermanagement" icon={<FaFileInvoice/>}>
-                    <Link to={"BillList"}>Danh sách hóa đơn</Link>
+                    <Link to={"bill"}>Danh sách hóa đơn</Link>
                 </Menu.Item>
 
                 <Menu.SubMenu

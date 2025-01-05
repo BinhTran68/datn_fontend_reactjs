@@ -1,4 +1,4 @@
-export  const validateEmail = (email) => {
+export const validateEmail = (email) => {
     return String(email)
         .toLowerCase()
         .match(
@@ -7,3 +7,13 @@ export  const validateEmail = (email) => {
 };
 
 
+
+
+export const  baseUrl ="http://localhost:8080";
+
+
+// Chuyển từ Long sang date
+export   const convertTimestampToDate = (timestamp) => {
+    const date = new Date(timestamp); // Convert từ Long sang Date
+    return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
+};

@@ -1,6 +1,4 @@
 
-
-
 .sidebar {
   color: #fff;
 }
@@ -11,6 +9,10 @@
   justify-content: center;
   color: #fff;
   padding: 10px;
+}
+
+a {
+  text-decoration: none !important;
 }
 
 .logo-icon {
@@ -64,6 +66,4 @@
 }
 
 
-&& .ant-menu-item:hover::after{
-  border-bottom: 2px solid #659e38 !important;
-}
+

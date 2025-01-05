@@ -1,6 +1,6 @@
 import React from 'react'
 // import Stype from "./CartPage.css"
-import "./CartPage.css"
+
 import "bootstrap/dist/css/bootstrap.min.css";
 
 

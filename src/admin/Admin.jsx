@@ -1,19 +1,16 @@
-
-import { Button, Layout, theme, Card, Badge, Avatar } from "antd";
+import {Button, Layout, theme, Card, Badge, Avatar} from "antd";
 // import Logo from "../component/sidebar/Logo";
 // import MenuList from "../component/sidebar/MenuList";
-import { useEffect, useState } from "react";
-import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { Outlet, Link } from "react-router-dom";
-import { Content } from "antd/es/layout/layout";
+import {useEffect, useState} from "react";
+import {MenuUnfoldOutlined, MenuFoldOutlined} from "@ant-design/icons";
+import {Outlet, Link} from "react-router-dom";
+import {Content} from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
-import BillList from "./dashboard/BillList.jsx";
+import BillList from "./bill/BillList.jsx";
 import VoucheList from "./dashboard/VoucheList.jsx";
 
 
-
-
-const { Header, Sider } = Layout;
+const {Header, Sider} = Layout;
 
 function Admin() {
     const [darkTheme, setDarkTheme] = useState(false);
@@ -32,7 +29,7 @@ function Admin() {
         setDarkTheme(!darkTheme);
     };
     const {
-        token: { colorBgContainer },
+        token: {colorBgContainer},
     } = theme.useToken();
 
     const fetchUser = async () => {
@@ -80,7 +77,7 @@ function Admin() {
                 className="sidebar min-vh-100"
             >
                 {/*<Logo />*/}
-                <MenuList darkTheme={darkTheme} />
+                <MenuList darkTheme={darkTheme}/>
                 {/*<ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />*/}
             </Sider>
             <Layout>
@@ -98,10 +95,10 @@ function Admin() {
                         type="text"
                         className="toggle"
                         onClick={() => setCollapse(!collapse)}
-                        icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        icon={collapse ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                     />
 
-                    <div style={{ display: "flex", alignItems: "center" }}>
+                    <div style={{display: "flex", alignItems: "center"}}>
                         {isLoggedIn ? (
                             // Hiển thị thông tin người dùng khi đã đăng nhập
                             <>
@@ -121,11 +118,11 @@ function Admin() {
                   >
                     {userInfo.ten}
                   </span>
-                                    <span style={{ color: "#888", fontSize: "14px" }}>
+                                    <span style={{color: "#888", fontSize: "14px"}}>
                     {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
                   </span>
                                 </div>
-                                <Avatar size={40} src={userInfo.avatar} />
+                                <Avatar size={40} src={userInfo.avatar}/>
                             </>
                         ) : (
                             <Link to="/auth/login-admin">
@@ -136,8 +133,8 @@ function Admin() {
                     </div>
                 </Header>
                 <Content>
-                    <div style={{ padding: "20px" }}>
-                        <Outlet />
+                    <div style={{padding: "20px"}}>
+                        <Outlet/>
                     </div>
                 </Content>
             </Layout>
