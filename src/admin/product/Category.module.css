@@ -1,4 +1,4 @@
-.container {
+/* .container {
     padding: 20px;
     font-family: sans-serif;
   }
@@ -29,7 +29,7 @@
   }
   
   .addButton {
-    background-color: #28a745; /* Example green color */
+    background-color: #28a745;
     color: white;
     border: none;
     padding: 30px 15px;
@@ -68,10 +68,10 @@
   
   .noDataIcon {
     margin-bottom: 10px;
-    color: #999; /* Example grey color for the icon */
+    color: #999;
   }
   
   .noDataIcon svg {
     width: 30px;
     height: 30px;
-  }
+  } */
