@@ -60,54 +60,6 @@ const CartPage = () => {
 
           </div>
         </div>
-      </div><hr />
-      <div>
-        <div class="row">
-          <div class="col-4">
-            <div>
-              <img src="https://authentic-shoes.com/wp-content/uploads/2023/04/ft-logo.webp" alt="" />
-            </div>
-            <p>Hộ Kinh Doanh Nghiêm Xuân Huy MST : 01E8027929
-              Authentic Shoes - Nhà sưu tầm và phân phối chính hãng các thương hiệu thời trang quốc tế hàng đầu Việt Nam</p>
-            <h5>HỆ THỐNG CỬA HÀNG</h5>
-            <p> Cơ sở 1: 561 Nguyễn Đình Chiểu Phường 2 - Quận3 - TP. Hồ Chí Minh</p>
-            <p>Hotline : 0786665444</p>
-            <p>Cở sở 2 : 70-72 Tây Sơn - Đống Đa - Hà Nội</p>
-            <p>Hotline : 0785499555</p>
-            <p>Service@AutheticShoes.com</p>
-            <p>ĐKKD: 01E8027929 - Cấp ngày: 01/06/2019 - Nơi cấp: Hà Nội</p>
-          </div>
-          <div class="col-4">
-            <h5>Về chúng tôi</h5><hr />
-            <p>Giới Thiệu</p>
-            <p>Tuyển Dụng</p>
-            <p>Dịch Vụ Spa, Sửa Giày</p>
-            <p>Tin Tức - Sự Kiện</p>
-            <p>Kết nối với chúng tôi</p><hr />
-          </div>
-          <div class="col-4">
-            <h5>Hỗ trợ khách hàng</h5><hr />
-            <p>Hướng dẫn mua hàng</p>
-            <p>Chính sách đổi trả và bảo hành</p>
-            <p>Chính Sách Thanh Toán</p>
-            <p>Điều khoản trang web</p>
-            <p>Chính sách bảo vệ thông tin cá nhân của người tiêu dùng</p>
-            <p>Vận chuyển và giao hàng</p>
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="absolute-footer dark medium-text-center small-text-center">
-        <div class="container clearfix">
-          <div class="footer-primary pull-left">
-            <div class="copyright-footer">
-              <span >© Bản quyền thuộc về Authentic Shoes</span>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
 

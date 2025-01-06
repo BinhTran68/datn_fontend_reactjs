@@ -1,0 +1,133 @@
+.container {
+  padding: 20px;
+}
+
+.title {
+  margin-bottom: 20px;
+  text-align: center; /* Center the title */
+}
+
+.searchBarContainer {
+  margin-bottom: 15px;
+}
+
+.searchBar {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.filterContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* Align items to the bottom */
+  margin-bottom: 15px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.filterItem {
+  margin-bottom: 10px; /* Add some space between filters */
+    width: calc(25% - 10px); /* Adjust width to fit four filters, accounting for spacing */
+
+}
+
+.filterLabel {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  background-position-y: 5px;
+  padding-right: 25px; /* Make space for the arrow */
+}
+
+
+.addButton {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+    white-space: nowrap; /* Prevent text wrapping */
+    width: auto; /* Let the button size itself based on content */
+
+}
+
+.plusIcon {
+    margin-right: 5px;
+}
+
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.tableHeader {
+  background-color: #f2f2f2;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.noData {
+  text-align: center;
+  padding: 20px;
+}
+
+.noDataIcon {
+  margin-bottom: 10px;
+}
+
+.floatingActionButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    color: #333; /* Adjust color as needed */
+}
+
+.floatingActionButton:hover {
+    background-color: #f0f0f0; /* Adjust hover color as needed */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filterContainer {
+        flex-direction: column; /* Stack filters vertically on small screens */
+    }
+    .filterItem {
+        width: 100%; /* Full width on small screens */
+    }
+
+    .addButton {
+      width: 100%; /* Full width on small screens */
+      margin-top: 10px; /* Add some space above the button */
+    }
+}

@@ -14,10 +14,21 @@ import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
 import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
+import Product from "../admin/product/product.jsx";
+import ProductManagement from "../admin/product/ProductManagement.jsx";
+import Sole from "../admin/product/sole.jsx";
+import Size from "../admin/product/Size.jsx";
+import Material from "../admin/product/Material.jsx";
+import Color from "../admin/product/Color.jsx";
+import Category from "../admin/product/Category.jsx";
+import Trademark from "../admin/product/Trademark.jsx";
+
+
+
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
 import PayMent from "../client/page/cart/PayMent.jsx";
-import TestComponent from "../client/page/TestComponent/Product.jsx";
+
 
 
 
@@ -73,9 +84,40 @@ const CustomerRouters = {
       element: <RoleRedirect element={<Register />} />,
     },
     {
-      path: "test",
-      element: <RoleRedirect element={<TestComponent />} />,
+      path: "admin/product",
+      element: <RoleRedirect element={<Product />} />,
     },
+    {
+      path: "admin/productmanagement",
+      element: <RoleRedirect element={<ProductManagement />} />,
+    },
+    {
+      path: "admin/sole",
+      element: <RoleRedirect element={<Sole />} />,
+    },
+    {
+      path: "admin/size",
+      element: <RoleRedirect element={<Size />} />,
+    },
+    {
+      path: "admin/material",
+      element: <RoleRedirect element={<Material />} />,
+    },
+    {
+      path: "admin/color",
+      element: <RoleRedirect element={<Color />} />,
+    },
+    {
+      path: "admin/category",
+      element: <RoleRedirect element={<Category />} />,
+    },
+    {
+      path: "admin/trademark",
+      element: <RoleRedirect element={<Trademark />} />,
+    },
+  
+  
+    
 
 
 
