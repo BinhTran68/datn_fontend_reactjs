@@ -17,6 +17,7 @@ import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
 import PayMent from "../client/page/cart/PayMent.jsx";
+import TestComponent from "../client/page/TestComponent/Product.jsx";
 
 
 
@@ -70,6 +71,10 @@ const CustomerRouters = {
     {
       path: "register",
       element: <RoleRedirect element={<Register />} />,
+    },
+    {
+      path: "test",
+      element: <RoleRedirect element={<TestComponent />} />,
     },
 
 
