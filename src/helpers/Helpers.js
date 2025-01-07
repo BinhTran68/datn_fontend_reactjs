@@ -13,7 +13,8 @@ export const  baseUrl ="http://localhost:8080";
 
 
 // Chuyển từ Long sang date
-export   const convertTimestampToDate = (timestamp) => {
+export   const convertLongTimestampToDate = (timestamp) => {
     const date = new Date(timestamp); // Convert từ Long sang Date
+    console.log("date", date);
     return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
 };

@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, ConfigProvider, Badge} from 'antd';
 import axios from "axios";
-import {baseUrl, convertTimestampToDate} from "../../helpers/Helpers.js";
+import {baseUrl, convertLongTimestampToDate} from "../../helpers/Helpers.js";
 import {FiEye} from "react-icons/fi";
 import FilterComponent from "./componets/FilterComponent.jsx";
 import {Link} from "react-router-dom";
@@ -51,7 +51,7 @@ const columns = [
         dataIndex: 'createAt',
         key: 'createAt',
         render: (timestamp) => {
-            return convertTimestampToDate(timestamp)
+            return convertLongTimestampToDate(timestamp)
         },
     },
     {
@@ -98,33 +98,58 @@ const items = [
     },
     {
         key: 'DA_XAC_NHAN',
-        label: 'Đã xác nhận',
+
+        label: (
+            <>
+                Đã xác nhận <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     },
     {
         key: 'CHO_VAN_CHUYEN',
-        label: 'Chờ vận chuyển',
+        label: (
+            <>
+                Chờ vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     },
     {
         key: 'DANG_VAN_CHUYEN',
-        label: 'Đang vận chuyển',
+        label: (
+            <>
+                Đang vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     },
     {
         key: 'DA_THANH_TOAN',
-        label: 'Đã thanh toán',
+        label: (
+            <>
+                Đã thanh toán <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     },
     {
         key: 'DA_HOAN_THANH',
-        label: 'Đã hoàn thành',
+        label: (
+            <>
+                Đã hoàn thành <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     },
     {
         key: 'DA_HUY',
-        label: 'Đã hủy',
+        label: (
+            <>
+                Đã hủy <Badge count={5} className={"mb-3 ms-1"}/>
+            </>
+        ),
     }
 ];
 
 const BillList = (factory, deps) => {
 
-    const defaultURL = `${baseUrl}/api/bill/index`;
+    const defaultURL = `${baseUrl}/api/admin/bill/index`;
 
     const [activeTab, setActiveTab] = useState('all');
 
@@ -222,8 +247,8 @@ const BillList = (factory, deps) => {
 
                     </div>
 
-                    <div className={"d-flex  justify-content-center gap-5 "}>
-                        <Button>
+                    <div className={"d-flex  justify-content-center gap-5 mt-5 "}>
+                        <Button type={"primary"}>
                             Tìm kiếm
                         </Button>
 
@@ -250,6 +275,9 @@ const BillList = (factory, deps) => {
                 </Card>
 
             </div>
+
+
+
         </>
     );
 };
