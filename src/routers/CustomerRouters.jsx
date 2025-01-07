@@ -14,6 +14,7 @@ import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
 import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
+import Test from "../client/page/TestComponent/Test.jsx";
 import Product from "../admin/product/product.jsx";
 import ProductManagement from "../admin/product/ProductManagement.jsx";
 import Sole from "../admin/product/sole.jsx";
@@ -21,6 +22,7 @@ import Size from "../admin/product/Size.jsx";
 import Material from "../admin/product/Material.jsx";
 import Color from "../admin/product/Color.jsx";
 import Category from "../admin/product/Category.jsx";
+
 import Trademark from "../admin/product/Trademark.jsx";
 
 
@@ -62,6 +64,10 @@ const CustomerRouters = {
     {
       path: "cart",
       element: <RoleRedirect element={<CartPage />} />,
+    },
+    {
+      path: "test",
+      element: <RoleRedirect element={<Test />} />,
     },
     {
       path: "payment",
