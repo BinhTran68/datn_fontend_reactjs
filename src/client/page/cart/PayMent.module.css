@@ -1,71 +1,45 @@
+.container {
+    padding: 10px;
+}
 
-h5 {
-    margin-bottom: 20px;
-}
-label {
-    display: block;
-    margin-bottom: 5px;
-}
-input[type="text"],
-input[type="email"],
-textarea {
+.input, .textarea, .select {
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 3px;
 }
-select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-.order-box {
+
+.orderBox {
     border: 1px solid black;
     padding: 10px;
 }
 
-h2 {
-    margin-bottom: 20px;
-}
-table {
+.table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
 }
+
 th, td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: left;
 }
+
 th {
     background-color: #f2f2f2;
 }
+
 .total {
     font-weight: bold;
 }
-.payment-methods {
+
+.formCheck {
     margin-bottom: 20px;
 }
-.payment-method {
-    margin-bottom: 10px;
-}
-.payment-method input[type="radio"] {
-    margin-right: 5px;
-}
-.qr-code {
-    text-align: center;
-}
-.qr-code img {
-    max-width: 200px;
-}
-.qr-code p {
-    margin-top: 10px;
-    font-size: 12px;
-}
-.order-button {
+
+.orderButton {
     display: block;
     background-color: #007bff;
     color: #fff;
@@ -76,7 +50,35 @@ th {
     text-decoration: none;
     cursor: pointer;
 }
+
 .note {
     font-size: 12px;
     margin-top: 20px;
+}
+
+.footer {
+    background-color: #f2f2f2;
+    padding: 20px 0;
+}
+
+.copyrightFooter {
+    text-align: center;
+    font-size: 14px;
+}
+.error {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.success {
+    color: green;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    padding: 10px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
 }
