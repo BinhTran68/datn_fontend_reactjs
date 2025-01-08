@@ -72,6 +72,12 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+td.ant-table-cell {
+  padding: 10px !important; /* Sử dụng !important để ưu tiên CSS */
+}
+
+
+
 
 
 

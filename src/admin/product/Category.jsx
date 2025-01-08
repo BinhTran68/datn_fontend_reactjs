@@ -9,60 +9,127 @@ import {
   Modal,
   Pagination,
   message,
+  Tag,
+  Form,
+  Space,
+  Radio,
+  Flex,
+  Grid,
 } from "antd";
+import styles from "./Category.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import {
+  fetchBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
+} from "../product/apibrand.js";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { RxUpdate } from "react-icons/rx";
+import clsx from "clsx";
 
 const Category = () => {
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
   const { Title } = Typography;
   const [brands, setBrands] = useState([]);
   const [totalBrands, setTotalBrands] = useState(0);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+
+  const [request, setRequest] = useState({
+    brandName: "",
+    status: "HOAT_DONG",
+  });
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5, // Số dòng hiển thị mỗi trang
   });
+  const handleRequest = (e) => {
+    const { name, value } = e.target;
+    setRequest((prev) => ({
+      ...prev,
+      [name]: value, // Update the specific field in the state
+    }));
 
+    console.log(request);
+  };
   // Hàm fetch dữ liệu brands
-  const fetchBrands = useCallback(async () => {
-    const token = localStorage.getItem("token");
-    const { current, pageSize } = pagination;
+  useEffect(() => {
+    fetchBrandsData();
+  }, [pagination]);
 
+  const fetchBrandsData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/api/brand", {
-        params: { page: current, size: pageSize },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const { data, meta } = response.data;
-      setBrands(data || []);
-      setTotalBrands(meta?.totalElement || 0);
+      const { data, total } = await fetchBrands(pagination);
+      setBrands(data);
+      setTotalBrands(total);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
-      message.error(errorMessage);
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
-  }, [pagination]);
+  };
+  const handleCreateBrand = async (brandData) => {
+    try {
+      setLoading(true);
+      await createBrand(brandData);
+      fetchBrandsData(); // Refresh data after creation
+      message.success("Thương hiệu đã được tạo thành công!");
+    } catch (error) {
+      console.error(error);
+      message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  useEffect(() => {
-    fetchBrands(); // Fetch khi component mount hoặc khi pagination thay đổi
-  }, [pagination]);
+  const handleUpdateBrand = async (brandData) => {
+    try {
+      setLoading(true);
+      await updateBrand(selectedBrand.id, brandData);
+      setUpdateModalVisible(false);
+      setSelectedBrand(null);
+      fetchBrandsData(); // Refresh data after update
+    } catch (error) {
+      console.error(error);
+      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBrand = async (brandId) => {
+    try {
+      setLoading(true);
+      await deleteBrand(brandId);
+      fetchBrandsData(); // Refresh data after deletion
+      message.success("Xóa thương hiệu thành công.");
+    } catch (error) {
+      console.error(error);
+      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDataSource = () => {
-    const totalRows = pagination.pageSize; // Tổng số dòng cần hiển thị
-    const dataLength = brands.length; // Số dòng dữ liệu hiện tại
-    const emptyRows = Math.max(totalRows - dataLength, 0); // Đảm bảo không âm
+    const totalRows = pagination.pageSize;
+    const dataLength = brands.length;
+    const emptyRows = Math.max(totalRows - dataLength, 0);
 
-    // Thêm các dòng trống nếu dữ liệu ít hơn số dòng cần thiết
-    const emptyData = new Array(emptyRows).fill({}); // Tạo các dòng trống
-    return [...brands, ...emptyData]; // Kết hợp dữ liệu với các dòng trống
+    const emptyData = new Array(emptyRows).fill({}).map((_, index) => ({
+      key: `empty-${index}`, // Thêm key duy nhất
+    }));
+
+    return [
+      ...brands.map((brand, index) => ({ ...brand, key: brand.id || index })),
+      ...emptyData,
+    ];
   };
 
   const columns = [
@@ -102,33 +169,68 @@ const Category = () => {
       dataIndex: "status",
       key: "status",
       width: "15rem",
+      render: (_, { status }) => {
+        // Nếu status là chuỗi, tiến hành hiển thị với màu sắc tương ứng
+        let color = status === "HOAT_DONG" ? "green" : "volcano"; // Kiểm tra giá trị của status
+        if (!status) {
+          return null; // Không hiển thị gì khi status không có giá trị
+        }
+        return (
+          <Tag color={color} style={{ fontSize: "14px", padding: "6px 12px" }}>
+            {status} {/* Hiển thị status với chữ in hoa */}
+          </Tag>
+        );
+      },
     },
     {
       title: "Thao tác",
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        // Kiểm tra nếu record không có dữ liệu
-        const isEmptyRow = Object.keys(record).length === 0;
-        return isEmptyRow ? null : <Button type="link">Sửa</Button>;
+        // Kiểm tra nếu status là null hoặc record không có dữ liệu
+        if (!record.status || Object.keys(record).length === 0) {
+          return null; // Không hiển thị nút khi status là null hoặc không có dữ liệu
+        }
+        return (
+          <>
+            <Row gutter={[16, 16]}>
+              <Col>
+                <Button
+                
+                >
+                  <RxUpdate size={20} color="primary" />
+                </Button>
+              </Col>
+
+              <Col>
+                <Button className={`${styles.buttonDelete} ant-btn`}>
+                  <FaRegTrashCan size={20} color="#FF4D4F" />
+                </Button>
+              </Col>
+            </Row>
+          </>
+        ); // Hiển thị nút "Sửa" nếu có dữ liệu và trạng thái hợp lệ
       },
     },
   ];
 
-  const showModal = () => setOpen(true);
+  const showModalCreate = () => setOpenCreate(true);
+  const showModalUpadet = () => setOpenUpdate(true);
 
-  const handleOk = () => {
+  const handleCreate = () => {
     setLoading(true);
+    handleCreateBrand(request);
     setTimeout(() => {
       setLoading(false);
-      setOpen(false);
+      setOpenCrea(false);
     }, 800);
   };
 
-  const handleCancel = () => setOpen(false);
+  const handleCancelCreate = () => setOpenCreate(false);
+  const handleCancelUpadte = () => setOpenUpdate(false);
 
   return (
-    <Card style={{ padding: "20px" }}>
+    <Card>
       <Title level={2}>Hãng</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
@@ -148,29 +250,61 @@ const Category = () => {
         </Row>
 
         <Row style={{ marginTop: 20 }}>
-          <Button type="primary" onClick={showModal}>
+          <Button type="primary" onClick={showModalCreate}>
             Thêm Hãng
           </Button>
           <Modal
-            open={open}
+            open={openCreate}
             title="Thêm Hãng"
-            onOk={handleOk}
-            onCancel={handleCancel}
+            onOk={handleCreate}
+            onCancel={handleCancelCreate}
             footer={[
-              <Button key="back" onClick={handleCancel}>
+              <Button key="back" onClick={handleCancelCreate}>
                 Hủy
               </Button>,
               <Button
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleOk}
+                onClick={handleCreate}
               >
                 Xác nhận
               </Button>,
             ]}
           >
             <p>Nhập thông tin hãng mới...</p>
+
+            <Form>
+              <Input
+                placeholder="Nhập tên hãng vào đây!"
+                style={{ marginBottom: "1rem" }}
+                value={request.brand} // Bind to 'brand' in state
+                name="brandName" // Ensure 'name' matches the key in the state
+                onChange={handleRequest} // Update state when input changes
+                allowClear
+              />
+
+              <Radio.Group
+                onChange={handleRequest} // Handle the status change
+                value={request.status} // Bind to 'status' in state
+                name="status" // Ensure 'name' matches the key in the state
+               
+              >
+               <Row gutter={[1,1]}>
+
+                <Col>
+                <Radio.Button value="HOAT_DONG" className={clsx(request.status === "HOAT_DONG" ? styles.statushd:"", styles.statushdhv )}>HOẠT ĐỘNG</Radio.Button>
+                
+                </Col>
+
+                <Col>
+                <Radio.Button value="NGUNG_HOAT_DONG" className={clsx(request.status === "NGUNG_HOAT_DONG" ? styles.statusnhd:"", styles.statusnhdhv )}>
+                  NGỪNG HOẠT ĐỘNG
+                </Radio.Button>
+                </Col>
+               </Row>
+              </Radio.Group>
+            </Form>
           </Modal>
         </Row>
 
