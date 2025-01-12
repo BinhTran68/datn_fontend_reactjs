@@ -14,6 +14,8 @@ import TextArea from "antd/es/input/TextArea.js";
 import ModalConfirmUpdateStatusBill from "./componets/ModalConfirmUpdateStatusBill.jsx";
 import {GrDrag} from "react-icons/gr";
 import {MdDelete} from "react-icons/md";
+import {IoAdd} from "react-icons/io5";
+import ModalBillProductList from "./componets/ModalBillProductList.jsx";
 
 
 const {Step} = Steps;
@@ -118,11 +120,16 @@ const columnsBillProductDetailTable = [
             return convertLongTimestampToDate(timestamp)
         },
     },
-
     {
         title: 'Tổng tiền',
         dataIndex: 'totalPrice',
         key: 'totalPrice',
+    },
+
+    {
+        title: 'Hành động',
+        dataIndex: 'action',
+        key: 'action',
         render: (_, record) => (
                 <Button
                     type="primary"
@@ -178,14 +185,19 @@ const BillDetail = () => {
 
         const modalBillHistoryType = "modalBillHistoryType";
         const modalUpdateStatusBillType = "modalUpdateStatusBillType";
+        const modalListProduct = "modalListProduct";
+
+
         const defaultURL = `${baseUrl}/api/admin`;
         const [paymentBillHistory, setPaymentBillHistory] = useState([])
         const [billProductDetails, setBillProductDetails] = useState()
+        const [billProductList, setBillProductList] = useState()
         const [billHistory, setBillHistory] = useState([]);
         const [currentBill, setCurrentBill] = useState()
         const {id} = useParams();
-        const [open, setOpen] = useState(false);
+
         const [confirmLoading, setConfirmLoading] = useState(false);
+        const [open, setOpen] = useState(false);
         const [modalType, setModalType] = useState('');
         const [confirmNotes, setConfirmNotes] = useState('')
         const [widthModal, setWidthModal] = useState('50%')
@@ -204,8 +216,15 @@ const BillDetail = () => {
             }
         };
 
+     const handleCancel = () => {
+        console.log('Clicked cancel button');
+         setOpen(false);
+    };
 
-        const handleUpdateStatusBill = async () => {
+
+
+
+    const handleUpdateStatusBill = async () => {
 
             const data = {
                 "status": handleNewStatusUpdate(currentBill.status),
@@ -247,11 +266,6 @@ const BillDetail = () => {
             }
 
         }
-
-        const handleCancel = () => {
-            console.log('Clicked cancel button');
-            setOpen(false);
-        };
 
 
         const getPaymentsBill = async () => {
@@ -386,6 +400,21 @@ const BillDetail = () => {
             setWidthModal("40%")
             setModalType(modalUpdateStatusBillType)
         };
+
+        const handleOnShowProduct = () => {
+            setWidthModal("75%")
+            setOpen(true)
+            getBillProducts();
+            setModalType(modalListProduct)
+
+        };
+
+        const getBillProducts = async () => {
+            const response = await axios.get(`${defaultURL}/bill-product-detail`);
+            const  data = response.data.data;
+            setBillProductList(data.content)
+        }
+
         return (
             <div className={"flex-column d-flex gap-3"}>
 
@@ -397,6 +426,7 @@ const BillDetail = () => {
                     onCancel={handleCancel}
                 >
                     {modalType === modalBillHistoryType && modalBillHistoryTable()}
+                    {modalType === modalListProduct && <ModalBillProductList billProductList={billProductList}/>}
                     {modalType === modalUpdateStatusBillType && (
                         <ModalConfirmUpdateStatusBill
                             notesUpdateStatusBillInput={confirmNotes}
@@ -450,8 +480,6 @@ const BillDetail = () => {
                         columns={columnsPaymentMethodTable}
                         dataSource={paymentBillHistory}
                     />
-
-
                 </Card>
                 <Card>
                     <h3 className={"mb-4"}>Thông tin đơn hàng</h3>
@@ -486,7 +514,17 @@ const BillDetail = () => {
                 </Card>
 
                 <Card>
-                    <h3>Thông tin sản phẩm đã mua</h3>
+                    <div className={"d-flex justify-content-between mb-3"}>
+                        <h3>Thông tin sản phẩm đã mua</h3>
+                        <Button
+                            type={"primary"}
+                            onClick={handleOnShowProduct}
+                            primary
+                            icon={<IoAdd/>}
+                        >
+                            Thêm sản phẩm
+                        </Button>
+                    </div>
                     <Table
                         className={"w-100"}
                         pagination={false}
