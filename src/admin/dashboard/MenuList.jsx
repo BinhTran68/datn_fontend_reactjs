@@ -156,13 +156,12 @@ const MenuList = ({darkTheme}) => {
                     </Menu.Item>
                 </Menu.SubMenu>
 
-                <Menu.Item key="exit" icon={<IoExitOutline/>} onClick={handleLogout}>
-                    Đăng xuất
-
-                </Menu.Item>
-            </Menu>
-        </div>
-    );
+        <Menu.Item key="exit" icon={<IoExitOutline />} onClick={handleLogout}>
+          Đăng xuất
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
 };
 
 export default MenuList;
