@@ -6,4 +6,7 @@ export  const validateEmail = (email) => {
         );
 };
 
+export const baseUrl="http://localhost:8080";
+
+
 

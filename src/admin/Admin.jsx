@@ -8,7 +8,7 @@ import { Outlet, Link } from "react-router-dom";
 import { Content } from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./dashboard/BillList.jsx";
-import VoucheList from "./dashboard/VoucheList.jsx";
+import VoucheList from "./Voucher/VoucheList.jsx";
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Space, Table, Input, Tabs } from 'antd';
 const { Search } = Input;
 
@@ -160,25 +160,51 @@ const BillList = () => {
             children: 'Content of Tab Pane 6',
         }
     ];
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: 1,
+        total: 0
+    })
+    function handleOnChangeTable(paginationTable) {
+        setPagination({
+            ...pagination,
+            page: paginationTable.current - 1, // Trang hiện tại
+            size: paginationTable.pageSize, // Số mục mỗi trang
+        });
+    }
+    useEffect(() => {
+        setUrl(memoizeUrl);
+    }, [pagination]);
+    
     return (
-        
+
+
         <>
-        <h4>Danh sách hóa đơn</h4>
+            <h4>Danh sách hóa đơn</h4>
 
             <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
             {activeTab === '1' && (
 
-            <div style={{ padding: '20px' }}>
-                <Search
-                    placeholder="input search text"
-                    allowClear
-                    enterButton="Search"
-                    size="large"
-                    onSearch={onSearch}/>
-            </div>
+                <div style={{ padding: '20px' }}>
+                    <Search
+                        placeholder="input search text"
+                        allowClear
+                        enterButton="Search"
+                        size="large"
+                        onSearch={onSearch} />
+                </div>
             )}
             {activeTab === '1' && (
-                <Table columns={columns} dataSource={data} />
+                <Table columns={columns} dataSource={data}
+                    pagination={{
+                        current: pagination.page + 1,
+                        size: pagination.size,
+                        total: pagination.total
+
+                    }}
+                    onChange={handleOnChangeTable}
+
+                />
             )}
         </>
     );
