@@ -15,29 +15,39 @@ import {
   Radio,
   Flex,
   Grid,
+  Popconfirm,
 } from "antd";
 import styles from "./Category.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import {
   fetchBrands,
   createBrand,
   updateBrand,
   deleteBrand,
+  getBrand,
+  searchNameBrand,
+  existsByBrandName,
 } from "../product/apibrand.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
+import { debounce } from "lodash";
 
 const Category = () => {
+  const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
-  const { Title } = Typography;
+  const [isActive, setIsActive] = useState(false);
+  const [isActiveUpdate, setIsActiveUpdate] = useState(true);
   const [brands, setBrands] = useState([]);
   const [totalBrands, setTotalBrands] = useState(0);
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [requestSearch, setRequestSearch] = useState({
+    name: "",
+  });
 
   const [request, setRequest] = useState({
     brandName: "",
@@ -48,15 +58,60 @@ const Category = () => {
     current: 1,
     pageSize: 5, // Số dòng hiển thị mỗi trang
   });
-  const handleRequest = (e) => {
+  const error = useRef(null);
+  const errorUpdate = useRef(null);
+
+  const handleRequest = async (e) => {
     const { name, value } = e.target;
     setRequest((prev) => ({
       ...prev,
-      [name]: value, // Update the specific field in the state
+      [name]: value,
     }));
-
-    console.log(request);
   };
+
+  // validate cho create
+  useEffect(() => {
+    // Kiểm tra xem error.current có tồn tại hay không trước khi gán innerText
+
+    if (selectedBrand != null) {
+      if (errorUpdate.current) {
+        if (!/^[\p{L}\p{N}\s]{1,5}$/u.test(request.brandName)) {
+          errorUpdate.current.innerText =
+            "Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt";
+          errorUpdate.current.style.color = "red";
+          setIsActiveUpdate(false);
+          console.log("đã ở đây");
+        } else if (request.brandName.trim() === "") {
+          errorUpdate.current.innerText = "không được để trống";
+          errorUpdate.current.style.color = "red";
+          setIsActiveUpdate(false);
+        } else {
+          errorUpdate.current.innerText = "Hợp lệ !!!";
+          errorUpdate.current.style.color = "green";
+          setIsActiveUpdate(true);
+        }
+      }
+    } else {
+      if (error.current) {
+        if (!/^[\p{L}\p{N}\s]{1,5}$/u.test(request.brandName)) {
+          error.current.innerText =
+            "Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt";
+          error.current.style.color = "red";
+          setIsActive(false);
+          console.log("đã ở đây");
+        } else if (request.brandName.trim() === "") {
+          error.current.innerText = "không được để trống";
+          error.current.style.color = "red";
+          setIsActive(false);
+        } else {
+          error.current.innerText = "Hợp lệ !!!";
+          error.current.style.color = "green";
+          setIsActive(true);
+        }
+      }
+    }
+  }, [request.brandName]);
+
   // Hàm fetch dữ liệu brands
   useEffect(() => {
     fetchBrandsData();
@@ -65,7 +120,24 @@ const Category = () => {
   const fetchBrandsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = await fetchBrands(pagination);
+      const { data, total } = requestSearch.name.trim()
+        ? await searchNameBrand(pagination, requestSearch)
+        : await fetchBrands(pagination);
+      setBrands(data);
+      setTotalBrands(total);
+      console.log(requestSearch.name + "đây là search");
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchName = async () => {
+    setLoading(true);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    try {
+      const { data, total } = await searchNameBrand(pagination, requestSearch);
       setBrands(data);
       setTotalBrands(total);
     } catch (error) {
@@ -74,26 +146,35 @@ const Category = () => {
       setLoading(false);
     }
   };
+  // thêm
   const handleCreateBrand = async (brandData) => {
     try {
       setLoading(true);
+      console.log(request);
       await createBrand(brandData);
+
+      setRequestSearch({ name: "" });
+      setPagination({ current: 1, pageSize: pagination.pageSize });
+
       fetchBrandsData(); // Refresh data after creation
       message.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateBrand = async (brandData) => {
+  const handleUpdateBrand = useCallback(async (brandData) => {
     try {
       setLoading(true);
-      await updateBrand(selectedBrand.id, brandData);
-      setUpdateModalVisible(false);
+
+      await updateBrand(selectedBrand.data.id, brandData);
+      console.log(selectedBrand.data.id);
       setSelectedBrand(null);
+      setOpenUpdate(false);
+      message.success("Cập nhật Hãng thành công");
       fetchBrandsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
@@ -101,9 +182,10 @@ const Category = () => {
     } finally {
       setLoading(false);
     }
-  };
+  });
 
-  const handleDeleteBrand = async (brandId) => {
+  // xóa
+  const handleDeleteBrand = useCallback(async (brandId) => {
     try {
       setLoading(true);
       await deleteBrand(brandId);
@@ -115,7 +197,31 @@ const Category = () => {
     } finally {
       setLoading(false);
     }
-  };
+  });
+  const handleGetBrand = useCallback(
+    async (brandId) => {
+      setLoading(true);
+      try {
+        const brandData = await getBrand(brandId);
+        setSelectedBrand(brandData);
+        console.log(brandData);
+
+        setRequest({
+          brandName: brandData.data.brandName,
+          status: brandData.data.status,
+        }); // Cập nhật form với thông tin từ API
+
+        setOpenUpdate(true); // Hiển thị modal
+      } catch (error) {
+        message.error(
+          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+        );
+      } finally {
+        setLoading(false); // Tắt trạng thái loading
+      }
+    },
+    [] // Dependency list để tránh re-define hàm không cần thiết
+  );
 
   const handleDataSource = () => {
     const totalRows = pagination.pageSize;
@@ -170,10 +276,9 @@ const Category = () => {
       key: "status",
       width: "15rem",
       render: (_, { status }) => {
-        // Nếu status là chuỗi, tiến hành hiển thị với màu sắc tương ứng
-        let color = status === "HOAT_DONG" ? "green" : "volcano"; // Kiểm tra giá trị của status
+        let color = status === "HOAT_DONG" ? "green" : "red";
         if (!status) {
-          return null; // Không hiển thị gì khi status không có giá trị
+          return null;
         }
         return (
           <Tag color={color} style={{ fontSize: "14px", padding: "6px 12px" }}>
@@ -187,47 +292,59 @@ const Category = () => {
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        // Kiểm tra nếu status là null hoặc record không có dữ liệu
         if (!record.status || Object.keys(record).length === 0) {
-          return null; // Không hiển thị nút khi status là null hoặc không có dữ liệu
+          return null;
         }
         return (
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button
-                
-                >
+                <Button onClick={() => handleGetBrand(record.id)}>
                   <RxUpdate size={20} color="primary" />
                 </Button>
               </Col>
 
               <Col>
-                <Button className={`${styles.buttonDelete} ant-btn`}>
-                  <FaRegTrashCan size={20} color="#FF4D4F" />
-                </Button>
+                <Popconfirm
+                  title="Xóa Hãng"
+                  description="Bạn có muốn xóa hãng này kh"
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                  onConfirm={() => handleDeleteBrand(record.id)}
+                >
+                  <Button className={`${styles.buttonDelete} ant-btn`}>
+                    <FaRegTrashCan size={20} color="#FF4D4F" />
+                  </Button>
+                </Popconfirm>
               </Col>
             </Row>
           </>
-        ); // Hiển thị nút "Sửa" nếu có dữ liệu và trạng thái hợp lệ
+        );
       },
     },
   ];
 
-  const showModalCreate = () => setOpenCreate(true);
-  const showModalUpadet = () => setOpenUpdate(true);
-
   const handleCreate = () => {
     setLoading(true);
     handleCreateBrand(request);
+
     setTimeout(() => {
       setLoading(false);
-      setOpenCrea(false);
+      setOpenCreate(false);
+      setRequest({
+        brandName: "",
+        status: "HOAT_DONG",
+      });
     }, 800);
   };
+  const handleUpdate = () => {
+    setLoading(true);
 
-  const handleCancelCreate = () => setOpenCreate(false);
-  const handleCancelUpadte = () => setOpenUpdate(false);
+    setTimeout(() => {
+      setLoading(false);
+      setOpenUpdate(false);
+    }, 800);
+  };
 
   return (
     <Card>
@@ -239,27 +356,51 @@ const Category = () => {
               placeholder="Nhập vào tên hãng bạn muốn tìm!"
               prefix={<SearchOutlined />}
               allowClear
+              name="name"
+              value={requestSearch.name}
+              onChange={(e) => {
+                setRequestSearch((prev) => ({
+                  ...prev,
+                  name: e.target.value, // Cập nhật giá trị nhập vào
+                }));
+              }}
             />
           </Col>
 
           <Col span={4}>
-            <Button type="primary" icon={<SearchOutlined />} block>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              onClick={searchName}
+            >
               Tìm kiếm
             </Button>
           </Col>
         </Row>
 
         <Row style={{ marginTop: 20 }}>
-          <Button type="primary" onClick={showModalCreate}>
+          <Button
+            type="primary"
+            onClick={() => {
+              setOpenCreate(true);
+            }}
+          >
             Thêm Hãng
           </Button>
           <Modal
             open={openCreate}
             title="Thêm Hãng"
             onOk={handleCreate}
-            onCancel={handleCancelCreate}
+            onCancel={() => {
+              setOpenCreate(false);
+            }}
             footer={[
-              <Button key="back" onClick={handleCancelCreate}>
+              <Button
+                key="back"
+                onClick={() => {
+                  setOpenCreate(false);
+                }}
+              >
                 Hủy
               </Button>,
               <Button
@@ -267,42 +408,143 @@ const Category = () => {
                 type="primary"
                 loading={loading}
                 onClick={handleCreate}
+                disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
             <p>Nhập thông tin hãng mới...</p>
+            <Form>
+              <Input
+                placeholder="Nhập tên hãng vào đây!"
+                style={{ marginBottom: "0.3rem" }}
+                value={request.brandName}
+                name="brandName"
+                onChange={handleRequest}
+                allowClear
+              />
+              <div ref={error}>
+                Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc
+                biệt
+              </div>
+              <Radio.Group
+                onChange={handleRequest}
+                value={request.status}
+                name="status"
+                style={{
+                  marginTop: "0.5rem",
+                }}
+              >
+                <Row gutter={[1, 1]}>
+                  <Col>
+                    <Radio.Button
+                      value="HOAT_DONG"
+                      className={clsx(
+                        request.status === "HOAT_DONG" ? styles.statushd : "",
+                        styles.statushdhv
+                      )}
+                    >
+                      HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
+
+                  <Col>
+                    <Radio.Button
+                      value="NGUNG_HOAT_DONG"
+                      className={clsx(
+                        request.status === "NGUNG_HOAT_DONG"
+                          ? styles.statusnhd
+                          : "",
+                        styles.statusnhdhv
+                      )}
+                    >
+                      NGỪNG HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
+                </Row>
+              </Radio.Group>
+            </Form>
+          </Modal>
+          <Modal
+            open={openUpdate}
+            title="Sửa Hãng"
+            onOk={handleUpdate}
+            onCancel={() => {
+              setOpenUpdate(false);
+              setRequest({
+                brandName: "",
+                status: "HOAT_DONG"
+              })
+              
+            }}
+            footer={[
+              <Button
+                key="back"
+                onClick={() => {
+                  setOpenUpdate(false);
+                }}
+              >
+                Hủy
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                loading={loading}
+                onClick={() => handleUpdateBrand(request)}
+                disabled={!isActiveUpdate}
+              >
+                Xác nhận
+              </Button>,
+            ]}
+          >
+            <p>Nhập thông tin Muốn sửa...</p>
 
             <Form>
               <Input
                 placeholder="Nhập tên hãng vào đây!"
-                style={{ marginBottom: "1rem" }}
-                value={request.brand} // Bind to 'brand' in state
+                style={{ marginBottom: "0.3rem" }}
+                value={request.brandName} // Bind to 'brand' in state
                 name="brandName" // Ensure 'name' matches the key in the state
                 onChange={handleRequest} // Update state when input changes
                 allowClear
               />
-
+              <div ref={errorUpdate}>
+                Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc
+                biệt
+              </div>
               <Radio.Group
                 onChange={handleRequest} // Handle the status change
                 value={request.status} // Bind to 'status' in state
                 name="status" // Ensure 'name' matches the key in the state
-               
               >
-               <Row gutter={[1,1]}>
+                <Row gutter={[1, 1]}>
+                  <Col>
+                    <Radio.Button
+                      value="HOAT_DONG"
+                      className={clsx(
+                        request.status === "HOAT_DONG" ? styles.statushd : "",
+                        styles.statushdhv
+                      )}
+                    >
+                      HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
 
-                <Col>
-                <Radio.Button value="HOAT_DONG" className={clsx(request.status === "HOAT_DONG" ? styles.statushd:"", styles.statushdhv )}>HOẠT ĐỘNG</Radio.Button>
-                
-                </Col>
-
-                <Col>
-                <Radio.Button value="NGUNG_HOAT_DONG" className={clsx(request.status === "NGUNG_HOAT_DONG" ? styles.statusnhd:"", styles.statusnhdhv )}>
-                  NGỪNG HOẠT ĐỘNG
-                </Radio.Button>
-                </Col>
-               </Row>
+                  <Col>
+                    <Radio.Button
+                      value="NGUNG_HOAT_DONG"
+                      className={clsx(
+                        request.status === "NGUNG_HOAT_DONG"
+                          ? styles.statusnhd
+                          : "",
+                        styles.statusnhdhv
+                      )}
+                    >
+                      NGỪNG HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
+                </Row>
               </Radio.Group>
             </Form>
           </Modal>
@@ -316,23 +558,6 @@ const Category = () => {
           locale={{
             emptyText: (
               <div style={{ textAlign: "center" }}>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{
-                    width: "50px",
-                    height: "50px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="12" y1="18" x2="12" y2="12"></line>
-                  <line x1="9" y1="15" x2="15" y2="15"></line>
-                </svg>
                 <p>No data</p>
               </div>
             ),
@@ -350,11 +575,11 @@ const Category = () => {
               current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
               pageSize,
             });
-            fetchBrands(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchBrands(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
       </div>
