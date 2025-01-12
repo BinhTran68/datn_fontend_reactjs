@@ -15,6 +15,7 @@ import AddressModal from "../customer/AddressModal.jsx";
 import Customer from "../customer/Customer.jsx";
 import UpdateCustomerForm from "../customer/UpdateCustomerForm.jsx";
 import App from "../customer/App.jsx";
+import Abc from "../customer/Abc.jsx";
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -133,6 +134,10 @@ const AdminRouters = {
         {
             path: "app",
             element: <PrivateRoute element={<App/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "abc",
+            element: <PrivateRoute element={<Abc/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
 
     ],
