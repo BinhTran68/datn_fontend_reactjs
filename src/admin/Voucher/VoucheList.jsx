@@ -49,7 +49,8 @@ const columns = (handleEdit, handleDelete) => [
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-                <Button onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
+
+                <Button onClick={() => handleEdit(record.id)}>Chỉnh sửa</Button>
                 <Button danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
@@ -89,8 +90,10 @@ const VoucheList = () => {
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${baseUrl}/api/voucher/delete/${id}`);
+            setPagination({...pagination, page: 0})
+            getPageVoucher();
             message.success('Xóa phiếu giảm giá thành công!');
-            fetchVouchers();
+
         } catch (error) {
             message.error('Lỗi khi xóa phiếu giảm giá!');
         }
@@ -108,7 +111,7 @@ const VoucheList = () => {
                 await axios.post(`${baseUrl}/api/voucher/add`, values);
                 message.success('Thêm mới phiếu giảm giá thành công!');
             }
-            fetchVouchers();
+            getPageVoucher();
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
@@ -144,8 +147,6 @@ const VoucheList = () => {
         const response = await axios.get(`${baseUrl}/api/voucher/page?page=${pagination.page}&size=${pagination.size}`);
         const data = response.data.data;
         setVoucherData(data.content);
-
-        
         // Chỉ cập nhật pagination nếu có thay đổi trong dữ liệu
         const newPagination = {
             page: data.number,

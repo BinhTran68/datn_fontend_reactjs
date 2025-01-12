@@ -53,7 +53,7 @@ const columns = (handleEdit, handleDelete) => [
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-                <Button onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
+                <Button onClick={() => handleEdit(record.id)}>Chỉnh sửa</Button>
                 <Button danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
@@ -125,7 +125,7 @@ const PromotionList = () => {
         try {
             await axios.delete(`${baseUrl}/api/promotion/delete/${id}`);
             message.success('Xóa đợt giảm giá thành công!');
-            fetchVouchers();
+
         } catch (error) {
             message.error('Lỗi khi xóa đợt giảm giá!');
         }
@@ -143,7 +143,6 @@ const PromotionList = () => {
                 await axios.post(`${baseUrl}/api/promotion/add`, values);
                 message.success('Thêm mới phiếu giảm giá thành công!');
             }
-            fetchVouchers();
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
