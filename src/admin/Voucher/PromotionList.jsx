@@ -29,7 +29,7 @@ const columns = (handleEdit, handleDelete) => [
         key: 'promotionType',
     },
     {
-        title: 'Giá trị giảm',
+        title: 'Giá trị giảm(%)',
         dataIndex: 'discountValue',
         key: 'discountValue',
     },
@@ -37,11 +37,13 @@ const columns = (handleEdit, handleDelete) => [
         title: 'Ngày bắt đầu',
         dataIndex: 'startDate',
         key: 'startDate',
+
     },
     {
         title: 'Ngày kết thúc',
         dataIndex: 'endDate',
         key: 'endDate',
+
     },
     {
         title: 'Trạng thái',
@@ -60,23 +62,23 @@ const columns = (handleEdit, handleDelete) => [
     },
 ];
 
-const data = [
-    {
-        key: '1',
-        ten: 'Giảm giá tháng 12',
-        ma: 'Đợt 1',
-        hinhthuc: 'trực tiếp vào sản phẩm',
-        giatrigiam: '10%',
-        giatritt: '100k',
-        giatritd: '300k',
-        ngaybatdau: '12/12/2024',
-        ngayketthuc: '31/12/2024',
-        trangthai: 'Hoạt động',
+// const data = [
+//     {
+//         key: '1',
+//         ten: 'Giảm giá tháng 12',
+//         ma: 'Đợt 1',
+//         hinhthuc: 'trực tiếp vào sản phẩm',
+//         giatrigiam: '10%',
+//         giatritt: '100k',
+//         giatritd: '300k',
+//         ngaybatdau: '12/12/2024',
+//         ngayketthuc: '31/12/2024',
+//         trangthai: 'Hoạt động',
 
 
-    },
+//     },
 
-];
+// ];
 
 const PromotionList = () => {
     const [promotionData, setPromotionData] = useState([]);
@@ -136,7 +138,7 @@ const PromotionList = () => {
             const values = form.getFieldsValue();
             if (editingPromotion) {
                 // Sửa
-                await axios.put(`${baseUrl}/api/promotion/update/${editingPromotion.id}`, values);
+                await axios.put(`${baseUrl}/api/promotion/update/${editingPromotionid}`, values);
                 message.success('Cập nhật đợt giảm giá thành công!');
             } else {
                 // Thêm 
@@ -212,38 +214,38 @@ const PromotionList = () => {
                 onChange={handleOnChangeTable}
             />
             <Modal
-                            title={editingPromotion ? 'Chỉnh sửa đợt giảm giá' : 'Thêm mới đợt giảm giá'}
-                            visible={isModalOpen}
-                            onOk={handleOk}
-                            onCancel={handleCancel}
-                        >
-                            <Form form={form} layout="vertical">
-                                <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
-                                    <Input />
-                                </Form.Item>
-                                <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                                    <Input />
-                                </Form.Item>
-                                <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
-                                    <Input />
-                                </Form.Item>
-                                <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
-                                    <Input />
-                                </Form.Item>
-                                <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                                    <DatePicker format="DD/MM/YYYY" />
-                                </Form.Item>
-                                <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                                    <DatePicker format="DD/MM/YYYY" />
-                                </Form.Item>
-                                <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
-                                    <Select>
-                                        <Option value="HOAT_DONG">Hoạt động</Option>
-                                        <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Form>
-                        </Modal>
+                title={editingPromotion ? 'Chỉnh sửa đợt giảm giá' : 'Thêm mới đợt giảm giá'}
+                visible={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+            >
+                <Form form={form} layout="vertical">
+                    <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
+                        <DatePicker format="DD/MM/YYYY" />
+                    </Form.Item>
+                    <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
+                        <DatePicker format="DD/MM/YYYY" />
+                    </Form.Item>
+                    <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
+                        <Select>
+                            <Option value="HOAT_DONG">Hoạt động</Option>
+                            <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
+                        </Select>
+                    </Form.Item>
+                </Form>
+            </Modal>
 
 
 

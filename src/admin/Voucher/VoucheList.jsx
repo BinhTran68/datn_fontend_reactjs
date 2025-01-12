@@ -15,6 +15,11 @@ const columns = (handleEdit, handleDelete) => [
         render: (text, record, index) => index + 1,
     },
     {
+        title: 'stt',
+        dataIndex: 'id',
+        key: 'id',
+    },
+    {
         title: 'Mã phiếu giảm giá',
         dataIndex: 'voucherCode',
         key: 'voucherCode',
@@ -25,7 +30,7 @@ const columns = (handleEdit, handleDelete) => [
         key: 'voucherType',
     },
     {
-        title: 'Giá trị giảm giá',
+        title: 'Giá trị giảm giá(%)',
         dataIndex: 'discountValue',
         key: 'discountValue',
     },
@@ -125,7 +130,7 @@ const VoucheList = () => {
     };
     const [pagination, setPagination] = useState({
         page: 0,
-        size: 1,
+        size: 5,
         total: 7
     })
     function handleOnChangeTable(paginationTable) {
