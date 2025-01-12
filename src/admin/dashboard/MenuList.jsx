@@ -152,7 +152,7 @@ const MenuList = ({darkTheme}) => {
 
                     </Menu.Item>
                     <Menu.Item key="sub3-t2" icon={<CiDiscount1/>}>
-                        <Link to={"Vouche"}>Đợt giảm giá</Link>
+                        <Link to={"PromotionList"}>Đợt giảm giá</Link>
                     </Menu.Item>
                 </Menu.SubMenu>
 

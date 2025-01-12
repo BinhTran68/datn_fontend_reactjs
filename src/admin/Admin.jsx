@@ -7,7 +7,7 @@ import {Outlet, Link} from "react-router-dom";
 import {Content} from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
-import VoucheList from "./dashboard/VoucheList.jsx";
+
 
 
 const {Header, Sider} = Layout;

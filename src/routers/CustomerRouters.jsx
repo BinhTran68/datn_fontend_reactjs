@@ -22,12 +22,15 @@ import Material from "../admin/product/Material.jsx";
 import Color from "../admin/product/Color.jsx";
 import Category from "../admin/product/Category.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
+import VoucheList from "../admin/Voucher/VoucheList.jsx";
+import PromotionList from "../admin/Voucher/PromotionList.jsx";
 
 
 
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
 import PayMent from "../client/page/cart/PayMent.jsx";
+import { i } from "framer-motion/client";
 
 
 
