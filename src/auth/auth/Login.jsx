@@ -2,7 +2,6 @@ import React, {useState} from "react";
 import {motion} from "framer-motion";
 import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
-import bannerLogin from "../../assets/image/banner_login.jpg";
 import CustomInput from "../../client/component/CustomInput.jsx";
 import {Input} from "antd";
 

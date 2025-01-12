@@ -13,7 +13,7 @@ import VoucheList from "./dashboard/VoucheList.jsx";
 const {Header, Sider} = Layout;
 
 function Admin() {
-    const [darkTheme, setDarkTheme] = useState(true);
+    const [darkTheme, setDarkTheme] = useState(false);
     const [collapse, setCollapse] = useState(false);
     const [userInfo, setUserInfo] = useState({});
     const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -16,6 +16,7 @@ import {GrDrag} from "react-icons/gr";
 import {MdDelete} from "react-icons/md";
 import {IoAdd} from "react-icons/io5";
 import ModalBillProductList from "./componets/ModalBillProductList.jsx";
+import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
 
 
 const {Step} = Steps;
@@ -186,8 +187,7 @@ const BillDetail = () => {
         const modalBillHistoryType = "modalBillHistoryType";
         const modalUpdateStatusBillType = "modalUpdateStatusBillType";
         const modalListProduct = "modalListProduct";
-
-
+        const modalEditForm = "modalEditForm";
         const defaultURL = `${baseUrl}/api/admin`;
         const [paymentBillHistory, setPaymentBillHistory] = useState([])
         const [billProductDetails, setBillProductDetails] = useState()
@@ -195,14 +195,11 @@ const BillDetail = () => {
         const [billHistory, setBillHistory] = useState([]);
         const [currentBill, setCurrentBill] = useState()
         const {id} = useParams();
-
         const [confirmLoading, setConfirmLoading] = useState(false);
         const [open, setOpen] = useState(false);
         const [modalType, setModalType] = useState('');
         const [confirmNotes, setConfirmNotes] = useState('')
         const [widthModal, setWidthModal] = useState('50%')
-
-
 
 
         const handleOkModal = () => {
@@ -415,6 +412,16 @@ const BillDetail = () => {
             setBillProductList(data.content)
         }
 
+        const handleOnEditBill = (data) => {
+            setOpen(false)
+            setCurrentBill(data)
+        }
+
+        const showModalEditBillInfo = () => {
+            setOpen(true)
+            setWidthModal("50%")
+            setModalType(modalEditForm)
+        };
         return (
             <div className={"flex-column d-flex gap-3"}>
 
@@ -433,6 +440,15 @@ const BillDetail = () => {
                             onChangeNotesUpdateStatusBillInput={handleOnChange}
                         />
                     )}
+
+                    {modalType === modalEditForm && (
+                        <ModalEditBillInfo
+                            currentBill={currentBill}
+                            handleOnEdit={handleOnEditBill}
+                        />
+                    )}
+
+
                 </Modal>
 
 
@@ -482,10 +498,14 @@ const BillDetail = () => {
                     />
                 </Card>
                 <Card>
-                    <h3 className={"mb-4"}>Thông tin đơn hàng</h3>
+                    <div className={"d-flex justify-content-between"}>
+                        <h3 className={"mb-4"}>Thông tin đơn hàng</h3>
+                        <Button type={"primary"} onClick={showModalEditBillInfo}>
+                            Chỉnh sửa thông tin đơn hàng
+                        </Button>
+                    </div>
                     <Descriptions column={2}>
-
-                        <Descriptions.Item label={<span className={"fw-bold text-black"}>Mã đơn hàng  </span>} span={2}>
+                    <Descriptions.Item label={<span className={"fw-bold text-black"}>Mã đơn hàng  </span>} span={2}>
                             {currentBill?.billCode ?? ""}
                         </Descriptions.Item>
 
@@ -508,7 +528,7 @@ const BillDetail = () => {
                         </Descriptions.Item>
 
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Ghi chú  </span>} span={2}>
-                            {currentBill?.note ?? ""}
+                            {currentBill?.notes  ?? ""}
                         </Descriptions.Item>
                     </Descriptions>
                 </Card>
