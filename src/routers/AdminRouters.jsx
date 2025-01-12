@@ -1,14 +1,24 @@
 import React from "react";
 import {Navigate} from "react-router-dom";
 import Dashboard from "../admin/dashboard/Dashboard.jsx";
-import BillList from "../admin/dashboard/BillList.jsx";
+
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
 import Category from "../admin/product/Category.jsx";
+
+import AddCustomer from "../customer/AddCustomer.jsx";
+import AddressFormModal from "../customer/AddressFormModal.jsx";
+import AddressModal from "../customer/AddressModal.jsx";
+import Customer from "../customer/Customer.jsx";
+import UpdateCustomerForm from "../customer/UpdateCustomerForm.jsx";
+import {App} from "antd";
+import Abc from "../customer/Abc.jsx";
+
 import BillDetail from "../admin/bill/BillDetail.jsx";
+import BillList from "../admin/bill/BillList.jsx";
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -107,6 +117,34 @@ const AdminRouters = {
         {
             path: "PromotionList",
             element: <PrivateRoute element={<PromotionList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "addCustomer",
+            element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "addressFormModal",
+            element: <PrivateRoute element={<AddressFormModal/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "adressModal",
+            element: <PrivateRoute element={<AddressModal/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "customer",
+            element: <PrivateRoute element={<Customer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "updateCustomerForm",
+            element: <PrivateRoute element={<UpdateCustomerForm/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "app",
+            element: <PrivateRoute element={<App/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "abc",
+            element: <PrivateRoute element={<Abc/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
 
     ],
