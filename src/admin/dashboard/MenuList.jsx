@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import {Link, useNavigate} from "react-router-dom";
 import {FaEye} from "react-icons/fa6";
-import {MdLocalShipping} from "react-icons/md";
+import {MdDashboard, MdLocalShipping} from "react-icons/md";
 import {IoExitOutline} from "react-icons/io5";
 import {GiConverseShoe} from "react-icons/gi";
 import {GiRunningShoe} from "react-icons/gi";
@@ -70,57 +70,63 @@ const MenuList = ({darkTheme}) => {
 
     const isStaff = userInfo?.vaiTro === "ROLE_STAFF";
 
+
+    const iconSize = 20;
+
     return (
         <div>
             <Menu
                 theme={darkTheme ? "dark" : "light"}
                 mode="inline"
+                style={{
+                    fontWeight: "500", // Làm chữ đậm
+                }}
                 className="menu-bar "
             >
-                <Menu.Item key="home" icon={<FaEye/>}>
+                <Menu.Item key="home" icon={<MdDashboard size={iconSize}/>}>
                     <Link className={"text-decoration-none"} to={"dashboard"}>Tổng quan</Link>
                 </Menu.Item>
 
-                <Menu.Item key="activity" icon={<MdLocalShipping/>}>
+                <Menu.Item key="activity" icon={<MdLocalShipping size={iconSize}/>}>
                     <Link className={"text-decoration-none"} to={"sales-page"}>Bán hàng</Link>
                 </Menu.Item>
 
-                <Menu.Item key="ordermanagement" icon={<FaFileInvoice/>}>
+                <Menu.Item key="ordermanagement" icon={<FaFileInvoice size={iconSize}/>}>
                     <Link to={"bill"}>Danh sách hóa đơn</Link>
                 </Menu.Item>
 
                 <Menu.SubMenu
                     key="submn1"
-                    icon={<ProductOutlined/>}
+                    icon={<ProductOutlined size={iconSize}/>}
                     title="Quản lý sản phẩm"
                 >
-                    <Menu.Item key="sub1-t1" icon={<GiConverseShoe/>}>
+                    <Menu.Item key="sub1-t1" icon={<GiConverseShoe size={iconSize}/>}>
                         <Link to={"sanpham"}>Sản phẩm</Link>
                     </Menu.Item>
-                    <Menu.Item key="sub1-t2" icon={<GiRunningShoe/>}>
+                    <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize}/>}>
                         <Link to={"sanphamchitiet"}>Sản phẩm chi tiết</Link>
                     </Menu.Item>
                     <Menu.SubMenu
                         key="sub1-t2"
                         title="Thuộc tính"
-                        icon={<MdAutoFixHigh/>}
+                        icon={<MdAutoFixHigh size={iconSize}/>}
                     >
-                        <Menu.Item key="sub1-t3" icon={<LiaShoePrintsSolid/>}>
+                        <Menu.Item key="sub1-t3" icon={<LiaShoePrintsSolid size={iconSize}/>}>
                             <Link to={"degiay"}>Đế giày</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t4" icon={<TbBrandDenodo/>}>
+                        <Menu.Item key="sub1-t4" icon={<TbBrandDenodo size={iconSize}/>}>
                             <Link to={"chatlieu"}>Chất liệu</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t5" icon={<SlSizeFullscreen/>}>
+                        <Menu.Item key="sub1-t5" icon={<SlSizeFullscreen size={iconSize}/>}>
                             <Link to={"kichthuoc"}>Kích cỡ</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t6" icon={<BgColorsOutlined/>}>
+                        <Menu.Item key="sub1-t6" icon={<BgColorsOutlined size={iconSize}/>}>
                             <Link to={"mausac"}>Màu sắc</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t7" icon={<MdCategory/>}>
+                        <Menu.Item key="sub1-t7" icon={<MdCategory size={iconSize}/>}>
                             <Link to={"category"}>Danh mục</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t8" icon={<TbBrand4Chan/>}>
+                        <Menu.Item key="sub1-t8" icon={<TbBrand4Chan size={iconSize}/>}>
                             <Link to={"thuonghieu"}>Thương hiệu</Link>
                         </Menu.Item>
                     </Menu.SubMenu>
@@ -128,40 +134,40 @@ const MenuList = ({darkTheme}) => {
 
                 <Menu.SubMenu
                     key="submn2"
-                    icon={<UserOutlined/>}
+                    icon={<UserOutlined size={iconSize}/>}
                     title="Quản lý tài khoản"
                 >
-                    <Menu.Item key="sub2-t1" icon={<FaRegUser/>}>
+                    <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize}/>}>
                         <Link to={"nhanvien"}>Nhân Viên</Link>
                     </Menu.Item>
-                    <Menu.Item key="sub2-t2" icon={<FaUserCircle/>}>
+                    <Menu.Item key="sub2-t2" icon={<FaUserCircle size={iconSize}/>}>
                         <Link to={"khachhang"}>Khách hàng</Link>
                     </Menu.Item>
                 </Menu.SubMenu>
 
-                <Menu.Item key="progress" icon={<AreaChartOutlined/>}>
+                <Menu.Item key="progress" icon={<AreaChartOutlined size={iconSize}/>}>
                     <Link to={"statistical"}>Thống kê</Link>
                 </Menu.Item>
                 <Menu.SubMenu
                     key="submn3"
-                    icon={<BiSolidDiscount/>}
+                    icon={<BiSolidDiscount size={iconSize}/>}
                     title="Giảm giá"
                 >
-                    <Menu.Item key="sub3-t1" icon={<MdDiscount/>}>
+                    <Menu.Item key="sub3-t1" icon={<MdDiscount size={iconSize}/>}>
                         <Link to={"VoucheList"}>Phiếu giảm giá</Link>
 
                     </Menu.Item>
-                    <Menu.Item key="sub3-t2" icon={<CiDiscount1/>}>
+                    <Menu.Item key="sub3-t2" icon={<CiDiscount1 size={iconSize}/>}>
                         <Link to={"PromotionList"}>Đợt giảm giá</Link>
                     </Menu.Item>
                 </Menu.SubMenu>
 
-        <Menu.Item key="exit" icon={<IoExitOutline />} onClick={handleLogout}>
-          Đăng xuất
-        </Menu.Item>
-      </Menu>
-    </div>
-  );
+                <Menu.Item key="exit" icon={<IoExitOutline size={iconSize}/>} onClick={handleLogout}>
+                    Đăng xuất
+                </Menu.Item>
+            </Menu>
+        </div>
+    );
 };
 
 export default MenuList;
