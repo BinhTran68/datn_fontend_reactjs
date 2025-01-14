@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message } from 'antd';
 import axios from 'axios';
 import { baseUrl } from '../../helpers/Helpers.js';
+import moment from 'moment';
 
-const { Search } = Input;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const columns = (handleEdit, handleDelete) => [
@@ -13,11 +12,6 @@ const columns = (handleEdit, handleDelete) => [
         dataIndex: 'stt',
         key: 'stt',
         render: (text, record, index) => index + 1,
-    },
-    {
-        title: 'stt',
-        dataIndex: 'id',
-        key: 'id',
     },
     {
         title: 'Mã phiếu giảm giá',
@@ -37,11 +31,13 @@ const columns = (handleEdit, handleDelete) => [
     {
         title: 'Ngày bắt đầu',
         dataIndex: 'startDate',
+        render: (text) => new Date(text).toLocaleDateString(),
         key: 'startDate',
     },
     {
         title: 'Ngày kết thúc',
         dataIndex: 'endDate',
+        render: (text) => new Date(text).toLocaleDateString(),
         key: 'endDate',
     },
     {
@@ -54,32 +50,56 @@ const columns = (handleEdit, handleDelete) => [
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-
-                <Button onClick={() => handleEdit(record.id)}>Chỉnh sửa</Button>
+                <Button onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
                 <Button danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
     },
 ];
 
-const VoucheList = () => {
+const VoucherList = () => {
     const [voucherData, setVoucherData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
     const [editingVoucher, setEditingVoucher] = useState(null);
 
-    // const fetchVouchers = async () => {
-    //     try {
-    //         const response = await axios.get(`${baseUrl}/api/voucher/hien`);
-    //         setVoucherData(response.data.data);
-    //     } catch (error) {
-    //         message.error('Lỗi khi tải danh sách phiếu giảm giá!');
-    //     }
-    // };
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: 5,
+        total: 7
+    });
 
-    // useEffect(() => {
-    //     fetchVouchers();
-    // }, []);
+    // Fetching voucher data (you may want to keep this if it's not commented out)
+    useEffect(() => {
+        getPageVoucher();
+    }, [pagination]);
+
+    const getPageVoucher = async () => {
+        const response = await axios.get(`${baseUrl}/api/voucher/page?page=${pagination.page}&size=${pagination.size}`);
+        const data = response.data.data;
+
+        const items = data.content.map((el) => {
+            el.startDate = new Date(el.startDate);
+            el.endDate = new Date(el.endDate);
+            return el;
+        });
+        setVoucherData(items);
+
+        const newPagination = {
+            page: data.number,
+            size: data.size,
+            total: data.totalElements
+        };
+
+        // Update pagination only if there's a change
+        if (
+            pagination.page !== newPagination.page ||
+            pagination.size !== newPagination.size ||
+            pagination.total !== newPagination.total
+        ) {
+            setPagination(newPagination);
+        }
+    };
 
     const handleAdd = () => {
         setEditingVoucher(null);
@@ -89,16 +109,18 @@ const VoucheList = () => {
     const handleEdit = (record) => {
         setEditingVoucher(record);
         setIsModalOpen(true);
-        form.setFieldsValue(record);
+        form.setFieldsValue({
+            ...record,
+            startDate: moment(record.startDate),  // Use moment for startDate
+            endDate: moment(record.endDate)       // Use moment for endDate
+        });
     };
 
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${baseUrl}/api/voucher/delete/${id}`);
-            setPagination({...pagination, page: 0})
-            getPageVoucher();
             message.success('Xóa phiếu giảm giá thành công!');
-
+            getPageVoucher();  // Fetch updated list
         } catch (error) {
             message.error('Lỗi khi xóa phiếu giảm giá!');
         }
@@ -108,81 +130,52 @@ const VoucheList = () => {
         try {
             const values = form.getFieldsValue();
             if (editingVoucher) {
-                // Sửa
+                // Edit existing voucher
                 await axios.put(`${baseUrl}/api/voucher/update/${editingVoucher.id}`, values);
                 message.success('Cập nhật phiếu giảm giá thành công!');
             } else {
-                // Thêm
+                // Add new voucher
                 await axios.post(`${baseUrl}/api/voucher/add`, values);
                 message.success('Thêm mới phiếu giảm giá thành công!');
             }
-            getPageVoucher();
+            getPageVoucher();  // Fetch updated list
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
             message.error('Lỗi khi lưu trữ liệu!');
         }
     };
-    //phân 
+
     const handleCancel = () => {
         setIsModalOpen(false);
         form.resetFields();
     };
-    const [pagination, setPagination] = useState({
-        page: 0,
-        size: 5,
-        total: 7
-    })
-    function handleOnChangeTable(paginationTable) {
+
+    const handleOnChangeTable = (paginationTable) => {
         setPagination({
             ...pagination,
-            page: paginationTable.current - 1, // Trang hiện tại
-            size: paginationTable.pageSize, // Số mục mỗi trang
+            page: paginationTable.current - 1, // Update current page
+            size: paginationTable.pageSize, // Update page size
         });
-    }
-
-
-
-
-    useEffect(() => {
-        getPageVoucher()
-    }, [pagination]);
-
-    const getPageVoucher = async () => {
-        const response = await axios.get(`${baseUrl}/api/voucher/page?page=${pagination.page}&size=${pagination.size}`);
-        const data = response.data.data;
-        setVoucherData(data.content);
-        // Chỉ cập nhật pagination nếu có thay đổi trong dữ liệu
-        const newPagination = {
-            page: data.number,
-            size: data.size,
-            total: data.totalElements
-        };
-        console.log("new ", newPagination);
-        
-        // Kiểm tra xem pagination có thay đổi hay không trước khi set lại
-        if (
-            pagination.page !== newPagination.page ||
-            pagination.size !== newPagination.size ||
-            pagination.total !== newPagination.total
-        ) {
-            setPagination(newPagination);
-        }
     };
+
     return (
         <Card>
             <h4>Danh sách phiếu giảm giá</h4>
             <Button type="primary" onClick={handleAdd} style={{ marginBottom: '20px' }}>
-+            </Button>
-            <Table columns={columns(handleEdit, handleDelete)} dataSource={voucherData} rowKey="id"
-               pagination={{
-                current: pagination.page  +  1,
-                pageSize: pagination.size,
-                total: pagination.total
-            }}
+                Thêm mới
+            </Button>
+            <Table
+                columns={columns(handleEdit, handleDelete)}
+                dataSource={voucherData}
+                rowKey="id"
+                pagination={{
+                    current: pagination.page + 1,
+                    pageSize: pagination.size,
+                    total: pagination.total
+                }}
                 onChange={handleOnChangeTable}
             />
-
             <Modal
                 title={editingVoucher ? 'Chỉnh sửa phiếu giảm giá' : 'Thêm mới phiếu giảm giá'}
                 visible={isModalOpen}
@@ -200,10 +193,10 @@ const VoucheList = () => {
                         <Input />
                     </Form.Item>
                     <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                        <DatePicker format="DD/MM/YYYY" />
+                        <DatePicker value={editingVoucher ? moment(editingVoucher.startDate) : null} />
                     </Form.Item>
                     <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                        <DatePicker format="DD/MM/YYYY" />
+                        <DatePicker value={editingVoucher ? moment(editingVoucher.endDate) : null} />
                     </Form.Item>
                     <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
                         <Select>
@@ -217,4 +210,4 @@ const VoucheList = () => {
     );
 };
 
-export default VoucheList;
+export default VoucherList;
