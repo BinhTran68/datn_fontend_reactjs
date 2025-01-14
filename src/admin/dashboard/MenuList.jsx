@@ -1,177 +1,191 @@
-import {Menu, Modal} from "antd";
+import { Menu, Modal } from "antd";
 
-
-import {useEffect} from "react";
-
+import { useEffect } from "react";
 
 import {
-    AreaChartOutlined,
-    UserOutlined,
-    SettingOutlined,
-    ProductOutlined,
-    BgColorsOutlined,
+  AreaChartOutlined,
+  UserOutlined,
+  SettingOutlined,
+  ProductOutlined,
+  BgColorsOutlined,
 } from "@ant-design/icons";
-import {Link, useNavigate} from "react-router-dom";
-import {FaEye} from "react-icons/fa6";
-import {MdDashboard, MdLocalShipping} from "react-icons/md";
-import {IoExitOutline} from "react-icons/io5";
-import {GiConverseShoe} from "react-icons/gi";
-import {GiRunningShoe} from "react-icons/gi";
-import {MdAutoFixHigh} from "react-icons/md";
-import {MdDiscount} from "react-icons/md";
-import {MdCategory} from "react-icons/md";
-import {TbBrand4Chan} from "react-icons/tb";
-import {TbBrandDenodo} from "react-icons/tb";
-import {SlSizeFullscreen} from "react-icons/sl";
-import {LiaShoePrintsSolid} from "react-icons/lia";
-import {FaRegUser} from "react-icons/fa";
-import {FaUserCircle} from "react-icons/fa";
-import {BiSolidDiscount} from "react-icons/bi";
-import {CiDiscount1} from "react-icons/ci";
-import {FaFileInvoice} from "react-icons/fa";
-import {useState} from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEye } from "react-icons/fa6";
+import { MdDashboard, MdLocalShipping } from "react-icons/md";
+import { IoExitOutline } from "react-icons/io5";
+import { GiConverseShoe } from "react-icons/gi";
+import { GiRunningShoe } from "react-icons/gi";
+import { MdAutoFixHigh } from "react-icons/md";
+import { MdDiscount } from "react-icons/md";
+import { MdCategory } from "react-icons/md";
+import { TbBrand4Chan } from "react-icons/tb";
+import { TbBrandDenodo } from "react-icons/tb";
+import { SlSizeFullscreen } from "react-icons/sl";
+import { LiaShoePrintsSolid } from "react-icons/lia";
+import { FaRegUser } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
+import { BiSolidDiscount } from "react-icons/bi";
+import { CiDiscount1 } from "react-icons/ci";
+import { FaFileInvoice } from "react-icons/fa";
+import { useState } from "react";
 
-const MenuList = ({darkTheme}) => {
+const MenuList = ({ darkTheme }) => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { confirm } = Modal;
 
-    const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const {confirm} = Modal;
+  const handleLogout = () => {
+    confirm({
+      title: "Xác nhận đăng xuất",
+      content: "Bạn có chắc chắn muốn đăng xuất không?",
+      okText: "Đăng xuất",
+      cancelText: "Hủy",
+      onOk() {
+        // Xử lý đăng xuất
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userInfo");
+        setIsLoggedIn(false);
 
-    const handleLogout = () => {
-        confirm({
-            title: "Xác nhận đăng xuất",
-            content: "Bạn có chắc chắn muốn đăng xuất không?",
-            okText: "Đăng xuất",
-            cancelText: "Hủy",
-            onOk() {
-                // Xử lý đăng xuất
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("userInfo");
-                setIsLoggedIn(false);
+        navigate("/auth/login-admin"); // Điều hướng về trang đăng nhập
+      },
+      onCancel() {
+        console.log("Hủy đăng xuất");
+      },
+    });
+  };
 
-                navigate("/auth/login-admin"); // Điều hướng về trang đăng nhập
-            },
-            onCancel() {
-                console.log("Hủy đăng xuất");
-            },
-        });
+  const [userInfo, setUserInfo] = useState(null);
 
-    };
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      const parsedUserInfo = JSON.parse(storedUserInfo);
+      setUserInfo(parsedUserInfo);
+    }
+  }, []);
 
-    const [userInfo, setUserInfo] = useState(null);
+  const isStaff = userInfo?.vaiTro === "ROLE_STAFF";
 
-    useEffect(() => {
-        const storedUserInfo = localStorage.getItem("userInfo");
-        if (storedUserInfo) {
-            const parsedUserInfo = JSON.parse(storedUserInfo);
-            setUserInfo(parsedUserInfo);
-        }
-    }, []);
+  const iconSize = 20;
 
-    const isStaff = userInfo?.vaiTro === "ROLE_STAFF";
+  return (
+    <div>
+      <Menu
+        theme={darkTheme ? "dark" : "light"}
+        mode="inline"
+        style={{
+          fontWeight: "500", // Làm chữ đậm
+        }}
+        className="menu-bar "
+      >
+        <Menu.Item key="home" icon={<MdDashboard size={iconSize} />}>
+          <Link className={"text-decoration-none"} to={"dashboard"}>
+            Tổng quan
+          </Link>
+        </Menu.Item>
 
+        <Menu.Item key="activity" icon={<MdLocalShipping size={iconSize} />}>
+          <Link className={"text-decoration-none"} to={"sales-page"}>
+            Bán hàng
+          </Link>
+        </Menu.Item>
 
-    const iconSize = 20;
+        <Menu.Item
+          key="ordermanagement"
+          icon={<FaFileInvoice size={iconSize} />}
+        >
+          <Link to={"bill"}>Danh sách hóa đơn</Link>
+        </Menu.Item>
 
-    return (
-        <div>
-            <Menu
-                theme={darkTheme ? "dark" : "light"}
-                mode="inline"
-                style={{
-                    fontWeight: "500", // Làm chữ đậm
-                }}
-                className="menu-bar "
+        <Menu.SubMenu
+          key="submn1"
+          icon={<ProductOutlined size={iconSize} />}
+          title="Quản lý sản phẩm"
+        >
+          <Menu.Item key="sub1-t1" icon={<GiConverseShoe size={iconSize} />}>
+            <Link to={"product"}>Sản phẩm</Link>
+          </Menu.Item>
+          <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize} />}>
+            <Link to={"productdetail"}>Sản phẩm chi tiết</Link>
+          </Menu.Item>
+          <Menu.SubMenu
+            key="sub1-t10"
+            title="attribute"
+            icon={<MdAutoFixHigh size={iconSize} />}
+          >
+            <Menu.Item key="sub1-t8" icon={<MdCategory size={iconSize} />}>
+              <Link to={"brand"}>Hãng</Link>
+            </Menu.Item>
+            <Menu.Item
+              key="sub1-t9"
+              icon={<BgColorsOutlined size={iconSize} />}
             >
-                <Menu.Item key="home" icon={<MdDashboard size={iconSize}/>}>
-                    <Link className={"text-decoration-none"} to={"dashboard"}>Tổng quan</Link>
-                </Menu.Item>
+              <Link to={"color"}>Màu sắc</Link>
+            </Menu.Item>
+            <Menu.Item key="sub1-t3" icon={<TbBrandDenodo size={iconSize} />}>
+              <Link to={"gender"}>Giới tính</Link>
+            </Menu.Item>
+            <Menu.Item
+              key="sub1-t4"
+              icon={<LiaShoePrintsSolid size={iconSize} />}
+            >
+              <Link to={"material"}>Chất liệu</Link>
+            </Menu.Item>
+            <Menu.Item
+              key="sub1-t5"
+              icon={<SlSizeFullscreen size={iconSize} />}
+            >
+              <Link to={"size"}>Kích cỡ</Link>
+            </Menu.Item>
 
-                <Menu.Item key="activity" icon={<MdLocalShipping size={iconSize}/>}>
-                    <Link className={"text-decoration-none"} to={"sales-page"}>Bán hàng</Link>
-                </Menu.Item>
+            <Menu.Item key="sub1-t6" icon={<TbBrand4Chan size={iconSize} />}>
+              <Link to={"sole"}>Đế giày</Link>
+            </Menu.Item>
+            <Menu.Item key="sub1-t7" icon={<TbBrand4Chan size={iconSize} />}>
+              <Link to={"type"}>Loại giày</Link>
+            </Menu.Item>
+          </Menu.SubMenu>
+        </Menu.SubMenu>
 
-                <Menu.Item key="ordermanagement" icon={<FaFileInvoice size={iconSize}/>}>
-                    <Link to={"bill"}>Danh sách hóa đơn</Link>
-                </Menu.Item>
+        <Menu.SubMenu
+          key="submn2"
+          icon={<UserOutlined size={iconSize} />}
+          title="Quản lý tài khoản"
+        >
+          <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize} />}>
+            <Link to={"nhanvien"}>Nhân Viên</Link>
+          </Menu.Item>
+          <Menu.Item key="sub2-t2" icon={<FaUserCircle size={iconSize} />}>
+            <Link to={"khachhang"}>Khách hàng</Link>
+          </Menu.Item>
+        </Menu.SubMenu>
 
-                <Menu.SubMenu
-                    key="submn1"
-                    icon={<ProductOutlined size={iconSize}/>}
-                    title="Quản lý sản phẩm"
-                >
-                    <Menu.Item key="sub1-t1" icon={<GiConverseShoe size={iconSize}/>}>
-                        <Link to={"product"}>Sản phẩm</Link>
-                    </Menu.Item>
-                    <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize}/>}>
-                        <Link to={"productdetail"}>Sản phẩm chi tiết</Link>
-                    </Menu.Item>
-                    <Menu.SubMenu
-                        key="sub1-t10"
-                        title="attribute"
-                        icon={<MdAutoFixHigh size={iconSize}/>}
-                    >
-                        <Menu.Item key="sub1-t8" icon={<MdCategory size={iconSize}/>}>
-                            <Link to={"brand"}>Brand</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t9" icon={< BgColorsOutlined size={iconSize}/>}>
-                            <Link to={"color"}>Color</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t3" icon={<TbBrandDenodo size={iconSize}/>}>
-                            <Link to={"gender"}>Gender</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t4" icon={< LiaShoePrintsSolid size={iconSize}/>}>
-                            <Link to={"material"}>Material</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t5" icon={<SlSizeFullscreen size={iconSize}/>}>
-                            <Link to={"size"}>Size</Link>
-                        </Menu.Item>
-                        
-                        <Menu.Item key="sub1-t6" icon={<TbBrand4Chan size={iconSize}/>}>
-                            <Link to={"sole"}>Sole</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t7" icon={<TbBrand4Chan size={iconSize}/>}>
-                            <Link to={"type"}>Type</Link>
-                        </Menu.Item>
-                    </Menu.SubMenu>
-                </Menu.SubMenu>
+        <Menu.Item key="progress" icon={<AreaChartOutlined size={iconSize} />}>
+          <Link to={"statistical"}>Thống kê</Link>
+        </Menu.Item>
+        <Menu.SubMenu
+          key="submn3"
+          icon={<BiSolidDiscount size={iconSize} />}
+          title="Giảm giá"
+        >
+          <Menu.Item key="sub3-t1" icon={<MdDiscount size={iconSize} />}>
+            <Link to={"VoucheList"}>Phiếu giảm giá</Link>
+          </Menu.Item>
+          <Menu.Item key="sub3-t2" icon={<CiDiscount1 size={iconSize} />}>
+            <Link to={"PromotionList"}>Đợt giảm giá</Link>
+          </Menu.Item>
+        </Menu.SubMenu>
 
-                <Menu.SubMenu
-                    key="submn2"
-                    icon={<UserOutlined size={iconSize}/>}
-                    title="Quản lý tài khoản"
-                >
-                    <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize}/>}>
-                        <Link to={"nhanvien"}>Nhân Viên</Link>
-                    </Menu.Item>
-                    <Menu.Item key="sub2-t2" icon={<FaUserCircle size={iconSize}/>}>
-                        <Link to={"khachhang"}>Khách hàng</Link>
-                    </Menu.Item>
-                </Menu.SubMenu>
-
-                <Menu.Item key="progress" icon={<AreaChartOutlined size={iconSize}/>}>
-                    <Link to={"statistical"}>Thống kê</Link>
-                </Menu.Item>
-                <Menu.SubMenu
-                    key="submn3"
-                    icon={<BiSolidDiscount size={iconSize}/>}
-                    title="Giảm giá"
-                >
-                    <Menu.Item key="sub3-t1" icon={<MdDiscount size={iconSize}/>}>
-                        <Link to={"VoucheList"}>Phiếu giảm giá</Link>
-
-                    </Menu.Item>
-                    <Menu.Item key="sub3-t2" icon={<CiDiscount1 size={iconSize}/>}>
-                        <Link to={"PromotionList"}>Đợt giảm giá</Link>
-                    </Menu.Item>
-                </Menu.SubMenu>
-
-                <Menu.Item key="exit" icon={<IoExitOutline size={iconSize}/>} onClick={handleLogout}>
-                    Đăng xuất
-                </Menu.Item>
-            </Menu>
-        </div>
-    );
+        <Menu.Item
+          key="exit"
+          icon={<IoExitOutline size={iconSize} />}
+          onClick={handleLogout}
+        >
+          Đăng xuất
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
 };
 
 export default MenuList;

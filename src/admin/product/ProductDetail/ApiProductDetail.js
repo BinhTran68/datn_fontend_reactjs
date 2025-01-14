@@ -14,7 +14,7 @@ export const fetchProducts = async (pagination) => {
   const { current, pageSize } = pagination;
 
   try {
-    const response = await api.get("/product", {
+    const response = await api.get("/productdetail", {
       params: { page: current, size: pageSize },
     });
 
@@ -27,6 +27,7 @@ export const fetchProducts = async (pagination) => {
     throw error;
   }
 };
+
 
 export const searchNameProduct = async (pagination, paramName) => {
   const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
