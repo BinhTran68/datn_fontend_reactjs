@@ -101,33 +101,37 @@ const MenuList = ({darkTheme}) => {
                     title="Quản lý sản phẩm"
                 >
                     <Menu.Item key="sub1-t1" icon={<GiConverseShoe size={iconSize}/>}>
-                        <Link to={"sanpham"}>Sản phẩm</Link>
+                        <Link to={"product"}>Sản phẩm</Link>
                     </Menu.Item>
                     <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize}/>}>
-                        <Link to={"sanphamchitiet"}>Sản phẩm chi tiết</Link>
+                        <Link to={"productdetail"}>Sản phẩm chi tiết</Link>
                     </Menu.Item>
                     <Menu.SubMenu
-                        key="sub1-t2"
-                        title="Thuộc tính"
+                        key="sub1-t10"
+                        title="attribute"
                         icon={<MdAutoFixHigh size={iconSize}/>}
                     >
-                        <Menu.Item key="sub1-t3" icon={<LiaShoePrintsSolid size={iconSize}/>}>
-                            <Link to={"degiay"}>Đế giày</Link>
+                        <Menu.Item key="sub1-t8" icon={<MdCategory size={iconSize}/>}>
+                            <Link to={"brand"}>Brand</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t4" icon={<TbBrandDenodo size={iconSize}/>}>
-                            <Link to={"chatlieu"}>Chất liệu</Link>
+                        <Menu.Item key="sub1-t9" icon={< BgColorsOutlined size={iconSize}/>}>
+                            <Link to={"color"}>Color</Link>
+                        </Menu.Item>
+                        <Menu.Item key="sub1-t3" icon={<TbBrandDenodo size={iconSize}/>}>
+                            <Link to={"gender"}>Gender</Link>
+                        </Menu.Item>
+                        <Menu.Item key="sub1-t4" icon={< LiaShoePrintsSolid size={iconSize}/>}>
+                            <Link to={"material"}>Material</Link>
                         </Menu.Item>
                         <Menu.Item key="sub1-t5" icon={<SlSizeFullscreen size={iconSize}/>}>
-                            <Link to={"kichthuoc"}>Kích cỡ</Link>
+                            <Link to={"size"}>Size</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t6" icon={<BgColorsOutlined size={iconSize}/>}>
-                            <Link to={"mausac"}>Màu sắc</Link>
+                        
+                        <Menu.Item key="sub1-t6" icon={<TbBrand4Chan size={iconSize}/>}>
+                            <Link to={"sole"}>Sole</Link>
                         </Menu.Item>
-                        <Menu.Item key="sub1-t7" icon={<MdCategory size={iconSize}/>}>
-                            <Link to={"category"}>Danh mục</Link>
-                        </Menu.Item>
-                        <Menu.Item key="sub1-t8" icon={<TbBrand4Chan size={iconSize}/>}>
-                            <Link to={"thuonghieu"}>Thương hiệu</Link>
+                        <Menu.Item key="sub1-t7" icon={<TbBrand4Chan size={iconSize}/>}>
+                            <Link to={"type"}>Type</Link>
                         </Menu.Item>
                     </Menu.SubMenu>
                 </Menu.SubMenu>

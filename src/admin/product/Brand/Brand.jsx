@@ -17,7 +17,7 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
-import styles from "./Category.module.css";
+import styles from "./Brand.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import axios from "axios";
@@ -29,7 +29,7 @@ import {
   getBrand,
   searchNameBrand,
   existsByBrandName,
-} from "./Brand/apibrand.js";
+} from "./apibrand.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
@@ -268,7 +268,7 @@ const Category = () => {
           return null;
         }
         return (
-          <Tag color={color} style={{ fontSize: "14px", padding: "6px 12px" }}>
+          <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
             {status} {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
@@ -423,42 +423,7 @@ const Category = () => {
               />
              <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
 
-              <Radio.Group
-                onChange={handleRequest}
-                value={request.status}
-                name="status"
-                style={{
-                  marginTop: "0.5rem",
-                }}
-              >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+              
             </Form>
           </Modal>
           <Modal

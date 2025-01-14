@@ -7,7 +7,18 @@ import PromotionList from "../admin/Voucher/PromotionList.jsx";
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
-import Category from "../admin/product/Category.jsx";
+
+// thuoc tinh sp
+import Brand from "../admin/product/Brand/Brand.jsx";
+import Color from "../admin/product/Color/Color.jsx";
+import Gender from "../admin/product/Gender/Gender.jsx";
+import Material from "../admin/product/Material/Material.jsx";
+import Product from "../admin/product/Product/Product.jsx";
+import Size from "../admin/product/Size/Size.jsx";
+import Sole from "../admin/product/Sole/Sole.jsx";
+import Type from "../admin/product/Type/Type.jsx";
+// import Product from "../admin/product/ProductComponent/Product.jsx";
+import ProductDetail from "../admin/product/ProductDetail/ProductDetail.jsx"
 
 import AddCustomer from "../customer/AddCustomer.jsx";
 import AddressFormModal from "../customer/AddressFormModal.jsx";
@@ -19,6 +30,7 @@ import Abc from "../customer/Abc.jsx";
 
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
+
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -79,8 +91,40 @@ const AdminRouters = {
             element: <PrivateRoute element={<Statistical/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
-            path: "category",
-            element: <PrivateRoute element={<Category/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            path: "brand",
+            element: <PrivateRoute element={<Brand/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "color",
+            element: <PrivateRoute element={<Color/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "gender",
+            element: <PrivateRoute element={<Gender/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "material",
+            element: <PrivateRoute element={<Material/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product",
+            element: <PrivateRoute element={<Product/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "size",
+            element: <PrivateRoute element={<Size/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "sole",
+            element: <PrivateRoute element={<Sole/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "type",
+            element: <PrivateRoute element={<Type/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "productdetail",
+            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
 

@@ -22,3 +22,10 @@
 .statusnhdhv:hover {
   color: red !important;
 }
+.customTable {
+  width: 100%;
+  table-layout: fixed; /* Cố định bố cục bảng */
+  
+}
+
+
