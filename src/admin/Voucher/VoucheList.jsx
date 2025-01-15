@@ -8,7 +8,7 @@ import { DownOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
 //table
-const columns = (handleEdit, handleDelete) => [
+const columns = (handleEdit, handleDelete, handleDetail) => [
     {
         title: 'STT',
         dataIndex: 'stt',
@@ -62,11 +62,11 @@ const columns = (handleEdit, handleDelete) => [
                     color: 'white',
                     border: 'none',
                 }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-                 <Button style={{
+                <Button style={{
                     backgroundColor: '#80C4E9',
                     color: 'white',
                     border: 'none',
-                }} danger onClick={() => handleDe(record.id)}>...</Button>
+                }} danger onClick={() => handleDetail(record)}>...</Button>
             </Space>
         ),
     },
@@ -215,12 +215,15 @@ const VoucherList = () => {
     };
 
     const handleAdd = () => {
+        setIsDeatil(false)
+        setIsEdit(false)
         setEditingVoucher(null);
         setIsModalOpen(true);
     };
 
     const handleEdit = (record) => {
         setEditingVoucher(record);
+        setIsEdit(true)
         setIsModalOpen(true);
         form.setFieldsValue({
             ...record,
@@ -238,7 +241,34 @@ const VoucherList = () => {
             message.error('Lỗi khi xóa phiếu giảm giá!');
         }
     };
+    const [isDetail, setIsDeatil] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+
+
+    const handleDetail = (record) => {
+        setIsDeatil(true)
+        setIsEdit(false)
+        setEditingVoucher(record);
+        setIsModalOpen(true);
+        form.setFieldsValue({
+            ...record,
+            startDate: moment(record.startDate),  // Use moment for startDate
+            endDate: moment(record.endDate)       // Use moment for endDate
+        });
+        // try {
+        //     const response = await axios.get(`${baseUrl}/api/admin/voucher/detail/${id}`);
+        //     setDetailVoucher(response.data);  // Lưu thông tin chi tiết
+        //     setIsDetailModalOpen(true);  // Mở modal chi tiết
+        // } catch (error) {
+        //     message.error('Lỗi khi lấy chi tiết phiếu giảm giá!');
+        // }
+    };
+
     const handleOk = async () => {
+        if(isDetail) {
+            setIsModalOpen(false);
+            return
+        }
         try {
             const values = form.getFieldsValue();
             if (editingVoucher) {
@@ -290,9 +320,9 @@ const VoucherList = () => {
                 }}>
                     Thêm mới
                 </Button>
-                
+
                 <Table
-                    columns={columns(handleEdit, handleDelete)}
+                    columns={columns(handleEdit, handleDelete, handleDetail)}
                     dataSource={voucherData}
                     rowKey="id"
                     pagination={{
@@ -304,8 +334,8 @@ const VoucherList = () => {
 
                 />
                 <Modal
-                    title={editingVoucher ? 'Chỉnh sửa phiếu giảm giá' : 'Thêm mới phiếu giảm giá'}
-                    visible={isModalOpen}
+                    title={isEdit ? 'Chỉnh sửa phiếu giảm giá' : (isDetail ? "Chi tiết"  : 'Thêm mới phiếu giảm giá')}
+                    open={isModalOpen}
                     onOk={handleOk}
                     onCancel={handleCancel}
                     okText="Xác nhận"
@@ -330,13 +360,10 @@ const VoucherList = () => {
 
                 >
                     <Form form={form} layout="vertical" style={{ font: 'poppins' }}>
-                        <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
+                            <Input disabled={isDetail} />
                         </Form.Item>
-                        <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
+                        <Form.Item name="voucherType" label="Tên đợt giảm giá" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
                         <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
@@ -356,6 +383,36 @@ const VoucherList = () => {
                         </Form.Item>
                     </Form>
                 </Modal>
+
+                {/* <Modal
+                    title="Chi tiết phiếu giảm giá"
+                    open={isDetailModalOpen}
+                    onCancel={() => setIsDetailModalOpen(false)}
+                    footer={null}
+                >
+                    {detailVoucher && (
+                        <Form layout="vertical">
+                            <Form.Item label="Mã phiếu giảm giá">
+                                <Input value={detailVoucher.voucherCode} readOnly />
+                            </Form.Item>
+                            <Form.Item label="Loại phiếu giảm giá">
+                                <Input value={detailVoucher.voucherType} readOnly />
+                            </Form.Item>
+                            <Form.Item label="Giá trị giảm giá (%)">
+                                <Input value={detailVoucher.discountValue} readOnly />
+                            </Form.Item>
+                            <Form.Item label="Ngày bắt đầu">
+                                <Input value={moment(detailVoucher.startDate).format('DD/MM/YYYY')} readOnly />
+                            </Form.Item>
+                            <Form.Item label="Ngày kết thúc">
+                                <Input value={moment(detailVoucher.endDate).format('DD/MM/YYYY')} readOnly />
+                            </Form.Item>
+                            <Form.Item label="Trạng thái">
+                                <Input value={detailVoucher.status} readOnly />
+                            </Form.Item>
+                        </Form>
+                    )}
+                </Modal> */}
             </Card>
         </>
 

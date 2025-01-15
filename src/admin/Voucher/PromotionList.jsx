@@ -67,12 +67,12 @@ const columns = (handleEdit, handleDelete) => [
                     backgroundColor: '#80C4E9',
                     color: 'white',
                     border: 'none',
-                }}  onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
+                }} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
                 <Button style={{
                     backgroundColor: '#80C4E9',
                     color: 'white',
                     border: 'none',
-                }}  danger onClick={() => handleDelete(record.id)}>Xóa</Button>
+                }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
     },
@@ -182,113 +182,113 @@ const AdvancedSearchForm = ({ onSearch }) => {
 
 const PromotionList = () => {
     const [promotionData, setPromotionData] = useState([]);
-const [isModalOpen, setIsModalOpen] = useState(false);
-const [form] = Form.useForm();
-const [editingPromotion, setEditingPromotion] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [editingPromotion, setEditingPromotion] = useState(null);
 
-const [pagination, setPagination] = useState({
-    page: 0,
-    size: 1,
-    total: 7
-});
-
-// Hàm phân trang
-function handleOnChangeTable(paginationTable) {
-    setPagination({
-        ...pagination,
-        page: paginationTable.current - 1, // Trang hiện tại
-        size: paginationTable.pageSize, // Số mục mỗi trang
+    const [pagination, setPagination] = useState({
+        page: 0,
+        size: 1,
+        total: 7
     });
-}
 
-// Hàm khi ấn nút "Thêm"
-const handleAdd = () => {
-    setEditingPromotion(null);
-    setIsModalOpen(true);
-};
-
-// Hàm khi ấn nút "Chỉnh sửa"
-const handleEdit = (record) => {
-    setEditingPromotion(record);
-    setIsModalOpen(true);
-    form.setFieldsValue({
-        ...record,
-        startDate: moment(record.startDate), // Sử dụng moment cho startDate
-        endDate: moment(record.endDate) // Sử dụng moment cho endDate
-    });
-};
-
-// Hàm khi ấn nút "Xóa"
-const handleDelete = async (id) => {
-    try {
-        await axios.delete(`${baseUrl}/api/admin/promotion/delete/${id}`);
-        message.success('Xóa đợt giảm giá thành công!');
-    } catch (error) {
-        message.error('Lỗi khi xóa đợt giảm giá!');
+    // Hàm phân trang
+    function handleOnChangeTable(paginationTable) {
+        setPagination({
+            ...pagination,
+            page: paginationTable.current - 1, // Trang hiện tại
+            size: paginationTable.pageSize, // Số mục mỗi trang
+        });
     }
-};
 
-// Hàm khi ấn nút "OK" trong Modal
-const handleOk = async () => {
-    try {
-        const values = form.getFieldsValue();
-        if (editingPromotion) {
-            // Cập nhật dữ liệu
-            await axios.put(`${baseUrl}/api/admin/promotion/update/${editingPromotion.id}`, values);
-            message.success('Cập nhật đợt giảm giá thành công!');
-        } else {
-            // Thêm mới
-            await axios.post(`${baseUrl}/api/admin/promotion/add`, values);
-            message.success('Thêm mới phiếu giảm giá thành công!');
-        }
-        getPagePromotion();
-        setIsModalOpen(false);
-        form.resetFields();
-    } catch (error) {
-        message.error('Lỗi khi lưu trữ liệu!');
-    }
-};
-
-// Hàm khi ấn nút "Hủy" trong Modal
-const handleCancel = () => {
-    setIsModalOpen(false);
-    form.resetFields();
-};
-
-// Hàm lấy dữ liệu phân trang
-useEffect(() => {
-    getPagePromotion();
-}, [pagination]);
-
-// Hàm lấy trang dữ liệu khuyến mãi
-const getPagePromotion = async () => {
-    const response = await axios.get(`${baseUrl}/api/admin/promotion/page?page=${pagination.page}&size=${pagination.size}`);
-    const data = response.data.data;
-    const items = data.content.map((el) => {
-        el.startDate = new Date(el.startDate);
-        el.endDate = new Date(el.endDate);
-        return el;
-    });
-    setPromotionData(items);
-
-    // Cập nhật pagination nếu có thay đổi trong dữ liệu
-    const newPagination = {
-        page: data.number,
-        size: data.size,
-        total: data.totalElements
+    // Hàm khi ấn nút "Thêm"
+    const handleAdd = () => {
+        setEditingPromotion(null);
+        setIsModalOpen(true);
     };
 
-    console.log("new ", newPagination);
+    // Hàm khi ấn nút "Chỉnh sửa"
+    const handleEdit = (record) => {
+        setEditingPromotion(record);
+        setIsModalOpen(true);
+        form.setFieldsValue({
+            ...record,
+            startDate: moment(record.startDate), // Sử dụng moment cho startDate
+            endDate: moment(record.endDate) // Sử dụng moment cho endDate
+        });
+    };
 
-    // Kiểm tra xem pagination có thay đổi hay không trước khi set lại
-    if (
-        pagination.page !== newPagination.page ||
-        pagination.size !== newPagination.size ||
-        pagination.total !== newPagination.total
-    ) {
-        setPagination(newPagination);
-    }
-};
+    // Hàm khi ấn nút "Xóa"
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`${baseUrl}/api/admin/promotion/delete/${id}`);
+            message.success('Xóa đợt giảm giá thành công!');
+        } catch (error) {
+            message.error('Lỗi khi xóa đợt giảm giá!');
+        }
+    };
+
+    // Hàm khi ấn nút "OK" trong Modal
+    const handleOk = async () => {
+        try {
+            const values = form.getFieldsValue();
+            if (editingPromotion) {
+                // Cập nhật dữ liệu
+                await axios.put(`${baseUrl}/api/admin/promotion/update/${editingPromotion.id}`, values);
+                message.success('Cập nhật đợt giảm giá thành công!');
+            } else {
+                // Thêm mới
+                await axios.post(`${baseUrl}/api/admin/promotion/add`, values);
+                message.success('Thêm mới phiếu giảm giá thành công!');
+            }
+            getPagePromotion();
+            setIsModalOpen(false);
+            form.resetFields();
+        } catch (error) {
+            message.error('Lỗi khi lưu trữ liệu!');
+        }
+    };
+
+    // Hàm khi ấn nút "Hủy" trong Modal
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        form.resetFields();
+    };
+
+    // Hàm lấy dữ liệu phân trang
+    useEffect(() => {
+        getPagePromotion();
+    }, [pagination]);
+
+    // Hàm lấy trang dữ liệu khuyến mãi
+    const getPagePromotion = async () => {
+        const response = await axios.get(`${baseUrl}/api/admin/promotion/page?page=${pagination.page}&size=${pagination.size}`);
+        const data = response.data.data;
+        const items = data.content.map((el) => {
+            el.startDate = new Date(el.startDate);
+            el.endDate = new Date(el.endDate);
+            return el;
+        });
+        setPromotionData(items);
+
+        // Cập nhật pagination nếu có thay đổi trong dữ liệu
+        const newPagination = {
+            page: data.number,
+            size: data.size,
+            total: data.totalElements
+        };
+
+        console.log("new ", newPagination);
+
+        // Kiểm tra xem pagination có thay đổi hay không trước khi set lại
+        if (
+            pagination.page !== newPagination.page ||
+            pagination.size !== newPagination.size ||
+            pagination.total !== newPagination.total
+        ) {
+            setPagination(newPagination);
+        }
+    };
 
 
     // MÃ THÊM: Xử lý tìm kiếm
@@ -305,16 +305,16 @@ const getPagePromotion = async () => {
             <h4 style={{ paddingTop: '15px' }}>Danh sách đợt giảm giá</h4>
 
             <Card>
-                <Link to={"/admin/promotion/add" } >
-                 <Button type="primary"  style={{
-                    marginBottom: '20px', backgroundColor: '#80C4E9',
-                    color: 'white',
-                    border: 'none',
-                }}>
-                    Thêm mới
-                </Button>
+                <Link to={"/admin/promotion/add"} >
+                    <Button type="primary" style={{
+                        marginBottom: '20px', backgroundColor: '#80C4E9',
+                        color: 'white',
+                        border: 'none',
+                    }}>
+                        Thêm mới
+                    </Button>
                 </Link>
-               
+
 
 
                 <Table columns={columns(handleEdit, handleDelete)} dataSource={promotionData} rowKey="id"
