@@ -21,7 +21,7 @@ import Sole from "../admin/product/sole.jsx";
 import Size from "../admin/product/Size.jsx";
 import Material from "../admin/product/Material.jsx";
 import Color from "../admin/product/Color.jsx";
-import Category from "../admin/product/Category.jsx";
+import Category from "../admin/product/Brand/Brand.jsx";
 
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
