@@ -7,7 +7,7 @@
 // const { Option } = Select;
 // const { RangePicker } = DatePicker;
 
-// const App = () => {
+// const Staff = () => {
 //     const [searchText, setSearchText] = useState('');
 //     const [status, setStatus] = useState('Tất cả');
 //     const [dobRange, setDobRange] = useState([]);
@@ -23,7 +23,7 @@
 //     }, []);
 
 //     const fetchData = () => {
-//         axios.get('http://localhost:8080/api/khachhang/hienthi')
+//         axios.get('http://localhost:8080/api/admin/staff/hienthi')
 //             .then((response) => {
 //                 const fetchedData = response.data.map((item, index) => ({
 //                     key: index + 1,
@@ -71,19 +71,19 @@
 //     const handleDelete = (record) => {
 //         Modal.confirm({
 //             title: 'Xác nhận xóa',
-//             content: 'Bạn có chắc chắn muốn xóa khách hàng này?',
+//             content: 'Bạn có chắc chắn muốn xóa nhân viên này?',
 //             okText: 'Xóa',
 //             okType: 'danger',
 //             cancelText: 'Hủy',
 //             onOk() {
-//                 axios.delete(`http://localhost:8080/api/khachhang/delete/${record.id}`)
+//                 axios.delete(`http://localhost:8080/api/admin/staff/delete/${record.id}`)
 //                     .then(() => {
-//                         message.success('Xóa khách hàng thành công!');
+//                         message.success('Xóa nhân viên thành công!');
 //                         fetchData();
 //                     })
 //                     .catch((error) => {
-//                         console.error('Error deleting customer:', error);
-//                         message.error('Xóa khách hàng thất bại!');
+//                         console.error('Error deleting staff:', error);
+//                         message.error('Xóa nhân viên thất bại!');
 //                     });
 //             }
 //         });
@@ -98,7 +98,7 @@
 //             form.setFieldsValue({
 //                 ...record,
 //                 fullName: record.fullName,
-//                 CitizenId: record.CitizenId,
+//                 CitizenId: record.citizenId,
 //                 phoneNumber: record.phoneNumber,
 //                 email: record.email,
 //                 gender: record.gender,
@@ -130,7 +130,7 @@
 //                     formData.append('file', fileList[0].originFileObj);
 
 //                     try {
-//                         const uploadRes = await axios.post('http://localhost:8080/api/khachhang/add', formData, {
+//                         const uploadRes = await axios.post('http://localhost:8080/api/admin/staff/add', formData, {
 //                             headers: {
 //                                 'Content-Type': 'multipart/form-data'
 //                             }
@@ -156,26 +156,26 @@
 //                 };
 
 //                 if (selectedRecord) {
-//                     axios.put(`http://localhost:8080/api/khachhang/update/${selectedRecord.id}`, newData)
+//                     axios.put(`http://localhost:8080/api/admin/staff/update/${selectedRecord.id}`, newData)
 //                         .then(() => {
-//                             message.success('Cập nhật khách hàng thành công!');
+//                             message.success('Cập nhật nhân viên thành công!');
 //                             fetchData();
 //                             setIsModalVisible(false);
 //                         })
 //                         .catch((error) => {
-//                             console.error('Error updating customer:', error);
-//                             message.error('Cập nhật khách hàng thất bại!');
+//                             console.error('Error updating staff:', error);
+//                             message.error('Cập nhật nhân viên thất bại!');
 //                         });
 //                 } else {
-//                     axios.post('http://localhost:8080/api/khachhang/add', newData)
+//                     axios.post('http://localhost:8080/api/admin/staff/add', newData)
 //                         .then(() => {
-//                             message.success('Thêm khách hàng thành công!');
+//                             message.success('Thêm nhân viên thành công!');
 //                             fetchData();
 //                             setIsModalVisible(false);
 //                         })
 //                         .catch((error) => {
-//                             console.error('Error adding customer:', error);
-//                             message.error('Thêm khách hàng thất bại!');
+//                             console.error('Error adding staff:', error);
+//                             message.error('Thêm nhân viên thất bại!');
 //                         });
 //                 }
 //             })
@@ -243,7 +243,6 @@
 //             dataIndex: 'email',
 //             key: 'email',
 //         },
-     
 //         {
 //             title: 'Trạng Thái',
 //             dataIndex: 'status',
@@ -253,12 +252,10 @@
 //                     type={text === 'Kích hoạt' ? 'primary' : 'default'}
 //                     disabled
 //                     style={{
-//                         borderRadius: '20px',
-//                         padding: '6px 12px',
+//                         borderRadius: '20px', 
+//                         padding: '6px 12px', 
 //                         textAlign: 'center',
 //                         fontWeight: 'bold',
-//                         backgroundColor: text === 'Kích hoạt' ? '#4CAF50' : '#f44336',
-//                         color: 'white'
 //                     }}
 //                 >
 //                     {text}
@@ -274,7 +271,7 @@
 //                         type="primary"
 //                         icon={<EditOutlined />}
 //                         onClick={() => showModal(record)}
-//                         style={{ borderRadius: '20px', backgroundColor: '#1890ff', color: 'white' }}
+//                         style={{ borderRadius: '20px' }}
 //                     />
 //                     <Button
 //                         type="danger"
@@ -288,41 +285,37 @@
 //     ];
 
 //     return (
-//         <div style={{ padding: '20px' }}>
-//             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Quản lý tài khoản khách hàng</h2>
+//         <div>
+//             <h2>Quản lý nhân viên</h2>
 
-//             <Card style={{ padding: '20px', borderRadius: '10px' }}>
-//                 <h3 style={{ marginBottom: '15px', fontWeight: 'bold' }}>Bộ lọc</h3>
+//             <Card style={{ padding: '20px' }}>
+//                 <h3>Bộ lọc</h3>
 //                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-//                     <label style={{ marginRight: '10px', fontWeight: '500' }}>Tìm kiếm:</label>
+//                     <label style={{ marginRight: '10px' }}>Tìm kiếm:</label>
 //                     <Input
 //                         placeholder="Tìm kiếm tên và sdt..."
 //                         value={searchText}
 //                         onChange={(e) => setSearchText(e.target.value)}
-//                         style={{ width: '250px', marginRight: '20px', borderRadius: '10px' }}
+//                         style={{ width: '250px', marginRight: '20px' }}
 //                     />
 
-//                     <label style={{ marginRight: '10px', fontWeight: '500' }}>Ngày sinh:</label>
+//                     <label style={{ marginRight: '10px' }}>Ngày sinh:</label>
 //                     <RangePicker
 //                         format="YYYY-MM-DD HH:mm:ss"
 //                         showTime
 //                         value={dobRange}
 //                         onChange={(dates) => setDobRange(dates)}
-//                         style={{ marginRight: '20px', borderRadius: '10px' }}
+//                         style={{ marginRight: '20px' }}
 //                     />
 //                 </div>
 //                 <div style={{ display: 'flex', alignItems: 'center' }}>
-//                     <label style={{ marginRight: '10px', fontWeight: '500' }}>Trạng thái:</label>
-//                     <Select
-//                         value={status}
-//                         onChange={(value) => setStatus(value)}
-//                         style={{ width: '250px', marginRight: "20px", borderRadius: '10px' }}
-//                     >
+//                     <label style={{ marginRight: '10px' }}>Trạng thái:</label>
+//                     <Select value={status} onChange={(value) => setStatus(value)} style={{ width: '250px', marginRight: "20px" }}>
 //                         <Option value="Kích hoạt">Kích hoạt</Option>
 //                         <Option value="Khóa">Khóa</Option>
 //                     </Select>
 
-//                     <label style={{ marginRight: '10px', fontWeight: '500' }}>Khoảng tuổi:</label>
+//                     <label style={{ marginRight: '10px' }}>Khoảng tuổi:</label>
 //                     <Slider
 //                         range
 //                         min={0}
@@ -333,27 +326,27 @@
 //                     />
 //                 </div>
 //                 <div style={{ marginTop: '20px' }}>
-//                     <Button
-//                         type="primary"
-//                         icon={<SearchOutlined />}
-//                         onClick={handleSearch}
+//                     <Button 
+//                         type="primary" 
+//                         icon={<SearchOutlined />} 
+//                         onClick={handleSearch} 
 //                         style={{ marginRight: "10px", borderRadius: '20px' }}
 //                     >
 //                         Tìm kiếm
 //                     </Button>
-//                     <Button
-//                         type="default"
-//                         icon={<ReloadOutlined />}
-//                         onClick={handleReset}
+//                     <Button 
+//                         type="default" 
+//                         icon={<ReloadOutlined />} 
+//                         onClick={handleReset} 
 //                         style={{ marginRight: "10px", borderRadius: '20px' }}
 //                     >
 //                         Làm mới bộ lọc
 //                     </Button>
-//                     <Button
-//                         type="primary"
-//                         icon={<PlusOutlined />}
-//                         onClick={() => showModal()}
-//                         style={{ borderRadius: '20px', backgroundColor: '#4CAF50', color: 'white' }}
+//                     <Button 
+//                         type="primary" 
+//                         icon={<PlusOutlined />} 
+//                         onClick={() => showModal()} 
+//                         style={{ borderRadius: '20px' }}
 //                     >
 //                         Thêm mới
 //                     </Button>
@@ -363,18 +356,13 @@
 //             <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
 
 //             <Modal
-//                 title={selectedRecord ? 'Chỉnh sửa khách hàng' : 'Thêm mới khách hàng'}
+//                 title={selectedRecord ? 'Chỉnh sửa nhân viên' : 'Thêm mới nhân viên'}
 //                 visible={isModalVisible}
 //                 onOk={handleOk}
 //                 onCancel={handleCancel}
 //                 okText="Lưu"
 //                 cancelText="Hủy"
 //                 width={600}
-//                 style={{
-//                     borderRadius: '10px',
-//                     backgroundColor: '#f4f6f9',
-//                     boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-//                 }}
 //             >
 //                 <Form form={form} layout="vertical">
 //                     <Form.Item
@@ -463,7 +451,7 @@
 //     );
 // };
 
-// export default App;
+// export default Staff;
 
 
 
@@ -476,14 +464,14 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Input, Select, DatePicker, Slider, Button, Table, Modal, Form, Space, message, Upload, Card, Row, Col } from 'antd';
+import { Input, Select, DatePicker, Slider, Button, Table, Modal, Form, Space, message, Upload, Card } from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckOutlined, EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const App = () => {
+const Staff = () => {
     const [searchText, setSearchText] = useState('');
     const [status, setStatus] = useState('Tất cả');
     const [dobRange, setDobRange] = useState([]);
@@ -493,110 +481,31 @@ const App = () => {
     const [data, setData] = useState([]);
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);  // State for uploaded file
-    const [provinces, setProvinces] = useState([]); // Tỉnh
-    const [districts, setDistricts] = useState([]); // Quận/Huyện
-    const [wards, setWards] = useState([]); // Xã/Phường
-    const [selectedProvince, setSelectedProvince] = useState(null); // Province ID
-    const [selectedDistrict, setSelectedDistrict] = useState(null); // District ID
-    const [selectedWard, setSelectedWard] = useState(null); // Ward ID
-    const [specificAddress, setSpecificAddress] = useState(''); // House Number/Input
 
     useEffect(() => {
         fetchData();
-        fetchProvinces();
     }, []);
 
     const fetchData = () => {
-        axios.get('http://localhost:8080/api/khachhang/hienthi')
+        axios.get('http://localhost:8080/api/admin/staff/hienthi')
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
-                    id: item.id, // Add id for update/delete
+                    id: item.id, 
                     avatar: item.avatar,
                     fullName: item.fullName,
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
-                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),  // Adjusted format to include time
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),  
                     status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
                     email: item.email,
                     gender: item.gender,
-                    address:item.address
                 }));
                 setData(fetchedData);
             })
             .catch((error) => console.error('Error fetching data:', error));
     };
 
-    const fetchProvinces = () => {
-        axios.get('https://provinces.open-api.vn/api/p/')
-            .then(response => {
-                setProvinces(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching provinces:', error);
-            });
-    };
-
-    const fetchDistricts = (provinceCode) => {
-      if (!provinceCode) return;
-        axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}/?depth=2`)
-            .then(response => {
-                setDistricts(response.data.districts);
-            })
-            .catch(error => {
-                console.error('Error fetching districts:', error);
-            });
-    };
-
-    const fetchWards = (districtCode) => {
-      if (!districtCode) return;
-        axios.get(`https://provinces.open-api.vn/api/d/${districtCode}/?depth=2`)
-            .then(response => {
-                setWards(response.data.wards);
-            })
-            .catch(error => {
-                console.error('Error fetching wards:', error);
-            });
-    };
-
-    const handleProvinceChange = (value) => {
-        setSelectedProvince(value);
-        setDistricts([]);
-        setSelectedDistrict(null);
-        setWards([]);
-        setSelectedWard(null);
-        fetchDistricts(value);
-    };
-
-    const handleDistrictChange = (value) => {
-        setSelectedDistrict(value);
-        setWards([]);
-        setSelectedWard(null);
-        fetchWards(value);
-    };
-
-    const handleWardChange = (value) => {
-        setSelectedWard(value);
-    };
-    const handleSpecificAddressChange = (e) => {
-        setSpecificAddress(e.target.value);
-    };
-
-    const handleAddressChange = (province, district, ward, specific) => {
-        setSelectedProvince(province);
-        setSelectedDistrict(district);
-        setSelectedWard(ward);
-        setSpecificAddress(specific);
-      
-        // Fetch districts and wards when province/district changes
-        if (province) {
-            fetchDistricts(province);
-        }
-        if (district) {
-            fetchWards(district);
-        }
-    };
-    
     const handleSearch = () => {
         const filtered = data.filter((item) => {
             const nameMatch = item.fullName.toLowerCase().includes(searchText.toLowerCase());
@@ -604,7 +513,7 @@ const App = () => {
 
             const statusMatch = status === 'Tất cả' || item.status === status;
 
-            const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');  // Handle the full datetime format
+            const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');  
             const dobFromMatch = !dobRange[0] || dob.isSameOrAfter(dobRange[0], 'minute');
             const dobToMatch = !dobRange[1] || dob.isSameOrBefore(dobRange[1], 'minute');
 
@@ -612,7 +521,7 @@ const App = () => {
             const ageMatch = age >= ageRange[0] && age <= ageRange[1];
             return (nameMatch || phoneMatch) && statusMatch && dobFromMatch && dobToMatch && ageMatch;
         });
-        setData(filtered); // Update data state with the filtered results
+        setData(filtered); 
     };
 
     const handleReset = () => {
@@ -626,19 +535,19 @@ const App = () => {
     const handleDelete = (record) => {
         Modal.confirm({
             title: 'Xác nhận xóa',
-            content: 'Bạn có chắc chắn muốn xóa khách hàng này?',
+            content: 'Bạn có chắc chắn muốn xóa nhân viên này?',
             okText: 'Xóa',
             okType: 'danger',
             cancelText: 'Hủy',
             onOk() {
-                axios.delete(`http://localhost:8080/api/khachhang/delete/${record.id}`)
+                axios.delete(`http://localhost:8080/api/admin/staff/delete/${record.id}`)
                     .then(() => {
-                        message.success('Xóa khách hàng thành công!');
+                        message.success('Xóa nhân viên thành công!');
                         fetchData();
                     })
                     .catch((error) => {
-                        console.error('Error deleting customer:', error);
-                        message.error('Xóa khách hàng thất bại!');
+                        console.error('Error deleting staff:', error);
+                        message.error('Xóa nhân viên thất bại!');
                     });
             }
         });
@@ -647,50 +556,19 @@ const App = () => {
     const showModal = (record = null) => {
         setSelectedRecord(record);
         form.resetFields();
-        setFileList([]); // Reset file list when opening modal
-        setDistricts([]);
-        setWards([]);
+        setFileList([]); 
 
         if (record) {
-            const addressParts = record.address ? record.address.split(', ') : [];
-            let specific = '';
-            let provinceName = '';
-            let districtName = '';
-            let wardName = '';
-            if(addressParts.length === 4){
-                 specific = addressParts[0] || '';
-                 wardName = addressParts[1] || '';
-                 districtName = addressParts[2] || '';
-                 provinceName = addressParts[3] || '';
-            } else if(addressParts.length === 3){
-                wardName = addressParts[0] || '';
-                districtName = addressParts[1] || '';
-                provinceName = addressParts[2] || '';
-            }
-          
-            const province = provinces.find(p => p.name === provinceName);
-            const provinceCode = province ? province.code : null;
-            const district = districts.find(d => d.name === districtName);
-            const districtCode = district ? district.code : null;
-
-            setSelectedProvince(provinceCode);
-            fetchDistricts(provinceCode);
-            setSelectedDistrict(districtCode);
-            fetchWards(districtCode)
-            setSpecificAddress(specific);
-
-
             form.setFieldsValue({
                 ...record,
                 fullName: record.fullName,
-                CitizenId: record.CitizenId,
+                CitizenId: record.citizenId,
                 phoneNumber: record.phoneNumber,
                 email: record.email,
                 gender: record.gender,
-                dateBirth: moment(record.dateBirth, 'YYYY-MM-DD HH:mm:ss'),  // Handle datetime format
+                dateBirth: moment(record.dateBirth, 'YYYY-MM-DD HH:mm:ss'),
                 status: record.status === 'Kích hoạt' ? 1 : 0,
             });
-
 
             if (record.avatar) {
                 setFileList([{
@@ -700,97 +578,72 @@ const App = () => {
                     url: record.avatar,
                 }]);
             }
-        } else {
-            setSelectedProvince(null);
-            setSelectedDistrict(null);
-            setSelectedWard(null);
-            setSpecificAddress('');
         }
         setIsModalVisible(true);
     };
 
     const handleOk = () => {
-      form.validateFields()
-      .then(async (values) => {
-          let avatarUrl = selectedRecord && selectedRecord.avatar ? selectedRecord.avatar : ''; // Keep existing avatar if not changed
-          // Handle file upload (if a new file is selected)
-          if (fileList.length > 0 && fileList[0].originFileObj) {
-              const formData = new FormData();
-              formData.append('file', fileList[0].originFileObj);
+        form.validateFields()
+            .then(async (values) => {
 
-              try {
-                  const uploadRes = await axios.post('http://localhost:8080/api/khachhang/upload', formData, {
-                      headers: {
-                          'Content-Type': 'multipart/form-data'
-                      }
-                  });
-                  avatarUrl = uploadRes.data;
-              } catch (uploadError) {
-                  console.error('Error uploading image:', uploadError);
-                  message.error('Lỗi tải ảnh lên!');
-                  return;
-              }
-          }
+                let avatarUrl = selectedRecord && selectedRecord.avatar ? selectedRecord.avatar : ''; 
 
-            let fullAddress = specificAddress;
+                if (fileList.length > 0 && fileList[0].originFileObj) {
+                    const formData = new FormData();
+                    formData.append('file', fileList[0].originFileObj);
 
-            if(selectedWard){
-                const selectedWardName = wards.find(w => w.code === selectedWard)?.name;
-                fullAddress += `, ${selectedWardName}`;
-            }
+                    try {
+                        const uploadRes = await axios.post('http://localhost:8080/api/admin/staff/add', formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        });
+                        avatarUrl = uploadRes.data;
+                    } catch (uploadError) {
+                        console.error('Error uploading image:', uploadError);
+                        message.error('Lỗi tải ảnh lên!');
+                        return;
+                    }
+                }
 
-            if(selectedDistrict){
-                const selectedDistrictName = districts.find(d => d.code === selectedDistrict)?.name;
-                fullAddress += `, ${selectedDistrictName}`;
-            }
+                const newData = {
+                    fullName: values.fullName, 
+                    citizenId: values.CitizenId, 
+                    phoneNumber: values.phoneNumber, 
+                    email: values.email, 
+                    gender: values.gender,
+                    dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'), 
+                    status: values.status,
+                    avatar: avatarUrl, 
+                };
 
-            if(selectedProvince){
-                const selectedProvinceName = provinces.find(p => p.code === selectedProvince)?.name;
-                fullAddress += `, ${selectedProvinceName}`;
-            }
-
-
-          const newData = {
-              fullName: values.fullName,
-              citizenId: values.CitizenId,
-              phoneNumber: values.phoneNumber,
-              email: values.email,
-              gender: values.gender,
-              dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
-              status: values.status,
-              avatar: avatarUrl,
-              address: fullAddress, // Combine address parts
-          };
-
-          if (selectedRecord) {
-              // Update
-              axios.put(`http://localhost:8080/api/khachhang/update/${selectedRecord.id}`, newData)
-                  .then(() => {
-                      message.success('Cập nhật khách hàng thành công!');
-                      fetchData();
-                      setIsModalVisible(false);
-                  })
-                  .catch((error) => {
-                      console.error('Error updating customer:', error);
-                      message.error('Cập nhật khách hàng thất bại!');
-                  });
-          } else {
-              // Create
-              axios.post('http://localhost:8080/api/khachhang/add', newData)
-                  .then(() => {
-                      message.success('Thêm khách hàng thành công!');
-                      fetchData();
-                      setIsModalVisible(false);
-                  })
-                  .catch((error) => {
-                      console.error('Error adding customer:', error);
-                      message.error('Thêm khách hàng thất bại!');
-                  });
-          }
-      })
-      .catch((info) => {
-          console.log('Validate Failed:', info);
-      });
+                if (selectedRecord) {
+                    axios.put(`http://localhost:8080/api/admin/staff/update/${selectedRecord.id}`, newData)
+                        .then(() => {
+                            message.success('Cập nhật nhân viên thành công!');
+                            fetchData();
+                            setIsModalVisible(false);
+                        })
+                        .catch((error) => {
+                            console.error('Error updating staff:', error);
+                            message.error('Cập nhật nhân viên thất bại!');
+                        });
+                } else {
+                    axios.post('http://localhost:8080/api/admin/staff/add', newData)
+                        .then(() => {
+                            message.success('Thêm nhân viên thành công!');
+                            fetchData();
+                            setIsModalVisible(false);
+                        })
+                        .catch((error) => {
+                            console.error('Error adding staff:', error);
+                            message.error('Thêm nhân viên thất bại!');
+                        });
+                }
+            })
+            .catch((info) => {
+                console.log('Validate Failed:', info);
+            });
     };
 
     const handleCancel = () => {
@@ -852,8 +705,6 @@ const App = () => {
             dataIndex: 'email',
             key: 'email',
         },
-      
-
         {
             title: 'Trạng Thái',
             dataIndex: 'status',
@@ -863,11 +714,11 @@ const App = () => {
                     type={text === 'Kích hoạt' ? 'primary' : 'default'}
                     disabled
                     style={{
-                        borderRadius: '20px',
-                        padding: '6px 12px',
+                        borderRadius: '20px', 
+                        padding: '6px 12px', 
                         textAlign: 'center',
                         fontWeight: 'bold',
-                        backgroundColor: text === 'Kích hoạt' ? '#4CAF50' : '#f44336',
+                        backgroundColor: text === 'Kích hoạt' ? '#52c41a' : '#f5222d',
                         color: 'white'
                     }}
                 >
@@ -884,13 +735,13 @@ const App = () => {
                         type="primary"
                         icon={<EditOutlined />}
                         onClick={() => showModal(record)}
-                        style={{ borderRadius: '20px', backgroundColor: '#1890ff', color: 'white' }}
+                        style={{ borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
                     />
                     <Button
                         type="danger"
                         icon={<DeleteOutlined />}
                         onClick={() => handleDelete(record)}
-                        style={{ borderRadius: '20px' }}
+                        style={{ borderRadius: '20px', backgroundColor: '#f5222d', borderColor: '#f5222d' }}
                     />
                 </Space>
             ),
@@ -898,41 +749,37 @@ const App = () => {
     ];
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Quản lý tài khoản khách hàng</h2>
+        <div>
+            <h2 style={{ color: '#1890ff' }}>Quản lý nhân viên</h2>
 
-            <Card style={{ padding: '20px', borderRadius: '10px' }}>
-                <h3 style={{ marginBottom: '15px', fontWeight: 'bold' }}>Bộ lọc</h3>
+            <Card style={{ padding: '20px', backgroundColor: '#f7f7f7', borderRadius: '8px' }}>
+                <h3 style={{ color: '#1890ff' }}>Bộ lọc</h3>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Tìm kiếm:</label>
+                    <label style={{ marginRight: '10px' }}>Tìm kiếm:</label>
                     <Input
                         placeholder="Tìm kiếm tên và sdt..."
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        style={{ width: '250px', marginRight: '20px', borderRadius: '10px' }}
+                        style={{ width: '250px', marginRight: '20px' }}
                     />
 
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Ngày sinh:</label>
+                    <label style={{ marginRight: '10px' }}>Ngày sinh:</label>
                     <RangePicker
                         format="YYYY-MM-DD HH:mm:ss"
                         showTime
                         value={dobRange}
                         onChange={(dates) => setDobRange(dates)}
-                        style={{ marginRight: '20px', borderRadius: '10px' }}
+                        style={{ marginRight: '20px' }}
                     />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Trạng thái:</label>
-                    <Select
-                        value={status}
-                        onChange={(value) => setStatus(value)}
-                        style={{ width: '250px', marginRight: "20px", borderRadius: '10px' }}
-                    >
+                    <label style={{ marginRight: '10px' }}>Trạng thái:</label>
+                    <Select value={status} onChange={(value) => setStatus(value)} style={{ width: '250px', marginRight: "20px" }}>
                         <Option value="Kích hoạt">Kích hoạt</Option>
                         <Option value="Khóa">Khóa</Option>
                     </Select>
 
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Khoảng tuổi:</label>
+                    <label style={{ marginRight: '10px' }}>Khoảng tuổi:</label>
                     <Slider
                         range
                         min={0}
@@ -943,27 +790,27 @@ const App = () => {
                     />
                 </div>
                 <div style={{ marginTop: '20px' }}>
-                    <Button
-                        type="primary"
-                        icon={<SearchOutlined />}
-                        onClick={handleSearch}
-                        style={{ marginRight: "10px", borderRadius: '20px' }}
+                    <Button 
+                        type="primary" 
+                        icon={<SearchOutlined />} 
+                        onClick={handleSearch} 
+                        style={{ marginRight: "10px", borderRadius: '20px', backgroundColor: '#1890ff' }}
                     >
                         Tìm kiếm
                     </Button>
-                    <Button
-                        type="default"
-                        icon={<ReloadOutlined />}
-                        onClick={handleReset}
-                        style={{ marginRight: "10px", borderRadius: '20px' }}
+                    <Button 
+                        type="default" 
+                        icon={<ReloadOutlined />} 
+                        onClick={handleReset} 
+                        style={{ marginRight: "10px", borderRadius: '20px', backgroundColor: '#f5f5f5' }}
                     >
                         Làm mới bộ lọc
                     </Button>
-                    <Button
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={() => showModal()}
-                        style={{ borderRadius: '20px', backgroundColor: '#4CAF50', color: 'white' }}
+                    <Button 
+                        type="primary" 
+                        icon={<PlusOutlined />} 
+                        onClick={() => showModal()} 
+                        style={{ borderRadius: '20px', backgroundColor: '#52c41a' }}
                     >
                         Thêm mới
                     </Button>
@@ -973,18 +820,13 @@ const App = () => {
             <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
 
             <Modal
-                title={selectedRecord ? 'Chỉnh sửa khách hàng' : 'Thêm mới khách hàng'}
+                title={selectedRecord ? 'Chỉnh sửa nhân viên' : 'Thêm mới nhân viên'}
                 visible={isModalVisible}
                 onOk={handleOk}
                 onCancel={handleCancel}
                 okText="Lưu"
                 cancelText="Hủy"
                 width={600}
-                style={{
-                    borderRadius: '10px',
-                    backgroundColor: '#f4f6f9',
-                    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-                }}
             >
                 <Form form={form} layout="vertical">
                     <Form.Item
@@ -1038,10 +880,10 @@ const App = () => {
                         rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
 
                     >
-                        <DatePicker
-                            format="YYYY-MM-DD HH:mm:ss"
-                            showTime
-                            style={{ width: '100%' }}
+                        <DatePicker 
+                            format="YYYY-MM-DD HH:mm:ss" 
+                            showTime 
+                            style={{ width: '100%' }} 
                         />
                     </Form.Item>
 
@@ -1057,95 +899,11 @@ const App = () => {
                         </Select>
                     </Form.Item>
 
-                  
-
-                    <Form.Item label="Địa chỉ">
-                        <Row gutter={16}>
-                            {/* Dropdown for Provinces */}
-                            <Col span={12} className={"mb-3"}>
-                                <Form.Item
-                                    label="Tỉnh"
-                                    labelCol={{ span: 12 }}
-                                    wrapperCol={{ span: 24 }}
-                                >
-                                    <Select
-                                        value={selectedProvince || null}
-                                        onChange={handleProvinceChange}
-                                        placeholder="Chọn tỉnh/thành phố"
-                                    >
-                                        {provinces.map(province => (
-                                            <Option key={province.code} value={province.code}>
-                                                {province.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-
-                            {/* Dropdown for Districts */}
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Huyện"
-                                    labelCol={{ span: 24 }}
-                                    wrapperCol={{ span: 24 }}
-                                >
-                                    <Select
-                                        value={selectedDistrict || null}
-                                        onChange={handleDistrictChange}
-                                        placeholder="Chọn quận/huyện"
-                                        disabled={!selectedProvince}
-                                    >
-                                        {districts.map(district => (
-                                            <Option key={district.code} value={district.code}>
-                                                {district.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-
-                            {/* Dropdown for Wards */}
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Xã"
-                                    labelCol={{ span: 24 }}
-                                    wrapperCol={{ span: 24 }}
-                                >
-                                    <Select
-                                        value={selectedWard || null}
-                                        onChange={handleWardChange}
-                                        placeholder="Chọn xã/phường"
-                                        disabled={!selectedDistrict}
-                                    >
-                                        {wards.map(ward => (
-                                            <Option key={ward.code} value={ward.code}>
-                                                {ward.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Số nhà/ngõ đường"
-                                    labelCol={{ span: 24 }}
-                                    wrapperCol={{ span: 24 }}
-                                >
-                                    <Input
-                                        value={specificAddress}
-                                        onChange={handleSpecificAddressChange}
-                                        placeholder="Ngõ/tên đường ..."
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Form.Item>
-                      <Form.Item label="Avatar">
-                        <Upload
-                            action=""
-                            fileList={fileList}
-                            onChange={handleAvatarChange}
+                    <Form.Item label="Avatar">
+                        <Upload 
+                            action="" 
+                            fileList={fileList} 
+                            onChange={handleAvatarChange} 
                             beforeUpload={beforeUpload}
                         >
                             <Button icon={<UploadOutlined />}>Tải lên ảnh</Button>
@@ -1157,4 +915,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default Staff;

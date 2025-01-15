@@ -1,0 +1,119 @@
+import { message } from "antd";
+import axios from "axios";
+
+const token = localStorage.getItem("token");
+
+const api = axios.create({
+  baseURL: "http://localhost:8080/api",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+});
+
+export const fetchSizes = async (pagination) => {
+  const { current, pageSize } = pagination;
+
+  try {
+    const response = await api.get("/size", {
+      params: { page: current, size: pageSize },
+    });
+
+    const { data, meta } = response.data;
+    return { data, total: meta?.totalElement || 0 };
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+
+export const searchNameSize = async (pagination, paramName) => {
+  const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
+  const { name } = paramName;
+  try {
+    const response = await api.get("/size/search", {
+      params: {
+        page: current,
+        size: pageSize,
+        name: name,
+      },
+    });
+
+    const { data, meta } = response.data; // Trích xuất data và meta từ response
+    return {
+      data,
+      total: meta?.totalElement || 0,
+    }; // Trả về dữ liệu và tổng số phần tử
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+
+export const createSize = async (sizeData) => {
+  try {
+    const response = await api.post("/size/add", sizeData);
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message)
+    throw error;
+  }
+};
+
+export const existsBySizeName = async (sizeName) => {
+  try {
+    const response = await api.get("size/existsbysizename", {
+      params: {
+        sizeName
+      },
+    });
+    return response.data.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+
+export const updateSize = async (sizeId, sizeData) => {
+  try {
+    const response = await api.put(`/size/update/${sizeId}`, sizeData);
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message ||
+      "Có lỗi xảy ra khi cập nhật thương hiệu.";
+    console.error(errorMessage);
+    message.error(errorMessage)
+    throw error;
+  }
+};
+
+export const deleteSize = async (sizeId) => {
+  try {
+    await api.delete(`/size/${sizeId}`);
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi xóa thương hiệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+export const getSize = async (sizeId) => {
+  try {
+    const response = await api.get(`/size/${sizeId}`);
+    return response.data; // Assuming you want to return the fetched data
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi get thương hiệu.";
+    console.error(errorMessage);
+    throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
+  }
+};
