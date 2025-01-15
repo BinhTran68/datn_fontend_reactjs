@@ -1,6 +1,6 @@
 // import React from 'react'
 import React, { useState } from 'react';
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import Button from 'react-bootstrap/Button';
 import FormRange from 'react-bootstrap/FormRange';
 import Offcanvas from 'react-bootstrap/Offcanvas';

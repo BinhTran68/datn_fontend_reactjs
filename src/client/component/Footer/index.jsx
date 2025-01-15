@@ -2,7 +2,7 @@ import React from "react";
 import stype from "../HeaderNav/HeaderNav.module.css";
 import clsx from "clsx";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import { FaLocationDot, FaSquareFacebook } from "react-icons/fa6";
 import { FaPhoneAlt } from "react-icons/fa";
 import { IoLogoYoutube, IoMail } from "react-icons/io5";

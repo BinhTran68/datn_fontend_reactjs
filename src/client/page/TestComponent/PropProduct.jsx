@@ -2,7 +2,7 @@ import React from "react";
 import style from "../TestComponent/TestComponent.module.css";
 import clsx from "clsx";
 
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCartPlus, FaLocationDot, FaSquareFacebook } from "react-icons/fa6";
 import { FaFireAlt, FaPhoneAlt } from "react-icons/fa";
 import { IoAdd, IoHeart, IoLogoYoutube, IoMail } from "react-icons/io5";
