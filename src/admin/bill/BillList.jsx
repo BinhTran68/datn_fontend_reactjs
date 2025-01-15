@@ -1,288 +1,161 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, ConfigProvider, Badge} from 'antd';
-import axios from "axios";
-import {baseUrl, convertLongTimestampToDate} from "../../helpers/Helpers.js";
-import {FiEye} from "react-icons/fi";
-import FilterComponent from "./componets/FilterComponent.jsx";
-import {Link} from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, Form } from 'antd';
+import axios from 'axios';
+import { baseUrl } from "../../helpers/Helpers.js";
+import useUrlBuilder from './hooks/useUrlBuilder';
+import { columnsBillList } from "./columns/columns.jsx";
+import { itemsTabsBillList } from "./items_tabs/ItemsTabs.jsx";
 
-const {RangePicker} = DatePicker;
+const layout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+};
 
-
-const {Search} = Input;
-
-
-const columns = [
-
-    {
-        title: 'Mã đơn hàng',
-        dataIndex: 'billCode',
-        key: 'billCode',
-    },
-    {
-        title: 'Mã',
-        dataIndex: 'billCode',
-        key: 'billCode',
-        // render: (text) => <a>{text}</a>,
-    },
-    {
-        title: 'Khách Hàng',
-        dataIndex: 'customerName',
-        key: 'customerName',
-    },
-    {
-        title: 'Số điện thoại',
-        dataIndex: 'customerPhone',
-        key: 'customerPhone',
-    },
-
-    {
-        title: 'Loại đơn hàng',
-        dataIndex: 'billType',
-        key: 'billType',
-    },
-    {
-        title: 'Trạng thái',
-        dataIndex: 'status',
-        key: 'status',
-    },
-    {
-        title: 'Ngày tạo',
-        dataIndex: 'createAt',
-        key: 'createAt',
-        render: (timestamp) => {
-            return convertLongTimestampToDate(timestamp)
-        },
-    },
-    {
-        title: 'Tổng tiền',
-        dataIndex: 'totalMoney',
-        key: 'totalMoney',
-    },
-    {
-        title: 'Hành động',
-        key: 'action',
-        render: (_, record) => (
-            <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
-                <Button
-                    type="primary"
-                    icon={<FiEye/>}
-                    onClick={() => {
-                    }}
-                >
-
-                    Chi tiết
-
-                </Button>
-            </Link>
-
-        ),
-    },
-];
-
-
-
-
-const items = [
-    {
-        key: 'all',
-        label: "Tất cả"
-
-    },
-    {
-        key: 'CHO_XAC_NHAN',
-        label: (
-            <>
-                Chờ xác nhận <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-
-    },
-    {
-        key: 'DA_XAC_NHAN',
-
-        label: (
-            <>
-                Đã xác nhận <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    },
-    {
-        key: 'CHO_VAN_CHUYEN',
-        label: (
-            <>
-                Chờ vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    },
-    {
-        key: 'DANG_VAN_CHUYEN',
-        label: (
-            <>
-                Đang vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    },
-    {
-        key: 'DA_THANH_TOAN',
-        label: (
-            <>
-                Đã thanh toán <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    },
-    {
-        key: 'DA_HOAN_THANH',
-        label: (
-            <>
-                Đã hoàn thành <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    },
-    {
-        key: 'DA_HUY',
-        label: (
-            <>
-                Đã hủy <Badge count={5} className={"mb-3 ms-1"}/>
-            </>
-        ),
-    }
-];
-
-const BillList = (factory, deps) => {
-
+const BillList = () => {
     const defaultURL = `${baseUrl}/api/admin/bill/index`;
-
     const [activeTab, setActiveTab] = useState('all');
-
     const [billsData, setBillsData] = useState([]);
-
-    const [url, setUrl] = useState(defaultURL);
-
-    const [statusBill, setStatusBill] = useState()
-
     const [pagination, setPagination] = useState({
         page: 0,
-        size: 1,
-        total: 0
-    })
+        size: 10,
+        total: 0,
+    });
+    const [searchParams, setSearchParams] = useState({
+        search: '',
+        typeBill: 'null',
+        startDate: null,
+        endDate: null,
+    });
 
-    const onSearch = (value) => {
-        console.log('Search value', value);
+    const [form] = Form.useForm();
 
-    };
-    const onChange = (key) => {
-        setActiveTab(key);
-        setStatusBill(key)
+    // Sử dụng custom hook để tạo URL
+    const url = useUrlBuilder(defaultURL, activeTab, pagination, searchParams);
+
+    useEffect(() => {
+        getBill();
+    }, [url]);
+
+    const getBill = async () => {
+        const response = await axios.get(url);
+        setBillsData(response.data.data);
+
         setPagination({
             ...pagination,
-            page: 0, // Trang hiện tại
-            size: pagination.size, // Số mục mỗi trang
+            page: response.data.currentPage,
+            total: response.data.totalElements,
         });
     };
 
-    const memoizeUrl = useMemo(() => {
-        if (activeTab === 'all') {
-            return `${defaultURL}?page=${pagination.page}&size=${pagination.size}`;
-        } else {
-            return `${defaultURL}?page=${pagination.page}&size=${pagination.size}&statusBill=${activeTab}`;
-        }
-
-    })
-
-    useEffect(() => {
-        console.log("gọi hàm")
-        getBill();
-    }, [url]);
-    useEffect(() => {
-        setUrl(memoizeUrl);
-    }, [memoizeUrl]);
-
-
-    const getBill = async () => {
-        const response = await axios.get(url)
-        setBillsData(response.data.data)
-
-        setPagination({
-            ...pagination, page: response.data.currentPage, size: pagination.size, total: response.data.totalElements
-        })
-
-    }
-
-    function handleOnChangeTable(paginationTable) {
+    const handleOnChangeTable = (paginationTable) => {
         setPagination({
             ...pagination,
             page: paginationTable.current - 1, // Trang hiện tại
-            size: paginationTable.pageSize, // Số mục mỗi trang
+            size: paginationTable.pageSize,   // Số mục mỗi trang
         });
-    }
+    };
 
-    const handleOnChangeSelectBillType = (value) => {
+    const handleSearch = () => {
+        const values = form.getFieldsValue();
+        console.log(values.startDate)
+        setSearchParams({
+            search: values.search || '',
+            typeBill: values.typeBill || 'null',
+            startDate: values.startDate || null,
+            endDate: values.endDate || null,
+        });
+    };
 
-    }
+    const handleReset = () => {
+        form.resetFields();
+        setSearchParams({
+            search: '',
+            typeBill: 'null',
+            startDate: null,
+            endDate: null,
+        });
+        setPagination({
+            ...pagination,
+            page: 0,
+        });
+    };
 
-
+    const onChangeTab = (key) => {
+        setActiveTab(key);
+        setPagination({
+            ...pagination,
+            page: 0,
+        });
+    };
 
     return (
-        <>
-            <div className={"d-flex flex-column gap-3"}>
-                <h2>Quản lý hóa đơn</h2>
-                <Card className={"flex-column gap-5 d-flex"}>
-                    <h4>Bộ lọc</h4>
-                    <div className={"row"}>
-                        <FilterComponent label={"Tìm kiếm :"} child={<Input/>}/>
-                        <FilterComponent label={"Loại đơn :"} child={
-                            <Select
-                                defaultValue="all"
-                                className={"w-100"}
-                                onChange={handleOnChangeSelectBillType}
-                                options={[
-                                    {value: 'all', label: 'Tất cả'},
-                                    {value: 'online', label: 'Online'},
-                                    {value: 'offline', label: 'Offline'},
-                                ]}
-                            />
-                        }/>
-
-                        <FilterComponent label={"Sắp xếp theo :"}
-                                         child={<ConfigProvider theme={{}}>
-                                             <DatePicker.RangePicker/>
-                                         </ConfigProvider>}/>
-
-                    </div>
-
-                    <div className={"d-flex  justify-content-center gap-5 mt-5 "}>
-                        <Button type={"primary"}>
+        <div className="d-flex flex-column gap-3">
+            <h2>Quản lý hóa đơn</h2>
+            <Card className="flex-column gap-5 d-flex">
+                <div className="d-flex gap-2 align-items-center">
+                    <h3>Bộ lọc</h3>
+                </div>
+                <hr />
+                <Form {...layout} form={form} name="control-hooks">
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="search" label="Tìm kiếm">
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="typeBill" label="Loại đơn">
+                                <Select placeholder="Select an option" allowClear>
+                                    <Select.Option value="null">Tất cả</Select.Option>
+                                    <Select.Option value="TAI_QUAY">Online</Select.Option>
+                                    <Select.Option value="DAT_HANG">Tại quầy</Select.Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="startDate" label="Ngày bắt đầu">
+                                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="endDate" label="Ngày kết thúc">
+                                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <div className="d-flex justify-content-center gap-3">
+                        <Button type="primary" htmlType="button" onClick={handleSearch}>
                             Tìm kiếm
                         </Button>
-
-                        <Button>
+                        <Button htmlType="button" onClick={handleReset}>
                             Làm mới
                         </Button>
                     </div>
+                </Form>
+            </Card>
 
-
-                </Card>
-                <Card>
-                    <h4>Danh sách hóa đơn</h4>
-                    <Tabs defaultActiveKey="all" items={items} onChange={onChange}/>
-                    <div className={"d-flex justify-content-center"}>
-                        <Table className={"w-100"} onChange={handleOnChangeTable}
-                               pagination={{
-                                   current: pagination.page + 1,
-                                   pageSize: pagination.size,
-                                   total: pagination.total,
-                               }}
-                               columns={columns} dataSource={billsData}/>
-                    </div>
-
-                </Card>
-
-            </div>
-
-
-
-        </>
+            <Card>
+                <h4>Danh sách hóa đơn</h4>
+                <hr />
+                <Tabs defaultActiveKey="all" items={itemsTabsBillList()} onChange={onChangeTab} />
+                <div className="d-flex justify-content-center">
+                    <Table
+                        className="w-100"
+                        onChange={handleOnChangeTable}
+                        pagination={{
+                            current: pagination.page + 1,
+                            pageSize: pagination.size,
+                            total: pagination.total,
+                        }}
+                        columns={columnsBillList()}
+                        dataSource={billsData}
+                    />
+                </div>
+            </Card>
+        </div>
     );
 };
+
 export default BillList;

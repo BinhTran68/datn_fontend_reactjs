@@ -1,5 +1,5 @@
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import {GrCaretNext} from "react-icons/gr";
 import BlurBillHistoryComponent from "./BlurBillHistoryComponent.jsx";
 import {LuClipboardCheck, LuClipboardPenLine} from "react-icons/lu";

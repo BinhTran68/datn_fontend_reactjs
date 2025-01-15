@@ -1,17 +1,47 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Form, Input, Select, Button, message} from "antd";
 import axios from "axios";
 import {baseUrl} from "../../../helpers/Helpers.js";
+import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 
-const { Option } = Select;
+const {Option} = Select;
 
-const ModalEditBillInfo = ({ currentBill, handleOnEdit }) => {
+const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
     const [form] = Form.useForm();
 
+    const [address, setAddress] = useState({
+        provinceId: null,
+        districtId: null,
+        wardId: null,
+        specificAddress: null,
+    })
+
+    useEffect(() => {
+        // Set các giá trị mặc định khi component render
+        if (currentBill?.address) {
+            form.setFieldsValue({
+                provinceId: currentBill?.address?.provinceId ?? null,
+                districtId: currentBill?.address?.districtId ?? null,
+                wardId: currentBill?.address?.wardId ?? null,
+                specificAddress: currentBill?.address?.specificAddress ?? "",
+            });
+        }
+    }, [currentBill, form]);
 
     const onSubmit = async (values) => {
+
         try {
-            const response = await axios.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, values);
+
+            const payload = {
+                ...values,
+                provinceId: address.provinceId,
+                districtId: address.districtId,
+                wardId: address.wardId,
+                specificAddress: address.specificAddress,
+
+            };
+
+            const response = await axios.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
             if (response.status === 200) {
                 message.success('Cập nhật thành công!');
                 handleOnEdit(response.data.data);
@@ -22,6 +52,10 @@ const ModalEditBillInfo = ({ currentBill, handleOnEdit }) => {
             console.error(error);
             message.error('Có lỗi xảy ra khi cập nhật!');
         }
+    };
+
+    const handleAddressChange = (provinceId, districtId, wardId, specificAddress) => {
+        setAddress({...address, districtId: districtId, provinceId: provinceId, wardId: wardId, specificAddress: specificAddress})
     };
 
     return (
@@ -35,13 +69,19 @@ const ModalEditBillInfo = ({ currentBill, handleOnEdit }) => {
                 type: currentBill?.type ?? "ONLINE",
                 customerName: currentBill?.customerName ?? "",
                 customerPhone: currentBill?.customerPhone ?? "",
-                shippingAddress: currentBill?.shippingAddress ?? "",
                 note: currentBill?.note ?? "",
+                // Ensure default values for address fields are properly set
+                provinceId: currentBill?.address?.provinceId ?? null,
+                districtId: currentBill?.address?.districtId ?? null,
+                wardId: currentBill?.address?.wardId ?? null,
+                specificAddress: currentBill?.address?.specificAddress ?? "",
             }}
         >
+            <h5>Chỉnh sửa hóa đơn</h5>
+            <hr/>
             {/* Các trường form */}
             <Form.Item label={<span className="fw-bold text-black">Mã đơn hàng</span>} name="billCode">
-                <Input disabled />
+                <Input disabled/>
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Trạng thái</span>} name="status">
                 <Select disabled>
@@ -50,23 +90,29 @@ const ModalEditBillInfo = ({ currentBill, handleOnEdit }) => {
                     <Option value="DA_HUY">Đã hủy</Option>
                 </Select>
             </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Loại</span>} name="type">
+            <Form.Item label={<span className="fw-bold text-black">Loại Hóa Đơn</span>} name="type">
                 <Select disabled>
                     <Option value="ONLINE">Online</Option>
                     <Option value="OFFLINE">Offline</Option>
                 </Select>
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Tên khách hàng</span>} name="customerName">
-                <Input disabled />
+                <Input disabled/>
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Số điện thoại</span>} name="customerPhone">
-                <Input />
+                <Input/>
             </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Địa chỉ</span>} name="shippingAddress">
-                <Input />
+            <Form.Item name="address">
+                <AddressSelectorAntd
+                    provinceId={parseInt(currentBill?.address?.provinceId) ?? null}
+                    districtId={parseInt(currentBill?.address?.districtId) ?? null}
+                    wardId={parseInt(currentBill?.address?.wardId) ?? null}
+                    specificAddressDefault={currentBill?.address?.specificAddress ?? null}
+                    onAddressChange={handleAddressChange} // Pass the callback to update the form
+                />
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Ghi chú</span>} name="note">
-                <Input.TextArea rows={4} />
+                <Input.TextArea rows={4}/>
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit">

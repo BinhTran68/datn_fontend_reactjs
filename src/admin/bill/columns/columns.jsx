@@ -2,6 +2,8 @@ import {Button, Image} from "antd";
 import {convertLongTimestampToDate} from "../../../helpers/Helpers.js";
 import {MdDelete} from "react-icons/md";
 import React from "react";
+import {Link} from "react-router-dom";
+import {FiEye} from "react-icons/fi";
 
 export const columnsBillProductTable = (onActionClick) => [
     {
@@ -70,3 +72,71 @@ export const columnsBillProductTable = (onActionClick) => [
         ),
     },
 ];
+
+export  const  columnsBillList = () => {
+    return  [
+
+        {
+            title: 'STT',
+            dataIndex: 'stt',
+            key: 'stt',
+            render: (text, record, index) => index + 1,
+        },
+        {
+            title: 'Mã hóa đơn',
+            dataIndex: 'billCode',
+            key: 'billCode',
+        },
+        {
+            title: 'Khách Hàng',
+            dataIndex: 'customerName',
+            key: 'customerName',
+        },
+        {
+            title: 'Số điện thoại',
+            dataIndex: 'customerPhone',
+            key: 'customerPhone',
+        },
+
+        {
+            title: 'Loại đơn hàng',
+            dataIndex: 'billType',
+            key: 'billType',
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            key: 'status',
+        },
+        {
+            title: 'Ngày tạo',
+            dataIndex: 'createAt',
+            key: 'createAt',
+            render: (timestamp) => {
+                return convertLongTimestampToDate(timestamp)
+            },
+        },
+        {
+            title: 'Tổng tiền',
+            dataIndex: 'totalMoney',
+            key: 'totalMoney',
+        },
+        {
+            title: 'Hành động',
+            key: 'action',
+            render: (_, record) => (
+                <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
+                    <Button
+                        type="primary"
+                        icon={<FiEye/>}
+                        onClick={() => {
+                        }}
+                    >
+
+                    </Button>
+                </Link>
+
+            ),
+        },
+    ]
+};

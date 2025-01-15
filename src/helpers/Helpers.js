@@ -50,41 +50,46 @@ export const convertBillStatusToString = (status) => {
     return "Khác";
 }
 
-
 export async function generateAddressString(provinceId, districtId, wardId, specificAddressDefault) {
+    // Kiểm tra các tham số đầu vào có hợp lệ hay không
+    if (!provinceId && !districtId && !wardId) {
+        return "Địa chỉ không hợp lệ";  // Trả về thông báo nếu không có thông tin địa chỉ
+    }
+
     let provinceName = "";
     let districtName = "";
     let wardName = "";
 
-    try {
-        // Gọi API lấy thông tin tỉnh
-        const provinceResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceId}/?depth=2`);
-        provinceName = provinceResponse.data.name || "";  // Nếu không có tên tỉnh, dùng chuỗi rỗng
-    } catch (error) {
-        console.error('Error fetching province:', error);
-        provinceName = "Tỉnh không tìm thấy";  // Trường hợp có lỗi, cung cấp thông báo
+    // Gọi API chỉ khi provinceId có giá trị hợp lệ
+    if (provinceId) {
+        try {
+            const provinceResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceId}/?depth=2`);
+            provinceName = provinceResponse.data.name || "";  // Nếu không có tên tỉnh, dùng chuỗi rỗng
+        } catch (error) {
+            provinceName = "";  // Nếu có lỗi, gán thông báo lỗi
+        }
     }
 
-    try {
-        // Gọi API lấy thông tin huyện
-        const districtResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtId}/?depth=2`);
-        districtName = districtResponse.data.name || "";  // Nếu không có tên huyện, dùng chuỗi rỗng
-    } catch (error) {
-        console.error('Error fetching district:', error);
-        districtName = "Huyện không tìm thấy";  // Trường hợp có lỗi, cung cấp thông báo
+    // Gọi API chỉ khi districtId có giá trị hợp lệ
+    if (districtId) {
+        try {
+            const districtResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtId}/?depth=2`);
+            districtName = districtResponse.data.name || "";  // Nếu không có tên huyện, dùng chuỗi rỗng
+        } catch (error) {
+            districtName = "";  // Nếu có lỗi, gán thông báo lỗi
+        }
     }
 
-    try {
-        // Gọi API lấy thông tin xã/phường
-        const wardResponse = await axios.get(`https://provinces.open-api.vn/api/w/${wardId}/?depth=2`);
-        wardName = wardResponse.data.name || "";  // Nếu không có tên xã/phường, dùng chuỗi rỗng
-    } catch (error) {
-        console.error('Error fetching ward:', error);
-        wardName = "Xã/Phường không tìm thấy";  // Trường hợp có lỗi, cung cấp thông báo
+    // Gọi API chỉ khi wardId có giá trị hợp lệ
+    if (wardId) {
+        try {
+            const wardResponse = await axios.get(`https://provinces.open-api.vn/api/w/${wardId}/?depth=2`);
+            wardName = wardResponse.data.name || "";  // Nếu không có tên xã/phường, dùng chuỗi rỗng
+        } catch (error) {
+            wardName = "";  // Nếu có lỗi, gán thông báo lỗi
+        }
     }
 
     // Tạo chuỗi địa chỉ
-    const address = `${specificAddressDefault}, ${wardName}, ${districtName}, ${provinceName}`;
-
-    return address;
+    return `${specificAddressDefault ? (specificAddressDefault + `,`) : ""} ${wardName ? wardName + `,` : ""} ${districtName ? districtName + `,` : ""} ${provinceName ? provinceName + `,` : ""}`;
 }

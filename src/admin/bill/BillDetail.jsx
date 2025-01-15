@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Link, useParams} from "react-router-dom";
 import {Badge, Button, Card, Descriptions, Image, Modal, Steps, Table, Tag} from "antd";
 
 import axios from "axios";
-import {baseUrl, convertLongTimestampToDate} from "../../helpers/Helpers.js";
+import {baseUrl, convertLongTimestampToDate, generateAddressString} from "../../helpers/Helpers.js";
 import {FiEye} from "react-icons/fi";
 import {FaClipboardCheck} from "react-icons/fa";
 import StepProgress from "./componets/StepProgress.jsx";
@@ -81,19 +81,20 @@ const columnsBillProductDetailTable = [
         title: 'Ảnh sản phẩm',
         dataIndex: 'urlImage',
         key: 'urlImage',
-         render: (url) => {
+        render: (url) => {
             return (
                 <div
                     className="d-flex justify-content-center"
 
                 >
-                    <Image  style={{
+                    <Image style={{
                         objectFit: "contain"
-                    }} width={120} src={url ??  "data:image/jpeg;base64,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"}/>
+                    }} width={120}
+                           src={url ?? "data:image/jpeg;base64,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"}/>
 
                 </div>
             )
-         }
+        }
     },
     {
         title: 'Thông tin sản phẩm',
@@ -132,15 +133,15 @@ const columnsBillProductDetailTable = [
         dataIndex: 'action',
         key: 'action',
         render: (_, record) => (
-                <Button
-                    type="primary"
-                    icon={<MdDelete/>}
-                    onClick={() => {
-                        console.log(record?.productName);
-                    }}
-                >
-                    Xóa
-                </Button>
+            <Button
+                type="primary"
+                icon={<MdDelete/>}
+                onClick={() => {
+                    console.log(record?.productName);
+                }}
+            >
+                Xóa
+            </Button>
         ),
 
     },
@@ -183,6 +184,7 @@ const columnsBillHistory = [
 
 
 const BillDetail = () => {
+        const {id} = useParams();
 
         const modalBillHistoryType = "modalBillHistoryType";
         const modalUpdateStatusBillType = "modalUpdateStatusBillType";
@@ -194,12 +196,12 @@ const BillDetail = () => {
         const [billProductList, setBillProductList] = useState()
         const [billHistory, setBillHistory] = useState([]);
         const [currentBill, setCurrentBill] = useState()
-        const {id} = useParams();
         const [confirmLoading, setConfirmLoading] = useState(false);
         const [open, setOpen] = useState(false);
         const [modalType, setModalType] = useState('');
         const [confirmNotes, setConfirmNotes] = useState('')
         const [widthModal, setWidthModal] = useState('50%')
+        const [addressString, setAddressString] = useState('')
 
 
         const handleOkModal = () => {
@@ -213,15 +215,13 @@ const BillDetail = () => {
             }
         };
 
-     const handleCancel = () => {
-        console.log('Clicked cancel button');
-         setOpen(false);
-    };
+        const handleCancel = () => {
+            console.log('Clicked cancel button');
+            setOpen(false);
+        };
 
 
-
-
-    const handleUpdateStatusBill = async () => {
+        const handleUpdateStatusBill = async () => {
 
             const data = {
                 "status": handleNewStatusUpdate(currentBill.status),
@@ -279,19 +279,27 @@ const BillDetail = () => {
 
         const getBillProductDetail = async () => {
             const response = await axios.get(`${defaultURL}/bill-product-detail/${id}`);
-            const  data = response.data.data;
+            const data = response.data.data;
             setBillProductDetails(data)
             console.log(response);
 
         }
 
 
-
         const getCurrentBill = async () => {
             const response = await axios.get(`${defaultURL}/bill/detail/${id}`);
-            setCurrentBill(response.data.data);
-            console.log("steps", response.data.data.status)
-            // setCurrentStep(response.data.data.status)
+            const bill = response.data.data;
+            setCurrentBill(bill);
+            console.log(bill);
+            const address = await generateAddressString(
+                bill?.address?.provinceId,
+                bill?.address?.districtId,
+                bill?.address?.wardId,
+                bill?.address?.specificAddress
+            );
+
+            setAddressString(address);
+
         }
 
         useEffect(() => {
@@ -408,7 +416,7 @@ const BillDetail = () => {
 
         const getBillProducts = async () => {
             const response = await axios.get(`${defaultURL}/bill-product-detail`);
-            const  data = response.data.data;
+            const data = response.data.data;
             setBillProductList(data.content)
         }
 
@@ -422,6 +430,19 @@ const BillDetail = () => {
             setWidthModal("50%")
             setModalType(modalEditForm)
         };
+
+        // useEffect(() => {
+        //     const fetchAddressString = async () => {
+        //
+        //     };
+        //
+        //     console.log(currentBill?.address?.provinceId)
+        //
+        //     if (currentBill) {
+        //         fetchAddressString();
+        //     }
+        // }, [currentBill]);
+
         return (
             <div className={"flex-column d-flex gap-3"}>
 
@@ -505,7 +526,7 @@ const BillDetail = () => {
                         </Button>
                     </div>
                     <Descriptions column={2}>
-                    <Descriptions.Item label={<span className={"fw-bold text-black"}>Mã đơn hàng  </span>} span={2}>
+                        <Descriptions.Item label={<span className={"fw-bold text-black"}>Mã đơn hàng  </span>} span={2}>
                             {currentBill?.billCode ?? ""}
                         </Descriptions.Item>
 
@@ -522,13 +543,11 @@ const BillDetail = () => {
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Số điện thoại  </span>}>
                             <Tag color="blue">  {currentBill?.customerPhone ?? ""}</Tag>
                         </Descriptions.Item>
-
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Địa chỉ  </span>} span={2}>
-                            {currentBill?.shippingAddress ?? ""}
+                            {addressString}
                         </Descriptions.Item>
-
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Ghi chú  </span>} span={2}>
-                            {currentBill?.notes  ?? ""}
+                            {currentBill?.notes ?? ""}
                         </Descriptions.Item>
                     </Descriptions>
                 </Card>
