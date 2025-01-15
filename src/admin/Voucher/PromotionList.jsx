@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message } from 'antd';
+import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Row, Col, theme } from 'antd';
 import axios from 'axios';
 import { baseUrl } from '../../helpers/Helpers.js';
+import moment from 'moment';
+import { Link } from 'react-router-dom';
 const { Search } = Input;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const columns = (handleEdit, handleDelete) => [
@@ -14,17 +15,17 @@ const columns = (handleEdit, handleDelete) => [
         render: (text, record, index) => index + 1,
     },
     {
-        title: 'Mã phiếu giảm giá',
+        title: 'Mã đợt giảm giá',
         dataIndex: 'promotionCode',
         key: 'promotionCode',
     },
     {
-        title: 'Tên phiếu giảm giá',
+        title: 'Tên đợt giảm giá',
         dataIndex: 'promotionName',
         key: 'promotionName',
     },
     {
-        title: 'Loại giảm giá',
+        title: 'Loại đợt giảm giá',
         dataIndex: 'promotionType',
         key: 'promotionType',
     },
@@ -34,14 +35,21 @@ const columns = (handleEdit, handleDelete) => [
         key: 'discountValue',
     },
     {
+        title: 'Số lượng',
+        dataIndex: 'quantity',
+        key: 'quantity',
+    },
+    {
         title: 'Ngày bắt đầu',
         dataIndex: 'startDate',
+        render: (text) => new Date(text).toLocaleDateString(),
         key: 'startDate',
 
     },
     {
         title: 'Ngày kết thúc',
         dataIndex: 'endDate',
+        render: (text) => new Date(text).toLocaleDateString(),
         key: 'endDate',
 
     },
@@ -55,30 +63,122 @@ const columns = (handleEdit, handleDelete) => [
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-                <Button onClick={() => handleEdit(record.id)}>Chỉnh sửa</Button>
-                <Button danger onClick={() => handleDelete(record.id)}>Xóa</Button>
+                <Button style={{
+                    backgroundColor: '#80C4E9',
+                    color: 'white',
+                    border: 'none',
+                }} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
+                <Button style={{
+                    backgroundColor: '#80C4E9',
+                    color: 'white',
+                    border: 'none',
+                }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
     },
 ];
+// MÃ THÊM: Advanced Search Form
+const AdvancedSearchForm = ({ onSearch }) => {
+    const { token } = theme.useToken();
+    const [form] = Form.useForm();
+    const [expand, setExpand] = useState(false);
 
-// const data = [
-//     {
-//         key: '1',
-//         ten: 'Giảm giá tháng 12',
-//         ma: 'Đợt 1',
-//         hinhthuc: 'trực tiếp vào sản phẩm',
-//         giatrigiam: '10%',
-//         giatritt: '100k',
-//         giatritd: '300k',
-//         ngaybatdau: '12/12/2024',
-//         ngayketthuc: '31/12/2024',
-//         trangthai: 'Hoạt động',
+    const formStyle = {
+        maxWidth: 'none',
+        background: token.colorFillAlter,
+        borderRadius: token.borderRadiusLG,
+        padding: 24,
+
+    };
+
+    const getFields = () => {
+
+        return (
+            <>
+                <Col span={8}>
+                    <Form.Item name="promotionCode" label="Mã đợt giảm giá">
+                        <Input placeholder="Nhập mã đợt giảm giá" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="promotionName" label="Tên đợt giảm giá">
+                        <Input placeholder="Nhập tên đợt giảm giá" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="promotionType" label="Loại đợt giảm giá">
+                        <Input placeholder="Nhập đợt loại  giảm" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="discountValue" label="Giá trị giảm">
+                        <Input placeholder="Nhập giá trị giảm" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="quantity" label="Số lượng">
+                        <Input placeholder="Nhập số lượng" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="startDate" label="Ngày bắt đầu">
+                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="endDate" label="Ngày kết thúc">
+                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item name="status" label="Trạng thái">
+                        <Select placeholder="Chọn trạng thái">
+                            <Option value="HOAT_DONG">Hoạt động</Option>
+                            <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
+                        </Select>
+                    </Form.Item>
+                </Col>
+            </>
+        );
+    };
+
+    const onFinish = (values) => {
+        onSearch(values);
+    };
+    return (
+        <Card >
+            <Form form={form} name="advanced_search" style={{ formStyle }}
+                onFinish={onFinish} layout="vertical">
+                <Row gutter={24}>{getFields()}</Row>
+                <div style={{ textAlign: 'right' }}>
+                    <Space size="small">
+                        <Button type="primary" htmlType="submit" style={{
+                            backgroundColor: '#80C4E9',
+                            color: 'white',
+                            border: 'none',
+                        }}>
+                            Lọc
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                form.resetFields();
+                            }}
+                            style={{
+                                backgroundColor: '#80C4E9',
+                                color: 'white',
+                                border: 'none',
+                            }}
+                        >
+                            Xóa
+                        </Button>
+                    </Space>
+                </div>
+            </Form>
+        </Card>
+    );
+};
 
 
-//     },
-
-// ];
 
 const PromotionList = () => {
     const [promotionData, setPromotionData] = useState([]);
@@ -86,81 +186,13 @@ const PromotionList = () => {
     const [form] = Form.useForm();
     const [editingPromotion, setEditingPromotion] = useState(null);
 
-    // const onSearch = (value) => {
-    //     console.log('Search value:', value);
-    // };
-
-    // const handleDateChange = (dates, dateStrings) => {
-    //     console.log('Selected dates:', dates);
-    //     console.log('Formatted dates:', dateStrings);
-    //     setDates(dateStrings);
-    // };
-
-    // const handleStatusChange = (value) => {
-    //     console.log('Selected status:', value);
-    //     setStatus(value);
-    // };
-    // const defaultUrl = `${baseUrl}/api/promotion/hien`;
-    // const [activeTab, setActiveTab] = useState('all');
-    // const [url, setUrl] = useState(defaultUrl);
-
-    // useEffect(() => {
-    //     console.log("promotion");
-    //     getPromotion();
-    // }, [url]);
-    // const getPromotion = async () => {
-    //     const response = await axios.get(url)
-    //     setPromotionData(response.data.data)
-    // }
-    const handleAdd = () => {
-        setEditingPromotion(null);
-        setIsModalOpen(true);
-    };
-
-    const handleEdit = (record) => {
-        setEditingPromotion(record);
-        setIsModalOpen(true);
-        form.setFieldsValue(record);
-    };
-
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`${baseUrl}/api/promotion/delete/${id}`);
-            message.success('Xóa đợt giảm giá thành công!');
-
-        } catch (error) {
-            message.error('Lỗi khi xóa đợt giảm giá!');
-        }
-    };
-
-    const handleOk = async () => {
-        try {
-            const values = form.getFieldsValue();
-            if (editingPromotion) {
-                // Sửa
-                await axios.put(`${baseUrl}/api/promotion/update/${editingPromotionid}`, values);
-                message.success('Cập nhật đợt giảm giá thành công!');
-            } else {
-                // Thêm 
-                await axios.post(`${baseUrl}/api/promotion/add`, values);
-                message.success('Thêm mới phiếu giảm giá thành công!');
-            }
-            setIsModalOpen(false);
-            form.resetFields();
-        } catch (error) {
-            message.error('Lỗi khi lưu trữ liệu!');
-        }
-    };
-    //phân trang
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        form.resetFields();
-    };
     const [pagination, setPagination] = useState({
         page: 0,
         size: 1,
         total: 7
-    })
+    });
+
+    // Hàm phân trang
     function handleOnChangeTable(paginationTable) {
         setPagination({
             ...pagination,
@@ -168,22 +200,84 @@ const PromotionList = () => {
             size: paginationTable.pageSize, // Số mục mỗi trang
         });
     }
+
+    // Hàm khi ấn nút "Thêm"
+    const handleAdd = () => {
+        setEditingPromotion(null);
+        setIsModalOpen(true);
+    };
+
+    // Hàm khi ấn nút "Chỉnh sửa"
+    const handleEdit = (record) => {
+        setEditingPromotion(record);
+        setIsModalOpen(true);
+        form.setFieldsValue({
+            ...record,
+            startDate: moment(record.startDate), // Sử dụng moment cho startDate
+            endDate: moment(record.endDate) // Sử dụng moment cho endDate
+        });
+    };
+
+    // Hàm khi ấn nút "Xóa"
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`${baseUrl}/api/admin/promotion/delete/${id}`);
+            message.success('Xóa đợt giảm giá thành công!');
+        } catch (error) {
+            message.error('Lỗi khi xóa đợt giảm giá!');
+        }
+    };
+
+    // Hàm khi ấn nút "OK" trong Modal
+    const handleOk = async () => {
+        try {
+            const values = form.getFieldsValue();
+            if (editingPromotion) {
+                // Cập nhật dữ liệu
+                await axios.put(`${baseUrl}/api/admin/promotion/update/${editingPromotion.id}`, values);
+                message.success('Cập nhật đợt giảm giá thành công!');
+            } else {
+                // Thêm mới
+                await axios.post(`${baseUrl}/api/admin/promotion/add`, values);
+                message.success('Thêm mới phiếu giảm giá thành công!');
+            }
+            getPagePromotion();
+            setIsModalOpen(false);
+            form.resetFields();
+        } catch (error) {
+            message.error('Lỗi khi lưu trữ liệu!');
+        }
+    };
+
+    // Hàm khi ấn nút "Hủy" trong Modal
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        form.resetFields();
+    };
+
+    // Hàm lấy dữ liệu phân trang
     useEffect(() => {
-        getPagePromotion()
+        getPagePromotion();
     }, [pagination]);
 
+    // Hàm lấy trang dữ liệu khuyến mãi
     const getPagePromotion = async () => {
-        const response = await axios.get(`${baseUrl}/api/promotion/page?page=${pagination.page}&size=${pagination.size}`);
+        const response = await axios.get(`${baseUrl}/api/admin/promotion/page?page=${pagination.page}&size=${pagination.size}`);
         const data = response.data.data;
-        setPromotionData(data.content);
+        const items = data.content.map((el) => {
+            el.startDate = new Date(el.startDate);
+            el.endDate = new Date(el.endDate);
+            return el;
+        });
+        setPromotionData(items);
 
-
-        // Chỉ cập nhật pagination nếu có thay đổi trong dữ liệu
+        // Cập nhật pagination nếu có thay đổi trong dữ liệu
         const newPagination = {
             page: data.number,
             size: data.size,
             total: data.totalElements
         };
+
         console.log("new ", newPagination);
 
         // Kiểm tra xem pagination có thay đổi hay không trước khi set lại
@@ -197,60 +291,101 @@ const PromotionList = () => {
     };
 
 
+    // MÃ THÊM: Xử lý tìm kiếm
+    const handleSearch = (values) => {
+        console.log('Search Values:', values);
+    }
     return (
-        <Card>
-            <h4>Danh sách đợt giảm giá</h4>
-            <Button type="primary" onClick={handleAdd} style={{ marginBottom: '20px' }}>
-                +
-            </Button>
 
+        <>
+            <h4>Bộ lọc </h4>
 
-            <Table columns={columns(handleEdit, handleDelete)} dataSource={promotionData} rowKey="id"
-                pagination={{
-                    current: pagination.page + 1,
-                    pageSize: pagination.size,
-                    total: pagination.total
-                }}
-                onChange={handleOnChangeTable}
-            />
-            <Modal
-                title={editingPromotion ? 'Chỉnh sửa đợt giảm giá' : 'Thêm mới đợt giảm giá'}
-                visible={isModalOpen}
-                onOk={handleOk}
-                onCancel={handleCancel}
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                        <DatePicker format="DD/MM/YYYY" />
-                    </Form.Item>
-                    <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                        <DatePicker format="DD/MM/YYYY" />
-                    </Form.Item>
-                    <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
-                        <Select>
-                            <Option value="HOAT_DONG">Hoạt động</Option>
-                            <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+            {/* MÃ THÊM: Thêm AdvancedSearchForm */}
+            <AdvancedSearchForm onSearch={handleSearch} />
+            <h4 style={{ paddingTop: '15px' }}>Danh sách đợt giảm giá</h4>
+
+            <Card>
+                <Link to={"/admin/promotion/add"} >
+                    <Button type="primary" style={{
+                        marginBottom: '20px', backgroundColor: '#80C4E9',
+                        color: 'white',
+                        border: 'none',
+                    }}>
+                        Thêm mới
+                    </Button>
+                </Link>
 
 
 
-        </Card>
+                <Table columns={columns(handleEdit, handleDelete)} dataSource={promotionData} rowKey="id"
+                    pagination={{
+                        current: pagination.page + 1,
+                        pageSize: pagination.size,
+                        total: pagination.total
+                    }}
+                    onChange={handleOnChangeTable}
+                />
+                <Modal
+                    title={editingPromotion ? 'Chỉnh sửa đợt giảm giá' : 'Thêm mới đợt giảm giá'}
+                    visible={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                    okText="Xác nhận"
+                    cancelText="Hủy"
+                    okButtonProps={{
+                        style: {
+                            backgroundColor: '#80C4E9',
+                            color: 'white',
+                            border: 'none',
+                            // fontFamily: 'Poppins',
+                        },
+                    }}
+                    cancelButtonProps={{
+                        style: {
+                            backgroundColor: '#80C4E9',
+                            color: 'white',
+                            border: 'none',
+                            // fontFamily: 'Poppins',
+                        },
+                    }}
+                //màu label={<span style={{ color: '#1A3353', fontFamily: 'Poppins' }}>Mã phiếu giảm giá</span>}
 
+                >
+                    <Form form={form} layout="vertical"  >
+                        <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
+                            <DatePicker format="DD/MM/YYYY" />
+                        </Form.Item>
+                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
+                            <DatePicker format="DD/MM/YYYY" />
+                        </Form.Item>
+                        <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
+                            <Select>
+                                <Option value="HOAT_DONG">Hoạt động</Option>
+                                <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+
+
+
+            </Card>
+        </>
     );
 };
 

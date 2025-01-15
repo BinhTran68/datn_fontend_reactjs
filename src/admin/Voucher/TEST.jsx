@@ -389,4 +389,3 @@
 // };
 
 // export default PromotionList;
-

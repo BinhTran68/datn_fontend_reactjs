@@ -4,6 +4,7 @@ import Dashboard from "../admin/dashboard/Dashboard.jsx";
 
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
+import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
@@ -120,6 +121,10 @@ const AdminRouters = {
         {
             path: "PromotionList",
             element: <PrivateRoute element={<PromotionList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "promotion/add",
+            element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
             path: "addCustomer",
