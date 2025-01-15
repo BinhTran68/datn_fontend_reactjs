@@ -19,6 +19,9 @@ import Staff from "../customer/Staff.jsx";
 
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
+
+
+
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -146,7 +149,7 @@ const AdminRouters = {
             path: "staff",
             element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
-
+      
     ],
 };
 
