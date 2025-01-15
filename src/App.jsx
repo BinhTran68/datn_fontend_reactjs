@@ -11,7 +11,7 @@ import CustomerRouters from "./routers/CustomerRouters.jsx";
 import AuthRouters from "./routers/AuthRouter.jsx";
 import {Bounce, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS của react-toastify
-
+{/* <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"></link> proppins */}
 
 
 

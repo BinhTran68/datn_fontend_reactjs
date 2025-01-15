@@ -1,15 +1,15 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, ConfigProvider, Badge} from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, ConfigProvider, Badge } from 'antd';
 import axios from "axios";
-import {baseUrl, convertLongTimestampToDate} from "../../helpers/Helpers.js";
-import {FiEye} from "react-icons/fi";
+import { baseUrl, convertLongTimestampToDate } from "../../helpers/Helpers.js";
+import { FiEye } from "react-icons/fi";
 import FilterComponent from "./componets/FilterComponent.jsx";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const {RangePicker} = DatePicker;
+const { RangePicker } = DatePicker;
 
 
-const {Search} = Input;
+const { Search } = Input;
 
 
 const columns = [
@@ -66,7 +66,7 @@ const columns = [
             <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
                 <Button
                     type="primary"
-                    icon={<FiEye/>}
+                    icon={<FiEye />}
                     onClick={() => {
                     }}
                 >
@@ -93,7 +93,7 @@ const items = [
         key: 'CHO_XAC_NHAN',
         label: (
             <>
-                Chờ xác nhận <Badge count={5} className={"mb-3 ms-1"}/>
+                Chờ xác nhận <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
 
@@ -103,7 +103,7 @@ const items = [
 
         label: (
             <>
-                Đã xác nhận <Badge count={5} className={"mb-3 ms-1"}/>
+                Đã xác nhận <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     },
@@ -111,7 +111,7 @@ const items = [
         key: 'CHO_VAN_CHUYEN',
         label: (
             <>
-                Chờ vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
+                Chờ vận chuyển <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     },
@@ -119,7 +119,7 @@ const items = [
         key: 'DANG_VAN_CHUYEN',
         label: (
             <>
-                Đang vận chuyển <Badge count={5} className={"mb-3 ms-1"}/>
+                Đang vận chuyển <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     },
@@ -127,7 +127,7 @@ const items = [
         key: 'DA_THANH_TOAN',
         label: (
             <>
-                Đã thanh toán <Badge count={5} className={"mb-3 ms-1"}/>
+                Đã thanh toán <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     },
@@ -135,7 +135,7 @@ const items = [
         key: 'DA_HOAN_THANH',
         label: (
             <>
-                Đã hoàn thành <Badge count={5} className={"mb-3 ms-1"}/>
+                Đã hoàn thành <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     },
@@ -143,7 +143,7 @@ const items = [
         key: 'DA_HUY',
         label: (
             <>
-                Đã hủy <Badge count={5} className={"mb-3 ms-1"}/>
+                Đã hủy <Badge count={5} className={"mb-3 ms-1"} />
             </>
         ),
     }
@@ -230,24 +230,24 @@ const BillList = (factory, deps) => {
                 <Card className={"flex-column gap-5 d-flex"}>
                     <h4>Bộ lọc</h4>
                     <div className={"row"}>
-                        <FilterComponent label={"Tìm kiếm :"} child={<Input/>}/>
+                        <FilterComponent label={"Tìm kiếm :"} child={<Input />} />
                         <FilterComponent label={"Loại đơn :"} child={
                             <Select
                                 defaultValue="all"
                                 className={"w-100"}
                                 onChange={handleOnChangeSelectBillType}
                                 options={[
-                                    {value: 'all', label: 'Tất cả'},
-                                    {value: 'online', label: 'Online'},
-                                    {value: 'offline', label: 'Offline'},
+                                    { value: 'all', label: 'Tất cả' },
+                                    { value: 'online', label: 'Online' },
+                                    { value: 'offline', label: 'Offline' },
                                 ]}
                             />
-                        }/>
+                        } />
 
                         <FilterComponent label={"Sắp xếp theo :"}
-                                         child={<ConfigProvider theme={{}}>
-                                             <DatePicker.RangePicker/>
-                                         </ConfigProvider>}/>
+                            child={<ConfigProvider theme={{}}>
+                                <DatePicker.RangePicker />
+                            </ConfigProvider>} />
 
                     </div>
 
@@ -265,15 +265,15 @@ const BillList = (factory, deps) => {
                 </Card>
                 <Card>
                     <h4>Danh sách hóa đơn</h4>
-                    <Tabs defaultActiveKey="all" items={items} onChange={onChange}/>
+                    <Tabs defaultActiveKey="all" items={items} onChange={onChange} />
                     <div className={"d-flex justify-content-center"}>
                         <Table className={"w-100"} onChange={handleOnChangeTable}
-                               pagination={{
-                                   current: pagination.page + 1,
-                                   pageSize: pagination.size,
-                                   total: pagination.total,
-                               }}
-                               columns={columns} dataSource={billsData}/>
+                            pagination={{
+                                current: pagination.page + 1,
+                                pageSize: pagination.size,
+                                total: pagination.total,
+                            }}
+                            columns={columns} dataSource={billsData} />
                     </div>
 
                 </Card>
