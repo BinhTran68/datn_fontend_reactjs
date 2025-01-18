@@ -28,7 +28,111 @@ export const fetchProducts = async (pagination) => {
   }
 };
 
+export const fetchDataSelectBrand = async () => {
+  try {
+    const response = await api.get("/brand/getallselect", {});
 
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+
+export const fetchDataSelectColor = async () => {
+  try {
+    const response = await api.get("/color/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectGender = async () => {
+  try {
+    const response = await api.get("/gender/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectMaterial = async () => {
+  try {
+    const response = await api.get("/material/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectProduct = async () => {
+  try {
+    const response = await api.get("/product/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectSize = async () => {
+  try {
+    const response = await api.get("/size/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectSole = async () => {
+  try {
+    const response = await api.get("/sole/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectType = async () => {
+  try {
+    const response = await api.get("/type/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 export const searchNameProduct = async (pagination, paramName) => {
   const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
   const { name } = paramName;
@@ -54,15 +158,15 @@ export const searchNameProduct = async (pagination, paramName) => {
   }
 };
 
-export const createProduct = async (productData) => {
+export const createProductDetail = async (request) => {
   try {
-    const response = await api.post("/product/add", productData);
+    const response = await api.post("/productdetail/add", request);
     return response.data;
   } catch (error) {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message)
+    message.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -71,7 +175,7 @@ export const existsByProductName = async (productName) => {
   try {
     const response = await api.get("product/existsbyproductname", {
       params: {
-        productName
+        productName,
       },
     });
     return response.data.data;
@@ -84,22 +188,25 @@ export const existsByProductName = async (productName) => {
 };
 
 export const updateProduct = async (productId, productData) => {
+  console.log(productId);
+  console.log(productData);
+  
   try {
-    const response = await api.put(`/product/update/${productId}`, productData);
+    const response = await api.put(`/productdetail/update/${productId}`, productData);
     return response.data;
   } catch (error) {
     const errorMessage =
       error.response?.data?.message ||
       "Có lỗi xảy ra khi cập nhật thương hiệu.";
     console.error(errorMessage);
-    message.error(errorMessage)
+    message.error(errorMessage);
     throw error;
   }
 };
 
-export const deleteProduct = async (productId) => {
+export const deleteProductDetail = async (productId) => {
   try {
-    await api.delete(`/product/${productId}`);
+    await api.delete(`/productdetail/${productId}`);
   } catch (error) {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi xóa thương hiệu.";
@@ -109,7 +216,7 @@ export const deleteProduct = async (productId) => {
 };
 export const getProduct = async (productId) => {
   try {
-    const response = await api.get(`/product/${productId}`);
+    const response = await api.get(`/productdetail/${productId}`);
     return response.data; // Assuming you want to return the fetched data
   } catch (error) {
     const errorMessage =
