@@ -17,40 +17,47 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
-import styles from "./Category.module.css";
+import styles from "./Color.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import axios from "axios";
 import {
-  fetchBrands,
-  createBrand,
-  updateBrand,
-  deleteBrand,
-  getBrand,
-  searchNameBrand,
-  existsByBrandName,
-} from "./Brand/apibrand.js";
+  fetchColors,
+  createColor,
+  updateColor,
+  deleteColor,
+  getColor,
+  searchNameColor,
+  existsByColorName,
+} from "./ApiColor.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
+import { FaEdit } from "react-icons/fa";
 
-const Category = () => {
+const Color = () => {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [isActiveUpdate, setIsActiveUpdate] = useState(true);
-  const [brands, setBrands] = useState([]);
-  const [totalBrands, setTotalBrands] = useState(0);
-  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [brands, setColors] = useState([]);
+  const [totalColors, setTotalColors] = useState(0);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [requestSearch, setRequestSearch] = useState({
     name: "",
   });
 
   const [request, setRequest] = useState({
-    brandName: "",
+    colorName: "",
     status: "HOAT_DONG",
   });
 
@@ -73,45 +80,49 @@ const Category = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.brandName)) {
-      setErrorMessage("Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.colorName)) {
+      setErrorMessage(
+        "Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActive(false);
-    } else if (request.brandName.trim() === "") {
+    } else if (request.colorName.trim() === "") {
       setErrorMessage("Không được để trống");
       setIsActive(false);
     } else {
       setErrorMessage("Hợp lệ !!!");
       setIsActive(true);
     }
-  }, [request.brandName]);
-  
+  }, [request.colorName]);
+
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
 
   useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.brandName)) {
-      setErrorMessageUpdate("Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.colorName)) {
+      setErrorMessageUpdate(
+        "Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActiveUpdate(false);
-    } else if (request.brandName.trim() === "") {
+    } else if (request.colorName.trim() === "") {
       setErrorMessageUpdate("Không được để trống");
       setIsActiveUpdate(false);
     } else {
       setErrorMessageUpdate("Hợp lệ !!!");
       setIsActiveUpdate(true);
     }
-  }, [request.brandName]);
+  }, [request.colorName]);
   // Hàm fetch dữ liệu brands
   useEffect(() => {
-    fetchBrandsData();
+    fetchColorsData();
   }, [pagination]);
 
-  const fetchBrandsData = async () => {
+  const fetchColorsData = async () => {
     setLoading(true);
     try {
       const { data, total } = requestSearch.name.trim()
-        ? await searchNameBrand(pagination, requestSearch)
-        : await fetchBrands(pagination);
-      setBrands(data);
-      setTotalBrands(total);
+        ? await searchNameColor(pagination, requestSearch)
+        : await fetchColors(pagination);
+      setColors(data);
+      setTotalColors(total);
       console.log(requestSearch.name + "đây là search");
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
@@ -124,9 +135,9 @@ const Category = () => {
     setLoading(true);
     setPagination((prev) => ({ ...prev, current: 1 }));
     try {
-      const { data, total } = await searchNameBrand(pagination, requestSearch);
-      setBrands(data);
-      setTotalBrands(total);
+      const { data, total } = await searchNameColor(pagination, requestSearch);
+      setColors(data);
+      setTotalColors(total);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -134,16 +145,16 @@ const Category = () => {
     }
   };
   // thêm
-  const handleCreateBrand = async (brandData) => {
+  const handleCreateColor = async (brandData) => {
     try {
       setLoading(true);
       console.log(request);
-      await createBrand(brandData);
+      await createColor(brandData);
 
       setRequestSearch({ name: "" });
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
-      fetchBrandsData(); // Refresh data after creation
+      fetchColorsData(); // Refresh data after creation
       message.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
@@ -153,16 +164,16 @@ const Category = () => {
     }
   };
 
-  const handleUpdateBrand = useCallback(async (brandData) => {
+  const handleUpdateColor = useCallback(async (brandData) => {
     try {
       setLoading(true);
 
-      await updateBrand(selectedBrand.data.id, brandData);
-      console.log(selectedBrand.data.id);
-      setSelectedBrand(null);
+      await updateColor(selectedColor.data.id, brandData);
+      console.log(selectedColor.data.id);
+      setSelectedColor(null);
       setOpenUpdate(false);
-      message.success("Cập nhật Hãng thành công");
-      fetchBrandsData(); // Refresh data after update
+      message.success("Cập nhật Màu sắc thành công");
+      fetchColorsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
       message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
@@ -172,11 +183,11 @@ const Category = () => {
   });
 
   // xóa
-  const handleDeleteBrand = useCallback(async (brandId) => {
+  const handleDeleteColor = useCallback(async (brandId) => {
     try {
       setLoading(true);
-      await deleteBrand(brandId);
-      fetchBrandsData(); // Refresh data after deletion
+      await deleteColor(brandId);
+      fetchColorsData(); // Refresh data after deletion
       message.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
@@ -185,16 +196,16 @@ const Category = () => {
       setLoading(false);
     }
   });
-  const handleGetBrand = useCallback(
+  const handleGetColor = useCallback(
     async (brandId) => {
       setLoading(true);
       try {
-        const brandData = await getBrand(brandId);
-        setSelectedBrand(brandData);
+        const brandData = await getColor(brandId);
+        setSelectedColor(brandData);
         console.log(brandData);
 
         setRequest({
-          brandName: brandData.data.brandName,
+          colorName: brandData.data.colorName,
           status: brandData.data.status,
         }); // Cập nhật form với thông tin từ API
 
@@ -238,9 +249,9 @@ const Category = () => {
       ),
     },
     {
-      title: "Tên Hãng",
-      dataIndex: "brandName",
-      key: "brandName",
+      title: "Tên Màu",
+      dataIndex: "colorName",
+      key: "colorName",
       width: "20rem",
     },
     {
@@ -268,7 +279,7 @@ const Category = () => {
           return null;
         }
         return (
-          <Tag color={color} style={{ fontSize: "14px", padding: "6px 12px" }}>
+          <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
             {status} {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
@@ -286,18 +297,29 @@ const Category = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button onClick={() => handleGetBrand(record.id)}>
-                  <RxUpdate size={20} color="primary" /> Cập nhật
+                <Button
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
+                  onClick={() => handleGetColor(record.id)}
+                >
+                  Cập nhật
                 </Button>
               </Col>
 
               <Col>
                 <Popconfirm
                   title="Xóa Hãng"
-                  description="Bạn có muốn xóa hãng này kh"
+                  description="Bạn có muốn xóa Màu sắc này kh"
                   okText="Xác nhận"
                   cancelText="Hủy"
-                  onConfirm={() => handleDeleteBrand(record.id)}
+                  onConfirm={() => handleDeleteColor(record.id)}
                 >
                   <Button className={`${styles.buttonDelete} ant-btn`}>
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
@@ -313,13 +335,13 @@ const Category = () => {
 
   const handleCreate = () => {
     setLoading(true);
-    handleCreateBrand(request);
+    handleCreateColor(request);
 
     setTimeout(() => {
       setLoading(false);
       setOpenCreate(false);
       setRequest({
-        brandName: "",
+        colorName: "",
         status: "HOAT_DONG",
       });
     }, 800);
@@ -335,12 +357,12 @@ const Category = () => {
 
   return (
     <Card>
-      <Title level={2}>Hãng</Title>
+      <Title level={2}>Màu sắc</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>
             <Input
-              placeholder="Nhập vào tên hãng bạn muốn tìm!"
+              placeholder="Nhập vào tên Màu sắc bạn muốn tìm!"
               prefix={<SearchOutlined />}
               allowClear
               name="name"
@@ -377,12 +399,12 @@ const Category = () => {
               setOpenCreate(true);
             }}
             style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
-                color: "#fff",
-              }}
+              backgroundColor: "#90649C",
+              borderColor: "#90649C",
+              color: "#fff",
+            }}
           >
-            Thêm Hãng
+            Thêm Màu sắc
           </Button>
           <Modal
             open={openCreate}
@@ -411,54 +433,19 @@ const Category = () => {
               </Button>,
             ]}
           >
-            <p>Nhập thông tin hãng mới...</p>
+            <p>Nhập thông tin Màu sắc mới...</p>
             <Form>
               <Input
-                placeholder="Nhập tên hãng vào đây!"
+                placeholder="Nhập tên Màu sắc vào đây!"
                 style={{ marginBottom: "0.3rem" }}
-                value={request.brandName}
-                name="brandName"
+                value={request.colorName}
+                name="colorName"
                 onChange={handleRequest}
                 allowClear
               />
-             <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
-
-              <Radio.Group
-                onChange={handleRequest}
-                value={request.status}
-                name="status"
-                style={{
-                  marginTop: "0.5rem",
-                }}
-              >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+              <div style={{ color: isActive ? "green" : "red" }}>
+                {errorMessage}
+              </div>
             </Form>
           </Modal>
           <Modal
@@ -468,10 +455,9 @@ const Category = () => {
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
-                brandName: "",
-                status: "HOAT_DONG"
-              })
-              
+                colorName: "",
+                status: "HOAT_DONG",
+              });
             }}
             footer={[
               <Button
@@ -486,7 +472,7 @@ const Category = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateBrand(request)}
+                onClick={() => handleUpdateColor(request)}
                 disabled={!isActiveUpdate}
               >
                 Xác nhận
@@ -497,14 +483,16 @@ const Category = () => {
 
             <Form>
               <Input
-                placeholder="Nhập tên hãng vào đây!"
+                placeholder="Nhập tên Màu sắc vào đây!"
                 style={{ marginBottom: "0.3rem" }}
-                value={request.brandName} // Bind to 'brand' in state
-                name="brandName" // Ensure 'name' matches the key in the state
+                value={request.colorName} // Bind to 'brand' in state
+                name="colorName" // Ensure 'name' matches the key in the state
                 onChange={handleRequest} // Update state when input changes
                 allowClear
               />
-                  <div style={{ color: isActiveUpdate ? "green" : "red" }}>{errorMessageUpdate}</div>
+              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
+                {errorMessageUpdate}
+              </div>
 
               <Radio.Group
                 onChange={handleRequest} // Handle the status change
@@ -560,7 +548,7 @@ const Category = () => {
         <Pagination
           current={pagination.current}
           pageSize={pagination.pageSize}
-          total={totalBrands}
+          total={totalColors}
           showSizeChanger
           pageSizeOptions={["3", "5", "10", "20"]}
           onShowSizeChange={(current, pageSize) => {
@@ -568,11 +556,11 @@ const Category = () => {
               current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
               pageSize,
             });
-            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
       </div>
@@ -580,4 +568,4 @@ const Category = () => {
   );
 };
 
-export default Category;
+export default Color;
