@@ -370,10 +370,10 @@ const VoucherList = () => {
                             <Input />
                         </Form.Item>
                         <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" />
+                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }} />
                         </Form.Item>
                         <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" />
+                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }} />
                         </Form.Item>
                         <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
                             <Select>

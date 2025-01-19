@@ -188,7 +188,7 @@ const PromotionList = () => {
 
     const [pagination, setPagination] = useState({
         page: 0,
-        size: 1,
+        size: 5,
         total: 7
     });
 
@@ -202,10 +202,10 @@ const PromotionList = () => {
     }
 
     // Hàm khi ấn nút "Thêm"
-    const handleAdd = () => {
-        setEditingPromotion(null);
-        setIsModalOpen(true);
-    };
+    // const handleAdd = () => {
+    //     setEditingPromotion(null);
+    //     setIsModalOpen(true);
+    // };
 
     // Hàm khi ấn nút "Chỉnh sửa"
     const handleEdit = (record) => {
@@ -236,11 +236,7 @@ const PromotionList = () => {
                 // Cập nhật dữ liệu
                 await axios.put(`${baseUrl}/api/admin/promotion/update/${editingPromotion.id}`, values);
                 message.success('Cập nhật đợt giảm giá thành công!');
-            } else {
-                // Thêm mới
-                await axios.post(`${baseUrl}/api/admin/promotion/add`, values);
-                message.success('Thêm mới phiếu giảm giá thành công!');
-            }
+            } 
             getPagePromotion();
             setIsModalOpen(false);
             form.resetFields();
@@ -293,6 +289,7 @@ const PromotionList = () => {
 
     // MÃ THÊM: Xử lý tìm kiếm
     const handleSearch = (values) => {
+
         console.log('Search Values:', values);
     }
     return (
@@ -306,7 +303,8 @@ const PromotionList = () => {
 
             <Card>
                 <Link to={"/admin/promotion/add"} >
-                    <Button type="primary" style={{
+                    <Button type="primary"
+                     style={{
                         marginBottom: '20px', backgroundColor: '#80C4E9',
                         color: 'white',
                         border: 'none',
@@ -368,10 +366,10 @@ const PromotionList = () => {
                             <Input />
                         </Form.Item>
                         <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" />
+                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }}/>
                         </Form.Item>
                         <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" />
+                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
                         <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
                             <Select>
