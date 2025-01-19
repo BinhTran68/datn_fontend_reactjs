@@ -9,18 +9,12 @@ import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
 import Category from "../admin/product/Category.jsx";
-
-import AddCustomer from "../customer/AddCustomer.jsx";
-import AddressFormModal from "../customer/AddressFormModal.jsx";
-import AddressModal from "../customer/AddressModal.jsx";
 import Customer from "../customer/Customer.jsx";
-import UpdateCustomerForm from "../customer/UpdateCustomerForm.jsx";
 import App from "../customer/App.jsx";
 import Staff from "../customer/Staff.jsx";
-
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
-
+import CustomerTest from "../customer/CustomerTest.jsx";
 
 
 // import SanPham from "../admin/pages/product/SanPham";
@@ -126,26 +120,12 @@ const AdminRouters = {
             path: "promotion/add",
             element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
-        {
-            path: "addCustomer",
-            element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
-        {
-            path: "addressFormModal",
-            element: <PrivateRoute element={<AddressFormModal/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
-        {
-            path: "adressModal",
-            element: <PrivateRoute element={<AddressModal/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
+        
         {
             path: "customer",
             element: <PrivateRoute element={<Customer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
-        {
-            path: "updateCustomerForm",
-            element: <PrivateRoute element={<UpdateCustomerForm/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
+       
         {
             path: "app",
             element: <PrivateRoute element={<App/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
@@ -153,6 +133,10 @@ const AdminRouters = {
         {
             path: "staff",
             element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "customerTest",
+            element: <PrivateRoute element={<CustomerTest/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
 
     ],
