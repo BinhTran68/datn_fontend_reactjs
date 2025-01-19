@@ -62,6 +62,7 @@ import { FaEdit } from "react-icons/fa";
 const Product = () => {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
+  const [filterActice, setFilterActice] = useState(false);
   const [products, setProducts] = useState([]);
   const [selectedProductDetail, setSelectedProductDetail] = useState();
 
@@ -119,7 +120,12 @@ const Product = () => {
   // validate cho create
 
   useEffect(() => {
-    fetchProductsData();
+    if (filterActice) {
+      fetchfilterData(pagination, requestFilter);
+    } else {
+      fetchProductsData();
+    }
+
     fetchDataBrand();
     fetchDataColor();
     fetchDataGender();
@@ -268,6 +274,7 @@ const Product = () => {
       setLoading(true);
       console.log(request);
       await createProductDetail(productData);
+      setFilterActice(false)
       fetchProductsData(); // Refresh data after creation
       message.success("Tạo chi tiết sản phẩm thành công!");
       setRequest({
@@ -292,7 +299,11 @@ const Product = () => {
     try {
       setLoading(true);
       await deleteProductDetail(productId);
-      fetchProductsData(); // Refresh data after deletion
+      if (filterActice) {
+        fetchfilterData(pagination, requestFilter);
+      } else {
+        fetchProductsData();
+      }
       notification.success({
         message: "Success",
         duration: 3,
@@ -1292,6 +1303,7 @@ const Product = () => {
                 // value={request.productId}
                 onChange={(value) => {
                   setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setFilterActice(true);
                   setRequestFilter((prev) => ({
                     ...prev,
                     productName: value, // Cập nhật giá trị nhập vào
@@ -1322,13 +1334,13 @@ const Product = () => {
 
                 // value={dataSelectBrand.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
                     brandName: value, // Cập nhật giá trị nhập vào
                   }));
                   console.log(requestFilter);
-                  
                 }}
                 options={[
                   { value: "", label: "Tất cả thương hiệu" },
@@ -1356,6 +1368,7 @@ const Product = () => {
 
                 value={dataSelectGender.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1388,6 +1401,7 @@ const Product = () => {
 
                 value={dataSelectMaterial.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1420,6 +1434,7 @@ const Product = () => {
 
                 value={dataSelectType.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1453,6 +1468,7 @@ const Product = () => {
 
                 value={dataSelectSole.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1487,6 +1503,7 @@ const Product = () => {
 
                 value={dataSelectColor.id}
                 onChange={(e) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1519,6 +1536,7 @@ const Product = () => {
 
                 value={dataSelectSize.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1566,7 +1584,7 @@ const Product = () => {
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            // fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
         <h3>{products.id}1</h3>
