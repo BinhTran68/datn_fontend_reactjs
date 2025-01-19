@@ -41,6 +41,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
+import { FaEdit } from "react-icons/fa";
 
 const Type = () => {
   const { Title } = Typography;
@@ -108,8 +109,7 @@ const Type = () => {
       pauseOnHover, // Tạm dừng khi hover
       showProgress: true,
       style: colorStyle, // Áp dụng màu sắc
-      type: "success"
-
+      type: "success",
     });
   };
 
@@ -331,8 +331,19 @@ const Type = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button onClick={() => handleGetType(record.id)}>
-                  <RxUpdate size={20} color="primary" /> Cập nhật
+                <Button
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
+                  onClick={() => handleGetType(record.id)}
+                >
+                  Cập nhật
                 </Button>
               </Col>
 

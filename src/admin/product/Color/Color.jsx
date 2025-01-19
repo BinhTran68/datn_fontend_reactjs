@@ -19,7 +19,13 @@ import {
 } from "antd";
 import styles from "./Color.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import axios from "axios";
 import {
   fetchColors,
@@ -34,6 +40,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
+import { FaEdit } from "react-icons/fa";
 
 const Color = () => {
   const { Title } = Typography;
@@ -74,7 +81,9 @@ const Color = () => {
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.colorName)) {
-      setErrorMessage("Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessage(
+        "Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActive(false);
     } else if (request.colorName.trim() === "") {
       setErrorMessage("Không được để trống");
@@ -84,12 +93,14 @@ const Color = () => {
       setIsActive(true);
     }
   }, [request.colorName]);
-  
+
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.colorName)) {
-      setErrorMessageUpdate("Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessageUpdate(
+        "Tên Màu sắc là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActiveUpdate(false);
     } else if (request.colorName.trim() === "") {
       setErrorMessageUpdate("Không được để trống");
@@ -286,8 +297,19 @@ const Color = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button onClick={() => handleGetColor(record.id)}>
-                  <RxUpdate size={20} color="primary" /> Cập nhật
+                <Button
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
+                  onClick={() => handleGetColor(record.id)}
+                >
+                  Cập nhật
                 </Button>
               </Col>
 
@@ -377,10 +399,10 @@ const Color = () => {
               setOpenCreate(true);
             }}
             style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
-                color: "#fff",
-              }}
+              backgroundColor: "#90649C",
+              borderColor: "#90649C",
+              color: "#fff",
+            }}
           >
             Thêm Màu sắc
           </Button>
@@ -421,9 +443,9 @@ const Color = () => {
                 onChange={handleRequest}
                 allowClear
               />
-             <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
-
-              
+              <div style={{ color: isActive ? "green" : "red" }}>
+                {errorMessage}
+              </div>
             </Form>
           </Modal>
           <Modal
@@ -434,9 +456,8 @@ const Color = () => {
               setOpenUpdate(false);
               setRequest({
                 colorName: "",
-                status: "HOAT_DONG"
-              })
-              
+                status: "HOAT_DONG",
+              });
             }}
             footer={[
               <Button
@@ -469,7 +490,9 @@ const Color = () => {
                 onChange={handleRequest} // Update state when input changes
                 allowClear
               />
-                  <div style={{ color: isActiveUpdate ? "green" : "red" }}>{errorMessageUpdate}</div>
+              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
+                {errorMessageUpdate}
+              </div>
 
               <Radio.Group
                 onChange={handleRequest} // Handle the status change

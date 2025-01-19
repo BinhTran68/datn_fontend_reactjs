@@ -49,11 +49,12 @@ import {
   fetchDataSelectSize,
   fetchDataSelectType,
   createProductDetail,
+  filterData,
 } from "./ApiProductDetail.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
-import { debounce, set } from "lodash";
+import { debounce, filter, set } from "lodash";
 import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
@@ -85,7 +86,20 @@ const Product = () => {
   const [request, setRequest] = useState({
     status: "HOAT_DONG",
   });
-  const [requestUpdate, setRequestUpdate] = useState({});
+  const [requestFilter, setRequestFilter] = useState();
+  const [requestUpdate, setRequestUpdate] = useState({
+    productName: null,
+    brandName: null,
+    typeName: null,
+    colorName: null,
+    materialName: null,
+    sizeName: null,
+    soleName: null,
+    genderName: null,
+    status: null,
+    sortByQuantity: null,
+    sortByPrice: null,
+  });
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -115,11 +129,30 @@ const Product = () => {
     fetchDataSole();
     fetchDataType();
   }, [pagination, openUpdate, open]);
+  useEffect(() => {
+    if (requestFilter !== undefined) {
+      // Chỉ gọi fetchfilterData khi requestFilter đã thay đổi
+      fetchfilterData(pagination, requestFilter);
+    }
+  }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
 
   const fetchProductsData = async () => {
     setLoading(true);
     try {
       const response = await fetchProducts(pagination);
+      console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
+      setProducts(response.data);
+      setTotalProducts(response.total);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchfilterData = async () => {
+    setLoading(true);
+    try {
+      const response = await filterData(pagination, requestFilter);
       console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
       setProducts(response.data);
       setTotalProducts(response.total);
@@ -455,6 +488,7 @@ const Product = () => {
       title: "Thao tác",
       dataIndex: "actions",
       key: "actions",
+
       render: (_, record) => {
         if (!record.status || Object.keys(record).length === 0) {
           return null;
@@ -464,17 +498,20 @@ const Product = () => {
             <Row gutter={[16, 16]}>
               <Col>
                 <Button
+                  style={{ width: "8rem" }}
                   onClick={() => {
                     handleGetProduct(record.id);
                   }}
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
                 >
-                  <FaEdit
-                    style={{
-                      color: "green",
-                      marginRight: 8,
-                      fontSize: "1.5rem",
-                    }}
-                  />{" "}
                   Cập nhật
                 </Button>
               </Col>
@@ -482,13 +519,17 @@ const Product = () => {
               <Col>
                 <Popconfirm
                   title="Xóa Hãng"
-                  description="Bạn có muốn xóa Sản phẩmnày kh"
+                  description="Bạn có muốn xóa Sản phẩm này kh"
                   okText="Xác nhận"
                   cancelText="Hủy"
                   onConfirm={() => handleDeleteProductDetail(record.id)}
                 >
-                  <Button className={`${styles.buttonDelete} ant-btn`}>
-                    <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
+                  <Button
+                    style={{ width: "8rem" }}
+                    icon={<FaRegTrashCan size={20} color="#FF4D4F" />}
+                    className={`${styles.buttonDelete} ant-btn`}
+                  >
+                    xóa
                   </Button>
                 </Popconfirm>
               </Col>
@@ -1248,18 +1289,18 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={request.productId}
+                // value={request.productId}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    productId: value, // Cập nhật giá trị nhập vào
+                    productName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
                 }}
                 options={[
                   { value: "", label: "chọn sản phẩm..." },
                   ...dataSelectProduct?.map((p) => ({
-                    value: p.id,
+                    value: p.productName,
                     label: p.productName,
                   })),
                 ]}
@@ -1279,18 +1320,20 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={dataSelectBrand.id}
+                // value={dataSelectBrand.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    brandId: value, // Cập nhật giá trị nhập vào
+                    brandName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
+                  
                 }}
                 options={[
                   { value: "", label: "Tất cả thương hiệu" },
                   ...dataSelectBrand?.map((p) => ({
-                    value: p.id,
+                    value: p.brandName,
                     label: p.brandName,
                   })),
                 ]}
@@ -1313,16 +1356,17 @@ const Product = () => {
 
                 value={dataSelectGender.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    genderId: value, // Cập nhật giá trị nhập vào
+                    genderName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
                 }}
                 options={[
                   { value: "", label: "Tất cả giới tính" },
                   ...dataSelectGender?.map((g) => ({
-                    value: g.id,
+                    value: g.genderName,
                     label: g.genderName,
                   })),
                 ]}
@@ -1344,16 +1388,17 @@ const Product = () => {
 
                 value={dataSelectMaterial.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    materialId: value, // Cập nhật giá trị nhập vào
+                    materialName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
                 }}
                 options={[
                   { value: "", label: "Tất cả chất liệu" },
                   ...dataSelectMaterial?.map((m) => ({
-                    value: m.id,
+                    value: m.materialName,
                     label: m.materialName,
                   })),
                 ]}
@@ -1375,16 +1420,17 @@ const Product = () => {
 
                 value={dataSelectType.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    typeId: value, // Cập nhật giá trị nhập vào
+                    typeName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
                 }}
                 options={[
                   { value: "", label: "Tất cả loại giày" },
                   ...dataSelectType?.map((g) => ({
-                    value: g.id,
+                    value: g.typeName,
                     label: g.typeName,
                   })),
                 ]}
@@ -1407,16 +1453,17 @@ const Product = () => {
 
                 value={dataSelectSole.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    soleId: value, // Cập nhật giá trị nhập vào
+                    soleName: value, // Cập nhật giá trị nhập vào
                   }));
                   console.log(request);
                 }}
                 options={[
                   { value: "", label: "Tất cả loại đế giày" },
                   ...dataSelectSole?.map((s) => ({
-                    value: s.id,
+                    value: s.soleName,
                     label: s.soleName,
                   })),
                 ]}
@@ -1440,16 +1487,17 @@ const Product = () => {
 
                 value={dataSelectColor.id}
                 onChange={(e) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    colorId: e, // Cập nhật giá trị nhập vào
+                    colorName: e, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
                 }}
                 options={[
                   { value: "", label: "Tất cả màu sắc" },
                   ...dataSelectColor?.map((c) => ({
-                    value: c.id,
+                    value: c.colorName,
                     label: c.colorName,
                   })),
                 ]}
@@ -1471,16 +1519,17 @@ const Product = () => {
 
                 value={dataSelectSize.id}
                 onChange={(value) => {
-                  setRequest((prev) => ({
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
                     ...prev,
-                    sizeId: value, // Cập nhật giá trị nhập vào
+                    sizeName: value, // Cập nhật giá trị nhập vào
                   }));
-                  console.log(request);
+                  console.log(requestFilter);
                 }}
                 options={[
                   { value: "", label: "Tất cả kích cỡ" },
                   ...dataSelectSize?.map((s) => ({
-                    value: s.id,
+                    value: s.sizeName,
                     label: s.sizeName,
                   })),
                 ]}
@@ -1508,13 +1557,12 @@ const Product = () => {
           pageSize={pagination.pageSize}
           total={totalProducts}
           showSizeChanger
-          pageSizeOptions={["3", "5", "10", "20"]}
+          pageSizeOptions={["1", "5", "10", "20"]}
           onShowSizeChange={(current, pageSize) => {
             setPagination({
               current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
               pageSize,
             });
-            fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });

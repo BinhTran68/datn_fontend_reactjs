@@ -27,6 +27,28 @@ export const fetchProducts = async (pagination) => {
     throw error;
   }
 };
+export const filterData = async (pagination, requestFilter) => {
+  const { current, pageSize } = pagination;
+
+  try {
+    const response = await api.post(
+      "/productdetail/filter",
+      requestFilter, // Đây là request body
+      {
+        params: { page: current, size: pageSize }, // Đây là params
+      }
+    );
+
+    const { data, meta } = response.data;
+    return { data, total: meta?.totalElement || 0 };
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+
 
 export const fetchDataSelectBrand = async () => {
   try {
