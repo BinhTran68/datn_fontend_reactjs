@@ -17,7 +17,6 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
-import styles from "./Category.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import axios from "axios";
