@@ -29,7 +29,7 @@ import {
 import axios from "axios";
 import {
   fetchColors,
-  createColor,
+  createGender,
   updateColor,
   deleteColor,
   getColor,
@@ -149,7 +149,7 @@ const Color = () => {
     try {
       setLoading(true);
       console.log(request);
-      await createColor(brandData);
+      await createGender(brandData);
 
       setRequestSearch({ name: "" });
       setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -290,7 +290,7 @@ const Color = () => {
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        if (!record.status || Object.keys(record).length === 0) {
+        if (!record.id || Object.keys(record).length === 0) {
           return null;
         }
         return (

@@ -324,7 +324,7 @@ const Type = () => {
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        if (!record.status || Object.keys(record).length === 0) {
+        if (!record.id || Object.keys(record).length === 0) {
           return null;
         }
         return (

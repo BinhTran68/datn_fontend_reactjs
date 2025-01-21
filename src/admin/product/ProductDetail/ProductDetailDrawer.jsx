@@ -43,13 +43,19 @@ const ProductDetailDrawer = ({
   const [size, setSize] = useState([]);
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState([]);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     setProducts(dataSelectProduct);
     setSizes(dataSelectSize);
     setColors(dataSelectColor);
   }, [color,size,product]);
-
+  const resetFrom = () => {
+    form.resetFields();
+    generateTableData(color, size, product);
+    setTableData([]);
+    setRequest({})
+  };
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
@@ -182,18 +188,13 @@ const ProductDetailDrawer = ({
           key: `${color}-${size}`,
           colorId: color,
           sizeId: size,
-          // maSanPham: generateProductCode(productItem.tenSanPham),
           productId: product, //selectedProduct.id,
           productName: `${productItem.productName} [ ${sizeItem.sizeName}-${colorItem.colorName} ]`,
-          // productName: `${productItem.productName}`,
           quantity: 0,
           price: 0,
           image: "",
-          // sizeName: sizeItem.tenKichThuoc, // Lấy thông tin kích thước từ sizeItem
-          // tenMau: colorItem.tenMau, // Lấy thông tin màu sắc từ colorItem
           status: 1,
           color: color, // Thêm trường color để nhóm các dòng cùng màu
-
           // mỗi biến thể khi render ra đều có các thuộc tính
           brandId: request.brandId||null,
           materialId: request.materialId||null,
@@ -250,7 +251,7 @@ const ProductDetailDrawer = ({
           <Button onClick={onClose}>Hủy</Button>
           <Button  onClick={async () => {
                 await onSubmit(tableData);
-                // resetFrom();
+                resetFrom();
               }} type="primary">
             Thêm
           </Button>
@@ -269,40 +270,24 @@ const ProductDetailDrawer = ({
                 <h6>Thông tin cơ bản</h6>
               </Col>
               <Col span={24}>
-                <p>Tên sản phẩm</p>
+                <div>Tên sản phẩm</div>
+                <Form.Item>
+
                 <Select
                   showSearch
                   style={{ width: "12rem" }}
                   placeholder="Chọn sản phẩm"
                   optionFilterProp="label"
                   value={request.productId}
-                  // onChange={(value) =>
-                  //   setRequest((prev) => ({
-                  //     ...prev,
-                  //     productId: value,
-                  //   }))
-                  // }
                   onChange={handleProductChange}
                   options={dataSelectProduct?.map((p) => ({
                     value: p.id,
                     label: p.productName,
                   }))}
                 />
+                </Form.Item>
               </Col>
               <Col span={24}>
-                {/* <TextArea
-                  value={request.description}
-                  style={{ width: "max" }}
-                  rows={4}
-                  placeholder="Mô tả tối đa 200 từ"
-                  maxLength={200}
-                  onChange={(e) =>
-                    setRequest((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                /> */}
                 <div>Mô tả</div>
                 <ReactQuill
                   theme="snow"
@@ -332,7 +317,7 @@ const ProductDetailDrawer = ({
           <Card>
             <Row gutter={[5, 5]}>
               <Col span={24}>
-                <h5>Thuộc tính</h5>
+                <h6>Thuộc tính</h6>
               </Col>
               <Col span={8}>
                 <div>Thương hiệu</div>
@@ -464,13 +449,7 @@ const ProductDetailDrawer = ({
                   style={{ width: "12rem" }}
                   placeholder="Chọn màu sắc"
                   optionFilterProp="label"
-                  value={request.colorId}
-                  // onChange={(value) =>
-                  //   setRequest((prev) => ({
-                  //     ...prev,
-                  //     colorId: value,
-                  //   }))
-                  // }
+                  // value={request.colorId}
                   onChange={handleColorChange}
                   options={dataSelectColor?.map((c) => ({
                     value: c.id,
@@ -486,13 +465,7 @@ const ProductDetailDrawer = ({
                   style={{ width: "12rem" }}
                   placeholder="Chọn kích cỡ"
                   optionFilterProp="label"
-                  value={request.sizeId}
-                  // onChange={(value) =>
-                  //   setRequest((prev) => ({
-                  //     ...prev,
-                  //     sizeId: value,
-                  //   }))
-                  // }
+                  // value={request.sizeId}
                   onChange={handleSizeChange}
                   options={dataSelectSize?.map((s) => ({
                     value: s.id,
@@ -500,48 +473,6 @@ const ProductDetailDrawer = ({
                   }))}
                 />
               </Col>
-              {/* <Col span={24}>
-                <InputNumber
-                  value={request.quantity}
-                  placeholder="Số lượng"
-                  allowClear
-                  min={0}
-                  onChange={(value) =>
-                    setRequest((prev) => ({
-                      ...prev,
-                      quantity: value,
-                    }))
-                  }
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.price}
-                  placeholder="Giá bán"
-                  allowClear
-                  min={0}
-                  onChange={(value) =>
-                    setRequest((prev) => ({
-                      ...prev,
-                      price: value,
-                    }))
-                  }
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.weight}
-                  placeholder="Cân nặng"
-                  allowClear
-                  min={0}
-                  onChange={(value) =>
-                    setRequest((prev) => ({
-                      ...prev,
-                      weight: value,
-                    }))
-                  }
-                />
-              </Col> */}
             </Row>
           </Card>
         </Col>

@@ -17,6 +17,7 @@ import Product from "../admin/product/Product/Product.jsx";
 import Size from "../admin/product/Size/Size.jsx";
 import Sole from "../admin/product/Sole/Sole.jsx";
 import Type from "../admin/product/Type/Type.jsx";
+import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx"
 // import Product from "../admin/product/ProductComponent/Product.jsx";
 import ProductDetail from "../admin/product/ProductDetail/ProductDetail.jsx"
 
@@ -125,6 +126,10 @@ const AdminRouters = {
         {
             path: "productdetail",
             element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "productdetail/add",
+            element: <PrivateRoute element={<AddProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
 

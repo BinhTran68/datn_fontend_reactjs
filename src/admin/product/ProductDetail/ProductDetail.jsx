@@ -20,8 +20,10 @@ import {
   Select,
   InputNumber,
   notification,
+
 } from "antd";
 import ModalEditSanPham from "./ModalEditSanPham.jsx";
+import Breadcrumb from "../BreadCrumb.jsx";
 import styles from "./ProductDetail.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -59,6 +61,7 @@ import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
 import ProductDetailDrawer from "./ProductDetailDrawer.jsx";
+import { Link } from "react-router-dom";
 
 const Product = () => {
   const { Title } = Typography;
@@ -293,38 +296,6 @@ const Product = () => {
   //     setOpen(false);
   //   }
   // };
-  const handleCreateProductDetail = async (tableData) => {
-    try {
-      setLoading(true);
-      console.log(request);
-      await createProductDetailList(tableData);
-      setFilterActice(false);
-      fetchProductsData(); // Refresh data after creation
-      notification.success({
-        message: "Success",
-        duration: 4,
-        pauseOnHover: false,
-        showProgress: true,
-        description: `Thêm sản phẩm  thành công!`,
-      });
-     
-    } catch (error) {
-
-      console.error("Failed to update san pham", error);
-      notification.error({
-        message: "Error",
-        duration: 4,
-        pauseOnHover: false,
-        showProgress: true,
-        description: "Failed to update san pham",
-      });
-    } finally {
-      setLoading(false);
-      // Đặt lại request, giữ nguyên status
-
-      setOpen(false);
-    }
-  };
 
   // xóa
 
@@ -523,7 +494,8 @@ const Product = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
       },
@@ -586,9 +558,11 @@ const Product = () => {
 
   return (
     <Card>
+      <Breadcrumb/>
       <Title level={2}>Sản Phẩm</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
+        
           <Col span={20}>
             <Input
               placeholder="Nhập vào tên Sản phẩmbạn muốn tìm!"
@@ -614,25 +588,12 @@ const Product = () => {
           </Col>
         </Row>
         <Row>
-          <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />}>
-            Thêm sản phẩm
-          </Button>
-          <ProductDetailDrawer
-            open={open}
-            onClose={() => setOpen(false)}
-            onSubmit={handleCreateProductDetail}
-            request={request}
-            setRequest={setRequest}
-            dataSelectProduct={dataSelectProduct}
-            dataSelectBrand={dataSelectBrand}
-            dataSelectGender={dataSelectGender}
-            dataSelectMaterial={dataSelectMaterial}
-            dataSelectType={dataSelectType}
-            dataSelectSole={dataSelectSole}
-            dataSelectColor={dataSelectColor}
-            dataSelectSize={dataSelectSize}
-          />
 
+          <Link to={"add"}>
+            <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />}>
+              Thêm sản phẩm
+            </Button>
+          </Link>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);
@@ -659,7 +620,7 @@ const Product = () => {
                 style={{
                   width: "10rem",
                 }}
-                placeholder="chọn sản phẩm"
+                placeholder="Tất cả sản phẩm"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
                 //   (optionA?.label ?? "")
@@ -677,7 +638,7 @@ const Product = () => {
                   }));
                 }}
                 options={[
-                  { value: "", label: "chọn sản phẩm..." },
+                  { value: "", label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
