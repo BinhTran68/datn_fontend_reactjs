@@ -64,19 +64,18 @@ const columns = (handleEdit, handleDelete) => [
         render: (_, record) => (
             <Space size="middle">
                 <Button style={{
-                    backgroundColor: '#80C4E9',
-                    color: 'white',
+
                     border: 'none',
                 }} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
                 <Button style={{
-                    backgroundColor: '#80C4E9',
-                    color: 'white',
+
                     border: 'none',
                 }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
             </Space>
         ),
     },
 ];
+
 // MÃ THÊM: Advanced Search Form
 const AdvancedSearchForm = ({ onSearch }) => {
     const { token } = theme.useToken();
@@ -105,21 +104,13 @@ const AdvancedSearchForm = ({ onSearch }) => {
                         <Input placeholder="Nhập tên đợt giảm giá" />
                     </Form.Item>
                 </Col>
-                <Col span={8}>
-                    <Form.Item name="promotionType" label="Loại đợt giảm giá">
-                        <Input placeholder="Nhập đợt loại  giảm" />
-                    </Form.Item>
-                </Col>
+              
                 <Col span={8}>
                     <Form.Item name="discountValue" label="Giá trị giảm">
                         <Input placeholder="Nhập giá trị giảm" />
                     </Form.Item>
                 </Col>
-                <Col span={8}>
-                    <Form.Item name="quantity" label="Số lượng">
-                        <Input placeholder="Nhập số lượng" />
-                    </Form.Item>
-                </Col>
+               
                 <Col span={8}>
                     <Form.Item name="startDate" label="Ngày bắt đầu">
                         <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
@@ -153,8 +144,7 @@ const AdvancedSearchForm = ({ onSearch }) => {
                 <div style={{ textAlign: 'right' }}>
                     <Space size="small">
                         <Button type="primary" htmlType="submit" style={{
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+
                             border: 'none',
                         }}>
                             Lọc
@@ -164,8 +154,7 @@ const AdvancedSearchForm = ({ onSearch }) => {
                                 form.resetFields();
                             }}
                             style={{
-                                backgroundColor: '#80C4E9',
-                                color: 'white',
+
                                 border: 'none',
                             }}
                         >
@@ -304,11 +293,7 @@ const PromotionList = () => {
             <Card>
                 <Link to={"/admin/promotion/add"} >
                     <Button type="primary"
-                     style={{
-                        marginBottom: '20px', backgroundColor: '#80C4E9',
-                        color: 'white',
-                        border: 'none',
-                    }}>
+                     >
                         Thêm mới
                     </Button>
                 </Link>
@@ -332,16 +317,14 @@ const PromotionList = () => {
                     cancelText="Hủy"
                     okButtonProps={{
                         style: {
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+ 
                             border: 'none',
                             // fontFamily: 'Poppins',
                         },
                     }}
                     cancelButtonProps={{
                         style: {
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+
                             border: 'none',
                             // fontFamily: 'Poppins',
                         },

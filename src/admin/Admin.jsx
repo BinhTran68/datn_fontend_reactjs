@@ -1,18 +1,18 @@
-import {Button, Layout, theme, Card, Badge, Avatar} from "antd";
+import { Button, Layout, theme, Card, Badge, Avatar } from "antd";
 
 
 
 // import MenuList from "../component/sidebar/MenuList";
-import {useEffect, useState} from "react";
-import {MenuUnfoldOutlined, MenuFoldOutlined} from "@ant-design/icons";
-import {Outlet, Link} from "react-router-dom";
-import {Content} from "antd/es/layout/layout";
+import { useEffect, useState } from "react";
+import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
+import { Outlet, Link } from "react-router-dom";
+import { Content } from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
 import img from "./../../public/img/thehands.png"
 
 
-const {Header, Sider} = Layout;
+const { Header, Sider } = Layout;
 
 function Admin() {
     const [darkTheme, setDarkTheme] = useState(false);
@@ -31,7 +31,7 @@ function Admin() {
         setDarkTheme(!darkTheme);
     };
     const {
-        token: {colorBgContainer},
+        token: { colorBgContainer },
     } = theme.useToken();
 
     const fetchUser = async () => {
@@ -79,9 +79,9 @@ function Admin() {
                 className="sidebar min-vh-100"
             >
                 <div className={"d-flex justify-content-center mt-5"}>
-                    <img width={145} src={img} alt=""/>
+                    <img width={145} src={img} alt="" />
                 </div>
-                <MenuList darkTheme={darkTheme}/>
+                <MenuList darkTheme={darkTheme} />
                 {/*<ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />*/}
             </Sider>
             <Layout>
@@ -99,10 +99,10 @@ function Admin() {
                         type="text"
                         className="toggle"
                         onClick={() => setCollapse(!collapse)}
-                        icon={collapse ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
+                        icon={collapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                     />
 
-                    <div style={{display: "flex", alignItems: "center"}}>
+                    <div style={{ display: "flex", alignItems: "center" }}>
                         {isLoggedIn ? (
                             // Hiển thị thông tin người dùng khi đã đăng nhập
                             <>
@@ -113,32 +113,36 @@ function Admin() {
                                         lineHeight: "1.5",
                                     }}
                                 >
-                  <span
-                      style={{
-                          fontWeight: "bold",
-                          fontSize: "16px",
-                          display: "block",
-                      }}
-                  >
-                    {userInfo.ten}
-                  </span>
-                                    <span style={{color: "#888", fontSize: "14px"}}>
-                    {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
-                  </span>
+                                    <span
+                                        style={{
+                                            fontWeight: "bold",
+                                            fontSize: "16px",
+                                            display: "block",
+                                        }}
+                                    >
+                                        {userInfo.ten}
+                                    </span>
+                                    <span style={{ color: "#888", fontSize: "14px" }}>
+                                        {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
+                                    </span>
                                 </div>
-                                <Avatar size={40} src={userInfo.avatar}/>
+                                <Avatar size={40} src={userInfo.avatar} />
                             </>
                         ) : (
                             <Link to="/auth/login-admin">
-                                <Button type="primary">Đăng nhập</Button>
+                                <Button style={{
+                                    marginBottom: '20px',
+                 
+                                    border: 'none',
+                                }} type="primary">Đăng nhập</Button>
                             </Link>
                         )}
 
                     </div>
                 </Header>
                 <Content>
-                    <div style={{padding: "20px"}}>
-                        <Outlet/>
+                    <div style={{ padding: "20px" }}>
+                        <Outlet />
                     </div>
                 </Content>
             </Layout>
