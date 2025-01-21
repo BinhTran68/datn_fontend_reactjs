@@ -2,7 +2,7 @@ import {Badge} from "antd";
 import React from "react";
 
 export
-const itemsTabsBillList = () =>  {
+    const itemsTabsBillList = () =>  {
    return  [
         {
             key: 'all',

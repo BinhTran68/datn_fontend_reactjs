@@ -1,9 +1,11 @@
-import {Button, Image} from "antd";
+import {Button, Image, Tag} from "antd";
 import {convertLongTimestampToDate} from "../../../helpers/Helpers.js";
 import {MdDelete} from "react-icons/md";
 import React from "react";
 import {Link} from "react-router-dom";
 import {FiEye} from "react-icons/fi";
+import BillStatusComponent from "../componets/BillStatusComponent.jsx";
+import BillTypeComponent from "../componets/BillTypeComponent.jsx";
 
 export const columnsBillProductTable = (onActionClick) => [
     {
@@ -106,12 +108,15 @@ export  const  columnsBillList = () => {
             title: 'Loại đơn hàng',
             dataIndex: 'billType',
             key: 'billType',
+            render: (record) =>   <BillTypeComponent text={record}  status={record}/>,
             align: 'center',
+
         },
         {
             title: 'Trạng thái',
             dataIndex: 'status',
             align: 'center',
+            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
             key: 'status',
         },
         {

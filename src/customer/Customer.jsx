@@ -387,7 +387,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { Input, Select, DatePicker, Slider, Button, Table, Modal, Form } from 'antd';
+import {Input, Select, DatePicker, Slider, Button, Table, Modal, Form, Card} from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import axios from 'axios';
@@ -747,115 +747,119 @@ const Cus = () => {
   return (
     <div>
       <h2>Quản lý tài khoản khách hàng</h2>
-      <div style={{ padding: '20px', background: '#fff', borderRadius: '5px', marginBottom: '20px' }}>
-        <h3>Bộ lọc</h3>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-          <label style={{ marginRight: '10px' }}>Tìm kiếm:</label>
-          <Input
-            placeholder="Tìm kiếm tên, sdt, địa chỉ..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: '250px', marginRight: '20px' }}
-          />
-          <label style={{ marginRight: '10px' }}>Ngày sinh:</label>
-          <RangePicker
-            format="DD/MM/YYYY"
-            value={dobRange}
-            onChange={(dates) => setDobRange(dates)}
-            style={{ marginRight: '20px' }}
-          />
+      <Card>
+
+        <div style={{padding: '20px', background: '#fff', borderRadius: '5px', marginBottom: '20px'}}>
+          <h3>Bộ lọc</h3>
+          <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+            <label style={{marginRight: '10px'}}>Tìm kiếm:</label>
+            <Input
+                placeholder="Tìm kiếm tên, sdt, địa chỉ..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{width: '250px', marginRight: '20px'}}
+            />
+            <label style={{marginRight: '10px'}}>Ngày sinh:</label>
+            <RangePicker
+                format="DD/MM/YYYY"
+                value={dobRange}
+                onChange={(dates) => setDobRange(dates)}
+                style={{marginRight: '20px'}}
+            />
+          </div>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <label style={{marginRight: '10px'}}>Trạng thái:</label>
+            <Select
+                value={status}
+                onChange={(value) => setStatus(value)}
+                style={{width: '250px', marginRight: '20px'}}
+            >
+              <Option value="Tất cả">Tất cả</Option>
+              <Option value="Kích hoạt">Kích hoạt</Option>
+              <Option value="Khóa">Khóa</Option>
+            </Select>
+            <label style={{marginRight: '10px'}}>Khoảng tuổi:</label>
+            <Slider
+                range
+                min={0}
+                max={100}
+                value={ageRange}
+                onChange={(value) => setAgeRange(value)}
+                style={{width: '250px'}}
+            />
+          </div>
+          <div style={{marginTop: '20px'}}>
+            <Button
+                type="primary"
+                icon={<SearchOutlined/>}
+                onClick={handleSearch}
+                style={{marginRight: '10px'}}
+            >
+              Tìm kiếm
+            </Button>
+            <Button type="default" icon={<ReloadOutlined/>} onClick={handleReset}>
+              Làm mới bộ lọc
+            </Button>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <label style={{ marginRight: '10px' }}>Trạng thái:</label>
-          <Select
-            value={status}
-            onChange={(value) => setStatus(value)}
-            style={{ width: '250px', marginRight: '20px' }}
-          >
-            <Option value="Tất cả">Tất cả</Option>
-            <Option value="Kích hoạt">Kích hoạt</Option>
-            <Option value="Khóa">Khóa</Option>
-          </Select>
-          <label style={{ marginRight: '10px' }}>Khoảng tuổi:</label>
-          <Slider
-            range
-            min={0}
-            max={100}
-            value={ageRange}
-            onChange={(value) => setAgeRange(value)}
-            style={{ width: '250px' }}
-          />
-        </div>
-        <div style={{ marginTop: '20px' }}>
-          <Button
-            type="primary"
-            icon={<SearchOutlined />}
-            onClick={handleSearch}
-            style={{ marginRight: '10px' }}
-          >
-            Tìm kiếm
-          </Button>
-          <Button type="default" icon={<ReloadOutlined />} onClick={handleReset}>
-            Làm mới bộ lọc
-          </Button>
-        </div>
-      </div>
-      <div style={{ marginBottom: '10px' }}>
-        <h3 style={{ display: 'inline-block', marginRight: '10px' }}>Danh sách khách hàng</h3>
-        <Button type="primary" style={{ float: 'right' }} icon={<PlusOutlined />} onClick={handleAdd}>
+
+      </Card>
+      <div style={{marginBottom: '10px'}}>
+        <h3 style={{display: 'inline-block', marginRight: '10px'}}>Danh sách khách hàng</h3>
+        <Button type="primary" style={{float: 'right'}} icon={<PlusOutlined/>} onClick={handleAdd}>
           Thêm
         </Button>
       </div>
-      <Table columns={columns} dataSource={data} />
+      <Table columns={columns} dataSource={data}/>
       <Modal
-        title={selectedRecord ? `Chỉnh sửa khách hàng ${selectedRecord.ten}` : 'Thêm khách hàng'}
-        visible={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
-        width={800}
+          title={selectedRecord ? `Chỉnh sửa khách hàng ${selectedRecord.ten}` : 'Thêm khách hàng'}
+          visible={isModalVisible}
+          onOk={handleModalOk}
+          onCancel={handleModalCancel}
+          width={800}
       >
         <Form form={form} layout="vertical">
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div style={{ flex: 1 }}>
+          <div style={{display: 'flex', gap: '20px'}}>
+            <div style={{flex: 1}}>
               <Form.Item
-                label="Tên khách hàng"
-                name="ten"
-                rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng!' }]}
+                  label="Tên khách hàng"
+                  name="ten"
+                  rules={[{required: true, message: 'Vui lòng nhập tên khách hàng!'}]}
               >
-                <Input />
+                <Input/>
               </Form.Item>
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{flex: 1}}>
               <Form.Item
-                label="CCCD"
-                name="cccd"
-                rules={[{ required: true, message: 'Vui lòng nhập CCCD!' }]}
+                  label="CCCD"
+                  name="cccd"
+                  rules={[{required: true, message: 'Vui lòng nhập CCCD!'}]}
               >
-                <Input />
-              </Form.Item>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                label="Số điện thoại"
-                name="sdt"
-                rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-              >
-                <Input />
-              </Form.Item>
-            </div>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
-              >
-                <Input />
+                <Input/>
               </Form.Item>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div style={{display: 'flex', gap: '20px'}}>
+            <div style={{flex: 1}}>
+              <Form.Item
+                  label="Số điện thoại"
+                  name="sdt"
+                  rules={[{required: true, message: 'Vui lòng nhập số điện thoại!'}]}
+              >
+                <Input/>
+              </Form.Item>
+            </div>
+            <div style={{flex: 1}}>
+              <Form.Item
+                  label="Email"
+                  name="email"
+                  rules={[{required: true, message: 'Vui lòng nhập email!'}]}
+              >
+                <Input/>
+              </Form.Item>
+            </div>
+          </div>
+          <div style={{display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
               <Form.Item
                 label="Giới tính"

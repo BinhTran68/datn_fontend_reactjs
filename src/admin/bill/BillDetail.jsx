@@ -3,7 +3,12 @@ import {Link, useParams} from "react-router-dom";
 import {Badge, Button, Card, Descriptions, Image, Modal, Steps, Table, Tag} from "antd";
 
 import axios from "axios";
-import {baseUrl, convertLongTimestampToDate, generateAddressString} from "../../helpers/Helpers.js";
+import {
+    baseUrl,
+    convertBillStatusToString,
+    convertLongTimestampToDate,
+    generateAddressString
+} from "../../helpers/Helpers.js";
 import {FiEye} from "react-icons/fi";
 import {FaClipboardCheck} from "react-icons/fa";
 import StepProgress from "./componets/StepProgress.jsx";
@@ -17,6 +22,7 @@ import {MdDelete} from "react-icons/md";
 import {IoAdd} from "react-icons/io5";
 import ModalBillProductList from "./componets/ModalBillProductList.jsx";
 import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
+import BillStatusComponent from "./componets/BillTypeComponent.jsx";
 
 
 const {Step} = Steps;
@@ -160,6 +166,7 @@ const columnsBillHistory = [
     {
         title: 'Trạng thái',
         dataIndex: 'status',
+        render: (record) => <BillStatusComponent text={record} status={record} />,
         key: 'status',
     },
     {
@@ -322,6 +329,7 @@ const BillDetail = () => {
 
 
         const handleButtonConfirm = (step) => {
+
             if (step === "CHO_XAC_NHAN") {
                 return "Xác nhận";
             }
@@ -333,6 +341,9 @@ const BillDetail = () => {
             }
 
             if (step === "DANG_VAN_CHUYEN") {
+                return "Xác nhận thanh toán";
+            }
+            if (step === "DA_THANH_TOAN") {
                 return "Xác nhận hoàn thành";
             }
         }
@@ -413,7 +424,6 @@ const BillDetail = () => {
             setOpen(true)
             getBillProducts();
             setModalType(modalListProduct)
-
         };
 
         const getBillProducts = async () => {
@@ -433,18 +443,6 @@ const BillDetail = () => {
             setModalType(modalEditForm)
         };
 
-        // useEffect(() => {
-        //     const fetchAddressString = async () => {
-        //
-        //     };
-        //
-        //     console.log(currentBill?.address?.provinceId)
-        //
-        //     if (currentBill) {
-        //         fetchAddressString();
-        //     }
-        // }, [currentBill]);
-
         return (
             <div className={"flex-column d-flex gap-3"}>
 
@@ -452,6 +450,7 @@ const BillDetail = () => {
                     width={widthModal}
                     open={open}
                     onOk={handleOkModal}
+
                     confirmLoading={confirmLoading}
                     onCancel={handleCancel}
                 >
@@ -470,23 +469,18 @@ const BillDetail = () => {
                             handleOnEdit={handleOnEditBill}
                         />
                     )}
-
-
                 </Modal>
-
-
                 <Card className={"mb-2"}>
                     <div>
                         <StepProgress steps={steps1}
                                       billHistoryList={billHistory}
                                       currentStep={billHistory.length}/>
                     </div>
-
                     <div className={"d-flex align-items-center justify-content-between"}>
                         <div className={"d-flex align-items-cente gap-5"}>
                             {
                                 currentBill?.status !== "DA_HOAN_THANH" ?
-                                    <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>
+                                    <Button  type={"primary"} onClick={handleOnConfirmUpdateValue}>
                                         {
                                             handleButtonConfirm(currentBill?.status)
                                         }
@@ -498,8 +492,6 @@ const BillDetail = () => {
                                         Hủy
                                     </Button> : <div></div>
                             }
-
-
                         </div>
                         <Button type={"primary"} onClick={showModalBillHistory}>
                             Lịch sử hóa đơn
@@ -508,7 +500,6 @@ const BillDetail = () => {
                     </div>
 
                 </Card>
-
                 <Card>
                     <div className={"mb-4"}>
                         <h3>Lịch sử thanh toán</h3>
@@ -533,17 +524,21 @@ const BillDetail = () => {
                         </Descriptions.Item>
 
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Trạng thái  </span>}>
-                            <Tag color="blue">  {currentBill?.status ?? ""}</Tag>
+                            <Tag style={{fontSize: 16}} color="blue">
+                                {convertBillStatusToString(currentBill?.status ?? "")}
+                             </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Tên khách hàng  </span>}>
-                            <Tag color="blue">  {currentBill?.customerName ?? ""}</Tag>
+                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerName ?? ""}</Tag>
                         </Descriptions.Item>
 
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Loại  </span>}>
-                            <Tag color="purple">ONLINE</Tag>
+                            <Tag style={{fontSize: 16}} color="purple">
+                                {currentBill?.billType ?? ""}
+                            </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Số điện thoại  </span>}>
-                            <Tag color="blue">  {currentBill?.customerPhone ?? ""}</Tag>
+                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerPhone ?? ""}</Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Địa chỉ  </span>} span={2}>
                             {addressString}

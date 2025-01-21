@@ -504,6 +504,7 @@ const CustomerTest = () => {
                 okText="Lưu"
                 cancelText="Hủy"
                 width={600}
+
                 style={{
                     borderRadius: '10px',
                     backgroundColor: '#f4f6f9',
