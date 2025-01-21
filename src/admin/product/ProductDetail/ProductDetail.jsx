@@ -582,7 +582,7 @@ const Product = () => {
         </Row>
         <Row>
           <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />}>
-            Thêm Chi tiết sản phẩm
+            Thêm sản phẩm
           </Button>
           <ProductDetailDrawer
             open={open}

@@ -48,7 +48,7 @@ const ProductDetailDrawer = ({
     setProducts(dataSelectProduct);
     setSizes(dataSelectSize);
     setColors(dataSelectColor);
-  }, []);
+  }, [color,size,product]);
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -169,6 +169,12 @@ const ProductDetailDrawer = ({
     selectedColors.forEach((color) => {
       const colorItem = colors.find((item) => item.id === color);
       const productItem = products.find((item) => item.id === selectedProduct);
+      if (!productItem) {
+        console.log(products);
+        
+        console.error("Không tìm thấy sản phẩm với id:", selectedProduct);
+        return; // Dừng nếu không tìm thấy sản phẩm
+      }
       const variants = selectedSizes.map((size) => {
         const sizeItem = sizes.find((item) => item.id === size); // Sửa lỗi
 
@@ -199,6 +205,8 @@ const ProductDetailDrawer = ({
       });
 
       console.log(tableData);
+      console.log(productItem);
+      
       newData.push(...variants);
     });
 
@@ -258,7 +266,7 @@ const ProductDetailDrawer = ({
                 <h6>Thông tin cơ bản</h6>
               </Col>
               <Col span={24}>
-                <div>Tên sản phẩm</div>
+                <p>Tên sản phẩm</p>
                 <Select
                   showSearch
                   style={{ width: "12rem" }}
@@ -321,7 +329,7 @@ const ProductDetailDrawer = ({
           <Card>
             <Row gutter={[5, 5]}>
               <Col span={24}>
-                <h6>Thuộc tính</h6>
+                <h5>Thuộc tính</h5>
               </Col>
               <Col span={8}>
                 <div>Thương hiệu</div>
