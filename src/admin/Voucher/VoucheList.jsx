@@ -73,16 +73,12 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
                         padding: '5px 10px',
                         display: 'inline-block',
                     }}
-                    // onClick={() => handleToggleStatus(record)} // Cho phép click để đổi trạng thái
                 >
                     {displayStatus}
                 </div>
             );
         },
     },
-    
-    
-    
     ,    
     {
         title: 'Thao tác',
@@ -116,7 +112,6 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
     },
 ];
 
-// MÃ THÊM: Advanced Search Form
 const AdvancedSearchForm = ({ onSearch }) => {
     const { token } = theme.useToken();
     const [form] = Form.useForm();

@@ -19,7 +19,13 @@ import {
 } from "antd";
 import styles from "./Sole.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import axios from "axios";
 import {
   fetchSoles,
@@ -34,6 +40,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
+import { FaEdit } from "react-icons/fa";
 
 const Sole = () => {
   const { Title } = Typography;
@@ -74,7 +81,9 @@ const Sole = () => {
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.soleName)) {
-      setErrorMessage("Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessage(
+        "Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActive(false);
     } else if (request.soleName.trim() === "") {
       setErrorMessage("Không được để trống");
@@ -84,12 +93,14 @@ const Sole = () => {
       setIsActive(true);
     }
   }, [request.soleName]);
-  
+
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.soleName)) {
-      setErrorMessageUpdate("Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessageUpdate(
+        "Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActiveUpdate(false);
     } else if (request.soleName.trim() === "") {
       setErrorMessageUpdate("Không được để trống");
@@ -268,8 +279,7 @@ const Sole = () => {
           return null;
         }
         return (
-                   <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-
+          <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
             {status} {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
@@ -287,8 +297,19 @@ const Sole = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button onClick={() => handleGetSole(record.id)}>
-                  <RxUpdate size={20} color="primary" /> Cập nhật
+                <Button
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
+                  onClick={() => handleGetSole(record.id)}
+                >
+                  Cập nhật
                 </Button>
               </Col>
 
@@ -378,10 +399,10 @@ const Sole = () => {
               setOpenCreate(true);
             }}
             style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
-                color: "#fff",
-              }}
+              backgroundColor: "#90649C",
+              borderColor: "#90649C",
+              color: "#fff",
+            }}
           >
             Thêm Đế giày
           </Button>
@@ -422,9 +443,9 @@ const Sole = () => {
                 onChange={handleRequest}
                 allowClear
               />
-             <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
-
-              
+              <div style={{ color: isActive ? "green" : "red" }}>
+                {errorMessage}
+              </div>
             </Form>
           </Modal>
           <Modal
@@ -435,9 +456,8 @@ const Sole = () => {
               setOpenUpdate(false);
               setRequest({
                 soleName: "",
-                status: "HOAT_DONG"
-              })
-              
+                status: "HOAT_DONG",
+              });
             }}
             footer={[
               <Button
@@ -470,7 +490,9 @@ const Sole = () => {
                 onChange={handleRequest} // Update state when input changes
                 allowClear
               />
-                  <div style={{ color: isActiveUpdate ? "green" : "red" }}>{errorMessageUpdate}</div>
+              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
+                {errorMessageUpdate}
+              </div>
 
               <Radio.Group
                 onChange={handleRequest} // Handle the status change

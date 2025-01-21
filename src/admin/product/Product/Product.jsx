@@ -19,7 +19,13 @@ import {
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
+} from "react";
 import axios from "axios";
 import {
   fetchProducts,
@@ -34,6 +40,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
+import { FaEdit } from "react-icons/fa";
 
 const Product = () => {
   const { Title } = Typography;
@@ -74,7 +81,9 @@ const Product = () => {
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessage("Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessage(
+        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActive(false);
     } else if (request.productName.trim() === "") {
       setErrorMessage("Không được để trống");
@@ -84,12 +93,14 @@ const Product = () => {
       setIsActive(true);
     }
   }, [request.productName]);
-  
+
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
 
   useLayoutEffect(() => {
     if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessageUpdate("Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt");
+      setErrorMessageUpdate(
+        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
+      );
       setIsActiveUpdate(false);
     } else if (request.productName.trim() === "") {
       setErrorMessageUpdate("Không được để trống");
@@ -124,7 +135,10 @@ const Product = () => {
     setLoading(true);
     setPagination((prev) => ({ ...prev, current: 1 }));
     try {
-      const { data, total } = await searchNameProduct(pagination, requestSearch);
+      const { data, total } = await searchNameProduct(
+        pagination,
+        requestSearch
+      );
       setProducts(data);
       setTotalProducts(total);
     } catch (error) {
@@ -220,7 +234,10 @@ const Product = () => {
     }));
 
     return [
-      ...products.map((product, index) => ({ ...product, key: product.id || index })),
+      ...products.map((product, index) => ({
+        ...product,
+        key: product.id || index,
+      })),
       ...emptyData,
     ];
   };
@@ -268,8 +285,7 @@ const Product = () => {
           return null;
         }
         return (
-                   <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-
+          <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
             {status} {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
@@ -287,8 +303,19 @@ const Product = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button onClick={() => handleGetProduct(record.id)}>
-                  <RxUpdate size={20} color="primary" /> Cập nhật
+                <Button
+                  onClick={() => handleGetProduct(record.id)}
+                  icon={
+                    <FaEdit
+                      style={{
+                        color: "green",
+                        marginRight: 8,
+                        fontSize: "1.5rem",
+                      }}
+                    />
+                  }
+                >
+                  Cập nhật
                 </Button>
               </Col>
 
@@ -378,10 +405,10 @@ const Product = () => {
               setOpenCreate(true);
             }}
             style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
-                color: "#fff",
-              }}
+              backgroundColor: "#90649C",
+              borderColor: "#90649C",
+              color: "#fff",
+            }}
           >
             Thêm Sản Phẩm
           </Button>
@@ -422,9 +449,9 @@ const Product = () => {
                 onChange={handleRequest}
                 allowClear
               />
-             <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
-
-              
+              <div style={{ color: isActive ? "green" : "red" }}>
+                {errorMessage}
+              </div>
             </Form>
           </Modal>
           <Modal
@@ -435,9 +462,8 @@ const Product = () => {
               setOpenUpdate(false);
               setRequest({
                 productName: "",
-                status: "HOAT_DONG"
-              })
-              
+                status: "HOAT_DONG",
+              });
             }}
             footer={[
               <Button
@@ -470,7 +496,9 @@ const Product = () => {
                 onChange={handleRequest} // Update state when input changes
                 allowClear
               />
-                  <div style={{ color: isActiveUpdate ? "green" : "red" }}>{errorMessageUpdate}</div>
+              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
+                {errorMessageUpdate}
+              </div>
 
               <Radio.Group
                 onChange={handleRequest} // Handle the status change

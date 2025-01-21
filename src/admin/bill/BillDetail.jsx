@@ -134,13 +134,15 @@ const columnsBillProductDetailTable = [
         key: 'action',
         render: (_, record) => (
             <Button
-                type="primary"
-                icon={<MdDelete/>}
+                type="danger"
+                icon={<MdDelete />}
+                style={{ borderRadius: '20px', color:"#FF0000", border: '1px solid red'}}
+
                 onClick={() => {
                     console.log(record?.productName);
                 }}
             >
-                Xóa
+            
             </Button>
         ),
 

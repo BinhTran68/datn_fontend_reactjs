@@ -7,7 +7,7 @@ import moment from 'moment';
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const App = () => {
+const CustomerTest = () => {
     const [searchText, setSearchText] = useState('');
     const [status, setStatus] = useState('Tất cả');
     const [dobRange, setDobRange] = useState([]);
@@ -31,7 +31,7 @@ const App = () => {
     }, []);
 
     const fetchData = () => {
-        axios.get('http://localhost:8080/api/khachhang/hienthi')
+        axios.get('http://localhost:8080/api/customers/')
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
@@ -155,7 +155,7 @@ const App = () => {
             okType: 'danger',
             cancelText: 'Hủy',
             onOk() {
-                axios.delete(`http://localhost:8080/api/khachhang/delete/${record.id}`)
+                axios.delete(`http://localhost:8080/api/customers/delete/${record.id}`)
                     .then(() => {
                         message.success('Xóa khách hàng thành công!');
                         fetchData();
@@ -243,7 +243,7 @@ const App = () => {
               formData.append('file', fileList[0].originFileObj);
 
               try {
-                  const uploadRes = await axios.post('http://localhost:8080/api/khachhang/upload', formData, {
+                  const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
                       headers: {
                           'Content-Type': 'multipart/form-data'
                       }
@@ -288,7 +288,7 @@ const App = () => {
 
           if (selectedRecord) {
               // Update
-              axios.put(`http://localhost:8080/api/khachhang/update/${selectedRecord.id}`, newData)
+              axios.put(`http://localhost:8080/api/customers/update/${selectedRecord.id}`, newData)
                   .then(() => {
                       message.success('Cập nhật khách hàng thành công!');
                       fetchData();
@@ -300,7 +300,7 @@ const App = () => {
                   });
           } else {
               // Create
-              axios.post('http://localhost:8080/api/khachhang/add', newData)
+              axios.post('http://localhost:8080/api/customers/add', newData)
                   .then(() => {
                       message.success('Thêm khách hàng thành công!');
                       fetchData();
@@ -681,4 +681,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default CustomerTest;

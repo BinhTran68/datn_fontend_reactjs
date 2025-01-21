@@ -87,15 +87,15 @@ td.ant-table-cell {
   font-weight: normal !important; /* Đảm bảo các liên kết và tiêu đề submenu cũng bình thường */
 }
 
-/* Thay đổi màu item được chọn */
-.ant-menu-item-selected {
-  background-color: rgb(144, 100, 156) !important; /* Màu nền khi item được chọn */
-  color: white !important; /* Màu chữ khi item được chọn */
-}
+/*!* Thay đổi màu item được chọn *!*/
+/*.ant-menu-item-selected {*/
+/*  background-color: rgb(144, 100, 156) !important; !* Màu nền khi item được chọn *!*/
+/*  color: white !important; !* Màu chữ khi item được chọn *!*/
+/*}*/
 
-/* Thay đổi màu submenu được chọn */
-.ant-menu-submenu-selected > .ant-menu-submenu-title {
-  background-color: rgb(144, 100, 156) !important; /* Màu nền của submenu khi chọn */
-  color: white !important ; /* Màu chữ của submenu khi chọn */
-}
+/*!* Thay đổi màu submenu được chọn *!*/
+/*.ant-menu-submenu-selected > .ant-menu-submenu-title {*/
+/*  background-color: rgb(144, 100, 156) !important; !* Màu nền của submenu khi chọn *!*/
+/*  color: white !important ; !* Màu chữ của submenu khi chọn *!*/
+/*}*/
 

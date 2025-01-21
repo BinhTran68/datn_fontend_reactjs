@@ -80,37 +80,44 @@ export  const  columnsBillList = () => {
             title: 'STT',
             dataIndex: 'stt',
             key: 'stt',
+            align: 'center',
             render: (text, record, index) => index + 1,
         },
         {
             title: 'Mã hóa đơn',
             dataIndex: 'billCode',
+            align: 'center',
             key: 'billCode',
         },
         {
             title: 'Khách Hàng',
             dataIndex: 'customerName',
             key: 'customerName',
+            align: 'center',
         },
         {
             title: 'Số điện thoại',
             dataIndex: 'customerPhone',
             key: 'customerPhone',
+            align: 'center',
         },
 
         {
             title: 'Loại đơn hàng',
             dataIndex: 'billType',
             key: 'billType',
+            align: 'center',
         },
         {
             title: 'Trạng thái',
             dataIndex: 'status',
+            align: 'center',
             key: 'status',
         },
         {
             title: 'Ngày tạo',
             dataIndex: 'createAt',
+            align: 'center',
             key: 'createAt',
             render: (timestamp) => {
                 return convertLongTimestampToDate(timestamp)
@@ -119,11 +126,13 @@ export  const  columnsBillList = () => {
         {
             title: 'Tổng tiền',
             dataIndex: 'totalMoney',
+            align: 'center',
             key: 'totalMoney',
         },
         {
             title: 'Hành động',
             key: 'action',
+            align: 'center',
             render: (_, record) => (
                 <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
                     <Button

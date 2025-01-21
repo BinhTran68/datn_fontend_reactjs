@@ -741,7 +741,7 @@ const Staff = () => {
                         type="danger"
                         icon={<DeleteOutlined />}
                         onClick={() => handleDelete(record)}
-                        style={{ borderRadius: '20px', backgroundColor: '#f5222d', borderColor: '#f5222d' }}
+                        style={{ borderRadius: '20px', color:"#FF0000", border: '1px solid red' }}
                     />
                 </Space>
             ),
@@ -794,7 +794,7 @@ const Staff = () => {
                         type="primary" 
                         icon={<SearchOutlined />} 
                         onClick={handleSearch} 
-                        style={{ marginRight: "10px", borderRadius: '20px', backgroundColor: '#1890ff' }}
+                        style={{ marginRight: "10px",  backgroundColor: '#1890ff' }}
                     >
                         Tìm kiếm
                     </Button>
@@ -802,7 +802,7 @@ const Staff = () => {
                         type="default" 
                         icon={<ReloadOutlined />} 
                         onClick={handleReset} 
-                        style={{ marginRight: "10px", borderRadius: '20px', backgroundColor: '#f5f5f5' }}
+                        style={{ marginRight: "10px", backgroundColor: '#f5f5f5' }}
                     >
                         Làm mới bộ lọc
                     </Button>
@@ -810,7 +810,7 @@ const Staff = () => {
                         type="primary" 
                         icon={<PlusOutlined />} 
                         onClick={() => showModal()} 
-                        style={{ borderRadius: '20px', backgroundColor: '#52c41a' }}
+                        style={{  backgroundColor: '#52c41a' }}
                     >
                         Thêm mới
                     </Button>
