@@ -49,6 +49,7 @@ import {
   fetchDataSelectType,
   createProductDetail,
   filterData,
+  createProductDetailList,
 } from "./ApiProductDetail.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -269,22 +270,54 @@ const Product = () => {
     }
   };
   // thêm
-  const handleCreateProductDetail = async (productData) => {
+  // const handleCreateProductDetail = async (productData) => {
+  //   try {
+  //     setLoading(true);
+  //     console.log(request);
+  //     await createProductDetail(productData);
+  //     setFilterActice(false);
+  //     fetchProductsData(); // Refresh data after creation
+  //     message.success("Tạo chi tiết sản phẩm thành công!");
+  //     setRequest({
+  //       status: "HOAT_DONG",
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     message.error(
+  //       error.message || "Có lỗi xảy ra khi tạo chi tiết sản phẩm."
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //     // Đặt lại request, giữ nguyên status
+
+  //     setOpen(false);
+  //   }
+  // };
+  const handleCreateProductDetail = async (tableData) => {
     try {
       setLoading(true);
       console.log(request);
-      await createProductDetail(productData);
+      await createProductDetailList(tableData);
       setFilterActice(false);
       fetchProductsData(); // Refresh data after creation
-      message.success("Tạo chi tiết sản phẩm thành công!");
-      setRequest({
-        status: "HOAT_DONG",
+      notification.success({
+        message: "Success",
+        duration: 4,
+        pauseOnHover: false,
+        showProgress: true,
+        description: `Thêm sản phẩm  thành công!`,
       });
+     
     } catch (error) {
-      console.error(error);
-      message.error(
-        error.message || "Có lỗi xảy ra khi tạo chi tiết sản phẩm."
-      );
+
+      console.error("Failed to update san pham", error);
+      notification.error({
+        message: "Error",
+        duration: 4,
+        pauseOnHover: false,
+        showProgress: true,
+        description: "Failed to update san pham",
+      });
     } finally {
       setLoading(false);
       // Đặt lại request, giữ nguyên status
@@ -921,7 +954,6 @@ const Product = () => {
             // fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
-        <h3>{products.id}1</h3>
       </div>
     </Card>
   );

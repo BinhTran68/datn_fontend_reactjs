@@ -248,7 +248,10 @@ const ProductDetailDrawer = ({
       extra={
         <Space>
           <Button onClick={onClose}>Hủy</Button>
-          <Button onClick={() => onSubmit(request)} type="primary">
+          <Button  onClick={async () => {
+                await onSubmit(tableData);
+                // resetFrom();
+              }} type="primary">
             Thêm
           </Button>
         </Space>

@@ -192,7 +192,18 @@ export const createProductDetail = async (request) => {
     throw error;
   }
 };
-
+export const createProductDetailList = async (request) => {
+  try {
+    const response = await api.post("/productdetail/create", request);
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 export const existsByProductName = async (productName) => {
   try {
     const response = await api.get("product/existsbyproductname", {
