@@ -19,6 +19,7 @@ import {
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import ModalAddProduct from "./ModalAddProduct.jsx";
 import {
   useEffect,
   useState,
@@ -164,6 +165,7 @@ const Product = () => {
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
     } finally {
       setLoading(false);
+      setOpenCreate(false);
     }
   };
 
@@ -286,8 +288,8 @@ const Product = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status} {/* Hiển thị status với chữ in hoa */}
-          </Tag>
+            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
+            </Tag>
         );
       },
     },
@@ -388,8 +390,8 @@ const Product = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
+                backgroundColor: "#4096FF",
+                borderColor: "#4096FF",
                 color: "#fff",
               }}
             >
@@ -405,55 +407,18 @@ const Product = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#90649C",
-              borderColor: "#90649C",
+              backgroundColor: "#4096FF",
+              borderColor: "#4096FF",
               color: "#fff",
             }}
           >
             Thêm Sản Phẩm
           </Button>
-          <Modal
+          <ModalAddProduct
             open={openCreate}
-            title="Thêm Sản Phẩm"
-            onOk={handleCreate}
-            onCancel={() => {
-              setOpenCreate(false);
-            }}
-            footer={[
-              <Button
-                key="back"
-                onClick={() => {
-                  setOpenCreate(false);
-                }}
-              >
-                Hủy
-              </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
-              >
-                Xác nhận
-              </Button>,
-            ]}
-          >
-            <p>Nhập thông tin Sản phẩmmới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên Sản phẩmvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.productName}
-                name="productName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
-            </Form>
-          </Modal>
+            onCreate={handleCreateProduct}
+            onCancel={() => setOpenCreate(false)}
+          />
           <Modal
             open={openUpdate}
             title="Sửa Hãng"

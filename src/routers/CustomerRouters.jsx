@@ -15,13 +15,13 @@ import Client from "../client/Client.jsx";
 import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
-import Product from "../admin/product/product.jsx";
-import ProductManagement from "../admin/product/ProductManagement.jsx";
-import Sole from "../admin/product/sole.jsx";
-import Size from "../admin/product/Size.jsx";
-import Material from "../admin/product/Material.jsx";
-import Color from "../admin/product/Color.jsx";
-import Category from "../admin/product/Brand/Brand.jsx";
+// import Product from "../admin/product/product.jsx";
+// import ProductManagement from "../admin/product/ProductManagement.jsx";
+// import Sole from "../admin/product/sole.jsx";
+// import Size from "../admin/product/Size.jsx";
+// import Material from "../admin/product/Material.jsx";
+// import Color from "../admin/product/Color.jsx";
+// import Category from "../admin/product/Brand/Brand.jsx";
 
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
@@ -92,34 +92,7 @@ const CustomerRouters = {
       path: "register",
       element: <RoleRedirect element={<Register />} />,
     },
-    {
-      path: "admin/product",
-      element: <RoleRedirect element={<Product />} />,
-    },
-    {
-      path: "admin/productmanagement",
-      element: <RoleRedirect element={<ProductManagement />} />,
-    },
-    {
-      path: "admin/sole",
-      element: <RoleRedirect element={<Sole />} />,
-    },
-    {
-      path: "admin/size",
-      element: <RoleRedirect element={<Size />} />,
-    },
-    {
-      path: "admin/material",
-      element: <RoleRedirect element={<Material />} />,
-    },
-    {
-      path: "admin/color",
-      element: <RoleRedirect element={<Color />} />,
-    },
-    {
-      path: "admin/category",
-      element: <RoleRedirect element={<Category />} />,
-    },
+    
     {
       path: "admin/trademark",
       element: <RoleRedirect element={<Trademark />} />,
