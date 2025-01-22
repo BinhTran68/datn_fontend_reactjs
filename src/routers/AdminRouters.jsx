@@ -17,6 +17,10 @@ import BillList from "../admin/bill/BillList.jsx";
 import CustomerTest from "../customer/CustomerTest.jsx";
 
 
+
+import AddCustomer from "../customer/AddCustomer.jsx";
+import UpdateCustomer from "../customer/UpdateCustomer.jsx";
+
 // import SanPham from "../admin/pages/product/SanPham";
 // import DeGiay from "../admin/pages/product/DeGiay";
 // import KichThuoc from "../admin/pages/product/KichThuoc";
@@ -138,6 +142,16 @@ const AdminRouters = {
             path: "customerTest",
             element: <PrivateRoute element={<CustomerTest/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
+        {
+            path: "add",
+            element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "update",
+            element: <PrivateRoute element={<UpdateCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        
+    
 
     ],
 };
