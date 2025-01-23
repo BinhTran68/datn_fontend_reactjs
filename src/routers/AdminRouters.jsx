@@ -9,8 +9,6 @@ import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
 import Category from "../admin/product/Category.jsx";
-import Customer from "../customer/Customer.jsx";
-import App from "../customer/App.jsx";
 import Staff from "../customer/Staff.jsx";
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
@@ -21,26 +19,7 @@ import CustomerTest from "../customer/CustomerTest.jsx";
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 
-// import SanPham from "../admin/pages/product/SanPham";
-// import DeGiay from "../admin/pages/product/DeGiay";
-// import KichThuoc from "../admin/pages/product/KichThuoc";
-// import ChatLieu from "../admin/pages/product/ChatLieu";
-// import ThuongHieu from "../admin/pages/product/ThuongHieu";
-// import MauSac from "../admin/pages/product/MauSac";
-// import DanhMuc from "../admin/pages/product/DanhMuc";
-// import BanHang from "../admin/pages/banhang/BanHang";
-// import GiamGia from "../admin/pages/giamgia/GiamGia";
-// import Nhanvien from "../admin/pages/taikhoan/Nhanvien";
-// import KhachHang from "../admin/pages/taikhoan/KhachHang";
-// import ThongKe from "../admin/pages/thongke/ThongKe";
-// import SanPhamChiTiet from "../admin/pages/product/SanPhamChiTiet";
-// import DotGiamGia from "../admin/pages/giamgia/DotGiamGia";
-// import FormAddDotGiamGia from "../admin/component/giamgia/DrawerAdd";
-// import ViewEditDotGiamGia from "../admin/component/giamgia/ViewEdit";
-// import OrderManagement from "../admin/component/banhang/OrderManagement";
-// import OrderDetail from "../admin/component/banhang/OrderDetail";
-// import TongQuan from "../admin/pages/thongke/TongQuan";
-// import Admin from "../admin/pages/Admin";
+
 
 const getRole = () => {
     const storedUserInfo = localStorage.getItem("userInfo");
@@ -124,30 +103,21 @@ const AdminRouters = {
             path: "promotion/add",
             element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
-        
-        {
-            path: "customer",
-            element: <PrivateRoute element={<Customer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
-       
-        {
-            path: "app",
-            element: <PrivateRoute element={<App/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
-        },
+
         {
             path: "staff",
             element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
-            path: "customerTest",
+            path: "customer",
             element: <PrivateRoute element={<CustomerTest/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
-            path: "add",
+            path: "customer-create",
             element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
-            path: "update",
+            path: "customer-update/:id",
             element: <PrivateRoute element={<UpdateCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         

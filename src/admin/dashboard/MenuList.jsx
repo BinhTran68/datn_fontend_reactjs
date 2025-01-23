@@ -153,10 +153,10 @@ const MenuList = ({ darkTheme }) => {
           title="Quản lý tài khoản"
         >
           <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize} />}>
-            <Link to={"customer"}>Nhân Viên</Link>
+            <Link to={"staff"}>Nhân Viên</Link>
           </Menu.Item>
           <Menu.Item key="sub2-t2" icon={<FaUserCircle size={iconSize} />}>
-            <Link to={"staff"}>Khách hàng</Link>
+            <Link to={"customer"}>Khách hàng</Link>
           </Menu.Item>
         </Menu.SubMenu>
 
