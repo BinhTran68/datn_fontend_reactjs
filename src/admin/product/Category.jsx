@@ -17,10 +17,10 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
-<<<<<<< HEAD
+// <<<<<<< HEAD
 // import styles from "./Category.module.css";
-=======
->>>>>>> 4d13b44762587031a9e4c244d9430790911bb36f
+// =======
+// >>>>>>> 4d13b44762587031a9e4c244d9430790911bb36f
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import axios from "axios";

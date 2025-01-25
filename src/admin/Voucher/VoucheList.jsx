@@ -7,6 +7,8 @@ import moment from 'moment';
 import { DownOutlined } from '@ant-design/icons';
 import "./StatusSelector.css";
 import { render } from 'react-dom';
+import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined,PlusOutlined } from '@ant-design/icons';
+
 
 
 const { Option } = Select;
@@ -35,9 +37,14 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         key: 'quantity',
     },
     {
-        title: 'Giá trị giảm giá(%)',
+        title: 'Giá trị giảm giá(VNĐ)',
         dataIndex: 'discountValue',
         key: 'discountValue',
+    },
+    {
+        title: 'Đơn tối thiểu(VNĐ)',
+        dataIndex: 'billMinValue',
+        key: 'billMinValue',
     },
     {
         title: 'Ngày bắt đầu',
@@ -58,9 +65,9 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         render: (_, record) => {
             let displayStatus = convertStatusVoucher(record.statusVoucher);
             let color =
-                record.statusVoucher === 'dang_kich_hoat' ? 'green' :
-                record.statusVoucher === 'chua_kich_hoat' ? 'blue' :
-                'red';
+                record.statusVoucher === 'dang_kich_hoat' ? '#52c41a' :
+                    record.statusVoucher === 'chua_kich_hoat' ? 'orange' :
+                        '#FF0033';
 
             return (
                 <div
@@ -79,34 +86,29 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
             );
         },
     },
-    ,    
+    ,
     {
         title: 'Thao tác',
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-                <button
-
-                    className="toggle-button"
+                <Button
+                    type="primary"
+                    icon={<EditOutlined />}
                     onClick={() => handleEdit(record)}
-                    style={{
-                        // marginLeft: "10px",
-                        backgroundColor: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "white",
-                        fontSize: "20px",
-                    }}
-                >
-                    👁️
-                </button>
-                <Button style={{
+                    style={{ borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
 
-                    border: 'none',
-                }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-                <Button style={{
-                    border: 'none',
-                }} danger onClick={() => handleDetail(record)}>...</Button>
+                >
+                </Button>
+                {/* <Button
+                    icon={<DeleteOutlined />}
+                    danger onClick={() => handleDelete(record.id)}></Button> */}
+
+                <Button
+                    icon={<EyeOutlined />}
+                    style={{ color: 'white', borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+
+                    danger onClick={() => handleDetail(record)}></Button>
             </Space>
         ),
     },
@@ -135,12 +137,12 @@ const AdvancedSearchForm = ({ onSearch }) => {
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item name="quantity" label="Số lượng phiếu giảm giá">
-                        <Input placeholder="Nhập số lượng phiếu giảm giá" />
+                    <Form.Item name="voucherType" label="Tên phiếu giảm giá">
+                        <Input placeholder="Nhập Tên phiếu giảm giá" />
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item name="discountValue" label="Giá trị giảm giá (%)">
+                    <Form.Item name="discountValue" label="Giá trị giảm giá (VNĐ)">
                         <Input placeholder="Nhập giá trị giảm" />
                     </Form.Item>
                 </Col>
@@ -178,22 +180,22 @@ const AdvancedSearchForm = ({ onSearch }) => {
                 <Row gutter={24}>{getFields()}</Row>
                 <div style={{ textAlign: 'right' }}>
                     <Space size="small">
-                        <Button type="primary" htmlType="submit" style={{
+                        {/* <Button type="primary" htmlType="submit" style={{
 
                             border: 'none',
                         }}>
                             Lọc
-                        </Button>
+                        </Button> */}
                         <Button
+                            icon={<RedoOutlined />}
                             onClick={() => {
                                 form.resetFields();
                             }}
-                            style={{
+                            style={{ color: 'white', borderRadius: '20px', backgroundColor: '#52c41a', borderColor: '#52c41a' }}
 
-                                border: 'none',
-                            }}
+
                         >
-                            Xóa
+
                         </Button>
                         {/* <a
                             style={{ fontSize: 12 }}
@@ -310,21 +312,22 @@ const VoucherList = () => {
             return
         }
         try {
+            const value = await form.validateFields(); 
             const values = form.getFieldsValue();
             if (editingVoucher) {
                 // Edit existing voucher
-                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values);
+                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values,value);
                 message.success('Cập nhật phiếu giảm giá thành công!');
             } else {
                 // Add new voucher
-                await axios.post(`${baseUrl}/api/admin/voucher/add`, values);
+                await axios.post(`${baseUrl}/api/admin/voucher/add`, values,value);
                 message.success('Thêm mới phiếu giảm giá thành công!');
             }
             getPageVoucher();  // Fetch updated list
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
-            message.error('Lỗi khi lưu trữ liệu!');
+            message.error('Lỗi khi lưu trữ liệu!',error);
         }
     };
 
@@ -353,10 +356,12 @@ const VoucherList = () => {
             <h4 style={{ paddingTop: '15px' }}>Danh sách phiếu giảm giá</h4>
 
             <Card>
-                <Button type="primary" onClick={handleAdd} style={{
-                    marginBottom: '20px',
-                    border: 'none',
-                }}>
+                <Button type="primary" icon={<PlusOutlined />}
+                    onClick={handleAdd} style={{
+                        marginBottom: '20px',
+                        border: 'none',
+                         backgroundColor: '#52c41a'
+                    }}>
                     Thêm mới
                 </Button>
 
@@ -370,7 +375,7 @@ const VoucherList = () => {
                         total: pagination.total
                     }}
                     onChange={handleOnChangeTable}
-                    
+
 
                 />
                 <Modal
@@ -398,23 +403,26 @@ const VoucherList = () => {
 
                 >
                     <Form form={form} layout="vertical" style={{ font: 'poppins' }}>
-                        <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
+                        {/* <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true,message:'Không được bỏ trống' }]}>
                             <Input disabled={isDetail} />
+                        </Form.Item> */}
+                        <Form.Item name="voucherType" label="Tên phiếu giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
-                        <Form.Item name="voucherType" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="quantity" label="Số lượng đợt giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <Input placeholder="Nhập số lượng  giảm giá" />
                         </Form.Item>
-                        <Form.Item name="quantity" label="Số lượng đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <Input placeholder="Nhập giá trị giảm giá"     suffix="VNĐ"/>
                         </Form.Item>
-                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="billMinValue" label="Đơn tối thiểu" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <Input placeholder="Nhập giá trị giảm giá tối thiểu"     suffix="VNĐ" />
                         </Form.Item>
-                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <DatePicker placeholder="Nhập thời gian" format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
-                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <DatePicker placeholder="Nhập thời gian"  format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
                         {/* <Form.Item name="statusVoucher" label="Trạng thái" rules={[{ required: true }]}>
                             <Select defaultValue={"dang_kich_hoat"}  >

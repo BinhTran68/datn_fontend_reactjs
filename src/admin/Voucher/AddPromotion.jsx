@@ -15,19 +15,9 @@ const AddPromotion = () => {
     const [form] = Form.useForm();
     const [editingPromotion, setEditingPromotion] = useState(null);
     //
-    const [statusIndex, setStatusIndex] = useState(0);
+    
 
-    const statuses = [
-      { label: "Đang kích hoạt", color: "green" },
-      { label: "Ngừng kích hoạt", color: "red" },
-      { label: "Chưa kích hoạt", color: "gray" },
-    ];
   
-    const toggleStatus = () => {
-      setStatusIndex((prevIndex) => (prevIndex + 1) % statuses.length);
-    };
-  
-      
       //
 
 
@@ -183,36 +173,7 @@ const AddPromotion = () => {
 
         <>
         
-        <div className="status-selector">
-      <h3>Trạng Thái</h3>
-      <div
-        className="status-display"
-        style={{
-          backgroundColor: statuses[statusIndex].color,
-          color: "white",
-          padding: "10px 20px",
-          borderRadius: "20px",
-          display: "inline-block",
-        }}
-      >
-        {statuses[statusIndex].label}
-        <button
-          className="toggle-button"
-          onClick={toggleStatus}
-          style={{
-            marginLeft: "10px",
-            backgroundColor: "transparent",
-            border: "none",
-            cursor: "pointer",
-            color: "white",
-            fontSize: "16px",
-          }}
-        >
-          👁️
-        </button>
-      </div>
-    </div>
-
+       
         
         <Row gutter={20}>
             {/* Bảng thêm đợt giảm giá */}
