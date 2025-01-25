@@ -13,6 +13,7 @@ import {
   Form,
   Upload,
   notification,
+  Modal,
 } from "antd";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -59,6 +60,12 @@ const ProductDetailDrawer = () => {
   const [products, setProducts] = useState([]);
   const [product, setProduct] = useState([]);
   const [form] = Form.useForm();
+  const [hasSelected, setHasSelected] = useState(false);
+
+  const [formModalSLVaGia] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [commonQuantity, setCommonQuantity] = useState(0);
+  const [commonPrice, setCommonPrice] = useState(0);
 
   // modal
   const [openCreateProduct, setOpenCreateProduct] = useState(false);
@@ -112,6 +119,38 @@ const ProductDetailDrawer = () => {
     sortByQuantity: null,
     sortByPrice: null,
   });
+
+  const handleModalOk = async () => {
+    try {
+      // Kích hoạt validation
+      const values = await formModalSLVaGia.validateFields();
+      // Nếu validation thành công, thực hiện các hành động bạn muốn
+      console.log(values);
+
+      const updatedData = tableData.map((item) => {
+        if (selectedRowKeys.includes(item.key)) {
+          return { ...item, quantity: commonQuantity, price: commonPrice };
+        }
+        return item;
+      });
+      setTableData(updatedData);
+      formModalSLVaGia.resetFields(); // Đặt lại trường form
+      setSelectedRowKeys([]); // Bỏ chọn tất cả các dòng
+      setHasSelected(false); // Bỏ chọn tất cả các dòng
+      setIsModalVisible(false); // Đóng modal
+    } catch (error) {
+      // Nếu có lỗi, chỉ cần thông báo
+      console.log("Validation failed:", error);
+    }
+    // Cập nhật giá và số lượng chung cho các dòng được chọn
+  };
+  const handleModalCancel = () => {
+    setCommonPrice(0); // Đặt giá chung về 0
+    setCommonQuantity(0); // Đặt số lượng chung về 0
+    setSelectedRowKeys([]); // Bỏ chọn tất cả các dòng
+    setHasSelected(false); // Bỏ chọn tất cả các dòng
+    setIsModalVisible(false); // Đóng modal mà không thay đổi gì
+  };
   // thêm nhanh
   const handleCreateProduct = async (productData) => {
     try {
@@ -486,6 +525,8 @@ const ProductDetailDrawer = () => {
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys);
     setHasSelected(newSelectedRowKeys.length > 0);
+    console.log("đây là row đã chọn" + selectedRowKeys);
+    console.log("đây là row đã chọn" + selectedRowKeys);
   };
 
   const rowSelection = {
@@ -1058,6 +1099,14 @@ const ProductDetailDrawer = () => {
               {groupedData.map((group) => (
                 <Col span={24} key={group.colorName}>
                   <Card title={`Sản phẩm chi tiết: ${group.colorName}`}>
+                    <Button
+                      type="primary"
+                      onClick={() => setIsModalVisible(true)}
+                      disabled={!hasSelected}
+                      loading={loading}
+                    >
+                      Set số lượng và giá chung
+                    </Button>
                     <Table
                       rowSelection={rowSelection}
                       columns={columns}
@@ -1078,6 +1127,64 @@ const ProductDetailDrawer = () => {
         onCreate={handleCreateProduct}
         onCancel={() => setOpenCreateProduct(false)}
       />
+      <Modal
+        title="Set số lượng và giá chung"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={handleModalCancel}
+      >
+        <Form
+          form={formModalSLVaGia} // Gán form instance vào form
+          layout="vertical"
+        >
+          <Form.Item
+            label="Số lượng chung"
+            name="commonQuantity"
+            rules={[
+              {
+                required: true,
+                message: "Số lượng chung không được để trống!",
+              },
+              {
+                type: "number",
+                min: 0,
+                message: "Số lượng phải là số dương!",
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              type="number"
+              min={0}
+              value={commonQuantity}
+              onChange={(value) => setCommonQuantity(value)}
+              suffix={<span>Đôi</span>}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Giá chung"
+            name="commonPrice"
+            rules={[
+              { required: true, message: "Giá chung không được để trống!" },
+              {
+                type: "number",
+                min: 0,
+                max: 500000000, // Giới hạn giá trị tối đa là 500 triệu
+                message: "Giá phải là số dương và nhỏ hơn 500 triệu!",
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              type="number"
+              min={0}
+              value={commonPrice}
+              onChange={(value) => setCommonPrice(value)}
+              suffix={<span>VNĐ</span>}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Row>
   );
 };
