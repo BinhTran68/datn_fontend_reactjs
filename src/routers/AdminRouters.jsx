@@ -17,6 +17,8 @@ import CustomerTest from "../customer/CustomerTest.jsx";
 
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
+import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
+import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
 
