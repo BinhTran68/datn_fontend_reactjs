@@ -37,7 +37,7 @@ const UpdateCustomer = () => {
     };
 
     const fetchCustomer = (id) => {
-        axios.get(`http://localhost:8080/api/customers/${id}`)
+        axios.get(`http://localhost:8080/api/customers/detail/${id}`)
             .then((response) => {
                 const customer = response.data;
                 setSelectedRecord(customer);

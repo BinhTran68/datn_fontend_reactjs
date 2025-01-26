@@ -4,11 +4,12 @@ import Dashboard from "../admin/dashboard/Dashboard.jsx";
 
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
+import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
 import Category from "../admin/product/Category.jsx";
-import Staff from "../customer/Staff.jsx";
+import Staff from "../admin/staff/Staff.jsx";
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
 import CustomerTest from "../customer/CustomerTest.jsx";
@@ -17,6 +18,8 @@ import CustomerTest from "../customer/CustomerTest.jsx";
 
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
+import AddStaff from "../admin/staff/AddStaff.jsx";
+import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
 import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
@@ -125,8 +128,16 @@ const AdminRouters = {
             path: "customer-update/:id",
             element: <PrivateRoute element={<UpdateCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
+        {
+            path: "add-staff",
+            element: <PrivateRoute element={<AddStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "edit-staff/:id",
+            element: <PrivateRoute element={<EditStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
 
-
+    
 
     ],
 };

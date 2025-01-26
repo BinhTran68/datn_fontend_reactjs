@@ -106,13 +106,13 @@ const AddCustomer = () => {
             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Thêm mới khách hàng</h2>
 
             <Row>
-                <Col span={5} >
+                {/* <Col span={5} >
                     <Card>
                         <h1>
                             Chỗ add ảnh
                         </h1>
                     </Card>
-                </Col>
+                </Col> */}
 
                 <Col span={1} >
 
