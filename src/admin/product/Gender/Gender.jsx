@@ -29,7 +29,7 @@ import {
 import axios from "axios";
 import {
   fetchColors,
-  createColor,
+  createGender,
   updateColor,
   deleteColor,
   getColor,
@@ -149,7 +149,7 @@ const Color = () => {
     try {
       setLoading(true);
       console.log(request);
-      await createColor(brandData);
+      await createGender(brandData);
 
       setRequestSearch({ name: "" });
       setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -280,8 +280,8 @@ const Color = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status} {/* Hiển thị status với chữ in hoa */}
-          </Tag>
+            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
+            </Tag>
         );
       },
     },
@@ -290,7 +290,7 @@ const Color = () => {
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        if (!record.status || Object.keys(record).length === 0) {
+        if (!record.id || Object.keys(record).length === 0) {
           return null;
         }
         return (
@@ -382,8 +382,8 @@ const Color = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
+                backgroundColor: "#4096FF",
+                borderColor: "#4096FF",
                 color: "#fff",
               }}
             >
@@ -399,8 +399,8 @@ const Color = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#90649C",
-              borderColor: "#90649C",
+              backgroundColor: "#4096FF",
+              borderColor: "#4096FF",
               color: "#fff",
             }}
           >

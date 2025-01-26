@@ -53,7 +53,7 @@ export const searchNameColor = async (pagination, paramName) => {
   }
 };
 
-export const createColor = async (colorData) => {
+export const createGender = async (colorData) => {
   try {
     const response = await api.post("/gender/add", colorData);
     return response.data;

@@ -20,9 +20,10 @@ import {
   Select,
   InputNumber,
   notification,
+
 } from "antd";
 import ModalEditSanPham from "./ModalEditSanPham.jsx";
-
+import Breadcrumb from "../BreadCrumb.jsx";
 import styles from "./ProductDetail.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -50,6 +51,7 @@ import {
   fetchDataSelectType,
   createProductDetail,
   filterData,
+  createProductDetailList,
 } from "./ApiProductDetail.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -58,10 +60,13 @@ import { debounce, filter, set } from "lodash";
 import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
+import ProductDetailDrawer from "./ProductDetailDrawer.jsx";
+import { Link } from "react-router-dom";
 
 const Product = () => {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
+  const [filterActice, setFilterActice] = useState(false);
   const [products, setProducts] = useState([]);
   const [selectedProductDetail, setSelectedProductDetail] = useState();
 
@@ -119,7 +124,12 @@ const Product = () => {
   // validate cho create
 
   useEffect(() => {
-    fetchProductsData();
+    if (filterActice) {
+      fetchfilterData(pagination, requestFilter);
+    } else {
+      fetchProductsData();
+    }
+
     fetchDataBrand();
     fetchDataColor();
     fetchDataGender();
@@ -263,28 +273,29 @@ const Product = () => {
     }
   };
   // thêm
-  const handleCreateProductDetail = async (productData) => {
-    try {
-      setLoading(true);
-      console.log(request);
-      await createProductDetail(productData);
-      fetchProductsData(); // Refresh data after creation
-      message.success("Tạo chi tiết sản phẩm thành công!");
-      setRequest({
-        status: "HOAT_DONG",
-      });
-    } catch (error) {
-      console.error(error);
-      message.error(
-        error.message || "Có lỗi xảy ra khi tạo chi tiết sản phẩm."
-      );
-    } finally {
-      setLoading(false);
-      // Đặt lại request, giữ nguyên status
+  // const handleCreateProductDetail = async (productData) => {
+  //   try {
+  //     setLoading(true);
+  //     console.log(request);
+  //     await createProductDetail(productData);
+  //     setFilterActice(false);
+  //     fetchProductsData(); // Refresh data after creation
+  //     message.success("Tạo chi tiết sản phẩm thành công!");
+  //     setRequest({
+  //       status: "HOAT_DONG",
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     message.error(
+  //       error.message || "Có lỗi xảy ra khi tạo chi tiết sản phẩm."
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //     // Đặt lại request, giữ nguyên status
 
-      setOpen(false);
-    }
-  };
+  //     setOpen(false);
+  //   }
+  // };
 
   // xóa
 
@@ -292,7 +303,11 @@ const Product = () => {
     try {
       setLoading(true);
       await deleteProductDetail(productId);
-      fetchProductsData(); // Refresh data after deletion
+      if (filterActice) {
+        fetchfilterData(pagination, requestFilter);
+      } else {
+        fetchProductsData();
+      }
       notification.success({
         message: "Success",
         duration: 3,
@@ -479,7 +494,8 @@ const Product = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status} {/* Hiển thị status với chữ in hoa */}
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
           </Tag>
         );
       },
@@ -542,9 +558,11 @@ const Product = () => {
 
   return (
     <Card>
+      <Breadcrumb/>
       <Title level={2}>Sản Phẩm</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
+        
           <Col span={20}>
             <Input
               placeholder="Nhập vào tên Sản phẩmbạn muốn tìm!"
@@ -560,8 +578,8 @@ const Product = () => {
               icon={<SearchOutlined />}
               // onClick={searchName}
               style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
+                backgroundColor: "#4096FF",
+                borderColor: "#4096FF",
                 color: "#fff",
               }}
             >
@@ -570,349 +588,12 @@ const Product = () => {
           </Col>
         </Row>
         <Row>
-          <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />}>
-            Thêm Chi tiết sản phẩm
-          </Button>
-          <Drawer
-            title="Thêm chi tiết sản phẩm"
-            width={1130}
-            onClose={onClose}
-            open={open}
-            styles={{
-              body: {
-                paddingBottom: 80,
-              },
-            }}
-            extra={
-              <Space>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  onClick={() => {
-                    handleCreateProductDetail(request);
-                  }}
-                  type="primary"
-                >
-                  Thêm
-                </Button>
-              </Space>
-            }
-          >
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn sản phẩm"
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
 
-                  value={request.productId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      productId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    // { value: "", label: "chọn sản phẩm..." },
-                    ...dataSelectProduct?.map((p) => ({
-                      value: p.id,
-                      label: p.productName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn Thương hiệu..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.brandId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      brandId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectBrand?.map((p) => ({
-                      value: p.id,
-                      label: p.brandName,
-                    })),
-                  ]}
-                />
-              </Col>
-
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn giới tính ..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.genderId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      genderId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectGender?.map((g) => ({
-                      value: g.id,
-                      label: g.genderName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn Chất liệu"
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.materialId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      materialId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectMaterial?.map((m) => ({
-                      value: m.id,
-                      label: m.materialName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn loại giày..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.typeId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      typeId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectType?.map((g) => ({
-                      value: g.id,
-                      label: g.typeName,
-                    })),
-                  ]}
-                />
-              </Col>
-
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn loại đế giày..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.soleId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      soleId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectSole?.map((s) => ({
-                      value: s.id,
-                      label: s.soleName,
-                    })),
-                  ]}
-                />
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn màu sắc..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.colorId}
-                  onChange={(e) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      colorId: e, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectColor?.map((c) => ({
-                      value: c.id,
-                      label: c.colorName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn kích cỡ..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.sizeId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      sizeId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectSize?.map((s) => ({
-                      value: s.id,
-                      label: s.sizeName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.quantity}
-                  placeholder="số lượng"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      quantity: value, // Cập nhật giá trị nhập vào
-                    }));
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.price}
-                  placeholder="giá bán"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      price: value, // Cập nhật giá trị nhập vào
-                    }));
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.weight}
-                  placeholder="Cân nặng"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      weight: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                />
-              </Col>
-
-              <Col>
-                <TextArea
-                  value={request.description}
-                  style={{
-                    width: "300px",
-                  }}
-                  rows={4}
-                  placeholder="mô tả tối đa 200 từ"
-                  maxLength={10}
-                  onChange={(e) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      description: e.target.value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                />
-              </Col>
-            </Row>
-          </Drawer>
+          <Link to={"add"}>
+            <Button type="primary" onClick={showDrawer} icon={<PlusOutlined />}>
+              Thêm sản phẩm
+            </Button>
+          </Link>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);
@@ -930,348 +611,6 @@ const Product = () => {
             dataProduct={dataSelectProduct}
             dataSize={dataSelectSize}
           />
-          <Drawer
-            title="Sửa chi tiết sản phẩm"
-            width={1130}
-            // onClose={() => {
-            //   setOpenUpdate(false);
-            // }}
-            // open={openUpdate}
-            styles={{
-              body: {
-                paddingBottom: 80,
-              },
-            }}
-            extra={
-              <Space>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  onClick={() => {
-                    handleCreateProductDetail(request);
-                  }}
-                  type="primary"
-                >
-                  Thêm
-                </Button>
-              </Space>
-            }
-          >
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn sản phẩm"
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={4}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      productId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    // { value: "", label: "chọn sản phẩm..." },
-                    ...dataSelectProduct?.map((p) => ({
-                      value: p.id,
-                      label: p.productName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn Thương hiệu..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.brandId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      brandId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectBrand?.map((p) => ({
-                      value: p.id,
-                      label: p.brandName,
-                    })),
-                  ]}
-                />
-              </Col>
-
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn giới tính ..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.genderId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      genderId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectGender?.map((g) => ({
-                      value: g.id,
-                      label: g.genderName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn Chất liệu"
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.materialId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      materialId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectMaterial?.map((m) => ({
-                      value: m.id,
-                      label: m.materialName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn loại giày..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.typeId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      typeId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectType?.map((g) => ({
-                      value: g.id,
-                      label: g.typeName,
-                    })),
-                  ]}
-                />
-              </Col>
-
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="chọn loại đế giày..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.soleId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      soleId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectSole?.map((s) => ({
-                      value: s.id,
-                      label: s.soleName,
-                    })),
-                  ]}
-                />
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn màu sắc..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.colorId}
-                  onChange={(e) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      colorId: e, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectColor?.map((c) => ({
-                      value: c.id,
-                      label: c.colorName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col>
-                <Select
-                  showSearch
-                  style={{
-                    width: "10rem",
-                  }}
-                  placeholder="Chọn kích cỡ..."
-                  optionFilterProp="label"
-                  // filterSort={(optionA, optionB) =>
-                  //   (optionA?.label ?? "")
-                  //     .toLowerCase()
-                  //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                  // }
-
-                  value={request.sizeId}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      sizeId: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                  options={[
-                    ...dataSelectSize?.map((s) => ({
-                      value: s.id,
-                      label: s.sizeName,
-                    })),
-                  ]}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.quantity}
-                  placeholder="số lượng"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      quantity: value, // Cập nhật giá trị nhập vào
-                    }));
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.price}
-                  placeholder="giá bán"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      price: value, // Cập nhật giá trị nhập vào
-                    }));
-                  }}
-                />
-              </Col>
-              <Col span={24}>
-                <InputNumber
-                  value={request.weight}
-                  placeholder="Cân nặng"
-                  allowClear
-                  name="name"
-                  type="number"
-                  min={0}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      weight: value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                />
-              </Col>
-
-              <Col>
-                <TextArea
-                  value={request.description}
-                  style={{
-                    width: "300px",
-                  }}
-                  rows={4}
-                  placeholder="mô tả tối đa 200 từ"
-                  maxLength={10}
-                  onChange={(e) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      description: e.target.value, // Cập nhật giá trị nhập vào
-                    }));
-                    console.log(request);
-                  }}
-                />
-              </Col>
-            </Row>
-          </Drawer>
         </Row>
         <Row>
           <Row gutter={[16, 16]}>
@@ -1281,7 +620,7 @@ const Product = () => {
                 style={{
                   width: "10rem",
                 }}
-                placeholder="chọn sản phẩm"
+                placeholder="Tất cả sản phẩm"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
                 //   (optionA?.label ?? "")
@@ -1292,13 +631,14 @@ const Product = () => {
                 // value={request.productId}
                 onChange={(value) => {
                   setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setFilterActice(true);
                   setRequestFilter((prev) => ({
                     ...prev,
                     productName: value, // Cập nhật giá trị nhập vào
                   }));
                 }}
                 options={[
-                  { value: "", label: "chọn sản phẩm..." },
+                  { value: "", label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
@@ -1322,13 +662,13 @@ const Product = () => {
 
                 // value={dataSelectBrand.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
                     brandName: value, // Cập nhật giá trị nhập vào
                   }));
                   console.log(requestFilter);
-                  
                 }}
                 options={[
                   { value: "", label: "Tất cả thương hiệu" },
@@ -1356,6 +696,7 @@ const Product = () => {
 
                 value={dataSelectGender.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1388,6 +729,7 @@ const Product = () => {
 
                 value={dataSelectMaterial.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1420,6 +762,7 @@ const Product = () => {
 
                 value={dataSelectType.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1453,6 +796,7 @@ const Product = () => {
 
                 value={dataSelectSole.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1487,6 +831,7 @@ const Product = () => {
 
                 value={dataSelectColor.id}
                 onChange={(e) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1519,6 +864,7 @@ const Product = () => {
 
                 value={dataSelectSize.id}
                 onChange={(value) => {
+                  setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setRequestFilter((prev) => ({
                     ...prev,
@@ -1566,10 +912,9 @@ const Product = () => {
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            // fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
-        <h3>{products.id}1</h3>
       </div>
     </Card>
   );

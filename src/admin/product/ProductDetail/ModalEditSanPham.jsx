@@ -19,6 +19,8 @@ import * as Yup from "yup";
 import clsx from "clsx";
 import styles from "./ProductDetail.module.css";
 import { updateProduct } from "./ApiProductDetail";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const ModalEditSanPham = ({
   isOpen,
@@ -420,25 +422,6 @@ const ModalEditSanPham = ({
             />
           </Col>
         </Row>
-
-        <Row>
-          <label className="text-sm block mb-2" htmlFor="">
-            Mô tả
-          </label>
-
-          <TextArea
-            id="description"
-            name="description"
-            value={formik.values.description}
-            // style={{
-            //   width: "300px",
-            // }}
-            rows={4}
-            placeholder="mô tả tối đa 200 từ"
-            maxLength={10}
-            onChange={formik.handleChange}
-          />
-        </Row>
         <Row>
           <Radio.Group
             onChange={(e) => formik.setFieldValue("status", e.target.value)}
@@ -473,6 +456,40 @@ const ModalEditSanPham = ({
               </Col>
             </Row>
           </Radio.Group>
+        </Row>
+        <Row>
+          <Col span={24}>
+            <div>Mô tả</div>
+          </Col>
+
+          <Col span={24}>
+            {/* <TextArea
+            id="description"
+            name="description"
+            value={formik.values.description}
+            // style={{
+            //   width: "300px",
+            // }}
+            rows={4}
+            placeholder="mô tả tối đa 200 từ"
+            maxLength={10}
+            onChange={formik.handleChange}
+          /> */}
+
+            <ReactQuill
+              theme="snow"
+              value={formik.values.description}
+              placeholder="Mô tả tối đa 200 từ"
+              onChange={formik.handleChange}
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }],
+                  ["bold", "italic", "underline"],
+                  [false, false],
+                ],
+              }}
+            />
+          </Col>
         </Row>
       </Modal>
     </>

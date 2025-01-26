@@ -314,8 +314,8 @@ const Type = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status} {/* Hiển thị status với chữ in hoa */}
-          </Tag>
+            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
+            </Tag>
         );
       },
     },
@@ -324,7 +324,7 @@ const Type = () => {
       dataIndex: "actions",
       key: "actions",
       render: (_, record) => {
-        if (!record.status || Object.keys(record).length === 0) {
+        if (!record.id || Object.keys(record).length === 0) {
           return null;
         }
         return (
@@ -423,8 +423,8 @@ const Type = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#90649C",
-                borderColor: "#90649C",
+                backgroundColor: "#4096FF",
+                borderColor: "#4096FF",
                 color: "#fff",
               }}
             >
@@ -440,8 +440,8 @@ const Type = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#90649C",
-              borderColor: "#90649C",
+              backgroundColor: "#4096FF",
+              borderColor: "#4096FF",
               color: "#fff",
             }}
           >

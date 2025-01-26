@@ -87,15 +87,36 @@ td.ant-table-cell {
   font-weight: normal !important; /* Đảm bảo các liên kết và tiêu đề submenu cũng bình thường */
 }
 
-/*!* Thay đổi màu item được chọn *!*/
-/*.ant-menu-item-selected {*/
-/*  background-color: rgb(144, 100, 156) !important; !* Màu nền khi item được chọn *!*/
-/*  color: white !important; !* Màu chữ khi item được chọn *!*/
-/*}*/
+/* Thay đổi màu item được chọn */
+.ant-menu-item-selected {
+  background-color: #4096FF !important; /* Màu nền khi item được chọn */
+  color: white !important; /* Màu chữ khi item được chọn */
+}
 
-/*!* Thay đổi màu submenu được chọn *!*/
-/*.ant-menu-submenu-selected > .ant-menu-submenu-title {*/
-/*  background-color: rgb(144, 100, 156) !important; !* Màu nền của submenu khi chọn *!*/
-/*  color: white !important ; !* Màu chữ của submenu khi chọn *!*/
-/*}*/
+/* Thay đổi màu submenu được chọn */
+.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background-color: #4096FF !important; /* Màu nền của submenu khi chọn */
+  color: white !important ; /* Màu chữ của submenu khi chọn */
+}
+
+
+/* ReactQuill */
+.ql-container {
+  /* border-radius: 10px; Bo góc cho vùng nội dung */
+  border-bottom-left-radius: 10px; /* Bo góc dưới trái */
+  border-bottom-right-radius: 10px; /* Bo góc dưới phải */
+  overflow: hidden;    /* Ẩn nội dung tràn */
+}
+
+.ql-toolbar {
+  border-top-left-radius: 10px;  /* Bo góc trên trái */
+  border-top-right-radius: 10px; /* Bo góc trên phải */
+}
+
+.ql-editor {
+  border-bottom-left-radius: 10px; /* Bo góc dưới trái */
+  border-bottom-right-radius: 10px; /* Bo góc dưới phải */
+}
+
+
 
