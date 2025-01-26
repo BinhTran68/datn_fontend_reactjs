@@ -20,6 +20,20 @@ export const convertLongTimestampToDate = (timestamp) => {
     console.log("date", date);
     return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
 };
+export const convertStatusVoucher = (statusVoucher)=>{
+    // if(statusVoucher === null){
+    //     return null;
+    // }
+    if(statusVoucher === "dang_kich_hoat"){
+        return "Đang kích hoạt";
+    }
+    if(statusVoucher === "ngung_kich_hoat"){
+        return "Ngừng kích hoạt";
+    }
+    if(statusVoucher === "chua_kich_hoat"){
+        return "Chưa kích hoạt";
+    }
+}
 
 
 export const convertBillStatusToString = (status) => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Space, Table, Input, Tabs, Card, Col, Row, Button, Select, DatePicker, Form } from 'antd';
 import axios from 'axios';
 import { baseUrl } from "../../helpers/Helpers.js";
-import useUrlBuilder from './hooks/useUrlBuilder';
+// import useUrlBuilder from './hooks/useUrlBuilder';
 import { columnsBillList } from "./columns/columns.jsx";
 import { itemsTabsBillList } from "./items_tabs/ItemsTabs.jsx";
 

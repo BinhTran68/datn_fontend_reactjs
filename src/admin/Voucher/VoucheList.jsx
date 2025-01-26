@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Col, Row, theme } from 'antd';
 import axios from 'axios';
-import { baseUrl } from '../../helpers/Helpers.js';
+import { baseUrl, convertStatusVoucher } from '../../helpers/Helpers.js';
+import useUrlBuilders from './hooks/useURLS.jsx';
 import moment from 'moment';
 import { DownOutlined } from '@ant-design/icons';
+import "./StatusSelector.css";
+import { render } from 'react-dom';
+import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined,PlusOutlined } from '@ant-design/icons';
+
+
 
 const { Option } = Select;
 
@@ -21,14 +27,24 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         key: 'voucherCode',
     },
     {
-        title: 'Loại phiếu giảm giá',
+        title: ' Tên loại phiếu giảm giá',
         dataIndex: 'voucherType',
         key: 'voucherType',
     },
     {
-        title: 'Giá trị giảm giá(%)',
+        title: 'Số lượng phiếu giảm giá',
+        dataIndex: 'quantity',
+        key: 'quantity',
+    },
+    {
+        title: 'Giá trị giảm giá(VNĐ)',
         dataIndex: 'discountValue',
         key: 'discountValue',
+    },
+    {
+        title: 'Đơn tối thiểu(VNĐ)',
+        dataIndex: 'billMinValue',
+        key: 'billMinValue',
     },
     {
         title: 'Ngày bắt đầu',
@@ -44,38 +60,65 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
     },
     {
         title: 'Trạng thái',
-        dataIndex: 'status',
-        key: 'status',
+        dataIndex: 'statusVoucher',
+        key: 'statusVoucher',
+        render: (_, record) => {
+            let displayStatus = convertStatusVoucher(record.statusVoucher);
+            let color =
+                record.statusVoucher === 'dang_kich_hoat' ? '#52c41a' :
+                    record.statusVoucher === 'chua_kich_hoat' ? 'orange' :
+                        '#FF0033';
+
+            return (
+                <div
+                    style={{
+                        cursor: 'pointer',
+                        color: 'white',
+                        backgroundColor: color,
+                        borderRadius: '10px',
+                        textAlign: 'center',
+                        padding: '5px 10px',
+                        display: 'inline-block',
+                    }}
+                >
+                    {displayStatus}
+                </div>
+            );
+        },
     },
+    ,
     {
         title: 'Thao tác',
         key: 'action',
         render: (_, record) => (
             <Space size="middle">
-                <Button style={{
-                    backgroundColor: '#80C4E9',
-                    color: 'white',
-                    border: 'none',
-                }} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
-                <Button style={{
-                    backgroundColor: '#80C4E9',
-                    color: 'white',
-                    border: 'none',
-                }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-                <Button style={{
-                    backgroundColor: '#80C4E9',
-                    color: 'white',
-                    border: 'none',
-                }} danger onClick={() => handleDetail(record)}>...</Button>
+                <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => handleEdit(record)}
+                    style={{ borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+
+                >
+                </Button>
+                {/* <Button
+                    icon={<DeleteOutlined />}
+                    danger onClick={() => handleDelete(record.id)}></Button> */}
+
+                <Button
+                    icon={<EyeOutlined />}
+                    style={{ color: 'white', borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+
+                    danger onClick={() => handleDetail(record)}></Button>
             </Space>
         ),
     },
 ];
-// MÃ THÊM: Advanced Search Form
+
 const AdvancedSearchForm = ({ onSearch }) => {
     const { token } = theme.useToken();
     const [form] = Form.useForm();
     const [expand, setExpand] = useState(false);
+
 
     const formStyle = {
         maxWidth: 'none',
@@ -84,7 +127,6 @@ const AdvancedSearchForm = ({ onSearch }) => {
         padding: 24,
 
     };
-
     const getFields = () => {
 
         return (
@@ -95,12 +137,12 @@ const AdvancedSearchForm = ({ onSearch }) => {
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item name="voucherType" label="Loại phiếu giảm giá">
-                        <Input placeholder="Nhập loại phiếu giảm giá" />
+                    <Form.Item name="voucherType" label="Tên phiếu giảm giá">
+                        <Input placeholder="Nhập Tên phiếu giảm giá" />
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item name="discountValue" label="Giá trị giảm giá (%)">
+                    <Form.Item name="discountValue" label="Giá trị giảm giá (VNĐ)">
                         <Input placeholder="Nhập giá trị giảm" />
                     </Form.Item>
                 </Col>
@@ -115,10 +157,12 @@ const AdvancedSearchForm = ({ onSearch }) => {
                     </Form.Item>
                 </Col>
                 <Col span={8}>
-                    <Form.Item name="status" label="Trạng thái">
+                    <Form.Item name="statusVoucher" label="Trạng thái">
                         <Select placeholder="Chọn trạng thái">
-                            <Option value="HOAT_DONG">Hoạt động</Option>
-                            <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
+                            <Option value="dang_kich_hoat">Đang kích hoạt</Option>
+                            <Option value="ngung_kich_hoat">Ngừng kích hoạt</Option>
+                            <Option value="chua_kich_hoat">Chưa kích hoạt</Option>
+
                         </Select>
                     </Form.Item>
                 </Col>
@@ -136,24 +180,22 @@ const AdvancedSearchForm = ({ onSearch }) => {
                 <Row gutter={24}>{getFields()}</Row>
                 <div style={{ textAlign: 'right' }}>
                     <Space size="small">
-                        <Button type="primary" htmlType="submit" style={{
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+                        {/* <Button type="primary" htmlType="submit" style={{
+
                             border: 'none',
                         }}>
                             Lọc
-                        </Button>
+                        </Button> */}
                         <Button
+                            icon={<RedoOutlined />}
                             onClick={() => {
                                 form.resetFields();
                             }}
-                            style={{
-                                backgroundColor: '#80C4E9',
-                                color: 'white',
-                                border: 'none',
-                            }}
+                            style={{ color: 'white', borderRadius: '20px', backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+
+
                         >
-                            Xóa
+
                         </Button>
                         {/* <a
                             style={{ fontSize: 12 }}
@@ -265,26 +307,27 @@ const VoucherList = () => {
     };
 
     const handleOk = async () => {
-        if(isDetail) {
+        if (isDetail) {
             setIsModalOpen(false);
             return
         }
         try {
+            const value = await form.validateFields(); 
             const values = form.getFieldsValue();
             if (editingVoucher) {
                 // Edit existing voucher
-                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values);
+                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values,value);
                 message.success('Cập nhật phiếu giảm giá thành công!');
             } else {
                 // Add new voucher
-                await axios.post(`${baseUrl}/api/admin/voucher/add`, values);
+                await axios.post(`${baseUrl}/api/admin/voucher/add`, values,value);
                 message.success('Thêm mới phiếu giảm giá thành công!');
             }
             getPageVoucher();  // Fetch updated list
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
-            message.error('Lỗi khi lưu trữ liệu!');
+            message.error('Lỗi khi lưu trữ liệu!',error);
         }
     };
 
@@ -313,11 +356,12 @@ const VoucherList = () => {
             <h4 style={{ paddingTop: '15px' }}>Danh sách phiếu giảm giá</h4>
 
             <Card>
-                <Button type="primary" onClick={handleAdd} style={{
-                    marginBottom: '20px', backgroundColor: '#80C4E9',
-                    color: 'white',
-                    border: 'none',
-                }}>
+                <Button type="primary" icon={<PlusOutlined />}
+                    onClick={handleAdd} style={{
+                        marginBottom: '20px',
+                        border: 'none',
+                         backgroundColor: '#52c41a'
+                    }}>
                     Thêm mới
                 </Button>
 
@@ -332,9 +376,10 @@ const VoucherList = () => {
                     }}
                     onChange={handleOnChangeTable}
 
+
                 />
                 <Modal
-                    title={isEdit ? 'Chỉnh sửa phiếu giảm giá' : (isDetail ? "Chi tiết"  : 'Thêm mới phiếu giảm giá')}
+                    title={isEdit ? 'Chỉnh sửa phiếu giảm giá' : (isDetail ? "Chi tiết" : 'Thêm mới phiếu giảm giá')}
                     open={isModalOpen}
                     onOk={handleOk}
                     onCancel={handleCancel}
@@ -342,16 +387,14 @@ const VoucherList = () => {
                     cancelText="Hủy"
                     okButtonProps={{
                         style: {
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+
                             border: 'none',
                             // fontFamily: 'Poppins',
                         },
                     }}
                     cancelButtonProps={{
                         style: {
-                            backgroundColor: '#80C4E9',
-                            color: 'white',
+
                             border: 'none',
                             // fontFamily: 'Poppins',
                         },
@@ -360,59 +403,36 @@ const VoucherList = () => {
 
                 >
                     <Form form={form} layout="vertical" style={{ font: 'poppins' }}>
-                        <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
+                        {/* <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true,message:'Không được bỏ trống' }]}>
                             <Input disabled={isDetail} />
+                        </Form.Item> */}
+                        <Form.Item name="voucherType" label="Tên phiếu giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
-                        <Form.Item name="voucherType" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="quantity" label="Số lượng đợt giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <Input placeholder="Nhập số lượng  giảm giá" />
                         </Form.Item>
-                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
-                            <Input />
+                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <Input placeholder="Nhập giá trị giảm giá"     suffix="VNĐ"/>
                         </Form.Item>
-                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }} />
+                        <Form.Item name="billMinValue" label="Đơn tối thiểu" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <Input placeholder="Nhập giá trị giảm giá tối thiểu"     suffix="VNĐ" />
                         </Form.Item>
-                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }} />
+                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                            <DatePicker placeholder="Nhập thời gian" format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
-                        <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
-                            <Select>
-                                <Option value="HOAT_DONG">Hoạt động</Option>
-                                <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
+                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true,message:'Không được bỏ trống' }]}>
+                            <DatePicker placeholder="Nhập thời gian"  format="DD/MM/YYYY" style={{ width: '100%' }} />
+                        </Form.Item>
+                        {/* <Form.Item name="statusVoucher" label="Trạng thái" rules={[{ required: true }]}>
+                            <Select defaultValue={"dang_kich_hoat"}  >
+                                <Option value="dang_kich_hoat">Đang kích hoạt</Option>
+                                <Option value="ngung_kich_hoat">Ngừng kích hoạt</Option>
+                                <Option value="chua_kich_hoat">Chưa kích hoạt</Option>
                             </Select>
-                        </Form.Item>
+                        </Form.Item> */}
                     </Form>
                 </Modal>
-
-                {/* <Modal
-                    title="Chi tiết phiếu giảm giá"
-                    open={isDetailModalOpen}
-                    onCancel={() => setIsDetailModalOpen(false)}
-                    footer={null}
-                >
-                    {detailVoucher && (
-                        <Form layout="vertical">
-                            <Form.Item label="Mã phiếu giảm giá">
-                                <Input value={detailVoucher.voucherCode} readOnly />
-                            </Form.Item>
-                            <Form.Item label="Loại phiếu giảm giá">
-                                <Input value={detailVoucher.voucherType} readOnly />
-                            </Form.Item>
-                            <Form.Item label="Giá trị giảm giá (%)">
-                                <Input value={detailVoucher.discountValue} readOnly />
-                            </Form.Item>
-                            <Form.Item label="Ngày bắt đầu">
-                                <Input value={moment(detailVoucher.startDate).format('DD/MM/YYYY')} readOnly />
-                            </Form.Item>
-                            <Form.Item label="Ngày kết thúc">
-                                <Input value={moment(detailVoucher.endDate).format('DD/MM/YYYY')} readOnly />
-                            </Form.Item>
-                            <Form.Item label="Trạng thái">
-                                <Input value={detailVoucher.status} readOnly />
-                            </Form.Item>
-                        </Form>
-                    )}
-                </Modal> */}
             </Card>
         </>
 
