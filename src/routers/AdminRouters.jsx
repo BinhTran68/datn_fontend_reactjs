@@ -21,7 +21,7 @@ import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 import AddStaff from "../admin/staff/AddStaff.jsx";
 import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
-import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
+// import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
 
