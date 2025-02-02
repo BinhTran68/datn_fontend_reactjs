@@ -10,7 +10,8 @@ import AdminRouters from "./routers/AdminRouters.jsx";
 import CustomerRouters from "./routers/CustomerRouters.jsx";
 import AuthRouters from "./routers/AuthRouter.jsx";
 import {Bounce, ToastContainer} from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import CSS của react-toastify
+import "react-toastify/dist/ReactToastify.css";
+import {ConfigProvider} from "antd"; // Import CSS của react-toastify
 {/* <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"></link> proppins */}
 
 
@@ -40,7 +41,17 @@ const App = () => {
             />
 
             {/* RouterProvider để quản lý các route */}
-            <RouterProvider router={router} />
+
+            <ConfigProvider
+                theme={{
+                    token: {
+
+                    },
+                }}
+            >
+                <RouterProvider router={router} />
+
+            </ConfigProvider>
         </>
     );
 };

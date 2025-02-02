@@ -1,5 +1,5 @@
 import {Button, Image, Tag} from "antd";
-import {convertLongTimestampToDate} from "../../../helpers/Helpers.js";
+import {convertLongTimestampToDate, formatVND} from "../../../helpers/Helpers.js";
 import {MdDelete} from "react-icons/md";
 import React from "react";
 import {Link} from "react-router-dom";
@@ -112,13 +112,7 @@ export  const  columnsBillList = () => {
             align: 'center',
 
         },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            align: 'center',
-            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
-            key: 'status',
-        },
+
         {
             title: 'Ngày tạo',
             dataIndex: 'createAt',
@@ -132,7 +126,15 @@ export  const  columnsBillList = () => {
             title: 'Tổng tiền',
             dataIndex: 'totalMoney',
             align: 'center',
+            render: (record) => formatVND(record),
             key: 'totalMoney',
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            align: 'center',
+            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
+            key: 'status',
         },
         {
             title: 'Hành động',
