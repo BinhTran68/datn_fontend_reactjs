@@ -13,9 +13,6 @@ import Staff from "../admin/staff/Staff.jsx";
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
 import CustomerTest from "../customer/CustomerTest.jsx";
-
-
-
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 import AddStaff from "../admin/staff/AddStaff.jsx";
