@@ -140,7 +140,7 @@ const Staff = () => {
                         padding: '6px 12px', 
                         textAlign: 'center',
                         fontWeight: 'bold',
-                        backgroundColor: text === 'Kích hoạt' ? '#52c41a' : '#f5222d',
+                        backgroundColor: text === 'Kích hoạt' ? '#52c41a' : '#FEE527',
                         color: 'white'
                     }}
                 >
