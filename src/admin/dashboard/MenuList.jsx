@@ -105,12 +105,12 @@ const MenuList = ({ darkTheme }) => {
           <Menu.Item key="sub1-t1" icon={<GiConverseShoe size={iconSize} />}>
             <Link to={"product"}>Sản phẩm</Link>
           </Menu.Item>
-          <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize} />}>
+          {/* <Menu.Item key="sub1-t2" icon={<GiRunningShoe size={iconSize} />}>
             <Link to={"productdetail"}>Sản phẩm chi tiết</Link>
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.SubMenu
             key="sub1-t10"
-            title="attribute"
+            title="Thuộc tính"
             icon={<MdAutoFixHigh size={iconSize} />}
           >
             <Menu.Item key="sub1-t8" icon={<MdCategory size={iconSize} />}>

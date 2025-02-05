@@ -22,9 +22,8 @@ import {
   notification,
   Tooltip,
 } from "antd";
-import ModalEditSanPham from "./ModalEditSanPham.jsx";
-import Breadcrumb from "../BreadCrumb.jsx";
-import styles from "./ProductDetail.module.css";
+import ModalEditSanPham from "../ProductDetail/ModalEditSanPham.jsx";
+//   import styles from "./ProductDetail.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   useEffect,
@@ -52,7 +51,7 @@ import {
   createProductDetail,
   filterData,
   createProductDetailList,
-} from "./ApiProductDetail.js";
+} from "../ProductDetail/ApiProductDetail.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
@@ -60,11 +59,12 @@ import { debounce, filter, set } from "lodash";
 import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
-import ProductDetailDrawer from "./ProductDetailDrawer.jsx";
-import { Link } from "react-router-dom";
 import { COLORS } from "../../../constants/constants..js";
+import { useParams } from "react-router-dom";
 
-const Product = () => {
+const GetProductDetail = () => {
+  const { id } = useParams(); // Lấy id từ URL
+
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [filterActice, setFilterActice] = useState(false);
@@ -92,8 +92,7 @@ const Product = () => {
   const [request, setRequest] = useState({
     status: "HOAT_DONG",
   });
-  const [requestFilter, setRequestFilter] = useState();
-  const [requestUpdate, setRequestUpdate] = useState({
+  const [requestFilter, setRequestFilter] = useState({
     productName: null,
     brandName: null,
     typeName: null,
@@ -105,6 +104,9 @@ const Product = () => {
     status: null,
     sortByQuantity: null,
     sortByPrice: null,
+  });
+  const [requestUpdate, setRequestUpdate] = useState({
+   
   });
 
   const [pagination, setPagination] = useState({
@@ -123,14 +125,7 @@ const Product = () => {
   };
 
   // validate cho create
-
   useEffect(() => {
-    if (filterActice) {
-      fetchfilterData(pagination, requestFilter);
-    } else {
-      fetchProductsData();
-    }
-
     fetchDataBrand();
     fetchDataColor();
     fetchDataGender();
@@ -139,13 +134,45 @@ const Product = () => {
     fetchDataSize();
     fetchDataSole();
     fetchDataType();
-  }, [pagination, openUpdate, open]);
+
+
+  }, []);
   useEffect(() => {
-    if (requestFilter !== undefined) {
-      // Chỉ gọi fetchfilterData khi requestFilter đã thay đổi
+    console.log("ID nhận được:", id, typeof id);
+  
+    if (dataSelectProduct.length > 0) {
+      console.log("Danh sách sản phẩm đã tải:", dataSelectProduct);
+  
+      const product = dataSelectProduct.find((item) => item.id === Number(id));
+      console.log("Sản phẩm tìm thấy:", product);
+  
+      if (product) {
+        setRequestFilter((prev) => ({
+          ...prev,
+          productName: product.productName,
+        }));
+        setIdProduct(product.productName);
+  
+        console.log("Đã cập nhật requestFilter:", product.productName);
+      }
+    }
+  }, [id, dataSelectProduct]);
+  
+  
+  useEffect(() => {
+    if (requestFilter.productName) {
+      console.log("Bắt đầu gọi API với requestFilter:", requestFilter);
       fetchfilterData(pagination, requestFilter);
     }
-  }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
+  }, [requestFilter, pagination]); // Chạy lại khi `requestFilter` thay đổi
+  
+
+  //   useEffect(() => {
+  //     if (requestFilter !== undefined) {
+  //       // Chỉ gọi fetchfilterData khi requestFilter đã thay đổi
+  //       fetchfilterData(pagination, requestFilter);
+  //     }
+  //   }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
 
   const fetchProductsData = async () => {
     setLoading(true);
@@ -365,7 +392,7 @@ const Product = () => {
         description: `Cập nhật sản phẩm  thành công!`,
       });
       setOpenUpdate(false); // setCurrentPage(1);
-      // await fetchProductsData();
+      await fetchfilterData();
     } catch (error) {
       console.error("Failed to update san pham", error);
       notification.error({
@@ -650,17 +677,17 @@ const Product = () => {
               </Tooltip>
 
               {/* <Popconfirm
-                title="Xóa Hãng"
-                description="Bạn có muốn xóa Sản phẩm này kh"
-                okText="Xác nhận"
-                cancelText="Hủy"
-                onConfirm={() => handleDeleteProductDetail(record.id)}
-              >
-                <Button
-                  icon={<FaRegTrashCan size={20} color="#FF4D4F" />}
-                  className={`${styles.buttonDelete} ant-btn`}
-                ></Button>
-              </Popconfirm> */}
+                  title="Xóa Hãng"
+                  description="Bạn có muốn xóa Sản phẩm này kh"
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                  onConfirm={() => handleDeleteProductDetail(record.id)}
+                >
+                  <Button
+                    icon={<FaRegTrashCan size={20} color="#FF4D4F" />}
+                    className={`${styles.buttonDelete} ant-btn`}
+                  ></Button>
+                </Popconfirm> */}
             </Row>
           </>
         );
@@ -670,7 +697,7 @@ const Product = () => {
 
   return (
     <Card>
-      <Title level={2}>Sản Phẩm</Title>
+      <Title level={2}>Sản Phẩm: {idProduct}</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>
@@ -699,12 +726,13 @@ const Product = () => {
         </Row>
         <Row>
           <Row gutter={[16, 16]}>
-            <Col>
+            {/* <Col>
               <Select
                 showSearch
                 style={{
                   width: "10rem",
                 }}
+                value={idProduct}
                 placeholder="Tất cả sản phẩm"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
@@ -730,7 +758,7 @@ const Product = () => {
                   })),
                 ]}
               />
-            </Col>
+            </Col> */}
             <Col>
               <Select
                 showSearch
@@ -990,19 +1018,19 @@ const Product = () => {
         </Row>
         <Row>
           {/* <Link to={"add"}>
-            <Button
-              style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
-              }}
-              type="primary"
-              onClick={showDrawer}
-              icon={<PlusOutlined />}
-            >
-              Thêm sản phẩm
-            </Button>
-          </Link> */}
+              <Button
+                style={{
+                  backgroundColor: `${COLORS.backgroundcolor}`,
+                  borderColor: "#4096FF",
+                  color: `${COLORS.color}`,
+                }}
+                type="primary"
+                onClick={showDrawer}
+                icon={<PlusOutlined />}
+              >
+                Thêm sản phẩm
+              </Button>
+            </Link> */}
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);
@@ -1059,4 +1087,4 @@ const Product = () => {
   );
 };
 
-export default Product;
+export default GetProductDetail;
