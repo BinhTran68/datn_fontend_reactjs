@@ -41,6 +41,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
+import { COLORS } from "../../../constants/constants..js";
 
 const Material = () => {
   const { Title } = Typography;
@@ -388,9 +389,9 @@ const Material = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#4096FF",
+                backgroundColor: `${COLORS.backgroundcolor}`,
                 borderColor: "#4096FF",
-                color: "#fff",
+                color: `${COLORS.color}`,
               }}
             >
               Tìm kiếm
@@ -405,9 +406,9 @@ const Material = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#4096FF",
+              backgroundColor: `${COLORS.backgroundcolor}`,
               borderColor: "#4096FF",
-              color: "#fff",
+              color: `${COLORS.color}`,
             }}
           >
             Thêm Chất liệu

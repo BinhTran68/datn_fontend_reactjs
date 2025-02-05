@@ -13,8 +13,19 @@ import Staff from "../admin/staff/Staff.jsx";
 import BillDetail from "../admin/bill/BillDetail.jsx";
 import BillList from "../admin/bill/BillList.jsx";
 import CustomerTest from "../customer/CustomerTest.jsx";
+// router
+import Brand from "../admin/product/Brand/Brand.jsx";
+import Color from "../admin/product/Color/Color.jsx";
+import Material from "../admin/product/Material/Material.jsx";
+import Size from "../admin/product/Size/Size.jsx";
+import Sole from "../admin/product/Sole/Sole.jsx";
+import Type from "../admin/product/Type/Type.jsx";
+import ProductDetail from "../admin/product/ProductDetail/ProductDetail.jsx";
+import Product from "../admin/product/Product/Product.jsx";
+import Gender from "../admin/product/Gender/Gender.jsx";
+import GetProductDetail from "../admin/product/Product/GetProductDetail.jsx";
 
-
+import Detail from "../admin/product/ProductDetail/Detail.jsx";
 
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
@@ -39,6 +50,7 @@ const PrivateRoute = ({element, allowedRoles}) => {
     // if (allowedRoles.includes(role)) {
     //   return element;
     // }
+
 
     if (true) {
         return element;
@@ -68,7 +80,60 @@ const AdminRouters = {
             element: <PrivateRoute element={<Category/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
-            path: "productdetail/add",
+            path: "brand",
+            element: <PrivateRoute element={<Brand/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "color",
+            element: <PrivateRoute element={<Color/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "material",
+            element: <PrivateRoute element={<Material/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "type",
+            element: <PrivateRoute element={<Type/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product",
+            element: <PrivateRoute element={<Product/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "size",
+            element: <PrivateRoute element={<Size/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "sole",
+            element: <PrivateRoute element={<Sole/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "gender",
+            element: <PrivateRoute element={<Gender/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "productdetail",
+            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/productdetail",
+            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/productdetail/:id",
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/get-product-detail/:id/:id",
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        
+        {
+            path: "product/get-product-detail/:id",
+            element: <PrivateRoute element={<GetProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/add",
             element: <PrivateRoute element={<AddProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
