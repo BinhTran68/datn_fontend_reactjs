@@ -29,6 +29,7 @@ import {
   fetchDataSelectSole,
   fetchDataSelectType,
 } from "./ApiProductDetail";
+import { PlusOutlined } from '@ant-design/icons';
 import { IoAddCircleOutline, IoAddCircleSharp } from "react-icons/io5";
 import { MdAdd, MdAddBox, MdAddCircleOutline } from "react-icons/md";
 import { BiSolidMessageSquareAdd } from "react-icons/bi";
@@ -50,6 +51,7 @@ const { TextArea } = Input;
 
 const ProductDetailDrawer = () => {
   const navigate = useNavigate();
+  const [previewImage, setPreviewImage] = useState("");
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
@@ -123,7 +125,58 @@ const ProductDetailDrawer = () => {
     sortByQuantity: null,
     sortByPrice: null,
   });
+// ảnh
+const [fileList, setFileList] = useState([
+  {
+    uid: '-1',
+    name: 'image.png',
+    status: 'done',
+    url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+  },
+]);
 
+const onChange = ({ fileList: newFileList }) => {
+  setFileList(newFileList);
+};
+
+const onPreview = async (file) => {
+  let src = file.url;
+  if (!src) {
+    src = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file.originFileObj);
+      reader.onload = () => resolve(reader.result);
+    });
+  }
+  const image = new Image();
+  image.src = src;
+  const imgWindow = window.open(src);
+  imgWindow?.document.write(image.outerHTML);
+};
+
+const handleUploadChange = (color, file) => {
+  setTableData((prevTableData) =>
+    prevTableData.map((item) => {
+      if (item.color === color) {
+        // Lưu file vào trường `image` cho dòng có cùng color
+        const fileWithUrl = {
+          uid: file.uid || `rc-upload-${Date.now()}`, // Tạo uid nếu không có
+          name: file.name,
+          status: "done", // Có thể là 'done' nếu bạn đã upload thành công
+          url: URL.createObjectURL(file), // URL để hiển thị
+        };
+        return {
+          ...item,
+          image: item.image ? [...item.image, file] : [file], // Thêm ảnh vào danh sách
+          reviewImage: item.reviewImage
+            ? [...item.reviewImage, fileWithUrl]
+            : [fileWithUrl], // Thêm file có URL vào reviewImage
+        };
+      }
+      return item;
+    })
+  );
+};
   const handleModalOk = async () => {
     try {
       // Kích hoạt validation
@@ -666,6 +719,74 @@ const ProductDetailDrawer = () => {
           Xóa
         </Button>
       ),
+    },
+    {
+      title: "Hình ảnh",
+      dataIndex: "color", // Sử dụng color để nhóm các dòng
+      render: (text, record) => {
+        const isFirst =
+          tableData.findIndex((item) => item.color === record.color) ===
+          tableData.findIndex((item) => item.key === record.key);
+
+        return isFirst ? (
+          <Form.Item
+            label=""
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
+            <Upload
+              listType="picture-card"
+              fileList={record.reviewImage || []}
+              multiple
+              beforeUpload={(file) => {
+                // Kiểm tra số lượng ảnh
+                if (record.image && record.image.length >= 6) {
+                  alert("Bạn chỉ có thể tải lên tối đa 6 ảnh.");
+                  return Upload.LIST_IGNORE;
+                }
+
+                // Lưu file vào trạng thái của React khi người dùng chọn file
+                // handleUploadChange(record.color, file); // Cập nhật file vào trạng thái của color
+                console.log(record.image);
+                // Ngăn chặn Ant Design upload tự động file
+                return false;
+              }}
+              onPreview={(file) => {
+                // Thiết lập ảnh xem trước
+                // setPreviewImage(file.url || file.preview); // Sử dụng preview nếu không có url
+                // setPreviewOpen(true);
+              }}
+              // onRemove={(file) => handleRemoveImage(record.color, file)}
+            >
+              {record.image && record.image.length >= 6 ? null : (
+                <button
+                  style={{
+                    border: 0,
+                    background: "none",
+                  }}
+                  type="button"
+                >
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </button>
+              )}
+            </Upload>
+            {previewImage && (
+              <Image
+                wrapperStyle={{
+                  display: "none",
+                }}
+                preview={{
+                  visible: previewOpen,
+                  // onVisibleChange: (visible) => setPreviewOpen(visible),
+                  // afterOpenChange: (visible) => !visible && setPreviewImage(""),
+                }}
+                src={previewImage}
+              />
+            )}
+          </Form.Item>
+        ) : null; // Ẩn chỗ upload ảnh cho các dòng khác cùng màu
+      },
     },
   ];
   const generateTableData = (
