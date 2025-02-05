@@ -22,6 +22,8 @@ import {
   notification,
   Tooltip,
 } from "antd";
+import { TiExport } from "react-icons/ti";
+
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ModalEditSanPham from "./ModalEditSanPham.jsx";
@@ -803,73 +805,6 @@ const Product = () => {
                 ]}
               />
             </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả giới tính"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectGender.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    genderName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả giới tính" },
-                  ...dataSelectGender?.map((g) => ({
-                    value: g.genderName,
-                    label: g.genderName,
-                  })),
-                ]}
-              />
-            </Col>
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả chất liệu"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectMaterial.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    materialName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả chất liệu" },
-                  ...dataSelectMaterial?.map((m) => ({
-                    value: m.materialName,
-                    label: m.materialName,
-                  })),
-                ]}
-              />
-            </Col>
             <Col>
               <Select
                 showSearch
@@ -903,42 +838,6 @@ const Product = () => {
                 ]}
               />
             </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả loại đế giày"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectSole.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    soleName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(request);
-                }}
-                options={[
-                  { value: "", label: "Tất cả loại đế giày" },
-                  ...dataSelectSole?.map((s) => ({
-                    value: s.soleName,
-                    label: s.soleName,
-                  })),
-                ]}
-              />
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
             <Col>
               <Select
                 showSearch
@@ -998,6 +897,39 @@ const Product = () => {
                 style={{
                   width: "10rem",
                 }}
+                placeholder="Tất cả chất liệu"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectMaterial.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    materialName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: "", label: "Tất cả chất liệu" },
+                  ...dataSelectMaterial?.map((m) => ({
+                    value: m.materialName,
+                    label: m.materialName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
                 placeholder="Tất cả kích cỡ"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
@@ -1025,7 +957,74 @@ const Product = () => {
                 ]}
               />
             </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả loại đế giày"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectSole.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    soleName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(request);
+                }}
+                options={[
+                  { value: "", label: "Tất cả loại đế giày" },
+                  ...dataSelectSole?.map((s) => ({
+                    value: s.soleName,
+                    label: s.soleName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả giới tính"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectGender.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    genderName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: "", label: "Tất cả giới tính" },
+                  ...dataSelectGender?.map((g) => ({
+                    value: g.genderName,
+                    label: g.genderName,
+                  })),
+                ]}
+              />
+            </Col>
           </Row>
+          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}></Row>
         </Row>
         <Row>
           {/* <Link to={"add"}>
@@ -1045,10 +1044,27 @@ const Product = () => {
 
           <Popconfirm
             title="Chọn kiểu xuất"
+            placement="right"
             onConfirm={handleExportClick}
             onCancel={exportToExcel}
             okText="Xuất tất cả sản phẩm"
-            cancelText="xuất trang hiện tại"
+            cancelText="Xuất trang hiện tại"
+            okButtonProps={{
+              style: {
+                backgroundColor: `${COLORS.backgroundcolor}`,
+                color: `${COLORS.color}`,
+                border: "none",
+                padding: "10px 20px",
+              },
+            }}
+            cancelButtonProps={{
+              style: {
+                backgroundColor: `${COLORS.backgroundcolor}`,
+                color: `${COLORS.color}`,
+                border: "none",
+                padding: "10px 20px",
+              },
+            }}
           >
             <Button
               style={{
@@ -1058,9 +1074,9 @@ const Product = () => {
               }}
               type="primary"
               // onClick={handleExportClick}
-              icon={<PlusOutlined />}
             >
-              Xuất excel
+              <TiExport size={22} />
+              Xuất Excel
             </Button>
           </Popconfirm>
           <ModalEditSanPham

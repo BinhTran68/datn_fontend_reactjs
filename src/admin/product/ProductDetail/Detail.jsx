@@ -129,8 +129,13 @@ const Detail = () => {
           </span>
         </Descriptions.Item>
         <Descriptions.Item label="Mô tả">
-          {product.description || "Không có mô tả"}
+          <div
+            dangerouslySetInnerHTML={{
+              __html: product.description || "Không có mô tả",
+            }}
+          />
         </Descriptions.Item>
+
         <Descriptions.Item label="QR">
           <Row>
             <Col span={24}>
@@ -148,14 +153,12 @@ const Detail = () => {
                 title="Tải xuống"
                 description="Bạn tải qr về máy"
                 placement="rightBottom"
-
                 okText="Xác nhận"
                 cancelText="Hủy"
                 onConfirm={downloadQRCodeCanvas}
               >
                 <Button
                   type="primary"
-                  
                   style={{
                     backgroundColor: `${COLORS.backgroundcolor}`,
                     borderColor: "#4096FF",
