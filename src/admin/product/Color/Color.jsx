@@ -16,6 +16,7 @@ import {
   Flex,
   Grid,
   Popconfirm,
+  ColorPicker,
 } from "antd";
 import styles from "./Color.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -41,6 +42,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
+import { COLORS } from "../../../constants/constants..js";
 
 const Color = () => {
   const { Title } = Typography;
@@ -59,6 +61,7 @@ const Color = () => {
   const [request, setRequest] = useState({
     colorName: "",
     status: "HOAT_DONG",
+    code: "#000000"
   });
 
   const [pagination, setPagination] = useState({
@@ -155,12 +158,17 @@ const Color = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchColorsData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      message.success("Màu sắc đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
     } finally {
       setLoading(false);
+      setRequest({
+        colorName: "",
+        status: "HOAT_DONG",
+        code: "#000000"
+      })
     }
   };
 
@@ -179,6 +187,11 @@ const Color = () => {
       message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
+      setRequest({
+        colorName: "",
+        status: "HOAT_DONG",
+        code: "#000000"
+      })
     }
   });
 
@@ -207,6 +220,7 @@ const Color = () => {
         setRequest({
           colorName: brandData.data.colorName,
           status: brandData.data.status,
+          code: brandData.data.code,
         }); // Cập nhật form với thông tin từ API
 
         setOpenUpdate(true); // Hiển thị modal
@@ -280,8 +294,9 @@ const Color = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
+          </Tag>
         );
       },
     },
@@ -382,9 +397,9 @@ const Color = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#4096FF",
+                backgroundColor: `${COLORS.backgroundcolor}`,
                 borderColor: "#4096FF",
-                color: "#fff",
+                color: `${COLORS.color}`,
               }}
             >
               Tìm kiếm
@@ -399,16 +414,16 @@ const Color = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#4096FF",
+              backgroundColor: `${COLORS.backgroundcolor}`,
               borderColor: "#4096FF",
-              color: "#fff",
+              color: `${COLORS.color}`,
             }}
           >
             Thêm Màu sắc
           </Button>
           <Modal
             open={openCreate}
-            title="Thêm Hãng"
+            title="Thêm Màu sắc"
             onOk={handleCreate}
             onCancel={() => {
               setOpenCreate(false);
@@ -446,6 +461,20 @@ const Color = () => {
               <div style={{ color: isActive ? "green" : "red" }}>
                 {errorMessage}
               </div>
+              <Form.Item>
+                <div>Chọn màu</div>
+                <ColorPicker
+                  defaultValue={"#000000"}
+                  onChange={(value) => {
+                    setRequest((prev) => ({
+                      ...prev,
+                      code: value.toHexString(),
+                    }));
+                    console.log(request);
+                    
+                  }}
+                />
+              </Form.Item>
             </Form>
           </Modal>
           <Modal
@@ -527,6 +556,21 @@ const Color = () => {
                   </Col>
                 </Row>
               </Radio.Group>
+              <Form.Item>
+                <div>Chọn màu</div>
+                <ColorPicker
+                  // defaultValue={"#000000"}
+                  value={request.code}
+                  onChange={(value) => {
+                    setRequest((prev) => ({
+                      ...prev,
+                      code: value.toHexString(),
+                    }));
+                    console.log(request);
+                    
+                  }}
+                />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>
