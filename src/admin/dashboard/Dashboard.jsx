@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Row, Col, Typography, Card, Space } from "antd";
 import { Link } from "react-router-dom";
 import moment from "moment";
+import AddressSelector from "./AddressSelector.jsx";
+import AddressSelectorAntd from "./AddressSelectorAntd.jsx";
+import {generateAddressString} from "../../helpers/Helpers.js";
 
 
 const { Title, Text } = Typography;
@@ -14,6 +17,33 @@ const Dashboard = () => {
         { label: "Sản Phẩm Hết Hàng", value: 0 },
     ]);
     const [currentTime, setCurrentTime] = useState(moment().format("HH:mm:ss"));
+
+
+    const [address, setAddress] = useState({
+        provinceId: null,
+        districtId: null,
+        wardId: null,
+        specificAddress: '',
+    });
+
+    const [addressText, setAddressText] = useState('')
+
+    const handleAddressChange =   (provinceId, districtId, wardId, specificAddress) => {
+        setAddress({
+            provinceId,
+            districtId,
+            wardId,
+            specificAddress,
+        });
+        console.log('Updated Address:', {
+            provinceId,
+            districtId,
+            wardId,
+            specificAddress,
+        });
+
+
+    };
 
     // const fetchData = useCallback(async () => {
     //     try {
@@ -44,7 +74,7 @@ const Dashboard = () => {
     // }, [fetchData]);
 
     return (
-        <div style={{ padding: "20px",  }}>
+        <div style={{padding: "20px",}}>
             <Row justify="space-between" align="middle">
                 <Col>
                     <Title level={3}>Danh sách việc cần làm</Title>
@@ -52,7 +82,7 @@ const Dashboard = () => {
 
             </Row>
 
-            <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
+            <Row gutter={[16, 16]} style={{marginTop: "20px"}}>
                 {data.map((item, index) => (
                     <Col xs={24} sm={12} md={6} key={index}>
                         <Link
@@ -72,7 +102,7 @@ const Dashboard = () => {
                             >
                                 <Title
                                     level={4}
-                                    style={{ marginBottom: "10px", color: "#1890ff" }}
+                                    style={{marginBottom: "10px", color: "#1890ff"}}
                                 >
                                     {item.value}
                                 </Title>
@@ -83,19 +113,19 @@ const Dashboard = () => {
                 ))}
             </Row>
 
-            <Row style={{ marginTop: "20px", justifyContent: "center", textAlign: "center" }}>
+            <Row style={{marginTop: "20px", justifyContent: "center", textAlign: "center"}}>
                 <Col>
                     <Space direction="vertical" align="center">
-                        <Text style={{ fontSize: "36px", fontWeight: "bold" }}>
+                        <Text style={{fontSize: "36px", fontWeight: "bold"}}>
                             {currentTime}
                         </Text>
-                        <Text style={{ fontSize: "18px" }}>
+                        <Text style={{fontSize: "18px"}}>
                             {moment().format("dddd, DD/MM/YYYY")}
                         </Text>
                     </Space>
                 </Col>
             </Row>
-            <Row style={{ marginTop: "20px", justifyContent: "center", textAlign: "center" }}>
+            <Row style={{marginTop: "20px", justifyContent: "center", textAlign: "center"}}>
                 <Col>
                     {/*<img*/}
                     {/*    src={logo}*/}
@@ -104,6 +134,26 @@ const Dashboard = () => {
                     {/*/>*/}
                 </Col>
             </Row>
+            <h1>{addressText}</h1>
+
+
+            {/*<AddressSelector*/}
+            {/*    provinceId={address.provinceId}*/}
+            {/*    districtId={address.districtId}*/}
+            {/*    wardId={address.wardId}*/}
+            {/*    specificAddressDefault={address.specificAddress}*/}
+            {/*    onAddressChange={handleAddressChange} // Pass the callback*/}
+            {/*/>*/}
+
+            <AddressSelectorAntd
+                provinceId={address.provinceId}
+                districtId={address.districtId}
+                wardId={address.wardId}
+                specificAddressDefault={address.specificAddress}
+                onAddressChange={handleAddressChange} // Pass the callback
+            />
+
+
 
         </div>
     );

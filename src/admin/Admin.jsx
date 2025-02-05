@@ -1,16 +1,15 @@
-
 import { Button, Layout, theme, Card, Badge, Avatar } from "antd";
-// import Logo from "../component/sidebar/Logo";
+
+
+
 // import MenuList from "../component/sidebar/MenuList";
 import { useEffect, useState } from "react";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { Outlet, Link } from "react-router-dom";
 import { Content } from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
-import BillList from "./dashboard/BillList.jsx";
-import VoucheList from "./dashboard/VoucheList.jsx";
-
-
+import BillList from "./bill/BillList.jsx";
+import img from "./../../public/img/thehands.png"
 
 
 const { Header, Sider } = Layout;
@@ -79,7 +78,9 @@ function Admin() {
                 theme={darkTheme ? "dark" : "light"}
                 className="sidebar min-vh-100"
             >
-                {/*<Logo />*/}
+                <div className={"d-flex justify-content-center mt-5"}>
+                    <img width={145} src={img} alt="" />
+                </div>
                 <MenuList darkTheme={darkTheme} />
                 {/*<ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />*/}
             </Sider>
@@ -112,24 +113,28 @@ function Admin() {
                                         lineHeight: "1.5",
                                     }}
                                 >
-                  <span
-                      style={{
-                          fontWeight: "bold",
-                          fontSize: "16px",
-                          display: "block",
-                      }}
-                  >
-                    {userInfo.ten}
-                  </span>
+                                    <span
+                                        style={{
+                                            fontWeight: "bold",
+                                            fontSize: "16px",
+                                            display: "block",
+                                        }}
+                                    >
+                                        {userInfo.ten}
+                                    </span>
                                     <span style={{ color: "#888", fontSize: "14px" }}>
-                    {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
-                  </span>
+                                        {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
+                                    </span>
                                 </div>
                                 <Avatar size={40} src={userInfo.avatar} />
                             </>
                         ) : (
                             <Link to="/auth/login-admin">
-                                <Button type="primary">Đăng nhập</Button>
+                                <Button style={{
+                                    marginBottom: '20px',
+                 
+                                    border: 'none',
+                                }} type="primary">Đăng nhập</Button>
                             </Link>
                         )}
 

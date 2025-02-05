@@ -1,0 +1,44 @@
+
+
+.order-box {
+    border: 1px solid black;
+    padding: 10px;
+}
+
+.total {
+    font-weight: bold;
+}
+.payment-methods {
+    margin-bottom: 20px;
+}
+.payment-method {
+    margin-bottom: 10px;
+}
+.payment-method input[type="radio"] {
+    margin-right: 5px;
+}
+.qr-code {
+    text-align: center;
+}
+.qr-code img {
+    max-width: 200px;
+}
+.qr-code p {
+    margin-top: 10px;
+    font-size: 12px;
+}
+.order-button {
+    display: block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+.note {
+    font-size: 12px;
+    margin-top: 20px;
+}

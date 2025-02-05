@@ -2,8 +2,9 @@ import React, {useState} from "react";
 import {motion} from "framer-motion";
 import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
-import bannerLogin from "../../assets/image/banner_login.jpg";
 import CustomInput from "../../client/component/CustomInput.jsx";
+import {Input} from "antd";
+
 
 const Login = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
@@ -82,6 +83,13 @@ const Login = () => {
                     )}
 
                     <form onSubmit={handleSubmit}>
+                        <Input   name="username" // Định danh cho field này
+                                 value={formData.username}
+                                 onChange={handleInputChange}
+
+                        />
+
+
                         <CustomInput
                             label="Tên đăng nhập"
                             type="text"
