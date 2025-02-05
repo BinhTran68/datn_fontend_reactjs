@@ -54,6 +54,7 @@ import {
   createProductDetail,
   filterData,
   createProductDetailList,
+  getAllProductDetailExportData,
 } from "./ApiProductDetail.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
@@ -66,6 +67,8 @@ const Product = () => {
   const [loading, setLoading] = useState(false);
   const [filterActice, setFilterActice] = useState(false);
   const [products, setProducts] = useState([]);
+  const [exportdata, setexportdata] = useState([]);
+
   const [selectedProductDetail, setSelectedProductDetail] = useState();
 
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
@@ -126,15 +129,37 @@ const Product = () => {
     }
   }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
 
+  const [isExporting, setIsExporting] = useState(false); // Thêm flag kiểm soát xuất dữ liệu
+
+  useEffect(() => {
+    if (exportdata.length > 0 && isExporting) {
+      exportToExcel(); // Chỉ gọi khi có dữ liệu và flag isExporting là true
+      setIsExporting(false); // Reset lại trạng thái xuất sau khi đã xuất
+      fetchProductsData();
+    }
+  }, [exportdata, isExporting]); // Theo dõi exportdata và isExporting
+
+  const handleExportClick = async () => {
+    try {
+      const response = await getAllProductDetailExportData();
+      console.log("Response from API:", response);
+
+      setexportdata(response.data); // Cập nhật state exportdata
+      setIsExporting(true); // Đánh dấu là đang xuất dữ liệu
+    } catch (error) {
+      console.error("Error exporting data:", error);
+    }
+  };
+
   // exporrt excel
   const exportToExcel = () => {
-    if (products.length === 0) {
+    if (exportdata.length === 0) {
       message.warning("Không có dữ liệu để xuất!");
       return;
     }
 
     // Chỉ chọn những trường quan trọng cần xuất ra Excel
-    const exportData = products.map((item) => ({
+    const exportData = exportdata.map((item) => ({
       ID: item.id,
       "Mã Code": item.code,
       "Tên Sản Phẩm": item.productName,
@@ -185,6 +210,20 @@ const Product = () => {
       console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
       setProducts(response.data);
       setTotalProducts(response.total);
+      setexportdata(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const ExportAllData = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllProductDetailExportData();
+      console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
+      // setProducts(response.data);
+      setexportdata(response.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -198,6 +237,7 @@ const Product = () => {
       console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
       setProducts(response.data);
       setTotalProducts(response.total);
+      setexportdata(response.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -415,7 +455,6 @@ const Product = () => {
           width: "20px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -431,7 +470,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -449,7 +487,6 @@ const Product = () => {
           width: "200px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -466,7 +503,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -481,7 +517,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -498,7 +533,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -513,7 +547,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -531,7 +564,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -548,7 +580,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -563,7 +594,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -586,7 +616,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -1014,18 +1043,26 @@ const Product = () => {
             </Button>
           </Link> */}
 
-          <Button
-            style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
-            }}
-            type="primary"
-            onClick={exportToExcel}
-            icon={<PlusOutlined />}
+          <Popconfirm
+            title="Chọn kiểu xuất"
+            onConfirm={handleExportClick}
+            onCancel={exportToExcel}
+            okText="Xuất tất cả sản phẩm"
+            cancelText="xuất trang hiện tại"
           >
-            Xuất excel
-          </Button>
+            <Button
+              style={{
+                backgroundColor: `${COLORS.backgroundcolor}`,
+                borderColor: "#4096FF",
+                color: `${COLORS.color}`,
+              }}
+              type="primary"
+              // onClick={handleExportClick}
+              icon={<PlusOutlined />}
+            >
+              Xuất excel
+            </Button>
+          </Popconfirm>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);

@@ -42,9 +42,10 @@ import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaRegListAlt } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants..js";
 import { Link } from "react-router-dom";
+import { CiBoxList, CiViewList } from "react-icons/ci";
 
 const Product = () => {
   const { Title } = Typography;
@@ -444,8 +445,8 @@ const Product = () => {
                     color: `${COLORS.color}`,
                   }}
                   type="primary"
-                  icon={<PlusOutlined />}
                 >
+                  <PlusOutlined />
                   Thêm sản phẩm
                 </Button>
               </Link>
@@ -459,8 +460,8 @@ const Product = () => {
                     color: `${COLORS.color}`,
                   }}
                   type="primary"
-                  icon={<PlusOutlined />}
                 >
+                  <CiViewList size={20} />
                   Xem tất cả các sản phẩm chi tiết
                 </Button>
               </Link>
