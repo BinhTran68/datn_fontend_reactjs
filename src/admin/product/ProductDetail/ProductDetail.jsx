@@ -22,6 +22,8 @@ import {
   notification,
   Tooltip,
 } from "antd";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import ModalEditSanPham from "./ModalEditSanPham.jsx";
 import Breadcrumb from "../BreadCrumb.jsx";
 import styles from "./ProductDetail.module.css";
@@ -53,14 +55,9 @@ import {
   filterData,
   createProductDetailList,
 } from "./ApiProductDetail.js";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { RxUpdate } from "react-icons/rx";
+import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
-import { debounce, filter, set } from "lodash";
-import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
-// import DrawerAdd from "./Drawer.jsx";
-import ProductDetailDrawer from "./ProductDetailDrawer.jsx";
 import { Link } from "react-router-dom";
 import { COLORS } from "../../../constants/constants..js";
 
@@ -72,21 +69,13 @@ const Product = () => {
   const [selectedProductDetail, setSelectedProductDetail] = useState();
 
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
-  const [idBrand, setIdBrand] = useState();
   const [dataSelectColor, setDataSelectColor] = useState([]);
-  const [idColor, setIdColor] = useState();
   const [dataSelectGender, setDataSelectGender] = useState([]);
-  const [idGender, setIdGender] = useState();
   const [dataSelectMaterial, setDataSelectMaterial] = useState([]);
-  const [idMaterial, setIdMaterial] = useState();
   const [dataSelectProduct, setDataSelectProduct] = useState([]);
-  const [idProduct, setIdProduct] = useState();
   const [dataSelectSize, setDataSelectSize] = useState([]);
-  const [idSize, setIdSize] = useState();
   const [dataSelectSole, setDataSelectSole] = useState([]);
-  const [idSole, setIdSole] = useState();
   const [dataSelectType, setDataSelectType] = useState([]);
-  const [idType, setIdType] = useState();
 
   const [totalProducts, setTotalProducts] = useState(0);
   const [request, setRequest] = useState({
@@ -114,16 +103,6 @@ const Product = () => {
   const [open, setOpen] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
 
-  const showDrawer = () => {
-    setOpen(true);
-  };
-
-  const onClose = () => {
-    setOpen(false);
-  };
-
-  // validate cho create
-
   useEffect(() => {
     if (filterActice) {
       fetchfilterData(pagination, requestFilter);
@@ -146,6 +125,58 @@ const Product = () => {
       fetchfilterData(pagination, requestFilter);
     }
   }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
+
+  // exporrt excel
+  const exportToExcel = () => {
+    if (products.length === 0) {
+      message.warning("Không có dữ liệu để xuất!");
+      return;
+    }
+
+    // Chỉ chọn những trường quan trọng cần xuất ra Excel
+    const exportData = products.map((item) => ({
+      ID: item.id,
+      "Mã Code": item.code,
+      "Tên Sản Phẩm": item.productName,
+      "Thương Hiệu": item.brandName,
+      "Loại Giày": item.typeName,
+      "Màu Sắc": item.colorName,
+      "Chất Liệu": item.materialName,
+      "Kích Cỡ": item.sizeName,
+      "Đế Giày": item.soleName,
+      "Giới Tính": item.genderName,
+      "Số Lượng": item.quantity,
+      "Giá (VND)": item.price,
+      "Trạng Thái":
+        item.status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động",
+      "Cập Nhật Bởi": item.updateBy,
+      "Ngày Cập Nhật": new Date(item.updateAt).toLocaleString("vi-VN"), // Chuyển timestamp thành ngày
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData); // Chuyển dữ liệu thành Sheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Danh sách sản phẩm");
+
+    // Xuất file Excel
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const excelBlob = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+    const timestamp = new Date()
+      .toLocaleString("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+      .replace(/[^\w\s]/g, "")
+      .replace(" ", "_"); // Loại bỏ dấu và thay ' ' bằng '_'
+    saveAs(excelBlob, `Danh_sach_san_pham_${timestamp}.xlsx`);
+  };
 
   const fetchProductsData = async () => {
     setLoading(true);
@@ -273,32 +304,6 @@ const Product = () => {
       setLoading(false);
     }
   };
-  // thêm
-  // const handleCreateProductDetail = async (productData) => {
-  //   try {
-  //     setLoading(true);
-  //     console.log(request);
-  //     await createProductDetail(productData);
-  //     setFilterActice(false);
-  //     fetchProductsData(); // Refresh data after creation
-  //     message.success("Tạo chi tiết sản phẩm thành công!");
-  //     setRequest({
-  //       status: "HOAT_DONG",
-  //     });
-  //   } catch (error) {
-  //     console.error(error);
-  //     message.error(
-  //       error.message || "Có lỗi xảy ra khi tạo chi tiết sản phẩm."
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //     // Đặt lại request, giữ nguyên status
-
-  //     setOpen(false);
-  //   }
-  // };
-
-  // xóa
 
   const handleDeleteProductDetail = useCallback(async (productId) => {
     try {
@@ -661,6 +666,11 @@ const Product = () => {
                   className={`${styles.buttonDelete} ant-btn`}
                 ></Button>
               </Popconfirm> */}
+              <Tooltip title="Xem chi tiết sản phẩm">
+                <Link to={`${record.id}`}>
+                  <Button icon={<FaEye color="green" size={20} />} />
+                </Link>
+              </Tooltip>
             </Row>
           </>
         );
@@ -670,7 +680,7 @@ const Product = () => {
 
   return (
     <Card>
-      <Title level={2}>Sản Phẩm</Title>
+      <Title level={2}>Tất cả Sản phẩm chi tiết</Title>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>
@@ -1003,6 +1013,19 @@ const Product = () => {
               Thêm sản phẩm
             </Button>
           </Link> */}
+
+          <Button
+            style={{
+              backgroundColor: `${COLORS.backgroundcolor}`,
+              borderColor: "#4096FF",
+              color: `${COLORS.color}`,
+            }}
+            type="primary"
+            onClick={exportToExcel}
+            icon={<PlusOutlined />}
+          >
+            Xuất excel
+          </Button>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);

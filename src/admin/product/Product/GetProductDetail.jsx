@@ -52,7 +52,7 @@ import {
   filterData,
   createProductDetailList,
 } from "../ProductDetail/ApiProductDetail.js";
-import { FaRegTrashCan } from "react-icons/fa6";
+import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce, filter, set } from "lodash";
@@ -60,7 +60,7 @@ import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
 import { COLORS } from "../../../constants/constants..js";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -105,9 +105,7 @@ const GetProductDetail = () => {
     sortByQuantity: null,
     sortByPrice: null,
   });
-  const [requestUpdate, setRequestUpdate] = useState({
-   
-  });
+  const [requestUpdate, setRequestUpdate] = useState({});
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -134,38 +132,34 @@ const GetProductDetail = () => {
     fetchDataSize();
     fetchDataSole();
     fetchDataType();
-
-
   }, []);
   useEffect(() => {
     console.log("ID nhận được:", id, typeof id);
-  
+
     if (dataSelectProduct.length > 0) {
       console.log("Danh sách sản phẩm đã tải:", dataSelectProduct);
-  
+
       const product = dataSelectProduct.find((item) => item.id === Number(id));
       console.log("Sản phẩm tìm thấy:", product);
-  
+
       if (product) {
         setRequestFilter((prev) => ({
           ...prev,
           productName: product.productName,
         }));
         setIdProduct(product.productName);
-  
+
         console.log("Đã cập nhật requestFilter:", product.productName);
       }
     }
   }, [id, dataSelectProduct]);
-  
-  
+
   useEffect(() => {
     if (requestFilter.productName) {
       console.log("Bắt đầu gọi API với requestFilter:", requestFilter);
       fetchfilterData(pagination, requestFilter);
     }
   }, [requestFilter, pagination]); // Chạy lại khi `requestFilter` thay đổi
-  
 
   //   useEffect(() => {
   //     if (requestFilter !== undefined) {
@@ -392,7 +386,6 @@ const GetProductDetail = () => {
         description: `Cập nhật sản phẩm  thành công!`,
       });
       setOpenUpdate(false); // setCurrentPage(1);
-      await fetchfilterData();
     } catch (error) {
       console.error("Failed to update san pham", error);
       notification.error({
@@ -404,6 +397,8 @@ const GetProductDetail = () => {
       });
     } finally {
       // setLoading(false);
+      await fetchfilterData();
+
     }
   };
   const handleDataSource = () => {
@@ -688,6 +683,12 @@ const GetProductDetail = () => {
                     className={`${styles.buttonDelete} ant-btn`}
                   ></Button>
                 </Popconfirm> */}
+
+              <Tooltip title="Xem chi tiết sản phẩm">
+                <Link to={`${record.id}`}>
+                  <Button icon={<FaEye color="green" size={20} />} />
+                </Link>
+              </Tooltip>
             </Row>
           </>
         );
@@ -702,7 +703,7 @@ const GetProductDetail = () => {
         <Row gutter={[16, 16]}>
           <Col span={20}>
             <Input
-              placeholder="Nhập vào tên Sản phẩmbạn muốn tìm!"
+              placeholder="Nhập vào tên Sản phẩm bạn muốn tìm!"
               prefix={<SearchOutlined />}
               allowClear
               name="name"

@@ -25,6 +25,8 @@ import Product from "../admin/product/Product/Product.jsx";
 import Gender from "../admin/product/Gender/Gender.jsx";
 import GetProductDetail from "../admin/product/Product/GetProductDetail.jsx";
 
+import Detail from "../admin/product/ProductDetail/Detail.jsx";
+
 import AddCustomer from "../customer/AddCustomer.jsx";
 import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 import AddStaff from "../admin/staff/AddStaff.jsx";
@@ -116,6 +118,14 @@ const AdminRouters = {
         {
             path: "product/productdetail",
             element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/productdetail/:id",
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "product/get-product-detail/:id/:id",
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         
         {
