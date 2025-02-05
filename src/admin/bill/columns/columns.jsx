@@ -6,6 +6,8 @@ import {Link} from "react-router-dom";
 import {FiEye} from "react-icons/fi";
 import BillStatusComponent from "../componets/BillStatusComponent.jsx";
 import BillTypeComponent from "../componets/BillTypeComponent.jsx";
+import {FaEye} from "react-icons/fa6";
+import {COLORS} from "../../../constants/constants..js";
 
 export const columnsBillProductTable = (onActionClick) => [
     {
@@ -143,8 +145,8 @@ export  const  columnsBillList = () => {
             render: (_, record) => (
                 <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
                     <Button
-                        type="primary"
-                        icon={<FiEye/>}
+
+                        icon={<FaEye  color={`${COLORS.primary}`} size={20} />}
                         onClick={() => {
                         }}
                     >

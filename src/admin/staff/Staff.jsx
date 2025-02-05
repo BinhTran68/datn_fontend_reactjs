@@ -3,7 +3,9 @@ import axios from 'axios';
 import { Input, Select, DatePicker, Slider, Button, Table, Modal, Form, Space, message, Upload, Card } from 'antd';
 import { SearchOutlined, ReloadOutlined, CheckOutlined, EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import { Link } from 'react-router-dom';  // Import Link component
+import { Link } from 'react-router-dom';
+import {FaEdit} from "react-icons/fa";
+import {COLORS} from "../../constants/constants..js";  // Import Link component
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -32,7 +34,7 @@ const Staff = () => {
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
                     dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),  
-                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    status: item.status === 0 ? 'Kích hoạt' : 'Khóa',
                     email: item.email,
                     gender: item.gender,
                 }));
@@ -140,7 +142,7 @@ const Staff = () => {
                         padding: '6px 12px', 
                         textAlign: 'center',
                         fontWeight: 'bold',
-                        backgroundColor: text === 'Kích hoạt' ? '#52c41a' : '#f5222d',
+                        backgroundColor: text === 'Kích hoạt' ? '#52c41a' : `${COLORS.error}`,
                         color: 'white'
                     }}
                 >
@@ -155,9 +157,16 @@ const Staff = () => {
                 <Space size="middle">
                     <Link to={`/admin/edit-staff/${record.id}`}>
                         <Button
-                            type="primary"
-                            icon={<EditOutlined />}
-                            style={{ borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+                            icon={
+                                <FaEdit
+                                    style={{
+                                        color: `${COLORS.primary}`,
+                                        // marginRight: 8,
+                                        fontSize: "1.5rem",
+                                    }}
+                                />
+                            }
+
                         />
                     </Link>
                     {/* <Button
@@ -173,10 +182,10 @@ const Staff = () => {
 
     return (
         <div>
-            <h2 style={{ color: '#1890ff' }}>Quản lý nhân viên</h2>
+            <h2 >Quản lý nhân viên</h2>
 
-            <Card style={{ padding: '20px', backgroundColor: '#f7f7f7', borderRadius: '8px' }}>
-                <h3 style={{ color: '#1890ff' }}>Bộ lọc</h3>
+            <Card style={{ padding: '20px',  borderRadius: '8px' }}>
+                <h3 >Bộ lọc</h3>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                     <label style={{ marginRight: '10px' }}>Tìm kiếm:</label>
                     <Input
@@ -217,7 +226,7 @@ const Staff = () => {
                         type="primary" 
                         icon={<SearchOutlined />} 
                         onClick={handleSearch} 
-                        style={{ marginRight: "10px",  backgroundColor: '#1890ff' }}
+                        style={{ marginRight: "10px"}}
                     >
                         Tìm kiếm
                     </Button>
@@ -233,15 +242,19 @@ const Staff = () => {
                         <Button 
                             type="primary" 
                             icon={<PlusOutlined />} 
-                            style={{  backgroundColor: '#52c41a' }}
+
                         >
                             Thêm mới
                         </Button>
                     </Link>
                 </div>
             </Card>
+            <Card>
+                <h3>Danh sách nhân viên</h3>
+                <hr/>
+                <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
+            </Card>
 
-            <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
         </div>
     );
 };

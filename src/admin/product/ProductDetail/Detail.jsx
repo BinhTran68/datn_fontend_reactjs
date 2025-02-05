@@ -157,9 +157,9 @@ const Detail = () => {
                   type="primary"
                   
                   style={{
-                    backgroundColor: `${COLORS.backgroundcolor}`,
-                    borderColor: "#4096FF",
-                    color: `${COLORS.color}`,
+                   
+                    
+                    
                     width: "8rem",
                   }}
                 >

@@ -657,9 +657,9 @@ const ProductDetailDrawer = () => {
         <Button
           type="primary"
           style={{
-            backgroundColor: `${COLORS.backgroundcolor}`,
-            borderColor: "#4096FF",
-            color: `${COLORS.color}`,
+           
+            
+            
           }}
           onClick={() => handleDelete(record.key)}
         >
@@ -1160,9 +1160,9 @@ const ProductDetailDrawer = () => {
                         }}
                         type="primary"
                         style={{
-                          backgroundColor: `${COLORS.backgroundcolor}`,
-                          borderColor: "#4096FF",
-                          color: `${COLORS.color}`,
+                         
+                          
+                          
                         }}
                       >
                         Lưu thông tin
@@ -1175,9 +1175,9 @@ const ProductDetailDrawer = () => {
                         // disabled={!hasSelected}
                         loading={loading}
                         style={{
-                          backgroundColor: `${COLORS.backgroundcolor}`,
-                          borderColor: "#4096FF",
-                          color: `${COLORS.color}`,
+                         
+                          
+                          
                         }}
                       >
                         Chỉnh số lượng và giá chung
@@ -1223,9 +1223,9 @@ const ProductDetailDrawer = () => {
             loading={loading}
             onClick={handleModalOk}
             style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
+             
+              
+              
             }}
           >
             Xác nhận

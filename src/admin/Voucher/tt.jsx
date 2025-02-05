@@ -5,7 +5,7 @@ const StatusSelector = () => {
   const [status, setStatus] = useState("Đang kích hoạt");
 
   const statuses = [
-    { label: "Đang kích hoạt", color: "green" },
+    { label: "Đang kích hoạt", color: `${COLORS.primary}` },
     { label: "Ngừng kích hoạt", color: "red" },
     { label: "Chưa kích hoạt", color: "gray" },
   ];
