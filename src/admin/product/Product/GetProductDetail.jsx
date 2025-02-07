@@ -61,6 +61,7 @@ import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
 import { COLORS } from "../../../constants/constants..js";
 import { Link, useParams } from "react-router-dom";
+import {FiEye} from "react-icons/fi";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -431,7 +432,6 @@ const GetProductDetail = () => {
           width: "20px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -447,7 +447,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -465,7 +464,6 @@ const GetProductDetail = () => {
           width: "200px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -482,7 +480,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -497,7 +494,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -514,7 +510,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -529,7 +524,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -547,7 +541,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -564,7 +557,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -579,7 +571,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -602,7 +593,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -661,7 +651,7 @@ const GetProductDetail = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         fontSize: "1.5rem",
                       }}
                     />
@@ -685,7 +675,7 @@ const GetProductDetail = () => {
 
               <Tooltip title="Xem chi tiết sản phẩm">
                 <Link to={`${record.id}`}>
-                  <Button icon={<FaEye color="green" size={20} />} />
+                  <Button icon={<FiEye  />} />
                 </Link>
               </Tooltip>
             </Row>
@@ -715,9 +705,9 @@ const GetProductDetail = () => {
               icon={<SearchOutlined />}
               // onClick={searchName}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -751,7 +741,7 @@ const GetProductDetail = () => {
                   }));
                 }}
                 options={[
-                  { value: "", label: "Tất cả sản phẩm" },
+                  { value: null, label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
@@ -784,7 +774,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả thương hiệu" },
+                  { value: null, label: "Tất cả thương hiệu" },
                   ...dataSelectBrand?.map((p) => ({
                     value: p.brandName,
                     label: p.brandName,
@@ -817,7 +807,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại giày" },
+                  { value: null, label: "Tất cả loại giày" },
                   ...dataSelectType?.map((g) => ({
                     value: g.typeName,
                     label: g.typeName,
@@ -850,7 +840,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả màu sắc" },
+                  { value: null, label: "Tất cả màu sắc" },
                   ...dataSelectColor?.map((c) => ({
                     value: c.colorName,
                     label: (
@@ -903,7 +893,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả chất liệu" },
+                  { value: null, label: "Tất cả chất liệu" },
                   ...dataSelectMaterial?.map((m) => ({
                     value: m.materialName,
                     label: m.materialName,
@@ -936,7 +926,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả kích cỡ" },
+                  { value: null, label: "Tất cả kích cỡ" },
                   ...dataSelectSize?.map((s) => ({
                     value: s.sizeName,
                     label: s.sizeName,
@@ -969,7 +959,7 @@ const GetProductDetail = () => {
                   console.log(request);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại đế giày" },
+                  { value: null, label: "Tất cả loại đế giày" },
                   ...dataSelectSole?.map((s) => ({
                     value: s.soleName,
                     label: s.soleName,
@@ -1002,7 +992,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả giới tính" },
+                  { value: null, label: "Tất cả giới tính" },
                   ...dataSelectGender?.map((g) => ({
                     value: g.genderName,
                     label: g.genderName,
@@ -1017,9 +1007,9 @@ const GetProductDetail = () => {
           {/* <Link to={"add"}>
               <Button
                 style={{
-                  backgroundColor: `${COLORS.backgroundcolor}`,
-                  borderColor: "#4096FF",
-                  color: `${COLORS.color}`,
+                 
+                  
+                  
                 }}
                 type="primary"
                 onClick={showDrawer}

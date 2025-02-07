@@ -8,6 +8,9 @@ import { DownOutlined } from '@ant-design/icons';
 import "./StatusSelector.css";
 import { render } from 'react-dom';
 import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined,PlusOutlined } from '@ant-design/icons';
+import {FaEye} from "react-icons/fa6";
+import {FaEdit} from "react-icons/fa";
+import {COLORS} from "../../constants/constants..js";
 
 
 
@@ -93,10 +96,16 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         render: (_, record) => (
             <Space size="middle">
                 <Button
-                    type="primary"
-                    icon={<EditOutlined />}
+                    icon={
+                        <FaEdit
+                            style={{
+                                color: `${COLORS.primary}`,
+                                // marginRight: 8,
+                                fontSize: "1.5rem",
+                            }}
+                        />
+                    }
                     onClick={() => handleEdit(record)}
-                    style={{ borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
 
                 >
                 </Button>
@@ -105,10 +114,8 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
                     danger onClick={() => handleDelete(record.id)}></Button> */}
 
                 <Button
-                    icon={<EyeOutlined />}
-                    style={{ color: 'white', borderRadius: '20px', backgroundColor: '#1890ff', borderColor: '#1890ff' }}
-
-                    danger onClick={() => handleDetail(record)}></Button>
+                    icon={<FaEye color={"green"} size={20} />}
+                     onClick={() => handleDetail(record)}></Button>
             </Space>
         ),
     },

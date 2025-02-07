@@ -158,7 +158,7 @@ const ModalEditSanPham = ({
         title={
           <span className="flex">
             <FaEdit
-              style={{ color: "green", marginRight: 8, fontSize: "1.5rem" }}
+              style={{ color: `${COLORS.primary}`, marginRight: 8, fontSize: "1.5rem" }}
             />
             Chỉnh sửa {title}
           </span>
@@ -176,9 +176,9 @@ const ModalEditSanPham = ({
             onClick={() => formik.submitForm()} // Gọi hàm submitForm của Formik khi nhấn nút xác nhận
             // disabled={!isActiveUpdate}
             style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
+             
+              
+              
             }}
           >
             Xác nhận
@@ -542,9 +542,9 @@ const ModalEditSanPham = ({
               type="primary"
               onClick={downloadQRCodeCanvas}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
                 width: "10rem",
               }}
             >

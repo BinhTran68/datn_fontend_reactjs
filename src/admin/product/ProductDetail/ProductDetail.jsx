@@ -676,7 +676,7 @@ const Product = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         fontSize: "1.5rem",
                       }}
                     />
@@ -699,7 +699,18 @@ const Product = () => {
               </Popconfirm> */}
               <Tooltip title="Xem chi tiết sản phẩm">
                 <Link to={`${record.id}`}>
-                  <Button icon={<FaEye color="green" size={20} />} />
+                  <Button
+                    icon={
+                      <FaEye
+                        color="green"
+                        style={{
+                          color: `${COLORS.primary}`,
+                          fontSize: "1.5rem",
+                        }}
+                        size={20}
+                      />
+                    }
+                  />
                 </Link>
               </Tooltip>
             </Row>
@@ -728,11 +739,7 @@ const Product = () => {
               type="primary"
               icon={<SearchOutlined />}
               // onClick={searchName}
-              style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -764,7 +771,7 @@ const Product = () => {
                   }));
                 }}
                 options={[
-                  { value: "", label: "Tất cả sản phẩm" },
+                  { value: null, label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
@@ -797,7 +804,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả thương hiệu" },
+                  { value: null, label: "Tất cả thương hiệu" },
                   ...dataSelectBrand?.map((p) => ({
                     value: p.brandName,
                     label: p.brandName,
@@ -830,7 +837,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại giày" },
+                  { value: null, label: "Tất cả loại giày" },
                   ...dataSelectType?.map((g) => ({
                     value: g.typeName,
                     label: g.typeName,
@@ -863,7 +870,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả màu sắc" },
+                  { value: null, label: "Tất cả màu sắc" },
                   ...dataSelectColor?.map((c) => ({
                     value: c.colorName,
                     label: (
@@ -916,7 +923,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả chất liệu" },
+                  { value: null, label: "Tất cả chất liệu" },
                   ...dataSelectMaterial?.map((m) => ({
                     value: m.materialName,
                     label: m.materialName,
@@ -949,7 +956,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả kích cỡ" },
+                  { value: null, label: "Tất cả kích cỡ" },
                   ...dataSelectSize?.map((s) => ({
                     value: s.sizeName,
                     label: s.sizeName,
@@ -982,7 +989,7 @@ const Product = () => {
                   console.log(request);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại đế giày" },
+                  { value: null, label: "Tất cả loại đế giày" },
                   ...dataSelectSole?.map((s) => ({
                     value: s.soleName,
                     label: s.soleName,
@@ -1015,7 +1022,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả giới tính" },
+                  { value: null, label: "Tất cả giới tính" },
                   ...dataSelectGender?.map((g) => ({
                     value: g.genderName,
                     label: g.genderName,
@@ -1030,9 +1037,9 @@ const Product = () => {
           {/* <Link to={"add"}>
             <Button
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
               type="primary"
               onClick={showDrawer}
@@ -1050,28 +1057,19 @@ const Product = () => {
             okText="Xuất tất cả sản phẩm"
             cancelText="Xuất trang hiện tại"
             okButtonProps={{
-              style: {
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                color: `${COLORS.color}`,
-                border: "none",
-                padding: "10px 20px",
-              },
+              type: "primary",
+              // style: {
+              //   backgroundColor: `${COLORS.backgroundcolor}`,
+              //   color: `${COLORS.color}`,
+              //   border: "none",
+              //   padding: "10px 20px",
+              // },
             }}
             cancelButtonProps={{
-              style: {
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                color: `${COLORS.color}`,
-                border: "none",
-                padding: "10px 20px",
-              },
+              type: "primary",
             }}
           >
             <Button
-              style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
-              }}
               type="primary"
               // onClick={handleExportClick}
             >

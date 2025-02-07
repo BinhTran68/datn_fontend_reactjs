@@ -118,7 +118,7 @@ const Product = () => {
   // Hàm fetch dữ liệu products
   useEffect(() => {
     fetchProductsData();
-  }, [pagination]);
+  }, [pagination,location.pathname]);
 
   const fetchProductsData = async () => {
     setLoading(true);
@@ -324,7 +324,7 @@ const Product = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         // marginRight: 8,
                         fontSize: "1.5rem",
                       }}
@@ -351,7 +351,9 @@ const Product = () => {
               <Col>
               <Tooltip title="Xem chi tiết sản phẩm">
               <Link to={`get-product-detail/${record.id}`}>
-                <Button icon={<FaEye color="green" size={20} />} />
+                <Button
+                    icon={<FaEye color={`${COLORS.primary}`} size={20} />}
+                />
               </Link>
               </Tooltip>
               </Col>
@@ -411,9 +413,9 @@ const Product = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -428,9 +430,9 @@ const Product = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
+             
+              
+              
             }}
           >
             Thêm Sản Phẩm
@@ -440,9 +442,9 @@ const Product = () => {
               <Link to={"add"}>
                 <Button
                   style={{
-                    backgroundColor: `${COLORS.backgroundcolor}`,
-                    borderColor: "#4096FF",
-                    color: `${COLORS.color}`,
+                   
+                    
+                    
                   }}
                   type="primary"
                 >
@@ -455,9 +457,9 @@ const Product = () => {
               <Link to={"productdetail"}>
                 <Button
                   style={{
-                    backgroundColor: `${COLORS.backgroundcolor}`,
-                    borderColor: "#4096FF",
-                    color: `${COLORS.color}`,
+
+
+                    
                   }}
                   type="primary"
                 >

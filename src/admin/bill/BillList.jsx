@@ -6,6 +6,7 @@ import { baseUrl } from "../../helpers/Helpers.js";
 import { columnsBillList } from "./columns/columns.jsx";
 import { itemsTabsBillList } from "./items_tabs/ItemsTabs.jsx";
 import useUrlBuilder from "./hooks/useUrlBuilder.jsx";
+import dayjs from "dayjs";
 
 const layout = {
     labelCol: { span: 6 },
@@ -117,7 +118,7 @@ const BillList = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="startDate" label="Ngày bắt đầu">
-                                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                                <DatePicker defaultValue={dayjs()}  format="DD/MM/YYYY" style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>

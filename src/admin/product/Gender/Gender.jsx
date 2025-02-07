@@ -302,7 +302,7 @@ const Color = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         marginRight: 8,
                         fontSize: "1.5rem",
                       }}
@@ -383,9 +383,9 @@ const Color = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -400,9 +400,9 @@ const Color = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
+             
+              
+              
             }}
           >
             Thêm Giới Tính

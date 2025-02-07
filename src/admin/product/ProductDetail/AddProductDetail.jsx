@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Drawer,
   Row,
@@ -29,7 +29,7 @@ import {
   fetchDataSelectSole,
   fetchDataSelectType,
 } from "./ApiProductDetail";
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from "@ant-design/icons";
 import { IoAddCircleOutline, IoAddCircleSharp } from "react-icons/io5";
 import { MdAdd, MdAddBox, MdAddCircleOutline } from "react-icons/md";
 import { BiSolidMessageSquareAdd } from "react-icons/bi";
@@ -125,58 +125,169 @@ const ProductDetailDrawer = () => {
     sortByQuantity: null,
     sortByPrice: null,
   });
-// ảnh
-const [fileList, setFileList] = useState([
-  {
-    uid: '-1',
-    name: 'image.png',
-    status: 'done',
-    url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-  },
-]);
+  // ảnh
+  const [cleanUpImage, setCleanUpImage] = useState([]);
 
-const onChange = ({ fileList: newFileList }) => {
-  setFileList(newFileList);
-};
+  // Cấu hình Cloudinary
+  // Hàm upload ảnh lên Cloudinary và nhận URL và public_id
 
-const onPreview = async (file) => {
-  let src = file.url;
-  if (!src) {
-    src = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file.originFileObj);
-      reader.onload = () => resolve(reader.result);
-    });
-  }
-  const image = new Image();
-  image.src = src;
-  const imgWindow = window.open(src);
-  imgWindow?.document.write(image.outerHTML);
-};
+  const cleanUpImageRef = useRef(cleanUpImage);
 
-const handleUploadChange = (color, file) => {
-  setTableData((prevTableData) =>
-    prevTableData.map((item) => {
-      if (item.color === color) {
-        // Lưu file vào trường `image` cho dòng có cùng color
-        const fileWithUrl = {
-          uid: file.uid || `rc-upload-${Date.now()}`, // Tạo uid nếu không có
-          name: file.name,
-          status: "done", // Có thể là 'done' nếu bạn đã upload thành công
-          url: URL.createObjectURL(file), // URL để hiển thị
-        };
-        return {
-          ...item,
-          image: item.image ? [...item.image, file] : [file], // Thêm ảnh vào danh sách
-          reviewImage: item.reviewImage
-            ? [...item.reviewImage, fileWithUrl]
-            : [fileWithUrl], // Thêm file có URL vào reviewImage
-        };
+  useEffect(() => {
+    // Cập nhật giá trị mới của cleanUpImage vào ref khi nó thay đổi
+    cleanUpImageRef.current = cleanUpImage;
+  }, [cleanUpImage]);
+
+  // Hàm xóa ảnh
+  const deleteImages = async (imageIds) => {
+    if (!imageIds || imageIds.length === 0) return;
+
+    try {
+      const deleteRequests = imageIds.map((id) =>
+        fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: id }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result === "ok") {
+              console.log(` Đã xóa ảnh ${id} khỏi Cloudinary`);
+            } else {
+              console.error("Lỗi xóa ảnh:", data);
+            }
+          })
+          .catch((error) => console.error("Lỗi khi xóa ảnh:", error))
+      );
+
+      await Promise.all(deleteRequests); // Đợi tất cả các ảnh được xóa
+    } catch (error) {
+      console.error("Lỗi khi xóa ảnh hàng loạt:", error);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      console.log("🧹 Dọn dẹp ảnh...");
+      console.log(cleanUpImageRef.current);
+
+      deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("Clean up images updated:", cleanUpImage);
+  }, [cleanUpImage]);
+
+  const cloudinaryUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "uploaddatn"); // Thay bằng preset của bạn
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
+      { method: "POST", body: formData }
+    );
+    const data = await res.json();
+    console.log("Cloudinary Upload Response:", data); // Log thông tin trả về từ Cloudinary
+    setCleanUpImage((pre) => [...pre, data.public_id]);
+
+    if (data.secure_url && data.public_id) {
+      // Trả về thông tin của ảnh (url và public_id)
+      return {
+        url: data.secure_url, // URL ảnh
+        public_id: data.public_id, // public_id ảnh
+      };
+    } else {
+      throw new Error("Upload failed");
+    }
+  };
+
+  // Hàm xử lý thay đổi (upload và thêm ảnh vào tableData)
+  const onChange = async (color, { fileList }) => {
+    const updatedImages = fileList.map((file) => ({
+      url: file.response?.url || file.url, // Lấy URL từ response (nếu có) hoặc từ fileList
+      publicId: file.response?.public_id || file.public_id, // Lấy public_id từ response
+      // uid: file.uid,
+      // status: file.status,
+    }));
+
+    // Cập nhật `tableData` ngay sau khi có URL từ Cloudinary
+    setTableData((prev) =>
+      prev.map((item) =>
+        item.color === color
+          ? { ...item, image: updatedImages.slice(0, 6) } // Giữ tối đa 6 ảnh
+          : item
+      )
+    );
+
+    console.log("Updated Table Data:", tableData);
+  };
+
+  // Hàm xử lý khi xóa ảnh
+  const handleRemove = async (file, color) => {
+    console.log(file);
+
+    if (file.response?.public_id) {
+      try {
+        const res = await fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: file.response?.public_id }),
+        });
+
+        const data = await res.json();
+        if (data.result === "ok") {
+          setTableData((prev) =>
+            prev.map((item) =>
+              item.color === color
+                ? {
+                    ...item,
+                    image: Array.isArray(item.image)
+                      ? item.image.filter(
+                          (img) => img.public_id !== file.response?.public_id
+                        )
+                      : [], // Nếu không phải là mảng, gán thành mảng rỗng
+                  }
+                : item
+            )
+          );
+        } else {
+          console.error("Lỗi xóa ảnh:", data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa ảnh:", error);
       }
-      return item;
-    })
-  );
-};
+    } else {
+      console.warn("Ảnh không có public_id, không thể xóa");
+    }
+    console.log("đây là dữ liệu", tableData);
+  };
+
+  // Hàm Preview
+  const onPreview = async (file) => {
+    let src = file.url;
+
+    if (!src && file.originFileObj) {
+      // Nếu chưa có URL, tạo URL tạm thời cho ảnh
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+
+    if (typeof src === "string") {
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow?.document.write(image.outerHTML);
+    }
+  };
+
+  // Cột trong bảng
+
+  // hết doạn up ảnh
   const handleModalOk = async () => {
     try {
       // Kích hoạt validation
@@ -582,6 +693,7 @@ const handleUploadChange = (color, file) => {
         showProgress: true,
         description: "Failed to update san pham",
       });
+      deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh khoit
     } finally {
       setLoading(false);
     }
@@ -709,11 +821,7 @@ const handleUploadChange = (color, file) => {
       render: (text, record) => (
         <Button
           type="primary"
-          style={{
-            backgroundColor: `${COLORS.backgroundcolor}`,
-            borderColor: "#4096FF",
-            color: `${COLORS.color}`,
-          }}
+          style={{}}
           onClick={() => handleDelete(record.key)}
         >
           Xóa
@@ -722,47 +830,47 @@ const handleUploadChange = (color, file) => {
     },
     {
       title: "Hình ảnh",
-      dataIndex: "color", // Sử dụng color để nhóm các dòng
+      dataIndex: "color",
+      width: 400,
+      fixed: "right",
       render: (text, record) => {
+        // Kiểm tra nếu là item đầu tiên có màu color
         const isFirst =
-          tableData.findIndex((item) => item.color === record.color) ===
-          tableData.findIndex((item) => item.key === record.key);
+          record.key ===
+          tableData.find((item) => item.color === record.color)?.key;
+
+        // Đảm bảo record.image luôn là mảng và chứa các URL hợp lệ
+        const imageList = Array.isArray(record.image) ? record.image : [];
 
         return isFirst ? (
-          <Form.Item
-            label=""
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-          >
+          <Form.Item label="" valuePropName="fileList">
             <Upload
+              customRequest={({ file, onSuccess, onError }) => {
+                cloudinaryUpload(file)
+                  .then(({ url, public_id }) => {
+                    onSuccess({ url, public_id }); // Trả cả public_id về
+                  })
+                  .catch(onError);
+              }}
               listType="picture-card"
-              fileList={record.reviewImage || []}
-              multiple
-              beforeUpload={(file) => {
-                // Kiểm tra số lượng ảnh
-                if (record.image && record.image.length >= 6) {
-                  alert("Bạn chỉ có thể tải lên tối đa 6 ảnh.");
-                  return Upload.LIST_IGNORE;
-                }
-
-                // Lưu file vào trạng thái của React khi người dùng chọn file
-                // handleUploadChange(record.color, file); // Cập nhật file vào trạng thái của color
-                console.log(record.image);
-                // Ngăn chặn Ant Design upload tự động file
-                return false;
-              }}
-              onPreview={(file) => {
-                // Thiết lập ảnh xem trước
-                // setPreviewImage(file.url || file.preview); // Sử dụng preview nếu không có url
-                // setPreviewOpen(true);
-              }}
-              // onRemove={(file) => handleRemoveImage(record.color, file)}
+              // fileList={imageList.map(img => ({
+              //   url: img,          // Đảm bảo sử dụng đúng URL ảnh từ Cloudinary
+              //   uid: img,          // UID cho từng ảnh
+              //   status: 'done',    // Đánh dấu ảnh đã tải lên thành công
+              // }))}
+              onChange={(info) => onChange(record.color, info)} // Gọi hàm onChange khi ảnh thay đổi
+              onRemove={(file) => handleRemove(file, record.color)} // Xử lý khi ảnh bị xóa
+              onPreview={onPreview} // Hàm xem trước ảnh khi nhấp
+              multiple={true}
             >
-              {record.image && record.image.length >= 6 ? null : (
+              {/* Hiển thị nút upload nếu số lượng ảnh ít hơn 6 */}
+              {imageList.length < 6 && (
                 <button
                   style={{
                     border: 0,
                     background: "none",
+                    width: "80px",
+                    height: "80px",
                   }}
                   type="button"
                 >
@@ -771,21 +879,14 @@ const handleUploadChange = (color, file) => {
                 </button>
               )}
             </Upload>
-            {previewImage && (
-              <Image
-                wrapperStyle={{
-                  display: "none",
-                }}
-                preview={{
-                  visible: previewOpen,
-                  // onVisibleChange: (visible) => setPreviewOpen(visible),
-                  // afterOpenChange: (visible) => !visible && setPreviewImage(""),
-                }}
-                src={previewImage}
-              />
-            )}
           </Form.Item>
-        ) : null; // Ẩn chỗ upload ảnh cho các dòng khác cùng màu
+        ) : null;
+      },
+      onCell: (record) => {
+        const sameColorItems = tableData.filter(
+          (item) => item.color === record.color
+        );
+        return { rowSpan: sameColorItems.length }; // Tính rowSpan để hiển thị đúng các hàng cùng màu
       },
     },
   ];
@@ -817,7 +918,7 @@ const handleUploadChange = (color, file) => {
           quantity: 0,
           price: 0,
           weight: 0,
-          image: "",
+          image: [],
           status: 1,
           color: color, // Thêm trường color để nhóm các dòng cùng màu
           // mỗi biến thể khi render ra đều có các thuộc tính
@@ -858,7 +959,6 @@ const handleUploadChange = (color, file) => {
       ...prev,
       productId: selectedProduct,
     }));
-    
   };
   const handleDelete = (key) => {
     const updatedData = tableData.filter((item) => item.key !== key); // Lọc bỏ dòng có key tương ứng
@@ -911,11 +1011,11 @@ const handleUploadChange = (color, file) => {
                 </Col>
                 <Col>
                   <Button
-                      style={{ padding: 0, backgroundColor: "green" }}
-                      onClick={() => setOpenCreateProduct(true)}
-                    >
-                      <MdAdd size={25} color="white" />
-                    </Button>
+                    style={{ padding: 0, backgroundColor: "green" }}
+                    onClick={() => setOpenCreateProduct(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1277,14 +1377,11 @@ const handleUploadChange = (color, file) => {
                         onClick={() => {
                           handleCreateProductDetail(tableData);
                           resetFrom();
+                          setCleanUpImage([]);
                           navigate(-1);
                         }}
                         type="primary"
-                        style={{
-                          backgroundColor: `${COLORS.backgroundcolor}`,
-                          borderColor: "#4096FF",
-                          color: `${COLORS.color}`,
-                        }}
+                        style={{}}
                       >
                         Lưu thông tin
                       </Button>
@@ -1295,11 +1392,7 @@ const handleUploadChange = (color, file) => {
                         onClick={() => setIsModalVisible(true)}
                         // disabled={!hasSelected}
                         loading={loading}
-                        style={{
-                          backgroundColor: `${COLORS.backgroundcolor}`,
-                          borderColor: "#4096FF",
-                          color: `${COLORS.color}`,
-                        }}
+                        style={{}}
                       >
                         Chỉnh số lượng và giá chung
                       </Button>
@@ -1343,11 +1436,7 @@ const handleUploadChange = (color, file) => {
             type="primary"
             loading={loading}
             onClick={handleModalOk}
-            style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
-            }}
+            style={{}}
           >
             Xác nhận
           </Button>,

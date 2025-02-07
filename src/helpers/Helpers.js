@@ -107,3 +107,15 @@ export async function generateAddressString(provinceId, districtId, wardId, spec
     // Tạo chuỗi địa chỉ
     return `${specificAddressDefault ? (specificAddressDefault + `,`) : ""} ${wardName ? wardName + `,` : ""} ${districtName ? districtName + `,` : ""} ${provinceName ? provinceName + `,` : ""}`;
 }
+
+
+export function formatVND(number) {
+    if (typeof number !== "number") {
+        return '0 VND' // Kiểm tra nếu không phải là số
+    }
+
+    return number.toLocaleString("vi-VN", {
+        style: "currency",
+        currency: "VND",
+    });
+}

@@ -6,7 +6,7 @@ import axios from "axios";
 import {
     baseUrl,
     convertBillStatusToString,
-    convertLongTimestampToDate,
+    convertLongTimestampToDate, formatVND,
     generateAddressString
 } from "../../helpers/Helpers.js";
 import {FiEye} from "react-icons/fi";
@@ -141,14 +141,14 @@ const columnsBillProductDetailTable = [
         render: (_, record) => (
             <Button
                 type="danger"
-                icon={<MdDelete />}
-                style={{ borderRadius: '20px', color:"#FF0000", border: '1px solid red'}}
+                icon={<MdDelete/>}
+                style={{borderRadius: '20px', color: "#FF0000", border: '1px solid red'}}
 
                 onClick={() => {
                     console.log(record?.productName);
                 }}
             >
-            
+
             </Button>
         ),
 
@@ -166,7 +166,7 @@ const columnsBillHistory = [
     {
         title: 'Trạng thái',
         dataIndex: 'status',
-        render: (record) => <BillStatusComponent text={record} status={record} />,
+        render: (record) => <BillStatusComponent text={record} status={record}/>,
         key: 'status',
     },
     {
@@ -241,12 +241,21 @@ const BillDetail = () => {
                 (res) => {
                     const result = res.data.data;
                     setCurrentBill(result.bill)
+                    if(result.bill.status === "DANG_VAN_CHUYEN") {
+                        handlePrintBillPdf()
+                    }
                     setBillHistory(result.billHistory)
                 }
             ).catch((e) => {
 
             })
 
+        }
+
+        const handlePrintBillPdf =  async () => {
+            const response = await axios.get(`${defaultURL}/bill/print-bill/${id}`);
+            const  result = response.data
+            print(result)
         }
 
         const handleNewStatusUpdate = () => {
@@ -391,7 +400,6 @@ const BillDetail = () => {
             setOpen(true)
             setModalType(modalBillHistoryType)
             setWidthModal("75%")
-
         };
 
         const showModalConfirm = (title, content) => {
@@ -443,6 +451,43 @@ const BillDetail = () => {
             setModalType(modalEditForm)
         };
 
+
+        const items = [
+            {
+                key: '1',
+                label: 'Tổng tiền hàng',
+                children: (
+                    <div style={{
+                        color: "blue"
+                    }}>
+                        {formatVND(currentBill?.totalMoney)}
+                    </div>
+                ),
+
+            },
+            {
+                key: '2',
+                label: 'Phí vận chuyển',
+                children: formatVND(currentBill?.shipMoney),
+            },
+            {
+                key: '3',
+                label: 'Voucher giảm giá',
+                children: formatVND(currentBill?.discountMoney),
+            },
+            {
+                key: '4',
+                label: 'Tổng tiền thanh toán',
+                span: 2,
+                children: <div style={{
+                    color: "blue"
+                }}>
+                    {formatVND(currentBill?.totalMoney)}
+                </div>,
+            },
+
+        ];
+
         return (
             <div className={"flex-column d-flex gap-3"}>
 
@@ -480,7 +525,7 @@ const BillDetail = () => {
                         <div className={"d-flex align-items-cente gap-5"}>
                             {
                                 currentBill?.status !== "DA_HOAN_THANH" ?
-                                    <Button  type={"primary"} onClick={handleOnConfirmUpdateValue}>
+                                    <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>
                                         {
                                             handleButtonConfirm(currentBill?.status)
                                         }
@@ -526,7 +571,7 @@ const BillDetail = () => {
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Trạng thái  </span>}>
                             <Tag style={{fontSize: 16}} color="blue">
                                 {convertBillStatusToString(currentBill?.status ?? "")}
-                             </Tag>
+                            </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Tên khách hàng  </span>}>
                             <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerName ?? ""}</Tag>
@@ -567,6 +612,29 @@ const BillDetail = () => {
                         columns={columnsBillProductDetailTable}
                         dataSource={billProductDetails}
                     />
+                    <hr/>
+
+                    <div className={"row"}>
+
+                        <div className={"col-md-8"}>
+
+                        </div>
+
+                        <div className={"col-md-4"}>
+                            <Descriptions
+                                column={1}
+                                labelStyle={{
+                                    color: "black",
+                                    fontWeight: "bold"
+                                }}
+                                contentStyle={{justifyContent: "end", fontWeight: "bold"}}
+                                layout="horizontal" items={items}>
+                            </Descriptions>
+
+                        </div>
+                    </div>
+
+
                 </Card>
 
 

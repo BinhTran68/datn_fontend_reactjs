@@ -1,11 +1,13 @@
 import {Button, Image, Tag} from "antd";
-import {convertLongTimestampToDate} from "../../../helpers/Helpers.js";
+import {convertLongTimestampToDate, formatVND} from "../../../helpers/Helpers.js";
 import {MdDelete} from "react-icons/md";
 import React from "react";
 import {Link} from "react-router-dom";
 import {FiEye} from "react-icons/fi";
 import BillStatusComponent from "../componets/BillStatusComponent.jsx";
 import BillTypeComponent from "../componets/BillTypeComponent.jsx";
+import {FaEye} from "react-icons/fa6";
+import {COLORS} from "../../../constants/constants..js";
 
 export const columnsBillProductTable = (onActionClick) => [
     {
@@ -112,13 +114,7 @@ export  const  columnsBillList = () => {
             align: 'center',
 
         },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            align: 'center',
-            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
-            key: 'status',
-        },
+
         {
             title: 'Ngày tạo',
             dataIndex: 'createAt',
@@ -132,7 +128,15 @@ export  const  columnsBillList = () => {
             title: 'Tổng tiền',
             dataIndex: 'totalMoney',
             align: 'center',
+            render: (record) => formatVND(record),
             key: 'totalMoney',
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'status',
+            align: 'center',
+            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
+            key: 'status',
         },
         {
             title: 'Hành động',
@@ -141,8 +145,8 @@ export  const  columnsBillList = () => {
             render: (_, record) => (
                 <Link to={`/admin/bill/bill-detail/${record.billCode}`}>
                     <Button
-                        type="primary"
-                        icon={<FiEye/>}
+
+                        icon={<FaEye  color={`${COLORS.primary}`} size={20} />}
                         onClick={() => {
                         }}
                     >
