@@ -27,6 +27,17 @@ export const fetchProducts = async (pagination) => {
     throw error;
   }
 };
+export const getAllProductDetailExportData = async () => {
+  try {
+    const response = await api.get("/productdetail/exportdata");
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
 export const filterData = async (pagination, requestFilter) => {
   const { current, pageSize } = pagination;
 
@@ -48,7 +59,6 @@ export const filterData = async (pagination, requestFilter) => {
     throw error;
   }
 };
-
 
 export const fetchDataSelectBrand = async () => {
   try {
@@ -223,9 +233,12 @@ export const existsByProductName = async (productName) => {
 export const updateProduct = async (productId, productData) => {
   console.log(productId);
   console.log(productData);
-  
+
   try {
-    const response = await api.put(`/productdetail/update/${productId}`, productData);
+    const response = await api.put(
+      `/productdetail/update/${productId}`,
+      productData
+    );
     return response.data;
   } catch (error) {
     const errorMessage =

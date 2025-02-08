@@ -31,6 +31,7 @@ import {
   useCallback,
   useRef,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import axios from "axios";
 import {
@@ -59,7 +60,7 @@ import { debounce, filter, set } from "lodash";
 import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 import { Link, useParams } from "react-router-dom";
 import {FiEye} from "react-icons/fi";
 
@@ -352,7 +353,9 @@ const GetProductDetail = () => {
       setLoading(false);
     }
   });
-
+  const memoizedProductDetail = useMemo(() => {
+    return selectedProductDetail; // Hoặc tính toán giá trị khác nếu cần
+  }, [selectedProductDetail]);
   const handleGetProduct = useCallback(
     async (productId) => {
       setLoading(true);
@@ -399,7 +402,6 @@ const GetProductDetail = () => {
     } finally {
       // setLoading(false);
       await fetchfilterData();
-
     }
   };
   const handleDataSource = () => {
@@ -433,7 +435,6 @@ const GetProductDetail = () => {
           width: "20px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -449,7 +450,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -467,7 +467,6 @@ const GetProductDetail = () => {
           width: "200px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -484,7 +483,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -494,18 +492,27 @@ const GetProductDetail = () => {
     {
       title: "Màu sắc",
       dataIndex: "colorName",
-      key: "productName",
-      onCell: () => ({
-        style: {
-          width: "100px",
-          height: "50px",
-          lineHeight: "50px",
-          lineHeight: "50px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        },
-      }),
+      key: "colorName",
+      render: (text, record) => {
+        // Tìm mã màu tương ứng
+        const colorData = dataSelectColor.find(color => color.colorName === record.colorName);
+        const colorCode = colorData ? colorData.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+    
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "1rem", // Đường kính hình tròn
+                height: "1rem", // Đường kính hình tròn
+                borderRadius: "50%", // Tạo hình tròn
+                backgroundColor: colorCode, // Mã màu nền
+                marginRight: "8px",
+              }}
+            />
+            <span style={{ color: colorCode }}>{text}</span> 
+          </div>
+        );
+      },
     },
     {
       title: "Chất liệu",
@@ -515,7 +522,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -531,7 +537,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -549,7 +554,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -566,7 +570,6 @@ const GetProductDetail = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -581,7 +584,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -604,7 +606,6 @@ const GetProductDetail = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -753,7 +754,7 @@ const GetProductDetail = () => {
                   }));
                 }}
                 options={[
-                  { value: "", label: "Tất cả sản phẩm" },
+                  { value: null, label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
@@ -786,77 +787,10 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả thương hiệu" },
+                  { value: null, label: "Tất cả thương hiệu" },
                   ...dataSelectBrand?.map((p) => ({
                     value: p.brandName,
                     label: p.brandName,
-                  })),
-                ]}
-              />
-            </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả giới tính"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectGender.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    genderName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả giới tính" },
-                  ...dataSelectGender?.map((g) => ({
-                    value: g.genderName,
-                    label: g.genderName,
-                  })),
-                ]}
-              />
-            </Col>
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả chất liệu"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectMaterial.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    materialName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả chất liệu" },
-                  ...dataSelectMaterial?.map((m) => ({
-                    value: m.materialName,
-                    label: m.materialName,
                   })),
                 ]}
               />
@@ -886,7 +820,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại giày" },
+                  { value: null, label: "Tất cả loại giày" },
                   ...dataSelectType?.map((g) => ({
                     value: g.typeName,
                     label: g.typeName,
@@ -894,42 +828,6 @@ const GetProductDetail = () => {
                 ]}
               />
             </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả loại đế giày"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectSole.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    soleName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(request);
-                }}
-                options={[
-                  { value: "", label: "Tất cả loại đế giày" },
-                  ...dataSelectSole?.map((s) => ({
-                    value: s.soleName,
-                    label: s.soleName,
-                  })),
-                ]}
-              />
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
             <Col>
               <Select
                 showSearch
@@ -955,7 +853,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả màu sắc" },
+                  { value: null, label: "Tất cả màu sắc" },
                   ...dataSelectColor?.map((c) => ({
                     value: c.colorName,
                     label: (
@@ -989,6 +887,39 @@ const GetProductDetail = () => {
                 style={{
                   width: "10rem",
                 }}
+                placeholder="Tất cả chất liệu"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectMaterial.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    materialName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: null, label: "Tất cả chất liệu" },
+                  ...dataSelectMaterial?.map((m) => ({
+                    value: m.materialName,
+                    label: m.materialName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
                 placeholder="Tất cả kích cỡ"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
@@ -1008,7 +939,7 @@ const GetProductDetail = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả kích cỡ" },
+                  { value: null, label: "Tất cả kích cỡ" },
                   ...dataSelectSize?.map((s) => ({
                     value: s.sizeName,
                     label: s.sizeName,
@@ -1016,7 +947,74 @@ const GetProductDetail = () => {
                 ]}
               />
             </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả loại đế giày"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectSole.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    soleName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(request);
+                }}
+                options={[
+                  { value: null, label: "Tất cả loại đế giày" },
+                  ...dataSelectSole?.map((s) => ({
+                    value: s.soleName,
+                    label: s.soleName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả giới tính"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectGender.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    genderName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: null, label: "Tất cả giới tính" },
+                  ...dataSelectGender?.map((g) => ({
+                    value: g.genderName,
+                    label: g.genderName,
+                  })),
+                ]}
+              />
+            </Col>
           </Row>
+          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}></Row>
         </Row>
         <Row>
           {/* <Link to={"add"}>
@@ -1039,7 +1037,7 @@ const GetProductDetail = () => {
             }}
             isOpen={openUpdate}
             title={"Sản phẩm"}
-            getProductDetail={selectedProductDetail}
+            getProductDetail={memoizedProductDetail}
             handleSubmit={handleConfirmUpdate}
             dataType={dataSelectType}
             dataBrand={dataSelectBrand}
