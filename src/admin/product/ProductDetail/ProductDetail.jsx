@@ -36,6 +36,7 @@ import {
   useCallback,
   useRef,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import axios from "axios";
 import {
@@ -62,7 +63,7 @@ import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
 import { FaEdit } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Product = () => {
   const { Title } = Typography;
@@ -396,6 +397,9 @@ const Product = () => {
     },
     [] // Dependency list để tránh re-define hàm không cần thiết
   );
+  const memoizedProductDetail = useMemo(() => {
+    return selectedProductDetail; // Hoặc tính toán giá trị khác nếu cần
+  }, [selectedProductDetail]);
   const handleConfirmUpdate = async (id, req) => {
     // setLoading(true);
     console.log(id + "đay la id");
@@ -514,17 +518,27 @@ const Product = () => {
     {
       title: "Màu sắc",
       dataIndex: "colorName",
-      key: "productName",
-      onCell: () => ({
-        style: {
-          width: "100px",
-          height: "50px",
-          lineHeight: "50px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        },
-      }),
+      key: "colorName",
+      render: (text, record) => {
+        // Tìm mã màu tương ứng
+        const colorData = dataSelectColor.find(color => color.colorName === record.colorName);
+        const colorCode = colorData ? colorData.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+    
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "1rem", // Đường kính hình tròn
+                height: "1rem", // Đường kính hình tròn
+                borderRadius: "50%", // Tạo hình tròn
+                backgroundColor: colorCode, // Mã màu nền
+                marginRight: "8px",
+              }}
+            />
+            <span style={{ color: colorCode }}>{text}</span> 
+          </div>
+        );
+      },
     },
     {
       title: "Chất liệu",
@@ -1083,7 +1097,7 @@ const Product = () => {
             }}
             isOpen={openUpdate}
             title={"Sản phẩm"}
-            getProductDetail={selectedProductDetail}
+            getProductDetail={memoizedProductDetail}
             handleSubmit={handleConfirmUpdate}
             dataType={dataSelectType}
             dataBrand={dataSelectBrand}

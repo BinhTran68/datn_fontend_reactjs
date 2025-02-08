@@ -41,7 +41,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Category = () => {
   const { Title } = Typography;
@@ -314,7 +314,7 @@ const Category = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa hãng này kh"
@@ -326,7 +326,7 @@ const Category = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );

@@ -43,7 +43,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit, FaRegListAlt } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 import { Link } from "react-router-dom";
 import { CiBoxList, CiViewList } from "react-icons/ci";
 

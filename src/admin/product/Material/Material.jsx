@@ -41,7 +41,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Material = () => {
   const { Title } = Typography;
@@ -320,7 +320,7 @@ const Material = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Chất Liệunày kh"
@@ -332,7 +332,7 @@ const Material = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );

@@ -3,29 +3,26 @@ import {
   Row,
   Col,
   Input,
-  Switch,
   Select,
   InputNumber,
   Radio,
   Button,
-  notification,
   QRCode,
+  Upload,
 } from "antd";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
-const { TextArea } = Input;
-import { useFormik } from "formik";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import clsx from "clsx";
-import styles from "./ProductDetail.module.css";
-import { updateProduct } from "./ApiProductDetail";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { BiDownload } from "react-icons/bi";
-import { FaDownload } from "react-icons/fa6";
-import { IoDownload } from "react-icons/io5";
-import { COLORS } from "../../../constants/constants.";
+// import { QRCode } from "react-qrcode-logo";
+import clsx from "clsx";
+import styles from "./ProductDetail.module.css";
+import { COLORS } from "../../../constants/constants.js";
+import { PlusOutlined } from "@ant-design/icons";
 
 const ModalEditSanPham = ({
   isOpen,
@@ -42,80 +39,206 @@ const ModalEditSanPham = ({
   dataColor,
   dataGender,
 }) => {
-  const qrCanvasRef = useRef(null); // Ref cho canvas
-  const qrSvgRef = useRef(null); // Ref cho canvas
+  // ảnh
 
-  const [request, setRequest] = useState({
-    status: "HOAT_DONG",
-  });
-  const downloadQRCodeSvg = () => {
-    const svg = qrSvgRef.current?.querySelector("svg");
-    if (!svg) return;
+  const [cleanUpImage, setCleanUpImage] = useState([]);
 
-    const serializer = new XMLSerializer();
-    const svgData = serializer.serializeToString(svg); // Chuyển SVG thành chuỗi
-    const blob = new Blob([svgData], { type: "image/svg+xml" }); // Tạo blob từ chuỗi SVG
-    const url = URL.createObjectURL(blob); // Tạo URL tạm thời cho file SVG
+  // Cấu hình Cloudinary
+  // Hàm upload ảnh lên Cloudinary và nhận URL và public_id
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "QRCode_SVG.svg"; // Tên file tải về
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url); // Giải phóng URL tạm thời
+  const cleanUpImageRef = useRef(cleanUpImage);
+
+  useEffect(() => {
+    // Cập nhật giá trị mới của cleanUpImage vào ref khi nó thay đổi
+    cleanUpImageRef.current = cleanUpImage;
+    console.log("ddayad la du lieu lay ra", getProductDetail);
+    console.log("đây là cleanupimage", cleanUpImage);
+
+    console.log("day la image", getValues("image"));
+  }, [cleanUpImage]);
+
+  // Hàm xóa ảnh
+  const deleteImages = async (imageIds) => {
+    if (!imageIds || imageIds.length === 0) return;
+
+    try {
+      const deleteRequests = imageIds.map((id) =>
+        fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: id }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result === "ok") {
+              console.log(` Đã xóa ảnh ${id} khỏi Cloudinary`);
+            } else {
+              console.error("Lỗi xóa ảnh:", data);
+            }
+          })
+          .catch((error) => console.error("Lỗi khi xóa ảnh:", error))
+      );
+
+      await Promise.all(deleteRequests); // Đợi tất cả các ảnh được xóa
+    } catch (error) {
+      console.error("Lỗi khi xóa ảnh hàng loạt:", error);
+    } finally {
+      cleanUpImageRef.current = null;
+    }
   };
-  const downloadQRCodeCanvas = () => {
-    const canvas = qrCanvasRef.current?.querySelector("canvas");
-    if (!canvas) return;
 
-    const url = canvas.toDataURL("image/png"); // Lấy ảnh PNG từ canvas
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "QRCode_Canvas" + getProductDetail?.id + ".png"; // Tên file tải về
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  useEffect(() => {
+    return () => {
+      console.log("🧹 Dọn dẹp ảnh...");
+      console.log(cleanUpImageRef.current);
+
+      try {
+        deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh
+      } finally {
+        setCleanUpImage([]); // Đặt giá trị cho cleanUpImage
+      }
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    console.log("Clean up images updated:", cleanUpImage);
+  }, [cleanUpImage]);
+
+  const cloudinaryUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "uploaddatn"); // Thay bằng preset của bạn
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
+      { method: "POST", body: formData }
+    );
+    const data = await res.json();
+    console.log("Cloudinary Upload Response:", data); // Log thông tin trả về từ Cloudinary
+    setCleanUpImage((pre) => [...pre, data.public_id]);
+
+    if (data.secure_url && data.public_id) {
+      // Trả về thông tin của ảnh (url và public_id)
+      return {
+        url: data.secure_url, // URL ảnh
+        public_id: data.public_id, // public_id ảnh
+      };
+    } else {
+      throw new Error("Upload failed");
+    }
   };
-  const handleRequest = async (e) => {
-    const { name, value } = e.target;
-    setRequest((prev) => ({
-      ...prev,
-      [name]: value,
+
+  // Hàm xử lý thay đổi (upload và thêm ảnh vào tableData)
+  const onChange = async ({ fileList }) => {
+    const updatedImages = fileList.map((file) => ({
+      url: file.response?.url || file.url, // Lấy URL từ response (nếu có) hoặc từ fileList
+      publicId: file.response?.public_id || file.public_id, // Lấy public_id từ response
+      uid: file.uid, // UID cho từng ảnh
+      status: file.status, // Trạng thái của ảnh
     }));
+
+    // Cập nhật hình ảnh trong form
+    setValue("image", updatedImages.slice(0, 6)); // Giữ tối đa 6 ảnh
+    console.log(getValues("image"));
   };
+
+  // Hàm xử lý khi xóa ảnh
+  const handleRemove = async (file) => {
+    console.log("file đang lấy để xóa", file);
+
+    if (file.publicId || file.public_id) {
+      try {
+        const res = await fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: file.publicId || file.public_id }),
+        });
+
+        const data = await res.json();
+        if (data.result === "ok") {
+          // Cập nhật dữ liệu hình ảnh trong form
+          const currentImages = getValues("image"); // Lấy giá trị hiện tại của hình ảnh
+          const updatedImages = currentImages.filter(
+            (img) => img.publicId !== file.publicId
+          );
+
+          // Cập nhật giá trị hình ảnh trong form
+          setValue("image", updatedImages);
+        } else {
+          console.error("Lỗi xóa ảnh:", data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa ảnh:", error);
+      }
+    } else {
+      console.warn("Ảnh không có public_id, không thể xóa");
+    }
+
+    // Ghi chú: Bạn có thể bỏ qua đoạn log này nếu không cần thiết
+    console.log("đây là dữ liệu", getValues);
+  };
+
+  // Hàm Preview
+  const onPreview = async (file) => {
+    let src = file.url;
+
+    if (!src && file.originFileObj) {
+      // Nếu chưa có URL, tạo URL tạm thời cho ảnh
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+
+    if (typeof src === "string") {
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow?.document.write(image.outerHTML);
+    }
+  };
+  // ảnh
+  const qrCanvasRef = useRef(null);
+
   const validationSchema = Yup.object().shape({
-    // tenSanPham: Yup.string()
-    //   .min(8, "Tên sản phẩm phải có ít nhất 8 kí tự")
-    //   .required("Tên sản phẩm là bắt buộc"),
     brandId: Yup.number().required("Thương hiệu là bắt buộc"),
     typeId: Yup.number().required("Danh mục là bắt buộc"),
     materialId: Yup.number().required("Chất liệu vải là bắt buộc"),
     soleId: Yup.number().required("Chất liệu đế là bắt buộc"),
-    description: Yup.string().nullable(), // Cho phép trống
+    quantity: Yup.number()
+      .required("Số lượng là bắt buộc")
+      .min(0, "Số lượng phải lớn hơn hoặc bằng 0")
+      .max(100, "Số lượng không được vượt quá 100"), // Thay đổi giá trị tối đa theo nhu cầu
+    price: Yup.number()
+      .required("Giá bán là bắt buộc")
+      .min(0, "Giá bán phải lớn hơn hoặc bằng 0")
+      .max(1000000, "Giá bán không được vượt quá 1,000,000 VNĐ"), // Thay đổi giá trị tối đa theo nhu cầu
+    weight: Yup.number()
+      .required("Cân nặng là bắt buộc")
+      .min(0, "Cân nặng phải lớn hơn hoặc bằng 0")
+      .max(100, "Cân nặng không được vượt quá 100 kg"), // Thay đổi giá trị tối đa theo nhu cầu
+    description: Yup.string().nullable(),
   });
-  function getIdByName(dataArray, keyName, targetValue) {
-    // Kiểm tra nếu tham số không hợp lệ
-    if (!dataArray || !Array.isArray(dataArray) || !keyName || !targetValue) {
-      return null; // Trả về null nếu không hợp lệ
-    }
-
-    for (let index = 0; index < dataArray.length; index++) {
-      if (dataArray[index][keyName] === targetValue) {
-        return dataArray[index].id; // Trả về id nếu tìm thấy
-      }
-    }
-
-    return null; // Trả về null nếu không tìm thấy
-  }
-
-  const formik = useFormik({
-    initialValues: {
+  const getIdByName = (dataArray, keyName, targetValue) => {
+    return dataArray?.find((item) => item[keyName] === targetValue)?.id || null;
+  };
+  const {
+    control,
+    handleSubmit: handleFormSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    getValues,
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      image: getProductDetail?.image || [],
       description: getProductDetail?.description || "",
-      price: getProductDetail?.price || "",
-      quantity: getProductDetail?.quantity || "",
-      weight: getProductDetail?.weight || "",
-      status: getProductDetail?.status,
+      price: getProductDetail?.price || 0,
+      quantity: getProductDetail?.quantity || 0,
+      weight: getProductDetail?.weight || 0,
+      status: getProductDetail?.status || "HOAT_DONG",
       typeId: getIdByName(dataType, "typeName", getProductDetail?.typeName),
       brandId: getIdByName(dataBrand, "brandName", getProductDetail?.brandName),
       materialId: getIdByName(
@@ -137,458 +260,494 @@ const ModalEditSanPham = ({
         getProductDetail?.productName
       ),
     },
-    enableReinitialize: true,
-    validationSchema,
-    onSubmit: (values) => {
-      handleSubmit(getProductDetail?.id, values);
-    },
   });
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        image: getProductDetail?.image || [],
+        description: getProductDetail?.description || "",
+        price: getProductDetail?.price || 0,
+        quantity: getProductDetail?.quantity || 0,
+        weight: getProductDetail?.weight || 0,
+        status: getProductDetail?.status || "HOAT_DONG",
+        typeId: getIdByName(dataType, "typeName", getProductDetail?.typeName),
+        brandId: getIdByName(
+          dataBrand,
+          "brandName",
+          getProductDetail?.brandName
+        ),
+        materialId: getIdByName(
+          dataMaterial,
+          "materialName",
+          getProductDetail?.materialName
+        ),
+        soleId: getIdByName(dataSole, "soleName", getProductDetail?.soleName),
+        sizeId: getIdByName(dataSize, "sizeName", getProductDetail?.sizeName),
+        genderId: getIdByName(
+          dataGender,
+          "genderName",
+          getProductDetail?.genderName
+        ),
+        colorId: getIdByName(
+          dataColor,
+          "colorName",
+          getProductDetail?.colorName
+        ),
+        productId: getIdByName(
+          dataProduct,
+          "productName",
+          getProductDetail?.productName
+        ),
+      });
+    }
+  }, [
+    isOpen,
+    getProductDetail,
+    reset,
+    dataType,
+    dataBrand,
+    dataMaterial,
+    dataSole,
+    dataSize,
+    dataGender,
+    dataColor,
+    dataProduct,
+  ]);
 
   useEffect(() => {
     if (!isOpen) {
-      formik.resetForm(); // Reset lại form khi modal đóng
+      reset(); // Reset form when modal closes
     }
-    console.log(dataProduct);
-  }, [isOpen]);
+    console.log(getProductDetail);
+  }, [isOpen, reset]);
+
+  const downloadQRCodeCanvas = () => {
+    const canvas = qrCanvasRef.current?.querySelector("canvas");
+    if (!canvas) return;
+
+    const url = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `QRCode_Canvas_${getProductDetail?.id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <>
-      <Modal
-        open={isOpen}
-        title={
-          <span className="flex">
-            <FaEdit
-              style={{ color: `${COLORS.primary}`, marginRight: 8, fontSize: "1.5rem" }}
-            />
-            Chỉnh sửa {title}
-          </span>
-        }
-        width={1000}
-        okType="primary"
-        onCancel={handleClose}
-        footer={[
-          <Button key="back" onClick={handleClose}>
-            Hủy
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => formik.submitForm()} // Gọi hàm submitForm của Formik khi nhấn nút xác nhận
-            // disabled={!isActiveUpdate}
-            style={{
-             
-              
-              
-            }}
-          >
-            Xác nhận
-          </Button>,
-        ]}
-        keyboard={false}
-        maskClosable={false}
-      >
-        <Row gutter={[16, 16]} className="flex justify-between mb-3">
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Sản phẩm
-            </label>
-            <Select
-              id="productId"
-              name="productId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.productId}
-              onChange={(value) => formik.setFieldValue("productId", value)}
-              placeholder="Chọn sản phẩm"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataProduct?.map((thuongHieu) => ({
-                value: thuongHieu.id,
-                label: thuongHieu.productName,
-              }))}
-            />
-            {formik.touched.brandId && formik.errors.brandId && (
-              <div className="text-red-600">{formik.errors.brandId}</div>
+    <Modal
+      open={isOpen}
+      title={
+        <span className="flex">
+          <FaEdit style={{ color: COLORS.primary, marginRight: 8 }} /> Chỉnh sửa{" "}
+          {title}
+        </span>
+      }
+      width={1000}
+      onCancel={handleClose}
+      footer={[
+        <Button key="back" onClick={handleClose}>
+          Hủy
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          onClick={handleFormSubmit((data) => {
+            setCleanUpImage([]); // Đặt giá trị cho cleanUpImage
+            handleSubmit(getProductDetail?.id, data);
+            console.warn("du lieu gửi tới sẻver",data);
+            
+          })}
+        >
+          Xác nhận
+        </Button>,
+      ]}
+      keyboard={false}
+      maskClosable={false}
+    >
+      <Row gutter={[16, 16]}>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Sản phẩm
+          </label>
+          <Controller
+            name="productId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn sản phẩm"
+                options={dataProduct?.map((item) => ({
+                  value: item.id,
+                  label: item.productName,
+                }))}
+                // defaultValue={defaultProductId}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Thương hiệu
-            </label>
-            <Select
-              id="brandId"
-              name="brandId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.brandId}
-              onChange={(value) => formik.setFieldValue("brandId", value)}
-              placeholder="Chọn thương hiệu"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataBrand?.map((thuongHieu) => ({
-                value: thuongHieu.id,
-                label: thuongHieu.brandName,
-              }))}
-            />
-            {formik.touched.brandId && formik.errors.brandId && (
-              <div className="text-red-600">{formik.errors.brandId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Thương hiệu
+          </label>
+          <Controller
+            name="brandId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn thương hiệu"
+                options={dataBrand?.map((item) => ({
+                  value: item.id,
+                  label: item.brandName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Loại giày
-            </label>
-            <Select
-              id="typeId"
-              name="typeId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.typeId}
-              onChange={(value) => formik.setFieldValue("typeId", value)}
-              placeholder="Chọn danh mục"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataType?.map((danhMuc) => ({
-                value: danhMuc.id,
-                label: danhMuc.typeName,
-              }))}
-            />
-            {formik.touched.typeId && formik.errors.typeId && (
-              <div className="text-red-600">{formik.errors.typeId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Loại giày
+          </label>
+          <Controller
+            name="typeId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn danh mục"
+                options={dataType?.map((item) => ({
+                  value: item.id,
+                  label: item.typeName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Chất liệu vải
-            </label>
-            <Select
-              id="materialId"
-              name="materialId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.materialId}
-              onChange={(value) => formik.setFieldValue("materialId", value)}
-              placeholder="Chọn chất liệu vải"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataMaterial?.map((vai) => ({
-                value: vai.id,
-                label: vai.materialName,
-              }))}
-            />
-            {formik.errors.materialId && (
-              <div className="text-red-600">{formik.errors.materialId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Chất liệu vải
+          </label>
+          <Controller
+            name="materialId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn chất liệu vải"
+                options={dataMaterial?.map((item) => ({
+                  value: item.id,
+                  label: item.materialName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Chất liệu đế
-            </label>
-            <Select
-              id="soleId"
-              name="soleId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.soleId}
-              onChange={(value) => formik.setFieldValue("soleId", value)}
-              placeholder="Chọn chất liệu đế"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataSole?.map((de) => ({
-                value: de.id,
-                label: de.soleName,
-              }))}
-            />
-            {formik.errors.soleId && (
-              <div className="text-red-600">{formik.errors.soleId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Chất liệu đế
+          </label>
+          <Controller
+            name="soleId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn chất liệu đế"
+                options={dataSole?.map((item) => ({
+                  value: item.id,
+                  label: item.soleName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Giới tính
-            </label>
-            <Select
-              id="genderId"
-              name="genderId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.genderId}
-              onChange={(value) => formik.setFieldValue("genderId", value)}
-              placeholder="Chọn giới tính"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataGender?.map((de) => ({
-                value: de.id,
-                label: de.genderName,
-              }))}
-            />
-            {formik.errors.soleId && (
-              <div className="text-red-600">{formik.errors.soleId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Giới tính
+          </label>
+          <Controller
+            name="genderId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn giới tính"
+                options={dataGender?.map((item) => ({
+                  value: item.id,
+                  label: item.genderName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Kích cỡ
-            </label>
-            <Select
-              id="sizeId"
-              name="sizeId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.sizeId}
-              onChange={(value) => formik.setFieldValue("sizeId", value)}
-              placeholder="Chọn kích cỡ"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
-              options={dataSize?.map((de) => ({
-                value: de.id,
-                label: de.sizeName,
-              }))}
-            />
-            {formik.errors.soleId && (
-              <div className="text-red-600">{formik.errors.soleId}</div>
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Kích cỡ
+          </label>
+          <Controller
+            name="sizeId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn kích cỡ"
+                options={dataSize?.map((item) => ({
+                  value: item.id,
+                  label: item.sizeName,
+                }))}
+              />
             )}
-          </Col>
-          <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Màu sắc
-            </label>
-            <Select
-              id="colorId"
-              name="colorId"
-              showSearch
-              style={{
-                width: "100%",
-              }}
-              value={formik.values.colorId}
-              onChange={(value) => formik.setFieldValue("colorId", value)}
-              placeholder="Chọn màu sắc"
-              optionFilterProp="title"
-              // filterSort={(optionA, optionB) =>
-              //   (optionA?.label ?? "")
-              //     .toLowerCase()
-              //     .localeCompare((optionB?.label ?? "").toLowerCase())
-              // }
-              options={dataColor?.map((de) => ({
-                value: de.id,
-                label: (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Màu sắc
+          </label>
+          <Controller
+            name="colorId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                showSearch
+                style={{ width: "100%" }}
+                placeholder="Chọn màu sắc"
+                options={dataColor?.map((item) => ({
+                  value: item.id,
+                  label: (
                     <div
                       style={{
-                        width: "1.2rem",
-                        height: "1.2rem",
-                        backgroundColor: `${de.code}`,
-                        borderRadius: "50%",
-                        border: "1px solid #ccc",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
                       }}
-                    />
-                    {de.colorName}
-                  </div>
-                ),
-                title: de.colorName, // Dùng 'title' để lọc khi search
-              }))}
-            />
-            {formik.errors.soleId && (
-              <div className="text-red-600">{formik.errors.soleId}</div>
-            )}
-          </Col>
-          <Col span={6}>
-            <div className="text-sm block mb-2" htmlFor="">
-              <span>*</span> Số lượng
-            </div>
-            <InputNumber
-              value={formik.values.quantity || 0}
-              placeholder="số lượng"
-              allowClear
-              name="name"
-              type="number"
-              min={0}
-              onChange={(value) => formik.setFieldValue("quantity", value )}
-              style={{ width: "100%" }}
-              suffix={<span>Đôi</span>}
-
-            />
-          </Col>
-          <Col span={6}>
-            <div className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Giá bán
-            </div>
-            <InputNumber
-              value={formik.values.price||0}
-              placeholder="giá bán"
-              allowClear
-              name="name"
-              type="number"
-              onChange={(value) => formik.setFieldValue("price", value)}
-              min={0}
-              suffix={<span>VNĐ</span>}
-              style={{ width: "100%" }}
-            />
-          </Col>
-          <Col span={6}>
-            <div className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Cân nặng
-            </div>
-            <InputNumber
-              value={formik.values.weight||0}
-              placeholder="Cân nặng"
-              allowClear
-              name="name"
-              type="number"
-              min={0}
-              onChange={(value) => formik.setFieldValue("weight", value)}
-              style={{ width: "100%" }}
-              suffix={<span>Kg</span>}
-
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Radio.Group
-            onChange={(e) => formik.setFieldValue("status", e.target.value)}
-            value={formik.values.status} // Liên kết với giá trị formik
-            name="status"
-          >
-            <Row gutter={[8, 8]}>
-              <Col>
-                <Radio.Button
-                  value="HOAT_DONG"
-                  className={clsx(
-                    formik.values.status === "HOAT_DONG" ? styles.statushd : "",
-                    styles.statushdhv
-                  )}
-                >
-                  HOẠT ĐỘNG
-                </Radio.Button>
-              </Col>
-
-              <Col>
-                <Radio.Button
-                  value="NGUNG_HOAT_DONG"
-                  className={clsx(
-                    formik.values.status === "NGUNG_HOAT_DONG"
-                      ? styles.statusnhd
-                      : "",
-                    styles.statusnhdhv
-                  )}
-                >
-                  NGỪNG HOẠT ĐỘNG
-                </Radio.Button>
-              </Col>
-            </Row>
-          </Radio.Group>
-        </Row>
-        <Row>
-          <Col span={24}>
-            <div ref={qrCanvasRef}>
-              <QRCode
-                type="canvas"
-                value={`${getProductDetail?.id || "https://ant.design/"}`}
-                style={{ width: "10rem", height: "auto" }}
-                // errorLevel='M'
+                    >
+                      <div
+                        style={{
+                          width: "1.2rem",
+                          height: "1.2rem",
+                          backgroundColor: item.code,
+                          borderRadius: "50%",
+                        }}
+                      />
+                      {item.colorName}
+                    </div>
+                  ),
+                }))}
               />
-            </div>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              onClick={downloadQRCodeCanvas}
-              style={{
-               
-                
-                
-                width: "10rem",
-              }}
-            >
-              <BiDownload size={23} />
-              DownLoad-QR
-            </Button>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={24}>
-            <div>Mô tả</div>
-          </Col>
+            )}
+          />
+        </Col>
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Số lượng
+          </label>
+          <Controller
+            name="quantity"
+            control={control}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                placeholder="Số lượng"
+                min={0}
+                style={{ width: "100%" }}
+                suffix={<span>Đôi</span>}
+              />
+            )}
+          />
+          {errors.quantity && (
+            <span className="text-red-600">{errors.quantity.message}</span>
+          )}
+        </Col>
 
-          <Col span={24}>
-            {/* <TextArea
-            id="description"
-            name="description"
-            value={formik.values.description}
-            // style={{
-            //   width: "300px",
-            // }}
-            rows={4}
-            placeholder="mô tả tối đa 200 từ"
-            maxLength={10}
-            onChange={formik.handleChange}
-          /> */}
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Giá bán
+          </label>
+          <Controller
+            name="price"
+            control={control}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                placeholder="Giá bán"
+                min={0}
+                style={{ width: "100%" }}
+                suffix={<span>VNĐ</span>}
+              />
+            )}
+          />
+          {errors.price && (
+            <span className="text-red-600">{errors.price.message}</span>
+          )}
+        </Col>
 
-            <ReactQuill
-              theme="snow"
-              value={formik.values.description}
-              placeholder="Mô tả tối đa 200 từ"
-              onChange={(value) => formik.setFieldValue("description", value)} // Sửa thành setFieldValue
-              modules={{
-                toolbar: [
-                  [{ header: [1, 2, false] }],
-                  ["bold", "italic", "underline"],
-                  [false, false],
-                ],
-              }}
+        <Col span={6}>
+          <label className="text-sm block mb-2">
+            <span className="text-red-600">*</span> Cân nặng
+          </label>
+          <Controller
+            name="weight"
+            control={control}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                placeholder="Cân nặng"
+                min={0}
+                style={{ width: "100%" }}
+                suffix={<span>Kg</span>}
+              />
+            )}
+          />
+          {errors.weight && (
+            <span className="text-red-600">{errors.weight.message}</span>
+          )}
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <Radio.Group {...field}>
+                <Row gutter={[8, 8]}>
+                  <Col>
+                    <Radio.Button
+                      value="HOAT_DONG"
+                      className={clsx(
+                        field.value === "HOAT_DONG" ? styles.statushd : "",
+                        styles.statushdhv
+                      )}
+                    >
+                      HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
+                  <Col>
+                    <Radio.Button
+                      value="NGUNG_HOAT_DONG"
+                      className={clsx(
+                        field.value === "NGUNG_HOAT_DONG"
+                          ? styles.statusnhd
+                          : "",
+                        styles.statusnhdhv
+                      )}
+                    >
+                      NGỪNG HOẠT ĐỘNG
+                    </Radio.Button>
+                  </Col>
+                </Row>
+              </Radio.Group>
+            )}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>
+          <div ref={qrCanvasRef}>
+            <QRCode
+              type="canvas"
+              value={`${getProductDetail?.id || "https://ant.design/"}`}
+              style={{ width: "10rem", height: "auto" }}
             />
-          </Col>
-        </Row>
-      </Modal>
-    </>
+          </div>
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            onClick={downloadQRCodeCanvas}
+            style={{ width: "10rem" }}
+          >
+            <BiDownload size={23} /> DownLoad-QR
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={24}>
+          <div>Mô tả</div>
+        </Col>
+        <Col span={24}>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <ReactQuill
+                theme="snow"
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Mô tả tối đa 200 từ"
+                modules={{
+                  toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ["bold", "italic", "underline"],
+                  ],
+                }}
+              />
+            )}
+          />
+        </Col>
+        <Col span={24}>
+          <Controller
+            name="image"
+            control={control}
+            render={({ field }) => (
+              <Upload
+                customRequest={({ file, onSuccess, onError }) => {
+                  cloudinaryUpload(file)
+                    .then(({ url, public_id }) => {
+                      onSuccess({ url, public_id }); // Trả cả public_id về
+                    })
+                    .catch(onError);
+                }}
+                listType="picture-card"
+                fileList={field.value.map((img) => ({
+                  url: img.url,
+                  public_id: img.publicId || "Chưa có ID", // Hiển thị mặc định nếu không có publicId
+                  uid: img.uid || img.url,
+                  status: img.status || "done", // Đặt status mặc định là 'done'
+                  name: img.name || "Ảnh không tên", // Tên file, giá trị mặc định nếu không có
+                }))}
+                onChange={(info) => onChange(info)} // Gọi hàm onChange khi ảnh thay đổi
+                onRemove={(file) => handleRemove(file)} // Xử lý khi ảnh bị xóa
+                onPreview={onPreview} // Hàm xem trước ảnh khi nhấp
+                multiple={true}
+              >
+                {/* Hiển thị nút upload nếu số lượng ảnh ít hơn 6 */}
+                {field.value.length < 6 && (
+                  <button
+                    style={{
+                      border: 0,
+                      background: "none",
+                      width: "80px",
+                      height: "80px",
+                    }}
+                    type="button"
+                  >
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8 }}>Upload</div>
+                  </button>
+                )}
+              </Upload>
+            )}
+          />
+        </Col>
+      </Row>
+    </Modal>
   );
 };
 

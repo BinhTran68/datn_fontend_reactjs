@@ -5,7 +5,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
 import { useNavigate } from "react-router";
-import { QrReader } from 'react-qr-reader';
+// import { QrReader } from 'react-qr-reader';
 
 const { Option } = Select;
 
@@ -235,7 +235,7 @@ const AddCustomer = () => {
                 onCancel={() => setQrModalVisible(false)}
                 footer={null}
             >
-                <QrReader
+                {/* <QrReader
                     // constraints={{ facingMode: 'environment' }}
                     // onResult={(result, error) => {
                     //     if (result) handleScanSuccess(result);
@@ -248,7 +248,7 @@ const AddCustomer = () => {
                         if (error) console.warn('QR Error:', error);
                     }}
                     style={{ width: '100%' }}
-                />
+                /> */}
             </Modal>
         </div>
     );

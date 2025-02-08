@@ -7,7 +7,7 @@ import {FiEye} from "react-icons/fi";
 import BillStatusComponent from "../componets/BillStatusComponent.jsx";
 import BillTypeComponent from "../componets/BillTypeComponent.jsx";
 import {FaEye} from "react-icons/fa6";
-import {COLORS} from "../../../constants/constants..js";
+import {COLORS} from "../../../constants/constants.js";
 
 export const columnsBillProductTable = (onActionClick) => [
     {

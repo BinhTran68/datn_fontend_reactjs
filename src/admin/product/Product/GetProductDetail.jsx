@@ -31,6 +31,7 @@ import {
   useCallback,
   useRef,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import axios from "axios";
 import {
@@ -59,7 +60,7 @@ import { debounce, filter, set } from "lodash";
 import TextArea from "antd/es/input/TextArea.js";
 import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 import { Link, useParams } from "react-router-dom";
 import {FiEye} from "react-icons/fi";
 
@@ -352,7 +353,9 @@ const GetProductDetail = () => {
       setLoading(false);
     }
   });
-
+  const memoizedProductDetail = useMemo(() => {
+    return selectedProductDetail; // Hoặc tính toán giá trị khác nếu cần
+  }, [selectedProductDetail]);
   const handleGetProduct = useCallback(
     async (productId) => {
       setLoading(true);
@@ -489,17 +492,27 @@ const GetProductDetail = () => {
     {
       title: "Màu sắc",
       dataIndex: "colorName",
-      key: "productName",
-      onCell: () => ({
-        style: {
-          width: "100px",
-          height: "50px",
-          lineHeight: "50px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        },
-      }),
+      key: "colorName",
+      render: (text, record) => {
+        // Tìm mã màu tương ứng
+        const colorData = dataSelectColor.find(color => color.colorName === record.colorName);
+        const colorCode = colorData ? colorData.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+    
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "1rem", // Đường kính hình tròn
+                height: "1rem", // Đường kính hình tròn
+                borderRadius: "50%", // Tạo hình tròn
+                backgroundColor: colorCode, // Mã màu nền
+                marginRight: "8px",
+              }}
+            />
+            <span style={{ color: colorCode }}>{text}</span> 
+          </div>
+        );
+      },
     },
     {
       title: "Chất liệu",
@@ -1024,7 +1037,7 @@ const GetProductDetail = () => {
             }}
             isOpen={openUpdate}
             title={"Sản phẩm"}
-            getProductDetail={selectedProductDetail}
+            getProductDetail={memoizedProductDetail}
             handleSubmit={handleConfirmUpdate}
             dataType={dataSelectType}
             dataBrand={dataSelectBrand}

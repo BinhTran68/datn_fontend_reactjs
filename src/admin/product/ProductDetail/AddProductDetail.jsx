@@ -45,7 +45,7 @@ import { createMaterial } from "../Material/ApiMaterial";
 import { createGender } from "../Gender/ApiGender";
 import { Navigate, useNavigate } from "react-router-dom";
 import Breadcrumb from "../BreadCrumb";
-import { COLORS } from "../../../constants/constants.";
+import { COLORS } from "../../../constants/constants";
 
 const { TextArea } = Input;
 
