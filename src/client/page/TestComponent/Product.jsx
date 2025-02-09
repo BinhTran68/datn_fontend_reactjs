@@ -16,7 +16,7 @@ const product = {
   promotion : "2432",
   sale: "dsfdf"
 }
-function Home() {
+function Product() {
   return (
     <>
       <div className="container row">
@@ -401,4 +401,4 @@ function Home() {
     </>
   );
 }
-export default Home;
+export default Product;

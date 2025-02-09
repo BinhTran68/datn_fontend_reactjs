@@ -46,16 +46,15 @@ import { createGender } from "../Gender/ApiGender";
 import { Navigate, useNavigate } from "react-router-dom";
 import Breadcrumb from "../BreadCrumb";
 import { COLORS } from "../../../constants/constants";
+import ModalAddNew from "./ModalAddNew";
 
 const { TextArea } = Input;
 
 const ProductDetailDrawer = () => {
   const navigate = useNavigate();
-  const [previewImage, setPreviewImage] = useState("");
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  const [value, setValue] = useState("");
   const [tableData, setTableData] = useState([]);
   const [colors, setColors] = useState([]); // Khởi tạo với mảng rỗng để tránh lỗi
   const [sizes, setSizes] = useState([]);
@@ -74,27 +73,23 @@ const ProductDetailDrawer = () => {
 
   // modal
   const [openCreateProduct, setOpenCreateProduct] = useState(false);
+  const [addTypeModalVisible, setAddTypeModalVisible] = useState(false);
+  const [addBrandModalVisible, setAddBrandModalVisible] = useState(false);
+  const [addColorModalVisible, setAddColorModalVisible] = useState(false);
+  const [addSizeModalVisible, setAddSizeModalVisible] = useState(false);
+  const [addMaterialModalVisible, setAddMaterialModalVisible] = useState(false);
+  const [addSoleModalVisible, setAddSoleModalVisible] = useState(false);
+  const [addGenderModalVisible, setAddGenderModalVisible] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [filterActice, setFilterActice] = useState(false);
-  const [selectedProductDetail, setSelectedProductDetail] = useState();
-
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
-  const [idBrand, setIdBrand] = useState();
   const [dataSelectColor, setDataSelectColor] = useState([]);
-  const [idColor, setIdColor] = useState();
   const [dataSelectGender, setDataSelectGender] = useState([]);
-  const [idGender, setIdGender] = useState();
   const [dataSelectMaterial, setDataSelectMaterial] = useState([]);
-  const [idMaterial, setIdMaterial] = useState();
   const [dataSelectProduct, setDataSelectProduct] = useState([]);
-  const [idProduct, setIdProduct] = useState();
   const [dataSelectSize, setDataSelectSize] = useState([]);
-  const [idSize, setIdSize] = useState();
   const [dataSelectSole, setDataSelectSole] = useState([]);
-  const [idSole, setIdSole] = useState();
   const [dataSelectType, setDataSelectType] = useState([]);
-  const [idType, setIdType] = useState();
 
   const [totalProducts, setTotalProducts] = useState(0);
   const [request, setRequest] = useState(() => ({
@@ -366,6 +361,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Kích cỡ  thành công!`,
       });
+      setAddSizeModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -392,6 +388,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Màu sắc thành công!`,
       });
+      setAddColorModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -417,6 +414,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Thương hiệu thành công!`,
       });
+      setAddBrandModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -442,6 +440,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Đế giày thành công!`,
       });
+      setAddSoleModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -467,6 +466,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Loại giày thành công!`,
       });
+      setAddTypeModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -492,6 +492,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Chất liệu thành công!`,
       });
+      setAddMaterialModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -517,6 +518,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Giới tính thành công!`,
       });
+      setAddGenderModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -1011,7 +1013,7 @@ const ProductDetailDrawer = () => {
                 </Col>
                 <Col>
                   <Button
-                    style={{ padding: 0, backgroundColor: "green" }}
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
                     onClick={() => setOpenCreateProduct(true)}
                   >
                     <MdAdd size={25} color="white" />
@@ -1086,9 +1088,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddBrandModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1129,9 +1134,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddGenderModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1174,9 +1182,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddMaterialModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1217,9 +1228,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddTypeModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1260,9 +1274,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddSoleModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1319,9 +1336,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddColorModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1356,9 +1376,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddSizeModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1520,6 +1543,55 @@ const ProductDetailDrawer = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <ModalAddNew
+        open={addTypeModalVisible}
+        onCancel={() => setAddTypeModalVisible(false)}
+        title={"Loại giày"}
+        req={"typeName"}
+        onCreate={handleCreateType}
+      />
+      <ModalAddNew
+        open={addBrandModalVisible}
+        onCancel={() => setAddBrandModalVisible(false)}
+        title={"Thương hiệu"}
+        req={"brandName"}
+        onCreate={handleCreateBrand}
+      />
+      <ModalAddNew
+        open={addGenderModalVisible}
+        onCancel={() => setAddGenderModalVisible(false)}
+        title={"Giới tính"}
+        req={"genderName"}
+        onCreate={handleCreateGenDer}
+      />
+      <ModalAddNew
+        open={addMaterialModalVisible}
+        onCancel={() => setAddMaterialModalVisible(false)}
+        title={"Chất liệu"}
+        req={"materialName"}
+        onCreate={handleCreateMaterial}
+      />
+      <ModalAddNew
+        open={addSoleModalVisible}
+        onCancel={() => setAddSoleModalVisible(false)}
+        title={"Đế giày"}
+        req={"soleName"}
+        onCreate={handleCreateSole}
+      />
+      <ModalAddNew
+        open={addColorModalVisible}
+        onCancel={() => setAddColorModalVisible(false)}
+        title={"Màu sắc"}
+        req={"colorName"}
+        onCreate={handleCreateColor}
+      />
+      <ModalAddNew
+        open={addSizeModalVisible}
+        onCancel={() => setAddSizeModalVisible(false)}
+        title={"Kích cỡ"}
+        req={"sizeName"}
+        onCreate={handleCreateSize}
+      />
     </Row>
   );
 };

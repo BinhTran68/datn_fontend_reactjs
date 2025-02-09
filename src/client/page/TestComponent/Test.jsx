@@ -1,5 +1,7 @@
 import { Spin } from 'antd';
 import React, { useState, useEffect } from 'react';
+import Product from './Product';
+import ProductDetail from './ProductDetail';
 
 function ProductList() {
   const [brands, setBrands] = useState([]);
@@ -80,6 +82,9 @@ function ProductList() {
       ) : (
         <p>No brands available</p> // Nếu không có brand nào, hiển thị thông báo này
       )}
+      <Product/>
+      <ProductDetail/>
+      
     </div>
   );
 }
