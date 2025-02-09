@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import styles from './PayMent.module.css';
 
@@ -239,4 +238,3 @@ const PayMent = () => {
 }
 
 export default PayMent;
-

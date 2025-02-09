@@ -39,7 +39,7 @@ const UpdateCustomer = () => {
                 const provinceName = addressParts[3] || '';
 
                 // Assuming you have a way to get provinceId, districtId, and wardId from their names
-              
+
 
                 form.setFieldsValue({
                     ...customer,
@@ -47,7 +47,7 @@ const UpdateCustomer = () => {
                     CitizenId: customer.citizenId,
                     phoneNumber: customer.phoneNumber,
                     email: customer.email,
-                    gender: customer.gender === "Nam" ? 'true' : 'false',
+                    gender: customer.gender,
                     dateBirth: moment(customer.dateBirth, 'YYYY-MM-DD HH:mm:ss'),
                     status: customer.status === 'Kích hoạt' ? 1 : 0,
                     password: customer.password,
@@ -204,10 +204,11 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="true">Nam</Radio>
-                                            <Radio value="false">Nữ</Radio>
+                                            <Radio value={true}>Nam</Radio>
+                                            <Radio value={false}>Nữ</Radio>
                                         </Radio.Group>
                                     </Form.Item>
+
                                 </Col>
                             </Row>
 
