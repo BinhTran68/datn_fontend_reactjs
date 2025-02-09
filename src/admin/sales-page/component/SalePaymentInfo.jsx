@@ -1,13 +1,17 @@
 import React from 'react';
-import {Button, Card, Collapse, Form, Input, Select} from "antd";
+import {Avatar, Button, Card, Collapse, Form, Input, List, Select} from "antd";
 import {FaTicketAlt} from "react-icons/fa";
 import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
-import { Typography } from "antd";
-const { Text } = Typography;
+import {Typography} from "antd";
+import voucher_image from "../../../../public/img/voucher_image.png"
+import {convertDate, formatVND} from "../../../helpers/Helpers.js";
+
+const {Text} = Typography;
 
 
-const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, change}) => {
+const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, change, vouchers}) => {
+    console.log(vouchers)
     return (
         <>
             <Card>
@@ -29,7 +33,49 @@ const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, chan
                                             <span className={"bold"}>Chọn hoặc nhập mã giảm giá </span>
                                         </div>
                                     ),
-                                    children: <p>{" A dog is a type of domesticated animal."}</p>
+                                    children: (
+                                        <div className={""} style={{}}>
+                                            <List
+
+                                                itemLayout="horizontal"
+                                                dataSource={vouchers}
+                                                renderItem={(item, index) => (
+                                                    <List.Item
+                                                        actions={[
+                                                            <Button
+                                                                type={"primary"}
+                                                                onClick={() => {
+
+                                                                }}>Chọn</Button>
+                                                        ]}
+                                                    >
+
+                                                        <List.Item.Meta
+                                                            avatar={<img width={55} src={voucher_image}
+                                                                         alt={"img voucher"}/>}
+                                                            title={<a href="https://ant.design">{item?.voucherName}</a>}
+                                                            description={
+
+                                                                <div>
+                                                                    <div>
+                                                                        Số lượng : {item?.quantity ?? 0}
+                                                                    </div>
+                                                                    <div>
+                                                                        Ngày hết hạn : {convertDate(item.endDate)}
+                                                                    </div>
+                                                                    <div>
+                                                                        Gía trị giảm
+                                                                        : {item?.discountValue && item.voucherType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        />
+                                                    </List.Item>
+                                                )}
+                                            />
+
+                                        </div>
+                                    )
                                 }]}
                             />
                         </div>

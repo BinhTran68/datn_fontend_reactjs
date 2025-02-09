@@ -17,6 +17,7 @@ import axios from "axios";
 import moment from "moment/moment.js";
 import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
+import {baseUrl} from "../../helpers/Helpers.js";
 const {Title, Text} = Typography;
 const {Option} = Select;
 
@@ -39,6 +40,8 @@ const SalesPage = () => {
     });
     const [currentBill, setCurrentBill] = useState() // 1 mảng các sản phẩm
     const [open, setOpen] = useState(false);
+    const [vouchers, setVouchers] = useState()
+
     const showModal = () => {
         setOpen(true);
     };
@@ -64,6 +67,7 @@ const SalesPage = () => {
         setCurrentBill("1")
         fetchProductsData()
         getAllCustomer()
+        getAllVoucher()
     }, []);
 
     const handleCustomerMoneyChange = (e) => {
@@ -226,6 +230,12 @@ const SalesPage = () => {
         }, 0);
     };
 
+    const getAllVoucher = () => {
+            axios.get(`${baseUrl}/api/admin/voucher/with-customer`).then((res) => {
+                setVouchers(res.data.data)
+                console.log(res.data)
+            })
+    }
 
     return (
         <div className={"d-flex flex-column gap-3"}>
@@ -309,6 +319,7 @@ const SalesPage = () => {
             <div>
             </div>
             <SalePaymentInfo
+                vouchers={vouchers}
                 amount={items.find(item => item.key === currentBill)?.payInfo?.amount || 0}
                 change={items.find(item => item.key === currentBill)?.payInfo?.change || 0}
                 customerMoney={items.find(item => item.key === currentBill)?.payInfo?.customerMoney || ""}
