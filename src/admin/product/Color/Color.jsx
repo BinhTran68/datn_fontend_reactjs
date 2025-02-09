@@ -268,6 +268,8 @@ const Color = () => {
       key: "colorName",
       render: (text, record) => {
         // Tìm mã màu tương ứng
+        if (!record.id) return null;
+
         const colorCode = record.code? record.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
     
         return (
@@ -279,9 +281,11 @@ const Color = () => {
                 borderRadius: "50%", // Tạo hình tròn
                 backgroundColor: colorCode, // Mã màu nền
                 marginRight: "8px",
+                border: "1px solid gray", 
+
               }}
             />
-            <span style={{ color: colorCode }}>{record.colorName}</span> 
+            <span>{record.colorName}</span> 
           </div>
         );
       },
