@@ -326,14 +326,14 @@ const EditStaff = () => {
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item
+                                <Form.Item
                                         name="gender"
                                         label="Giới tính"
                                         rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="true">Nam</Radio>
-                                            <Radio value="false">Nữ</Radio>
+                                            <Radio value={true}>Nam</Radio>
+                                            <Radio value={false}>Nữ</Radio>
                                         </Radio.Group>
                                     </Form.Item>
                                 </Col>

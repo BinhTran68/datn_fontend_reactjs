@@ -85,23 +85,40 @@ const CustomerTest = () => {
             });
     };
 
+   
+
+
     const handleSearch = () => {
-        const filtered = data.filter((item) => {
-            const nameMatch = item.fullName.toLowerCase().includes(searchText.toLowerCase());
-            const phoneMatch = item.phoneNumber.includes(searchText);
-
-            const statusMatch = status === 'Tất cả' || item.status === status;
-
-            const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');
-            const dobFromMatch = !dobRange[0] || dob.isSameOrAfter(dobRange[0], 'minute');
-            const dobToMatch = !dobRange[1] || dob.isSameOrBefore(dobRange[1], 'minute');
-
-            const age = moment().diff(dob, 'years');
-            const ageMatch = age >= ageRange[0] && age <= ageRange[1];
-            return (nameMatch || phoneMatch) && statusMatch && dobFromMatch && dobToMatch && ageMatch;
-        });
-        setData(filtered);
+        const params = {
+            searchText: searchText,
+            status: status,
+            startDate: dobRange[0] ? dobRange[0].format('YYYY-MM-DDTHH:mm:ss') : null,
+            endDate: dobRange[1] ? dobRange[1].format('YYYY-MM-DDTHH:mm:ss') : null,
+            minAge: ageRange[0],
+            maxAge: ageRange[1],
+        };
+    
+        axios.get('http://localhost:8080/api/customers/filter', { params })
+            .then((response) => {
+                const fetchedData = response.data.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setData(fetchedData);
+            })
+            .catch((error) => console.error('Error fetching filtered data:', error));
     };
+
 
     const handleReset = () => {
         setSearchText('');
@@ -189,12 +206,28 @@ const CustomerTest = () => {
 
  
 
+    // const handleSetDefaultAddress = (addressId) => {
+    //     setAddresses(addresses.map(address => ({
+    //         ...address,
+    //         isDefault: address.id === addressId
+    //     })));
+    //     message.success('Đặt làm mặc định thành công!');
+    // };
+
     const handleSetDefaultAddress = (addressId) => {
-        setAddresses(addresses.map(address => ({
-            ...address,
-            isDefault: address.id === addressId
-        })));
-        message.success('Đặt làm mặc định thành công!');
+        axios.put(`http://localhost:8080/api/customers/set-default-address/${addressId}`)
+            .then(() => {
+                setAddresses(addresses.map(address => ({
+                    ...address,
+                    isDefault: address.id === addressId
+                })));
+                message.success('Đặt làm mặc định thành công!');
+                fetchData();
+            })
+            .catch((error) => {
+                console.error('Error setting default address:', error);
+                message.error('Đặt làm mặc định thất bại!');
+            });
     };
 
     const handleProvinceChange = (value) => {
@@ -217,14 +250,14 @@ const CustomerTest = () => {
             dataIndex: 'key',
             key: 'key',
         },
-        {
-            title: 'Avatar',
-            dataIndex: 'avatar',
-            key: 'avatar',
-            render: (src) => (
-                <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
-            ),
-        },
+        // {
+        //     title: 'Avatar',
+        //     dataIndex: 'avatar',
+        //     key: 'avatar',
+        //     render: (src) => (
+        //         <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
+        //     ),
+        // },
         {
             title: 'Họ và tên',
             dataIndex: 'fullName',
