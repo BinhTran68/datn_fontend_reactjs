@@ -333,7 +333,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
 import { useNavigate } from "react-router";
-import { QrReader } from 'react-qr-reader';
+// import { QrReader } from 'react-qr-reader';
 
 const { Option } = Select;
 

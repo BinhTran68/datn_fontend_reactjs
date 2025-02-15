@@ -10,7 +10,6 @@ import { render } from 'react-dom';
 import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaEye } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../constants/constants..js";
 import { Link } from 'react-router-dom';
 
 
