@@ -9,10 +9,11 @@ import {
   Radio,
   Button,
   notification,
+  QRCode,
 } from "antd";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { FaEdit } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 const { TextArea } = Input;
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -21,6 +22,10 @@ import styles from "./ProductDetail.module.css";
 import { updateProduct } from "./ApiProductDetail";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { BiDownload } from "react-icons/bi";
+import { FaDownload } from "react-icons/fa6";
+import { IoDownload } from "react-icons/io5";
+import { COLORS } from "../../../constants/constants.";
 
 const ModalEditSanPham = ({
   isOpen,
@@ -37,9 +42,41 @@ const ModalEditSanPham = ({
   dataColor,
   dataGender,
 }) => {
+  const qrCanvasRef = useRef(null); // Ref cho canvas
+  const qrSvgRef = useRef(null); // Ref cho canvas
+
   const [request, setRequest] = useState({
     status: "HOAT_DONG",
   });
+  const downloadQRCodeSvg = () => {
+    const svg = qrSvgRef.current?.querySelector("svg");
+    if (!svg) return;
+
+    const serializer = new XMLSerializer();
+    const svgData = serializer.serializeToString(svg); // Chuyển SVG thành chuỗi
+    const blob = new Blob([svgData], { type: "image/svg+xml" }); // Tạo blob từ chuỗi SVG
+    const url = URL.createObjectURL(blob); // Tạo URL tạm thời cho file SVG
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "QRCode_SVG.svg"; // Tên file tải về
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Giải phóng URL tạm thời
+  };
+  const downloadQRCodeCanvas = () => {
+    const canvas = qrCanvasRef.current?.querySelector("canvas");
+    if (!canvas) return;
+
+    const url = canvas.toDataURL("image/png"); // Lấy ảnh PNG từ canvas
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "QRCode_Canvas" + getProductDetail?.id + ".png"; // Tên file tải về
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const handleRequest = async (e) => {
     const { name, value } = e.target;
     setRequest((prev) => ({
@@ -121,7 +158,7 @@ const ModalEditSanPham = ({
         title={
           <span className="flex">
             <FaEdit
-              style={{ color: "green", marginRight: 8, fontSize: "1.5rem" }}
+              style={{ color: `${COLORS.primary}`, marginRight: 8, fontSize: "1.5rem" }}
             />
             Chỉnh sửa {title}
           </span>
@@ -137,8 +174,12 @@ const ModalEditSanPham = ({
             key="submit"
             type="primary"
             onClick={() => formik.submitForm()} // Gọi hàm submitForm của Formik khi nhấn nút xác nhận
-
             // disabled={!isActiveUpdate}
+            style={{
+             
+              
+              
+            }}
           >
             Xác nhận
           </Button>,
@@ -364,15 +405,35 @@ const ModalEditSanPham = ({
               value={formik.values.colorId}
               onChange={(value) => formik.setFieldValue("colorId", value)}
               placeholder="Chọn màu sắc"
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? "")
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? "").toLowerCase())
-              }
+              optionFilterProp="title"
+              // filterSort={(optionA, optionB) =>
+              //   (optionA?.label ?? "")
+              //     .toLowerCase()
+              //     .localeCompare((optionB?.label ?? "").toLowerCase())
+              // }
               options={dataColor?.map((de) => ({
                 value: de.id,
-                label: de.colorName,
+                label: (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "1.2rem",
+                        height: "1.2rem",
+                        backgroundColor: `${de.code}`,
+                        borderRadius: "50%",
+                        border: "1px solid #ccc",
+                      }}
+                    />
+                    {de.colorName}
+                  </div>
+                ),
+                title: de.colorName, // Dùng 'title' để lọc khi search
               }))}
             />
             {formik.errors.soleId && (
@@ -380,45 +441,53 @@ const ModalEditSanPham = ({
             )}
           </Col>
           <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
-              <span className="text-red-600">*</span> Số lượng
-            </label>
+            <div className="text-sm block mb-2" htmlFor="">
+              <span>*</span> Số lượng
+            </div>
             <InputNumber
-              value={formik.values.quantity}
+              value={formik.values.quantity || 0}
               placeholder="số lượng"
               allowClear
               name="name"
               type="number"
               min={0}
-              onChange={(value) => formik.setFieldValue("quantity", value)}
+              onChange={(value) => formik.setFieldValue("quantity", value )}
+              style={{ width: "100%" }}
+              suffix={<span>Đôi</span>}
+
             />
           </Col>
           <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
+            <div className="text-sm block mb-2" htmlFor="">
               <span className="text-red-600">*</span> Giá bán
-            </label>
+            </div>
             <InputNumber
-              value={formik.values.price}
+              value={formik.values.price||0}
               placeholder="giá bán"
               allowClear
               name="name"
               type="number"
               onChange={(value) => formik.setFieldValue("price", value)}
               min={0}
+              suffix={<span>VNĐ</span>}
+              style={{ width: "100%" }}
             />
           </Col>
           <Col span={6}>
-            <label className="text-sm block mb-2" htmlFor="">
+            <div className="text-sm block mb-2" htmlFor="">
               <span className="text-red-600">*</span> Cân nặng
-            </label>
+            </div>
             <InputNumber
-              value={formik.values.weight}
+              value={formik.values.weight||0}
               placeholder="Cân nặng"
               allowClear
               name="name"
               type="number"
               min={0}
               onChange={(value) => formik.setFieldValue("weight", value)}
+              style={{ width: "100%" }}
+              suffix={<span>Kg</span>}
+
             />
           </Col>
         </Row>
@@ -459,6 +528,33 @@ const ModalEditSanPham = ({
         </Row>
         <Row>
           <Col span={24}>
+            <div ref={qrCanvasRef}>
+              <QRCode
+                type="canvas"
+                value={`${getProductDetail?.id || "https://ant.design/"}`}
+                style={{ width: "10rem", height: "auto" }}
+                // errorLevel='M'
+              />
+            </div>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              onClick={downloadQRCodeCanvas}
+              style={{
+               
+                
+                
+                width: "10rem",
+              }}
+            >
+              <BiDownload size={23} />
+              DownLoad-QR
+            </Button>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={24}>
             <div>Mô tả</div>
           </Col>
 
@@ -480,7 +576,7 @@ const ModalEditSanPham = ({
               theme="snow"
               value={formik.values.description}
               placeholder="Mô tả tối đa 200 từ"
-              onChange={formik.handleChange}
+              onChange={(value) => formik.setFieldValue("description", value)} // Sửa thành setFieldValue
               modules={{
                 toolbar: [
                   [{ header: [1, 2, false] }],

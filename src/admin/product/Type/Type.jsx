@@ -42,6 +42,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
+import { COLORS } from "../../../constants/constants..js";
 
 const Type = () => {
   const { Title } = Typography;
@@ -314,8 +315,9 @@ const Type = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
+          </Tag>
         );
       },
     },
@@ -335,7 +337,7 @@ const Type = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         marginRight: 8,
                         fontSize: "1.5rem",
                       }}
@@ -423,9 +425,9 @@ const Type = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#4096FF",
-                borderColor: "#4096FF",
-                color: "#fff",
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -440,9 +442,9 @@ const Type = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#4096FF",
-              borderColor: "#4096FF",
-              color: "#fff",
+             
+              
+              
             }}
           >
             Thêm Loại giày

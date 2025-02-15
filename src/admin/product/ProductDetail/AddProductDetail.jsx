@@ -14,6 +14,7 @@ import {
   Upload,
   notification,
   Modal,
+  ColorPicker,
 } from "antd";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -43,6 +44,7 @@ import { createMaterial } from "../Material/ApiMaterial";
 import { createGender } from "../Gender/ApiGender";
 import { Navigate, useNavigate } from "react-router-dom";
 import Breadcrumb from "../BreadCrumb";
+import { COLORS } from "../../../constants/constants.";
 
 const { TextArea } = Input;
 
@@ -66,6 +68,7 @@ const ProductDetailDrawer = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [commonQuantity, setCommonQuantity] = useState(0);
   const [commonPrice, setCommonPrice] = useState(0);
+  const [commonWeight, setCommonWeight] = useState(0);
 
   // modal
   const [openCreateProduct, setOpenCreateProduct] = useState(false);
@@ -92,9 +95,10 @@ const ProductDetailDrawer = () => {
   const [idType, setIdType] = useState();
 
   const [totalProducts, setTotalProducts] = useState(0);
-  const [request, setRequest] = useState({
+  const [request, setRequest] = useState(() => ({
     status: "HOAT_DONG",
-  });
+  }));
+
   // them nhanh khi nhap
   const [searchProduct, setSearchProduct] = useState("");
   const [searchBrand, setSearchBrand] = useState("");
@@ -128,10 +132,15 @@ const ProductDetailDrawer = () => {
       console.log(values);
 
       const updatedData = tableData.map((item) => {
-        if (selectedRowKeys.includes(item.key)) {
-          return { ...item, quantity: commonQuantity, price: commonPrice };
-        }
-        return item;
+        // if (selectedRowKeys.includes(item.key)) {
+        return {
+          ...item,
+          quantity: commonQuantity,
+          price: commonPrice,
+          weight: commonWeight,
+        };
+        // }
+        // return item;
       });
       setTableData(updatedData);
       formModalSLVaGia.resetFields(); // Đặt lại trường form
@@ -146,6 +155,7 @@ const ProductDetailDrawer = () => {
   };
   const handleModalCancel = () => {
     setCommonPrice(0); // Đặt giá chung về 0
+    setCommonWeight(0);
     setCommonQuantity(0); // Đặt số lượng chung về 0
     setSelectedRowKeys([]); // Bỏ chọn tất cả các dòng
     setHasSelected(false); // Bỏ chọn tất cả các dòng
@@ -370,7 +380,31 @@ const ProductDetailDrawer = () => {
     fetchDataSize();
     fetchDataSole();
     fetchDataType();
-  }, [color, size, product, openCreateProduct]);
+  }, []);
+
+  useEffect(() => {
+    setProducts(dataSelectProduct);
+    setSizes(dataSelectSize);
+    setColors(dataSelectColor);
+  }, [color, size, product]);
+  useEffect(() => {
+    setRequest((prev) => ({
+      ...prev,
+      productId: dataSelectProduct[0]?.id || null,
+      brandId: dataSelectBrand[0]?.id || null,
+      genderId: dataSelectGender[0]?.id || null,
+      materialId: dataSelectMaterial[0]?.id || null,
+      typeId: dataSelectType[0]?.id || null,
+      soleId: dataSelectSole[0]?.id || null,
+    }));
+    setProduct(dataSelectProduct[0]?.id || null);
+  }, [
+    dataSelectBrand,
+    dataSelectGender,
+    dataSelectMaterial,
+    dataSelectType,
+    dataSelectSole,
+  ]); // Chạy lại khi `dataSelectBrand` thay đổi
 
   const fetchDataBrand = async () => {
     setLoading(true);
@@ -476,7 +510,6 @@ const ProductDetailDrawer = () => {
   const handleCreateProductDetail = async (tableData) => {
     try {
       setLoading(true);
-      console.log(request);
       await createProductDetailList(tableData);
       // setFilterActice(false);
       // fetchProductsData(); // Refresh data after creation
@@ -498,16 +531,13 @@ const ProductDetailDrawer = () => {
       });
     } finally {
       setLoading(false);
-      // Đặt lại request, giữ nguyên status
-
-      setOpen(false);
     }
   };
   const resetFrom = () => {
     generateTableData(color, size, product);
     setTableData([]);
     setRequest((prev) => ({
-      ...prev,
+      // ...prev,
       productId: dataSelectProduct[0]?.id || null,
       brandId: dataSelectBrand[0]?.id || null,
       genderId: dataSelectGender[0]?.id || null,
@@ -515,6 +545,9 @@ const ProductDetailDrawer = () => {
       typeId: dataSelectType[0]?.id || null,
       soleId: dataSelectSole[0]?.id || null,
     }));
+
+    console.log("đã reset from");
+    console.log(request);
   };
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -593,6 +626,7 @@ const ProductDetailDrawer = () => {
           min={0}
           defaultValue={text}
           value={record.price}
+          step={1000} // Bước nhảy 1,000 VNĐ
           onChange={(e) =>
             handleInputChange(record.key, "price", e.target.value)
           }
@@ -620,7 +654,15 @@ const ProductDetailDrawer = () => {
       title: "Action",
       dataIndex: "status",
       render: (text, record) => (
-        <Button type="primary" danger onClick={() => handleDelete(record.key)}>
+        <Button
+          type="primary"
+          style={{
+           
+            
+            
+          }}
+          onClick={() => handleDelete(record.key)}
+        >
           Xóa
         </Button>
       ),
@@ -653,16 +695,17 @@ const ProductDetailDrawer = () => {
           productName: `${productItem.productName} [ ${sizeItem.sizeName}-${colorItem.colorName} ]`,
           quantity: 0,
           price: 0,
+          weight: 0,
           image: "",
           status: 1,
           color: color, // Thêm trường color để nhóm các dòng cùng màu
           // mỗi biến thể khi render ra đều có các thuộc tính
-          brandId: request.brandId || null,
-          materialId: request.materialId || null,
-          genderId: request.genderId || null,
-          typeId: request.typeId || null,
-          soleId: request.soleId || null,
-          description: request.description || null,
+          brandId: dataSelectBrand[0]?.id || null,
+          genderId: dataSelectGender[0]?.id || null,
+          materialId: dataSelectMaterial[0]?.id || null,
+          typeId: dataSelectType[0]?.id || null,
+          soleId: dataSelectSole[0]?.id || null,
+          description: null,
         };
       });
 
@@ -689,6 +732,12 @@ const ProductDetailDrawer = () => {
     setProduct(selectedProduct);
     generateTableData(color, size, selectedProduct);
     console.log(selectedProduct);
+    console.log(request);
+    setRequest((prev) => ({
+      ...prev,
+      productId: selectedProduct,
+    }));
+    
   };
   const handleDelete = (key) => {
     const updatedData = tableData.filter((item) => item.key !== key); // Lọc bỏ dòng có key tương ứng
@@ -700,16 +749,13 @@ const ProductDetailDrawer = () => {
   }));
   return (
     <Row gutter={[16, 16]}>
-      <Col span={12}>
+      <Col span={24}>
         <Card
           style={{
             marginBottom: "1rem",
           }}
         >
           <Row gutter={[16, 0]}>
-            <Col span={24}>
-              <Breadcrumb />
-            </Col>
             <Col>
               <h6>Thông tin cơ bản</h6>
             </Col>
@@ -743,12 +789,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button
+                  <Button
                       style={{ padding: 0, backgroundColor: "green" }}
                       onClick={() => setOpenCreateProduct(true)}
                     >
                       <MdAdd size={25} color="white" />
-                    </Button> */}
+                    </Button>
                 </Col>
               </Row>
             </Col>
@@ -782,13 +828,14 @@ const ProductDetailDrawer = () => {
             <Col span={24}>
               <h6>Thuộc tính</h6>
             </Col>
+
             <Col span={8}>
+              <div>Thương hiệu</div>
               <Row gutter={[5, 0]}>
-                <div>Thương hiệu</div>
                 <Col>
                   <Select
                     showSearch
-                    style={{ width: "9rem" }}
+                    style={{ width: "15rem" }}
                     placeholder="Chọn thương hiệu"
                     optionFilterProp="label"
                     value={request.brandId}
@@ -831,7 +878,7 @@ const ProductDetailDrawer = () => {
                 <Col>
                   <Select
                     showSearch
-                    style={{ width: "9rem" }}
+                    style={{ width: "15rem" }}
                     placeholder="Chọn giới tính"
                     optionFilterProp="label"
                     value={request.genderId}
@@ -874,7 +921,7 @@ const ProductDetailDrawer = () => {
                 <Col>
                   <Select
                     showSearch
-                    style={{ width: "9rem" }}
+                    style={{ width: "15rem" }}
                     placeholder="Chọn chất liệu"
                     optionFilterProp="label"
                     value={request.materialId}
@@ -919,7 +966,7 @@ const ProductDetailDrawer = () => {
                 <Col>
                   <Select
                     showSearch
-                    style={{ width: "9rem" }}
+                    style={{ width: "15rem" }}
                     placeholder="Chọn loại giày"
                     optionFilterProp="label"
                     value={request.typeId}
@@ -962,7 +1009,7 @@ const ProductDetailDrawer = () => {
                 <Col>
                   <Select
                     showSearch
-                    style={{ width: "9rem" }}
+                    style={{ width: "15rem" }}
                     placeholder="Chọn loại đế giày"
                     optionFilterProp="label"
                     value={request.soleId}
@@ -1000,7 +1047,7 @@ const ProductDetailDrawer = () => {
             </Col>
           </Row>
           <Row gutter={[0, 15]} style={{ marginTop: "16px" }}>
-            <Col span={12}>
+            <Col span={8}>
               <div>Màu sắc</div>
 
               <Row gutter={[5, 0]}>
@@ -1022,12 +1069,31 @@ const ProductDetailDrawer = () => {
                         Thêm nhanh: {searchColor}
                       </a>
                     }
-                    optionFilterProp="label"
-                    // value={request.colorId}
+                    optionFilterProp="title" // Sử dụng 'title' để tìm kiếm
                     onChange={handleColorChange}
                     options={dataSelectColor?.map((c) => ({
                       value: c.id,
-                      label: c.colorName,
+                      label: (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "1.2rem",
+                              height: "1.2rem",
+                              backgroundColor: c.code,
+                              borderRadius: "50%",
+                              border: "1px solid #ccc",
+                            }}
+                          />
+                          {c.colorName}
+                        </div>
+                      ),
+                      title: c.colorName, // Dùng 'title' để lọc khi search
                     }))}
                   />
                 </Col>
@@ -1038,7 +1104,7 @@ const ProductDetailDrawer = () => {
                 </Col>
               </Row>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <div>Kích cỡ</div>
 
               <Row gutter={[5, 0]}>
@@ -1078,37 +1144,53 @@ const ProductDetailDrawer = () => {
           </Row>
         </Card>
       </Col>
-      <Col span={12}>
+      <Col span={24}>
         <Row gutter={[16, 16]}>
           <Col span={24}>
             <Row gutter={[16, 16]}>
               <Col>
                 {tableData.length > 0 && (
-                  <Button
-                    onClick={() => {
-                      handleCreateProductDetail(tableData);
-                      resetFrom();
-                      navigate(-1);
-                    }}
-                    type="primary"
-                  >
-                    Lưu thông tin
-                  </Button>
+                  <Row gutter={[16, 16]}>
+                    <Col>
+                      <Button
+                        onClick={() => {
+                          handleCreateProductDetail(tableData);
+                          resetFrom();
+                          navigate(-1);
+                        }}
+                        type="primary"
+                        style={{
+                         
+                          
+                          
+                        }}
+                      >
+                        Lưu thông tin
+                      </Button>
+                    </Col>
+                    <Col>
+                      <Button
+                        type="primary"
+                        onClick={() => setIsModalVisible(true)}
+                        // disabled={!hasSelected}
+                        loading={loading}
+                        style={{
+                         
+                          
+                          
+                        }}
+                      >
+                        Chỉnh số lượng và giá chung
+                      </Button>
+                    </Col>
+                  </Row>
                 )}
               </Col>
               {groupedData.map((group) => (
                 <Col span={24} key={group.colorName}>
                   <Card title={`Sản phẩm chi tiết: ${group.colorName}`}>
-                    <Button
-                      type="primary"
-                      onClick={() => setIsModalVisible(true)}
-                      disabled={!hasSelected}
-                      loading={loading}
-                    >
-                      Set số lượng và giá chung
-                    </Button>
                     <Table
-                      rowSelection={rowSelection}
+                      // rowSelection={rowSelection}
                       columns={columns}
                       dataSource={group.rows}
                       pagination={false}
@@ -1130,8 +1212,25 @@ const ProductDetailDrawer = () => {
       <Modal
         title="Set số lượng và giá chung"
         open={isModalVisible}
-        onOk={handleModalOk}
         onCancel={handleModalCancel}
+        footer={[
+          <Button key="back" onClick={handleModalCancel}>
+            Hủy
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={loading}
+            onClick={handleModalOk}
+            style={{
+             
+              
+              
+            }}
+          >
+            Xác nhận
+          </Button>,
+        ]}
       >
         <Form
           form={formModalSLVaGia} // Gán form instance vào form
@@ -1181,6 +1280,32 @@ const ProductDetailDrawer = () => {
               value={commonPrice}
               onChange={(value) => setCommonPrice(value)}
               suffix={<span>VNĐ</span>}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Cân nặng chung"
+            name="commonWeight"
+            rules={[
+              {
+                required: true,
+                message: "Cân nặng chung không được để trống!",
+              },
+              {
+                type: "number",
+                min: 0,
+                max: 10, // Giới hạn giá trị tối đa là 500 triệu
+                message: "Cân nặng phải là số dương và nhỏ hơn 10kg !",
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: "100%" }}
+              type="number"
+              min={0}
+              value={commonWeight}
+              onChange={(value) => setCommonWeight(value)}
+              suffix={<span>Kg</span>}
             />
           </Form.Item>
         </Form>

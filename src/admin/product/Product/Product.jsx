@@ -16,6 +16,7 @@ import {
   Flex,
   Grid,
   Popconfirm,
+  Tooltip,
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -37,11 +38,13 @@ import {
   searchNameProduct,
   existsByProductName,
 } from "./ApiProduct.js";
-import { FaRegTrashCan } from "react-icons/fa6";
+import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
+import { COLORS } from "../../../constants/constants..js";
+import { Link } from "react-router-dom";
 
 const Product = () => {
   const { Title } = Typography;
@@ -129,6 +132,7 @@ const Product = () => {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
+      console.log(products);
     }
   };
 
@@ -263,8 +267,14 @@ const Product = () => {
       width: "20rem",
     },
     {
+      title: "Số lượng",
+      dataIndex: "totalQuantity",
+      key: "totalQuantity",
+      width: "20rem",
+    },
+    {
       title: "Ngày cập nhật",
-      dataIndex: "updateAt",
+      dataIndex: "updatedAt",
       key: "updateAt",
       width: "15rem",
       render: (text) => {
@@ -282,20 +292,22 @@ const Product = () => {
       key: "status",
       width: "15rem",
       render: (_, { status }) => {
-        let color = status === "HOAT_DONG" ? "green" : "red";
-        if (!status) {
-          return null;
+        if (status === null || status === undefined) {
+          return null; // Trường hợp lỗi
         }
+
+        let color = status === 0 ? "green" : "red";
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === 0 ? "Hoạt động" : "Ngừng hoạt động"}
+          </Tag>
         );
       },
     },
     {
       title: "Thao tác",
       dataIndex: "actions",
+      width:"15rem",
       key: "actions",
       render: (_, record) => {
         if (!record.id || Object.keys(record).length === 0) {
@@ -305,23 +317,24 @@ const Product = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-                <Button
+             <Tooltip title="chỉnh sửa sản phẩm">
+             <Button
                   onClick={() => handleGetProduct(record.id)}
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
-                        marginRight: 8,
+                        color: `${COLORS.primary}`,
+                        // marginRight: 8,
                         fontSize: "1.5rem",
                       }}
                     />
                   }
                 >
-                  Cập nhật
                 </Button>
+             </Tooltip>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Sản phẩmnày kh"
@@ -330,9 +343,18 @@ const Product = () => {
                   onConfirm={() => handleDeleteProduct(record.id)}
                 >
                   <Button className={`${styles.buttonDelete} ant-btn`}>
-                    <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
+                    <FaRegTrashCan size={20} color="#FF4D4F" /> 
                   </Button>
                 </Popconfirm>
+              </Col> */}
+              <Col>
+              <Tooltip title="Xem chi tiết sản phẩm">
+              <Link to={`get-product-detail/${record.id}`}>
+                <Button
+                    icon={<FaEye color={`${COLORS.primary}`} size={20} />}
+                />
+              </Link>
+              </Tooltip>
               </Col>
             </Row>
           </>
@@ -390,9 +412,9 @@ const Product = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#4096FF",
-                borderColor: "#4096FF",
-                color: "#fff",
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -401,19 +423,52 @@ const Product = () => {
         </Row>
 
         <Row style={{ marginTop: 20 }}>
-          <Button
+          {/* <Button
             type="primary"
             onClick={() => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#4096FF",
-              borderColor: "#4096FF",
-              color: "#fff",
+             
+              
+              
             }}
           >
             Thêm Sản Phẩm
-          </Button>
+          </Button> */}
+          <Row gutter={[16,16]}>
+            <Col>
+              <Link to={"add"}>
+                <Button
+                  style={{
+                   
+                    
+                    
+                  }}
+                  type="primary"
+                  icon={<PlusOutlined />}
+                >
+                  Thêm sản phẩm
+                </Button>
+              </Link>
+            </Col>
+            <Col>
+              <Link to={"productdetail"}>
+                <Button
+                  style={{
+
+
+                    
+                  }}
+                  type="primary"
+                  icon={<PlusOutlined />}
+                >
+                  Xem tất cả các sản phẩm chi tiết
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+
           <ModalAddProduct
             open={openCreate}
             onCreate={handleCreateProduct}

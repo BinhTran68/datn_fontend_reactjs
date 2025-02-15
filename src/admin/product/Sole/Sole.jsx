@@ -17,6 +17,7 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
+import {COLORS} from "../../../constants/constants..js"
 import styles from "./Sole.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -41,6 +42,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
+import { color } from "framer-motion";
 
 const Sole = () => {
   const { Title } = Typography;
@@ -301,7 +303,7 @@ const Sole = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         marginRight: 8,
                         fontSize: "1.5rem",
                       }}
@@ -382,9 +384,9 @@ const Sole = () => {
               icon={<SearchOutlined />}
               onClick={searchName}
               style={{
-                backgroundColor: "#4096FF",
-                borderColor: "#4096FF",
-                color: "#fff",
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -399,9 +401,9 @@ const Sole = () => {
               setOpenCreate(true);
             }}
             style={{
-              backgroundColor: "#4096FF",
-              borderColor: "#4096FF",
-              color: "#fff",
+             
+              
+              
             }}
           >
             Thêm Đế giày
