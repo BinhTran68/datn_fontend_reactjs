@@ -1,17 +1,41 @@
 import React from 'react';
-import {Avatar, Button, Card, Collapse, Form, Input, List, Select} from "antd";
-import {FaTicketAlt} from "react-icons/fa";
+import {Avatar, Button, Card, Checkbox, Collapse, Form, Input, List, Select, Space} from "antd";
+import {FaCheck, FaCheckCircle, FaTicketAlt} from "react-icons/fa";
 import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
 import {Typography} from "antd";
 import voucher_image from "../../../../public/img/voucher_image.png"
 import {convertDate, formatVND} from "../../../helpers/Helpers.js";
+import {SiCheckio} from "react-icons/si";
+import {COLORS} from "../../../constants/constants.js";
+import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 
 const {Text} = Typography;
 
 
-const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, change, vouchers}) => {
-    console.log(vouchers)
+const SalePaymentInfo = ({
+                             amount,
+                             handleCustomerMoneyChange,
+                             customerMoney,
+                             change,
+                             vouchers,
+                             handleOnSelectedVoucher,
+                             discount,
+                             selectedVouchers,
+                             isShipping,
+                             handleCheckIsShipping,
+                             handleChangePaymentMethod,
+                             paymentMethods,
+                             handleBankCustomerMoneyChange,
+                             handleCashCustomerMoneyChange,
+                             cashCustomerMoney,
+                             bankCustomerMoney,
+                             handleOnPayment,
+                             isSuccess,
+                             handleOnPrintBill,
+    canPayment
+                         }) => {
+
     return (
         <>
             <Card>
@@ -28,7 +52,7 @@ const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, chan
                                 items={[{
                                     key: '1',
                                     label: (
-                                        <div className={"d-flex justify-content-between align-items-center"}>
+                                        <div className={"d-flex justif y-content-between align-items-center"}>
                                             <span className={"d-flex gap-3 align-items-center"}><FaTicketAlt/> Phiếu giảm giá</span>
                                             <span className={"bold"}>Chọn hoặc nhập mã giảm giá </span>
                                         </div>
@@ -42,11 +66,18 @@ const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, chan
                                                 renderItem={(item, index) => (
                                                     <List.Item
                                                         actions={[
-                                                            <Button
-                                                                type={"primary"}
-                                                                onClick={() => {
+                                                            (
+                                                                selectedVouchers?.id === item.id ?
+                                                                    <FaCheckCircle size={25}
+                                                                                   color={`${COLORS.success}`}/> :
+                                                                    <Button
+                                                                        type={"primary"}
+                                                                        onClick={() => {
+                                                                            handleOnSelectedVoucher(item)
+                                                                        }}>Chọn</Button>
+                                                            )
 
-                                                                }}>Chọn</Button>
+
                                                         ]}
                                                     >
 
@@ -79,49 +110,87 @@ const SalePaymentInfo = ({amount, handleCustomerMoneyChange, customerMoney, chan
                                 }]}
                             />
                         </div>
-                        <Form layout="vertical">
+                        <Form layout="vertical" onFinish={handleOnPayment}>
                             <Form.Item label="Tạm tính">
-                                <Text strong>{amount.toLocaleString()} đ</Text>
+                                <Text strong>{formatVND((amount +  discount))}</Text>
                             </Form.Item>
                             <Form.Item label="Giảm giá">
-                                <Text strong>0 đ</Text>
+                                <Text strong>{formatVND(discount)}</Text>
                             </Form.Item>
+
                             <Form.Item label="Tổng tiền">
-                                <Text strong style={{color: "red"}}>{amount.toLocaleString()} đ</Text>
-                            </Form.Item>
-                            <Form.Item label="Tiền khách đưa">
-                                <Input
-                                    type="number"
-                                    placeholder="Nhập số tiền"
-                                    onChange={handleCustomerMoneyChange}
-                                    value={customerMoney}
-                                    suffix="VNĐ"
-                                />
-                            </Form.Item>
-                            {customerMoney < amount && (
-                                <Text type="danger">Vui lòng nhập đủ tiền khách đưa!</Text>
-                            )}
-                            <Form.Item label="Tiền thừa">
-                                <Text strong>{change > 0 ? change.toLocaleString() : 0} đ</Text>
+                                <Text strong style={{color: "red"}}>{formatVND(amount)}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
-                                <Select defaultValue="cash" style={{width: "100%"}}>
+                                <Select onChange={handleChangePaymentMethod} value={paymentMethods} defaultValue="cash"
+                                        style={{width: "100%"}}>
                                     <Option value="cash">
                                         <MdOutlineDonutLarge/> Tiền mặt
                                     </Option>
                                     <Option value="bank">
                                         <AiFillCreditCard/> Chuyển khoản
                                     </Option>
-                                    <Option value="both">
+                                    <Option value="cashAndBank">
                                         <MdOutlineDonutLarge/> Tiền mặt & <AiFillCreditCard/> Chuyển khoản
                                     </Option>
                                 </Select>
                             </Form.Item>
+
+                            <Form.Item
+                                hidden={paymentMethods !== "cash" && paymentMethods !== "cashAndBank"}
+                                label="Tiền mặt khách đưa"
+                            >
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="Nhập số tiền"
+                                    onChange={handleCashCustomerMoneyChange}
+                                    value={parseInt(cashCustomerMoney)}
+                                    suffix="VNĐ"
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                hidden={paymentMethods !== "bank" && paymentMethods !== "cashAndBank"}
+                                label="Tiền khách chuyển khoản"
+                            >
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="Nhập số tiền"
+                                    onChange={handleBankCustomerMoneyChange}
+                                    value={parseInt(bankCustomerMoney)}
+                                    suffix="VNĐ"
+                                />
+                            </Form.Item>
+
+
+                            {customerMoney < amount && (
+                                <Text type="danger">Vui lòng nhập đủ tiền khách đưa!</Text>
+                            )}
+                            <Form.Item label="Tiền thừa">
+                                <Text strong>{change > 0 ? change.toLocaleString() : 0} đ</Text>
+                            </Form.Item>
+
                             <Form.Item>
-                                <Button type="primary" block disabled={customerMoney < amount}>
+                                <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
+                                    Giao hàng
+                                </Checkbox>
+                            </Form.Item>
+                            <Form.Item hidden={isSuccess}>
+                                <Button onClick={handleOnPayment} type="primary" block
+                                        disabled={!canPayment}>
                                     Thanh toán
                                 </Button>
                             </Form.Item>
+
+                            <Form.Item hidden={!isSuccess}>
+                                    <Button onClick={handleOnPrintBill} type="primary"
+                                            block >
+                                        In hóa đơn
+                                    </Button>
+                            </Form.Item>
+
                         </Form>
                     </div>
                 </div>

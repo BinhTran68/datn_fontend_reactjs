@@ -18,19 +18,38 @@ import moment from "moment/moment.js";
 import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
 import {baseUrl} from "../../helpers/Helpers.js";
-const {Title, Text} = Typography;
-const {Option} = Select;
+import {printBillService} from "../bill/services/printBillService.js";
 
 const SalesPage = () => {
     const [items, setItems] = useState([
         {
             key: "1",
-            label: "Hóa đơn 1",
+            label: `Hóa đơn ${moment().format("HH:mm:ss")}`,
             productList: [],
+            isSuccess: false,
+            canPayment: false,
             customerInfo: null,
-            payInfo: {}
+            payInfo: {
+                paymentMethods: "cash",
+                discount: 0,
+                amount: 0,
+
+            },
+            closable: true,
+            billCode: null,
+            isShipping: false,
+            shippingInfo: null
         },
     ]);
+
+    const onEditTab = (targetKey, action) => {
+        if (action === "remove") {
+            setItems(items.filter((item) => item.key !== targetKey));
+        }
+        if (action === "add") {
+            handleOnCreateBill()
+        }
+    };
 
     const [products, setProducts] = useState([]);
     const [customers, setCustomers] = useState([])
@@ -41,6 +60,7 @@ const SalesPage = () => {
     const [currentBill, setCurrentBill] = useState() // 1 mảng các sản phẩm
     const [open, setOpen] = useState(false);
     const [vouchers, setVouchers] = useState()
+    const [selectedVouchers, setSelectedVouchers] = useState({});
 
     const showModal = () => {
         setOpen(true);
@@ -54,9 +74,7 @@ const SalesPage = () => {
     const fetchProductsData = async () => {
         try {
             const response = await fetchProducts(pagination);
-            console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
             setProducts(response.data);
-
         } catch (error) {
             message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
         } finally {
@@ -89,15 +107,77 @@ const SalesPage = () => {
     };
 
 
+    const handleCashCustomerMoneyChange = (e) => {
+        const value = parseFloat(e.target.value) || 0;
+        setItems(prevItems =>
+            prevItems.map(item =>
+                item.key === currentBill
+                    ? {
+                        ...item,
+                        payInfo: {
+                            ...item.payInfo,
+                            cashCustomerMoney: value,
+                            customerMoney: value + (item.payInfo?.bankCustomerMoney || 0),
+                            change: (value + (item.payInfo?.bankCustomerMoney || 0)) - (item.payInfo?.amount || 0)
+                        }
+                    }
+                    : item
+            )
+        );
+    };
+
+
+    const handleBankCustomerMoneyChange = (e) => {
+        const value = parseFloat(e.target.value) || 0;
+        setItems(prevItems =>
+            prevItems.map(item =>
+                item.key === currentBill
+                    ? {
+                        ...item,
+                        payInfo: {
+                            ...item.payInfo,
+                            bankCustomerMoney: value,
+                            customerMoney: value + (item.payInfo?.cashCustomerMoney || 0),
+                            change: (value + (item.payInfo?.cashCustomerMoney || 0)) - (item.payInfo?.amount || 0)
+                        }
+                    }
+                    : item
+            )
+        );
+    };
+
+
+    useEffect(() => {
+        setItems(prevItems => {
+            const newItems = prevItems.map(item => {
+                const totalAmount = item.payInfo?.amount || 0;
+                const customerMoney = item.payInfo?.customerMoney || 0;
+                const canPay = totalAmount > 0 && customerMoney >= totalAmount && !item.isSuccess;
+
+                return {
+                    ...item,
+                    canPayment: canPay
+                };
+            });
+            console.log(items)
+
+            // So sánh mảng cũ và mới, nếu giống nhau thì không cập nhật state
+            const isSame = prevItems.every((item, index) => item.canPayment === newItems[index].canPayment);
+            return isSame ? prevItems : newItems;
+        });
+    }, [items]);
+
+
     const handleOnCreateBill = () => {
         if (items.length >= 10) {
             toast.warning("Đạt giới hạn hóa đơn")
             return;
         }
         const newKey = (items.length + 1).toString(); // Tạo key mới cho hóa đơn
+        const timestamp = moment().format("HH:mm:ss"); // Lấy thời gian hiện tại (giờ:phút:giây)
         const newItem = {
             key: newKey,
-            label: `Hóa đơn ${newKey}`,
+            label: `Hóa đơn (${timestamp})`, // Gán thời gian vào tên hóa đơn
             productList: [],
         };
 
@@ -111,21 +191,47 @@ const SalesPage = () => {
                 if (item.key === currentBill) {
                     const existingProduct = item.productList.find(p => p.key === record.key);
 
+                    let updatedProductList;
                     if (existingProduct) {
-                        alert("Sản phẩm đã có trong giỏ hàng!");
+                        // Tăng số lượng nếu sản phẩm đã có
+                        updatedProductList = item.productList.map(p =>
+                            p.key === record.key ? {...p, quantityInCart: p.quantityInCart + 1} : p
+                        );
                     } else {
-                        const updatedProductList = [...item.productList, {...record, quantityInCart: 1}];
-
-                        return {
-                            ...item,
-                            productList: updatedProductList,
-                            payInfo: {
-                                ...item.payInfo,
-                                amount: calculateTotalAmount({ productList: updatedProductList }),
-                                change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({ productList: updatedProductList })
-                            }
-                        };
+                        // Thêm sản phẩm mới
+                        updatedProductList = [...item.productList, {...record, quantityInCart: 1}];
                     }
+
+                    // Tính tổng tiền mới sau khi thêm sản phẩm
+                    const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
+
+                    // Tìm voucher tốt nhất
+                    const bestVoucher = findBestVoucher(newTotalAmount);
+
+                    // Áp dụng voucher nếu có
+                    const discountAmount = bestVoucher
+                        ? bestVoucher.voucherType === "PERCENT"
+                            ? (newTotalAmount * bestVoucher.discountValue) / 100
+                            : bestVoucher.discountValue
+                        : 0;
+
+                    const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
+
+                    setSelectedVouchers(prev => ({
+                        ...prev,
+                        [currentBill]: bestVoucher
+                    }));
+
+                    return {
+                        ...item,
+                        productList: updatedProductList,
+                        payInfo: {
+                            ...item.payInfo,
+                            amount: newTotalAfterDiscount,
+                            discount: discountAmount,
+                            change: ((item.payInfo?.cashCustomerMoney || 0) + (item.payInfo?.bankCustomerMoney || 0)) - newTotalAfterDiscount
+                        }
+                    };
                 }
                 return item;
             })
@@ -180,8 +286,8 @@ const SalesPage = () => {
                         productList: item.productList.filter(p => p.key !== product.key),
                         payInfo: {
                             ...item.payInfo,
-                            amount: calculateTotalAmount({ productList: item.productList.filter(p => p.key !== product.key) }),
-                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({ productList: item.productList.filter(p => p.key !== product.key) })
+                            amount: calculateTotalAmount({productList: item.productList.filter(p => p.key !== product.key)}),
+                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({productList: item.productList.filter(p => p.key !== product.key)})
                         }
                     }
                     : item
@@ -194,17 +300,23 @@ const SalesPage = () => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const updatedProductList = item.productList.map(p =>
-                        p.key === product.key ? {...p, quantityInCart: value} : p
+                    const updatedProductList = item.productList.map(p => {
+                            if (p.key === product.key) {
+                                if (value >= product.quantity) {
+                                    return {...p, quantityInCart: product.quantity}
+                                }
+                                return {...p, quantityInCart: value}
+                            }
+                            return p
+                        }
                     );
-
                     return {
                         ...item,
                         productList: updatedProductList,
                         payInfo: {
                             ...item.payInfo,
-                            amount: calculateTotalAmount({ productList: updatedProductList }), // Cập nhật tổng tiền
-                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({ productList: updatedProductList })
+                            amount: calculateTotalAmount({productList: updatedProductList}), // Cập nhật tổng tiền
+                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({productList: updatedProductList})
                         }
                     };
                 }
@@ -231,10 +343,203 @@ const SalesPage = () => {
     };
 
     const getAllVoucher = () => {
-            axios.get(`${baseUrl}/api/admin/voucher/with-customer`).then((res) => {
-                setVouchers(res.data.data)
-                console.log(res.data)
+        axios.get(`${baseUrl}/api/admin/voucher/with-customer`).then((res) => {
+            setVouchers(res.data.data)
+            console.log(res.data)
+        })
+    }
+
+
+    const handleOnSelectedVoucher = (voucher) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    // Kiểm tra xem voucher hiện tại có phải voucher đã chọn không
+                    if (selectedVouchers[currentBill]?.id === voucher.id) {
+                        toast.warning("Voucher này đã được chọn!");
+                        return item;
+                    }
+
+                    // Tính lại tổng số tiền gốc của sản phẩm (chưa áp dụng voucher nào)
+                    const originalTotal = calculateTotalAmount(item);
+
+                    // Tính giá trị giảm giá dựa trên tổng số tiền gốc
+                    const discountAmount =
+                        voucher.voucherType === "PERCENT"
+                            ? (originalTotal * voucher.discountValue) / 100
+                            : voucher.discountValue;
+
+                    // Tính số tiền mới sau khi áp dụng voucher
+                    const newTotal = Math.max(0, originalTotal - discountAmount);
+                    return {
+                        ...item,
+                        payInfo: {
+                            ...item.payInfo,
+                            amount: newTotal,
+                            discount: discountAmount,
+                            change: ((item.payInfo?.cashCustomerMoney || 0) + (item.payInfo?.bankCustomerMoney || 0)) - newTotal
+                        }
+                    };
+                }
+                return item;
             })
+        );
+
+        // Cập nhật voucher đã chọn cho hóa đơn hiện tại
+        setSelectedVouchers(prev => ({
+            ...prev,
+            [currentBill]: voucher
+        }));
+    };
+
+
+    const handleCheckIsShipping = (e) => {
+        const isChecked = e.target.checked;
+        console.log(isChecked);
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        isShipping: isChecked
+                    };
+                }
+                return item;
+            })
+        );
+
+    }
+
+    const handleChangePaymentMethod = (value) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+
+                    return {
+                        ...item,
+                        payInfo: {
+                            ...item.payInfo,
+                            paymentMethods: value,
+                            customerMoney: 0,
+                            cashCustomerMoney: 0,
+                            bankCustomerMoney: 0,
+                            change: 0
+                        }
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const handleOnPayment = async () => {
+        try {
+            const bill = items.find(item => item.key === currentBill);
+            if (!bill) {
+                toast.error("Không tìm thấy hóa đơn hiện tại.");
+                return;
+            }
+
+            const payload = {
+                customerId: bill.customerInfo?.id || null,
+                customerMoney: bill.payInfo?.customerMoney || 0,
+                cashCustomerMoney: bill.payInfo?.cashCustomerMoney || 0,
+                bankCustomerMoney: bill.payInfo?.bankCustomerMoney || 0,
+                isCashAndBank: bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney,
+                discountMoney: bill.payInfo?.discount || 0,
+                shipMoney: bill.payInfo?.isShipping ? bill.payInfo?.shipMoney || 0 : 0,
+                totalMoney: bill.payInfo?.amount || 0,
+                moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
+                completeDate: null, // Có thể cập nhật nếu cần
+                confirmDate: new Date().toISOString(),
+                desiredDateOfReceipt: null,
+                shipDate: null,
+                shippingAddressId: bill.customerInfo?.addresses?.[0]?.id || null,
+                numberPhone: bill.customerInfo?.phoneNumber || "",
+                email: bill.customerInfo?.email || "",
+                typeBill: "ONLINE", // Hoặc "OFFLINE" tùy vào logic của bạn
+                notes: "",
+                status: "DA_THANH_TOAN", // Có thể thay đổi trạng thái hóa đơn
+                billDetailRequests: bill.productList.map(product => {
+                    return {
+                        price: product.price,
+                        productDetailId: product.id,
+                        quantity: product.quantityInCart
+                    }
+                }),
+                voucherId: selectedVouchers[currentBill]?.id,
+                isShipping: bill.isShipping || false
+
+            };
+
+            const response = await axios.post(`${baseUrl}/api/admin/bill/create`, payload);
+            console.log(response)
+            if (response.status === 200) {
+                setItems(prevItems =>
+                    prevItems.map(item => {
+                        if (item.key === currentBill) {
+
+                            return {
+                                ...item,
+                                isSuccess: true,
+                                billCode: response.data?.billCode
+                            };
+                        }
+                        return item;
+                    })
+                );
+                toast.success("Tạo hóa đơn thành công!");
+
+            } else {
+                toast.error("Tạo hóa đơn thất bại!");
+            }
+        } catch (error) {
+            console.error("Lỗi khi tạo hóa đơn:", error);
+            toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
+        }
+    };
+
+    const findBestVoucher = (totalAmount) => {
+        if (!vouchers || vouchers.length === 0) return null;
+
+        let bestVoucher = null;
+        let maxDiscount = 0;
+
+        vouchers.forEach(voucher => {
+            const discount =
+                voucher.voucherType === "PERCENT"
+                    ? (totalAmount * voucher.discountValue) / 100
+                    : voucher.discountValue;
+
+            if (discount > maxDiscount) {
+                maxDiscount = discount;
+                bestVoucher = voucher;
+            }
+        });
+
+        return bestVoucher;
+    };
+
+    const handleOnPrintBill = async () => {
+        // GỌI HÀM IN HÓA ĐƠN
+        console.log("In hóa đơn nè")
+        const id = items.find((item) => item.key === currentBill).billCode;
+        console.log(id)
+        if (id) {
+            const result = await printBillService(id)
+            const pdfBlob = new Blob([result], {type: 'application/pdf'});
+            console.log(pdfBlob)
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+
+            const newTab = window.open(pdfUrl, "_blank"); // Mở tab mới với PDF
+            if (newTab) {
+                newTab.onload = () => {
+                    newTab.print(); // Tự động in
+                };
+            } else {
+                alert("Hãy cho phép mở popup để in PDF!");
+            }
+        }
     }
 
     return (
@@ -306,6 +611,8 @@ const SalesPage = () => {
                 <hr/>
                 <Tabs
                     defaultActiveKey="1"
+                    type="editable-card"
+                    onEdit={onEditTab}
                     items={items}
                     onChange={(key) => setCurrentBill(key)}
                 />
@@ -320,10 +627,25 @@ const SalesPage = () => {
             </div>
             <SalePaymentInfo
                 vouchers={vouchers}
+                handleOnSelectedVoucher={handleOnSelectedVoucher}
                 amount={items.find(item => item.key === currentBill)?.payInfo?.amount || 0}
+                isShipping={items.find(item => item.key === currentBill)?.isShipping || false}
                 change={items.find(item => item.key === currentBill)?.payInfo?.change || 0}
-                customerMoney={items.find(item => item.key === currentBill)?.payInfo?.customerMoney || ""}
+                customerMoney={items.find(item => item.key === currentBill)?.payInfo?.customerMoney || 0}
                 handleCustomerMoneyChange={handleCustomerMoneyChange}
+                selectedVouchers={selectedVouchers[currentBill]}
+                discount={items.find(item => item.key === currentBill)?.payInfo?.discount || 0}
+                handleCheckIsShipping={handleCheckIsShipping}
+                paymentMethods={items.find(item => item.key === currentBill)?.payInfo?.paymentMethods || "bank"}
+                handleChangePaymentMethod={handleChangePaymentMethod}
+                handleCashCustomerMoneyChange={handleCashCustomerMoneyChange}
+                handleBankCustomerMoneyChange={handleBankCustomerMoneyChange}
+                bankCustomerMoney={items.find(item => item.key === currentBill)?.payInfo?.bankCustomerMoney || 0}
+                cashCustomerMoney={items.find(item => item.key === currentBill)?.payInfo?.cashCustomerMoney || 0}
+                handleOnPayment={handleOnPayment}
+                isSuccess={items.find(item => item.key === currentBill)?.isSuccess}
+                handleOnPrintBill={handleOnPrintBill}
+                canPayment={items.find((item) => item.key === currentBill)?.canPayment}
             />
         </div>
     );

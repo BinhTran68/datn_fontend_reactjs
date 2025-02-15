@@ -2,7 +2,7 @@ import {Button, Image, InputNumber} from "antd";
 import React from "react";
 import {formatVND} from "../../../helpers/Helpers.js";
 
-export const salesColumns = (onActionClick, handleOnChangeQuantityInCart) => [
+export const salesColumns = (onActionClick, handleOnChangeQuantityInCart, ) => [
     {
         title: 'STT',
         dataIndex: 'stt',
@@ -48,6 +48,7 @@ export const salesColumns = (onActionClick, handleOnChangeQuantityInCart) => [
             <InputNumber
                 min={1}
                 type={"number"}
+                value={quantityInCart}
                 defaultValue={quantityInCart}
                 onChange={(value) => handleOnChangeQuantityInCart(value, record)}
             />

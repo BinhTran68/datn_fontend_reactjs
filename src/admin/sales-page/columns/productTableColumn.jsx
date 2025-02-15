@@ -212,7 +212,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
             }
             return (
                 <>
-                    <Tooltip title="Chỉnh sửa sản phẩm">
+                    <Tooltip title="Chọn sản phẩm">
                         <Button
                             type={"primary"}
                             onClick={() => {
