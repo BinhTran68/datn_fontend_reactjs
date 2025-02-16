@@ -31,8 +31,6 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
             .catch(error => {
                 console.error('Error fetching districts:', error);
             });
-
-        // Call onAddressChange to send data to parent
         onAddressChange(selectedProvince, selectedDistrict, selectedWard, specificAddress);
     },[selectedProvince])
 
@@ -76,6 +74,7 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
         // When component mounts, notify parent with initial values
         onAddressChange(selectedProvince, selectedDistrict, selectedWard, specificAddress);
     }, []);
+
 
     return (
         <div >

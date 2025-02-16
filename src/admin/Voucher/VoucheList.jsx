@@ -41,7 +41,17 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         key: 'voucherType',
         render: (text) => (
             <span>
-                {text === 0 ? 'Công khai' : 'Riêng tư'}
+                {text}
+            </span>
+        ),
+    },
+    {
+        title: 'Loại giảm giá',
+        dataIndex: 'discountType',
+        key: 'discountType',
+        render: (text) => (
+            <span>
+                {text}
             </span>
         ),
     },
@@ -55,12 +65,12 @@ const columns = (handleEdit, handleDelete, handleDetail) => [
         dataIndex: 'discountValue',
         key: 'discountValue',
         render: (text, record) => {
-            console.log("record.discountValueType:", record.discountValueType); // Debug
+            console.log("record.discountType:", record.discountType); // Debug
             console.log("text:", text); // Debug
 
             return (
                 <span>
-                    {record.discountValueType === '%'
+                    {record.discountType === 'PERCENT'
                         ? `${record.discountValue} %`
                         : `${record.discountValue} đ`}
                 </span>
@@ -509,16 +519,16 @@ const VoucherList = () => {
         <Form.Item
             name="discountValue"
             noStyle
-            dependencies={["discountValueType"]}
+            dependencies={["discountType"]}
             rules={[
                 ({ getFieldValue }) => ({
                     validator(_, value) {
                         const num = Number(value);
-                        const type = getFieldValue("discountValueType");
+                        const type = getFieldValue("discountType");
 
                         if (!value) return Promise.reject(new Error('Không được bỏ trống'));
 
-                        if (type === "%" && (!Number.isInteger(num) || num < 1 || num > 80)) {
+                        if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 80)) {
                             return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 80'));
                         }
 
@@ -534,10 +544,10 @@ const VoucherList = () => {
             <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
         </Form.Item>
 
-        <Form.Item name="discountValueType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+        <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
             <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
-                <Option value="%">%</Option>
-                <Option value="đ">đ</Option>
+                <Option value="PERCENT">%</Option>
+                <Option value="MONEY">đ</Option>
             </Select>
         </Form.Item>
     </Input.Group>
@@ -627,8 +637,8 @@ const VoucherList = () => {
                         </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Radio.Group onChange={onChange} value={voucherType} disabled>
-                                <Radio value={0}>Công khai</Radio>
-                                <Radio value={1}>Riêng tư</Radio>
+                                <Radio value={"PUBLIC"}>Công khai</Radio>
+                                <Radio value={"PRIVATE"}>Riêng tư</Radio>
                             </Radio.Group>
                         </Form.Item>
                     </Form>

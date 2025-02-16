@@ -5,12 +5,19 @@ import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
 import {Typography} from "antd";
 import voucher_image from "../../../../public/img/voucher_image.png"
-import {convertDate, formatVND} from "../../../helpers/Helpers.js";
+import {convertDate, formatVND, generateAddressString} from "../../../helpers/Helpers.js";
 import {SiCheckio} from "react-icons/si";
 import {COLORS} from "../../../constants/constants.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
+import {  Radio } from 'antd';
 
 const {Text} = Typography;
+
+const style = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+};
 
 
 const SalePaymentInfo = ({
@@ -33,10 +40,16 @@ const SalePaymentInfo = ({
                              handleOnPayment,
                              isSuccess,
                              handleOnPrintBill,
-    canPayment
+                             canPayment,
+                             onAddressChange,
+                             onAddressSelected,
+                             customerAddresses,
+                            addressShipping
                          }) => {
 
+
     return (
+
         <>
             <Card>
                 <h3>Thông tin thanh toán</h3>
@@ -96,7 +109,7 @@ const SalePaymentInfo = ({
                                                                     </div>
                                                                     <div>
                                                                         Gía trị giảm
-                                                                        : {item?.discountValue && item.voucherType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
+                                                                        : {item?.discountValue && item.discountType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
                                                                     </div>
                                                                 </div>
                                                             }
@@ -112,12 +125,11 @@ const SalePaymentInfo = ({
                         </div>
                         <Form layout="vertical" onFinish={handleOnPayment}>
                             <Form.Item label="Tạm tính">
-                                <Text strong>{formatVND((amount +  discount))}</Text>
+                                <Text strong>{formatVND((amount + discount))}</Text>
                             </Form.Item>
                             <Form.Item label="Giảm giá">
                                 <Text strong>{formatVND(discount)}</Text>
                             </Form.Item>
-
                             <Form.Item label="Tổng tiền">
                                 <Text strong style={{color: "red"}}>{formatVND(amount)}</Text>
                             </Form.Item>
@@ -164,7 +176,6 @@ const SalePaymentInfo = ({
                                 />
                             </Form.Item>
 
-
                             {customerMoney < amount && (
                                 <Text type="danger">Vui lòng nhập đủ tiền khách đưa!</Text>
                             )}
@@ -177,6 +188,27 @@ const SalePaymentInfo = ({
                                     Giao hàng
                                 </Checkbox>
                             </Form.Item>
+
+                            <Form.Item name={"address"}>
+                                <Radio.Group
+                                    style={style}
+                                    onChange={onAddressSelected}
+                                    value={addressShipping}
+                                    options={customerAddresses}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Phí vận chuyển"
+                            >
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="Nhập số tiền"
+                                    onChange={handleCashCustomerMoneyChange}
+                                    value={parseInt(cashCustomerMoney)}
+                                    suffix="VNĐ"
+                                />
+                            </Form.Item>
                             <Form.Item hidden={isSuccess}>
                                 <Button onClick={handleOnPayment} type="primary" block
                                         disabled={!canPayment}>
@@ -185,10 +217,10 @@ const SalePaymentInfo = ({
                             </Form.Item>
 
                             <Form.Item hidden={!isSuccess}>
-                                    <Button onClick={handleOnPrintBill} type="primary"
-                                            block >
-                                        In hóa đơn
-                                    </Button>
+                                <Button onClick={handleOnPrintBill} type="primary"
+                                        block>
+                                    In hóa đơn
+                                </Button>
                             </Form.Item>
 
                         </Form>

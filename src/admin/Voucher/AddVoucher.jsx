@@ -52,7 +52,7 @@ const columnsCustomers = [
 
 const AddVoucher = () => {
     const [form] = Form.useForm();
-    const [value, setValue] = useState(1);
+    const [value, setValue] = useState("PUBLIC");
     const [customers, setCustomers] = useState([]);
     const [error, setError] = useState(null);
     const [showTable, setShowTable] = useState(false);
@@ -102,7 +102,7 @@ const AddVoucher = () => {
     };
 
     useEffect(() => {
-        if (value === 1) {
+        if (value === "PRIVATE") {
             // Khi chọn "Riêng tư", cập nhật số lượng bằng số lượng khách hàng được chọn
             form.setFieldsValue({ quantity: selectedCustomers.length });
         }
@@ -132,7 +132,7 @@ const AddVoucher = () => {
         const selectedValue = e.target.value;
         setValue(selectedValue);
 
-        if (selectedValue === 1) {
+        if (selectedValue === "PRIVATE") {
             setShowTable(true); // Hiển thị bảng khi chọn "Riêng tư"
             fetchCustomers(); // Gọi API để lấy danh sách khách hàng
         } else {
@@ -160,7 +160,7 @@ const AddVoucher = () => {
 
             const requestData = {
                 ...values,
-                loaivoucher: value, // Truyền loại voucher (1: công khai, 2: riêng tư)
+                voucherType: value, // Truyền loại voucher (1: công khai, 2: riêng tư)
                 gmailkh: selectedEmails, // Gửi danh sách email thay vì ID khách hàng
             };
 
@@ -202,7 +202,7 @@ const AddVoucher = () => {
                                 },
                             }),
                         ]}>
-                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled={value === 1} />
+                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled={value === "PRIVATE"} />
                         </Form.Item>
 
                         <Form.Item label="Giá trị giảm" required>
@@ -210,16 +210,16 @@ const AddVoucher = () => {
         <Form.Item
             name="discountValue"
             noStyle
-            dependencies={["discountValueType"]}
+            dependencies={["discountType"]}
             rules={[
                 ({ getFieldValue }) => ({
                     validator(_, value) {
                         const num = Number(value);
-                        const type = getFieldValue("discountValueType");
+                        const type = getFieldValue("discountType");
 
                         if (!value) return Promise.reject(new Error('Không được bỏ trống'));
 
-                        if (type === "%" && (!Number.isInteger(num) || num < 1 || num > 80)) {
+                        if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 80)) {
                             return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 80'));
                         }
 
@@ -235,10 +235,10 @@ const AddVoucher = () => {
             <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
         </Form.Item>
 
-        <Form.Item name="discountValueType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+        <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
             <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
-                <Option value="%">%</Option>
-                <Option value="đ">đ</Option>
+                <Option  value="PERCENT">%</Option>
+                <Option value="MONEY">đ</Option>
             </Select>
         </Form.Item>
     </Input.Group>
@@ -328,14 +328,10 @@ const AddVoucher = () => {
                         </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Radio.Group onChange={onChange} value={value}>
-                                <Radio value={0}>Công khai</Radio>
-                                <Radio value={1}>Riêng tư</Radio>
+                                <Radio  checked={true} value={"PUBLIC"}>Công khai</Radio>
+                                <Radio value={"PRIVATE"}>Riêng tư</Radio>
                             </Radio.Group>
                         </Form.Item>
-
-
-
-
                     </Form>
                     {/* <Link to={"/admin/vouchelist"} > */}
                     <Button type="primary"

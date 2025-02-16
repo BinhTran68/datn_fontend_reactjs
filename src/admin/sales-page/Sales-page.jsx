@@ -17,7 +17,7 @@ import axios from "axios";
 import moment from "moment/moment.js";
 import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
-import {baseUrl} from "../../helpers/Helpers.js";
+import {baseUrl, generateAddressString} from "../../helpers/Helpers.js";
 import {printBillService} from "../bill/services/printBillService.js";
 
 const SalesPage = () => {
@@ -38,7 +38,9 @@ const SalesPage = () => {
             closable: true,
             billCode: null,
             isShipping: false,
-            shippingInfo: null
+            shippingInfo: null,
+            customerAddresses: [],
+            addressShipping: null
         },
     ]);
 
@@ -210,7 +212,7 @@ const SalesPage = () => {
 
                     // Áp dụng voucher nếu có
                     const discountAmount = bestVoucher
-                        ? bestVoucher.voucherType === "PERCENT"
+                        ? bestVoucher.discountType === "PERCENT"
                             ? (newTotalAmount * bestVoucher.discountValue) / 100
                             : bestVoucher.discountValue
                         : 0;
@@ -325,15 +327,38 @@ const SalesPage = () => {
         );
     };
 
-    const onCustomerSelect = (customer) => {
-        console.log("customer nhận được", customer)
-        setItems(prevItems => prevItems.map((item) => {
-            if (item.key === currentBill) {
-                return {...item, customerInfo: customer}
-            }
-            return item;
-        }))
+    const initShipping = {
+        provinceId: null,
+        districtId: null,
+        wardId: null,
+        specificAddress: null,
     }
+
+    const onCustomerSelect = async (customer) => {
+        // Hàm trợ giúp để lấy các trường địa chỉ một cách an toàn
+
+        let customerAddresses = await Promise.all(customer?.addresses?.map(async (ca) => {
+            return {
+                value: ca.id,
+                label: await generateAddressString(ca.provinceId, ca.districtId, ca.wardId, ca.specificAddress),
+            };
+        }));
+        customerAddresses.push({
+            value: "other",
+            label: "Khác"
+        })
+        // Cập nhật thông tin khách hàng và địa chỉ giao hàng cho hóa đơn hiện tại
+        setItems((prevItems) =>
+            prevItems.map((item) =>
+                // Chỉ cập nhật mục có key trùng với currentBill
+                item.key === currentBill
+                    ? { ...item, customerInfo: customer,
+                        customerAddresses: customerAddresses}
+                    : item // Các mục khác giữ nguyên
+            )
+        );
+    };
+
 
     // Hàm tính tổng tiền giỏ hàng
     const calculateTotalAmount = (bill) => {
@@ -343,7 +368,7 @@ const SalesPage = () => {
     };
 
     const getAllVoucher = () => {
-        axios.get(`${baseUrl}/api/admin/voucher/with-customer`).then((res) => {
+        axios.get(`${baseUrl}/api/admin/voucher/hien`).then((res) => {
             setVouchers(res.data.data)
             console.log(res.data)
         })
@@ -365,7 +390,7 @@ const SalesPage = () => {
 
                     // Tính giá trị giảm giá dựa trên tổng số tiền gốc
                     const discountAmount =
-                        voucher.voucherType === "PERCENT"
+                        voucher.discountType === "PERCENT"
                             ? (originalTotal * voucher.discountValue) / 100
                             : voucher.discountValue;
 
@@ -473,7 +498,6 @@ const SalesPage = () => {
             };
 
             const response = await axios.post(`${baseUrl}/api/admin/bill/create`, payload);
-            console.log(response)
             if (response.status === 200) {
                 setItems(prevItems =>
                     prevItems.map(item => {
@@ -507,7 +531,7 @@ const SalesPage = () => {
 
         vouchers.forEach(voucher => {
             const discount =
-                voucher.voucherType === "PERCENT"
+                voucher.discountType === "PERCENT"
                     ? (totalAmount * voucher.discountValue) / 100
                     : voucher.discountValue;
 
@@ -522,7 +546,6 @@ const SalesPage = () => {
 
     const handleOnPrintBill = async () => {
         // GỌI HÀM IN HÓA ĐƠN
-        console.log("In hóa đơn nè")
         const id = items.find((item) => item.key === currentBill).billCode;
         console.log(id)
         if (id) {
@@ -540,6 +563,26 @@ const SalesPage = () => {
                 alert("Hãy cho phép mở popup để in PDF!");
             }
         }
+    }
+
+    const onAddressChange = (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+
+    }
+
+    const onAddressSelected = (e) => {
+        const addressId = e.target.value
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+
+                    return {
+                        ...item,
+                        addressShipping: addressId
+                    };
+                }
+                return item;
+            })
+        );
     }
 
     return (
@@ -646,6 +689,10 @@ const SalesPage = () => {
                 isSuccess={items.find(item => item.key === currentBill)?.isSuccess}
                 handleOnPrintBill={handleOnPrintBill}
                 canPayment={items.find((item) => item.key === currentBill)?.canPayment}
+                addressShipping={items.find((item) => item.key === currentBill)?.addressShipping}
+                onAddressChange={onAddressChange}
+                customerAddresses={items.find((item) => item.key === currentBill)?.customerAddresses}
+                onAddressSelected={onAddressSelected}
             />
         </div>
     );
