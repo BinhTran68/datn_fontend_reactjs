@@ -34,6 +34,9 @@ import Register from "../auth/auth/Register.jsx";
 import PayMent from "../client/page/cart/PayMent.jsx";
 import { i } from "framer-motion/client";
 
+// luồng bán hàng client
+import ProductDetail from "../client/page/products/ProductDetail.jsx";
+
 
 
 
@@ -96,6 +99,11 @@ const CustomerRouters = {
     {
       path: "admin/trademark",
       element: <RoleRedirect element={<Trademark />} />,
+    },
+    // luồng bán hàng
+    {
+      path: "products/product-detail",
+      element: <RoleRedirect element={<ProductDetail />} />,
     },
   
   

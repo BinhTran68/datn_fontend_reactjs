@@ -336,6 +336,7 @@ const ModalEditSanPham = ({
 
   return (
     <Modal
+      style={{ top: 20 }}
       open={isOpen}
       title={
         <span className="flex">
@@ -355,8 +356,7 @@ const ModalEditSanPham = ({
           onClick={handleFormSubmit((data) => {
             setCleanUpImage([]); // Đặt giá trị cho cleanUpImage
             handleSubmit(getProductDetail?.id, data);
-            console.warn("du lieu gửi tới sẻver",data);
-            
+            console.warn("du lieu gửi tới sẻver", data);
           })}
         >
           Xác nhận

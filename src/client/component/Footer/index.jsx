@@ -12,16 +12,15 @@ import { AiFillTikTok } from "react-icons/ai";
 function Home() {
   return (
     <>
-      <div className={clsx(stype.footer, "container  border-top border-2 p-3")}>
-        <div className="d-flex gap-3 justify-content-between">
-          <div
-            className={clsx(
-              stype.contact,
-              "col-6 d-flex flex-column justify-content-start"
-            )}
-          >
+      <div className={clsx(stype.footer, "border-top border-2 p-3")}>
+        <div className="container d-flex gap-3 justify-content-between">
+          <div className={clsx(stype.contact, "col-6 d-flex flex-column ")}>
             <div>
-              <img src="/img/logo.png" alt="mieu-ta-hinh-anh" />
+              <img
+                src="/img/thehands.png"
+                alt="mieu-ta-hinh-anh"
+                className="img-fluid logo-icon p-0"
+              />
             </div>
             <div>
               <p>
@@ -36,7 +35,7 @@ function Home() {
               </div>
               <div className="d-flex align-items-center">
                 <div className="col-1">
-                  <FaLocationDot size={23}/>
+                  <FaLocationDot size={23} />
                 </div>
                 <div className="col-11">
                   Cơ sở 1: 561 Nguyễn Đình Chiểu Phường 2 - Quận3 - TP. Hồ Chí
@@ -45,13 +44,13 @@ function Home() {
               </div>
               <div className="d-flex align-items-center">
                 <div className="col-1">
-                  <FaPhoneAlt size={23}/>
+                  <FaPhoneAlt size={23} />
                 </div>
                 <div className="col-10">0961302699</div>
               </div>
               <div className="d-flex align-items-center">
                 <div className="col-1">
-                 <IoMail size={23}/>
+                  <IoMail size={23} />
                 </div>
                 <div className="col-10">duycongib192@gmail.com</div>
               </div>
@@ -96,18 +95,17 @@ function Home() {
                 </div>
                 <div className="col-2 p-1">
                   <a>
-                  <FaSquareFacebook size={27} />
-
+                    <FaSquareFacebook size={27} />
                   </a>
                 </div>
                 <div className="col-2 p-1">
                   <a>
-                    <IoLogoYoutube size={27}/>
+                    <IoLogoYoutube size={27} />
                   </a>
                 </div>
                 <div className="col-2 p-1">
                   <a>
-                    <AiFillTikTok size={30}/>
+                    <AiFillTikTok size={30} />
                   </a>
                 </div>
               </div>
