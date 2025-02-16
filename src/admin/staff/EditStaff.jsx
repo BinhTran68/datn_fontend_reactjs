@@ -187,7 +187,7 @@ const EditStaff = () => {
                 form.setFieldsValue({
                     ...staffData,
                     dateBirth: moment(staffData.dateBirth, 'YYYY-MM-DDTHH:mm:ss'),
-                    status: staffData.status === 'Kích hoạt' ? 0 : 1,
+                    status: staffData.status === 'Kích hoạt' ? 1 : 0,
                 });
 
                 if (staffData.avatar) {
@@ -253,6 +253,7 @@ const EditStaff = () => {
             dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
             status: values.status,
             avatar: avatarUrl,
+            password: values.password,
         };
 
         axios.put(`http://localhost:8080/api/admin/staff/update/${staff.id}`, updatedData)
@@ -275,7 +276,7 @@ const EditStaff = () => {
             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Chỉnh sửa nhân viên</h2>
 
             <Row gutter={16}>
-                <Col span={6}>
+                {/* <Col span={6}>
                     <Card>
                         <Form.Item label="Ảnh đại diện">
                             <Upload
@@ -289,7 +290,7 @@ const EditStaff = () => {
                             </Upload>
                         </Form.Item>
                     </Card>
-                </Col>
+                </Col> */}
 
                 <Col span={18}>
                     <Card>
@@ -368,9 +369,17 @@ const EditStaff = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                                     >
                                         <Select>
-                                            <Option value="0">Kích hoạt</Option>
-                                            <Option value="1">Khóa</Option>
+                                            <Option value={0}>Kích hoạt</Option>
+                                            <Option value={1}>Khóa</Option>
                                         </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="password"
+                                        label="Mật khẩu"
+                                    >
+                                        <Password />
                                     </Form.Item>
                                 </Col>
                             </Row>
