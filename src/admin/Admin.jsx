@@ -76,7 +76,7 @@ function Admin() {
         className="sidebar min-vh-100"
       >
         <div className={"d-flex justify-content-center mt-5"}>
-          <img width={145} src={img} alt="" />
+          <img width={200} src={img} alt="" />
         </div>
         <MenuList darkTheme={darkTheme} />
         {/*<ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />*/}
@@ -129,9 +129,9 @@ function Admin() {
               <Link to="/auth/login-admin">
                 <Button
                    style={{
-                    backgroundColor: `${COLORS.backgroundcolor}`,
-                    borderColor: "#4096FF",
-                    color: `${COLORS.color}`,
+                   
+                    
+
                   }}
                   type="primary"
                 >

@@ -61,6 +61,7 @@ import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
 import { COLORS } from "../../../constants/constants..js";
 import { Link, useParams } from "react-router-dom";
+import {FiEye} from "react-icons/fi";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -662,7 +663,7 @@ const GetProductDetail = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         fontSize: "1.5rem",
                       }}
                     />
@@ -686,7 +687,7 @@ const GetProductDetail = () => {
 
               <Tooltip title="Xem chi tiết sản phẩm">
                 <Link to={`${record.id}`}>
-                  <Button icon={<FaEye color="green" size={20} />} />
+                  <Button icon={<FiEye  />} />
                 </Link>
               </Tooltip>
             </Row>
@@ -716,9 +717,9 @@ const GetProductDetail = () => {
               icon={<SearchOutlined />}
               // onClick={searchName}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -1021,9 +1022,9 @@ const GetProductDetail = () => {
           {/* <Link to={"add"}>
               <Button
                 style={{
-                  backgroundColor: `${COLORS.backgroundcolor}`,
-                  borderColor: "#4096FF",
-                  color: `${COLORS.color}`,
+                 
+                  
+                  
                 }}
                 type="primary"
                 onClick={showDrawer}

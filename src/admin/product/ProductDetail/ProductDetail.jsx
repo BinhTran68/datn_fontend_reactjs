@@ -645,7 +645,7 @@ const Product = () => {
                   icon={
                     <FaEdit
                       style={{
-                        color: "green",
+                        color: `${COLORS.primary}`,
                         fontSize: "1.5rem",
                       }}
                     />
@@ -698,9 +698,9 @@ const Product = () => {
               icon={<SearchOutlined />}
               // onClick={searchName}
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
             >
               Tìm kiếm
@@ -1002,9 +1002,9 @@ const Product = () => {
           {/* <Link to={"add"}>
             <Button
               style={{
-                backgroundColor: `${COLORS.backgroundcolor}`,
-                borderColor: "#4096FF",
-                color: `${COLORS.color}`,
+               
+                
+                
               }}
               type="primary"
               onClick={showDrawer}
@@ -1016,9 +1016,9 @@ const Product = () => {
 
           <Button
             style={{
-              backgroundColor: `${COLORS.backgroundcolor}`,
-              borderColor: "#4096FF",
-              color: `${COLORS.color}`,
+             
+              
+              
             }}
             type="primary"
             onClick={exportToExcel}
