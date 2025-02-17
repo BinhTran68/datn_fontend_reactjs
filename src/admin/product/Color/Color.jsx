@@ -42,7 +42,7 @@ import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Color = () => {
   const { Title } = Typography;
@@ -263,10 +263,32 @@ const Color = () => {
       ),
     },
     {
-      title: "Tên Màu",
+      title: "Màu sắc",
       dataIndex: "colorName",
       key: "colorName",
-      width: "20rem",
+      render: (text, record) => {
+        // Tìm mã màu tương ứng
+        if (!record.id) return null;
+
+        const colorCode = record.code? record.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+    
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "1rem", // Đường kính hình tròn
+                height: "1rem", // Đường kính hình tròn
+                borderRadius: "50%", // Tạo hình tròn
+                backgroundColor: colorCode, // Mã màu nền
+                marginRight: "8px",
+                border: "1px solid gray", 
+
+              }}
+            />
+            <span>{record.colorName}</span> 
+          </div>
+        );
+      },
     },
     {
       title: "Ngày cập nhật",
@@ -328,7 +350,7 @@ const Color = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Màu sắc này kh"
@@ -340,7 +362,7 @@ const Color = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );

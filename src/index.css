@@ -73,7 +73,7 @@ button:focus-visible {
   }
 }
 td.ant-table-cell {
-  padding: 8px !important; /* Sử dụng !important để ưu tiên CSS */
+  padding: 8px 3px !important; /* Sử dụng !important để ưu tiên CSS */
 }
 
 

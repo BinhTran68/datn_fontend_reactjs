@@ -22,6 +22,8 @@ import {
   notification,
   Tooltip,
 } from "antd";
+import { TiExport } from "react-icons/ti";
+
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ModalEditSanPham from "./ModalEditSanPham.jsx";
@@ -34,6 +36,7 @@ import {
   useCallback,
   useRef,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import axios from "axios";
 import {
@@ -54,18 +57,21 @@ import {
   createProductDetail,
   filterData,
   createProductDetailList,
+  getAllProductDetailExportData,
 } from "./ApiProductDetail.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
 import { FaEdit } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Product = () => {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [filterActice, setFilterActice] = useState(false);
   const [products, setProducts] = useState([]);
+  const [exportdata, setexportdata] = useState([]);
+
   const [selectedProductDetail, setSelectedProductDetail] = useState();
 
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
@@ -126,15 +132,37 @@ const Product = () => {
     }
   }, [requestFilter]); // Theo dõi sự thay đổi của requestFilter
 
+  const [isExporting, setIsExporting] = useState(false); // Thêm flag kiểm soát xuất dữ liệu
+
+  useEffect(() => {
+    if (exportdata.length > 0 && isExporting) {
+      exportToExcel(); // Chỉ gọi khi có dữ liệu và flag isExporting là true
+      setIsExporting(false); // Reset lại trạng thái xuất sau khi đã xuất
+      fetchProductsData();
+    }
+  }, [exportdata, isExporting]); // Theo dõi exportdata và isExporting
+
+  const handleExportClick = async () => {
+    try {
+      const response = await getAllProductDetailExportData();
+      console.log("Response from API:", response);
+
+      setexportdata(response.data); // Cập nhật state exportdata
+      setIsExporting(true); // Đánh dấu là đang xuất dữ liệu
+    } catch (error) {
+      console.error("Error exporting data:", error);
+    }
+  };
+
   // exporrt excel
   const exportToExcel = () => {
-    if (products.length === 0) {
+    if (exportdata.length === 0) {
       message.warning("Không có dữ liệu để xuất!");
       return;
     }
 
     // Chỉ chọn những trường quan trọng cần xuất ra Excel
-    const exportData = products.map((item) => ({
+    const exportData = exportdata.map((item) => ({
       ID: item.id,
       "Mã Code": item.code,
       "Tên Sản Phẩm": item.productName,
@@ -185,6 +213,20 @@ const Product = () => {
       console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
       setProducts(response.data);
       setTotalProducts(response.total);
+      setexportdata(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const ExportAllData = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllProductDetailExportData();
+      console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
+      // setProducts(response.data);
+      setexportdata(response.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -198,6 +240,7 @@ const Product = () => {
       console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
       setProducts(response.data);
       setTotalProducts(response.total);
+      setexportdata(response.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -354,6 +397,9 @@ const Product = () => {
     },
     [] // Dependency list để tránh re-define hàm không cần thiết
   );
+  const memoizedProductDetail = useMemo(() => {
+    return selectedProductDetail; // Hoặc tính toán giá trị khác nếu cần
+  }, [selectedProductDetail]);
   const handleConfirmUpdate = async (id, req) => {
     // setLoading(true);
     console.log(id + "đay la id");
@@ -415,7 +461,6 @@ const Product = () => {
           width: "20px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -431,7 +476,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -449,7 +493,6 @@ const Product = () => {
           width: "200px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -466,7 +509,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -476,18 +518,27 @@ const Product = () => {
     {
       title: "Màu sắc",
       dataIndex: "colorName",
-      key: "productName",
-      onCell: () => ({
-        style: {
-          width: "100px",
-          height: "50px",
-          lineHeight: "50px",
-          lineHeight: "50px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        },
-      }),
+      key: "colorName",
+      render: (text, record) => {
+        // Tìm mã màu tương ứng
+        const colorData = dataSelectColor.find(color => color.colorName === record.colorName);
+        const colorCode = colorData ? colorData.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+    
+        return (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "1rem", // Đường kính hình tròn
+                height: "1rem", // Đường kính hình tròn
+                borderRadius: "50%", // Tạo hình tròn
+                backgroundColor: colorCode, // Mã màu nền
+                marginRight: "8px",
+              }}
+            />
+            <span style={{ color: colorCode }}>{text}</span> 
+          </div>
+        );
+      },
     },
     {
       title: "Chất liệu",
@@ -497,7 +548,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -513,7 +563,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -531,7 +580,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -548,7 +596,6 @@ const Product = () => {
           width: "100px",
           height: "50px",
           lineHeight: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -563,7 +610,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -586,7 +632,6 @@ const Product = () => {
         style: {
           width: "100px",
           height: "50px",
-          lineHeight: "50px",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -668,7 +713,18 @@ const Product = () => {
               </Popconfirm> */}
               <Tooltip title="Xem chi tiết sản phẩm">
                 <Link to={`${record.id}`}>
-                  <Button icon={<FaEye color="green" size={20} />} />
+                  <Button
+                    icon={
+                      <FaEye
+                        color="green"
+                        style={{
+                          color: `${COLORS.primary}`,
+                          fontSize: "1.5rem",
+                        }}
+                        size={20}
+                      />
+                    }
+                  />
                 </Link>
               </Tooltip>
             </Row>
@@ -697,11 +753,7 @@ const Product = () => {
               type="primary"
               icon={<SearchOutlined />}
               // onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -733,7 +785,7 @@ const Product = () => {
                   }));
                 }}
                 options={[
-                  { value: "", label: "Tất cả sản phẩm" },
+                  { value: null, label: "Tất cả sản phẩm" },
                   ...dataSelectProduct?.map((p) => ({
                     value: p.productName,
                     label: p.productName,
@@ -766,77 +818,10 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả thương hiệu" },
+                  { value: null, label: "Tất cả thương hiệu" },
                   ...dataSelectBrand?.map((p) => ({
                     value: p.brandName,
                     label: p.brandName,
-                  })),
-                ]}
-              />
-            </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả giới tính"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectGender.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    genderName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả giới tính" },
-                  ...dataSelectGender?.map((g) => ({
-                    value: g.genderName,
-                    label: g.genderName,
-                  })),
-                ]}
-              />
-            </Col>
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả chất liệu"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectMaterial.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    materialName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(requestFilter);
-                }}
-                options={[
-                  { value: "", label: "Tất cả chất liệu" },
-                  ...dataSelectMaterial?.map((m) => ({
-                    value: m.materialName,
-                    label: m.materialName,
                   })),
                 ]}
               />
@@ -866,7 +851,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả loại giày" },
+                  { value: null, label: "Tất cả loại giày" },
                   ...dataSelectType?.map((g) => ({
                     value: g.typeName,
                     label: g.typeName,
@@ -874,42 +859,6 @@ const Product = () => {
                 ]}
               />
             </Col>
-
-            <Col>
-              <Select
-                showSearch
-                style={{
-                  width: "10rem",
-                }}
-                placeholder="Tất cả loại đế giày"
-                optionFilterProp="label"
-                // filterSort={(optionA, optionB) =>
-                //   (optionA?.label ?? "")
-                //     .toLowerCase()
-                //     .localeCompare((optionB?.label ?? "").toLowerCase())
-                // }
-
-                value={dataSelectSole.id}
-                onChange={(value) => {
-                  setFilterActice(true);
-                  setPagination({ current: 1, pageSize: pagination.pageSize });
-                  setRequestFilter((prev) => ({
-                    ...prev,
-                    soleName: value, // Cập nhật giá trị nhập vào
-                  }));
-                  console.log(request);
-                }}
-                options={[
-                  { value: "", label: "Tất cả loại đế giày" },
-                  ...dataSelectSole?.map((s) => ({
-                    value: s.soleName,
-                    label: s.soleName,
-                  })),
-                ]}
-              />
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
             <Col>
               <Select
                 showSearch
@@ -935,7 +884,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả màu sắc" },
+                  { value: null, label: "Tất cả màu sắc" },
                   ...dataSelectColor?.map((c) => ({
                     value: c.colorName,
                     label: (
@@ -969,6 +918,39 @@ const Product = () => {
                 style={{
                   width: "10rem",
                 }}
+                placeholder="Tất cả chất liệu"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectMaterial.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    materialName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: null, label: "Tất cả chất liệu" },
+                  ...dataSelectMaterial?.map((m) => ({
+                    value: m.materialName,
+                    label: m.materialName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
                 placeholder="Tất cả kích cỡ"
                 optionFilterProp="label"
                 // filterSort={(optionA, optionB) =>
@@ -988,7 +970,7 @@ const Product = () => {
                   console.log(requestFilter);
                 }}
                 options={[
-                  { value: "", label: "Tất cả kích cỡ" },
+                  { value: null, label: "Tất cả kích cỡ" },
                   ...dataSelectSize?.map((s) => ({
                     value: s.sizeName,
                     label: s.sizeName,
@@ -996,7 +978,74 @@ const Product = () => {
                 ]}
               />
             </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả loại đế giày"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectSole.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    soleName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(request);
+                }}
+                options={[
+                  { value: null, label: "Tất cả loại đế giày" },
+                  ...dataSelectSole?.map((s) => ({
+                    value: s.soleName,
+                    label: s.soleName,
+                  })),
+                ]}
+              />
+            </Col>
+            <Col>
+              <Select
+                showSearch
+                style={{
+                  width: "10rem",
+                }}
+                placeholder="Tất cả giới tính"
+                optionFilterProp="label"
+                // filterSort={(optionA, optionB) =>
+                //   (optionA?.label ?? "")
+                //     .toLowerCase()
+                //     .localeCompare((optionB?.label ?? "").toLowerCase())
+                // }
+
+                value={dataSelectGender.id}
+                onChange={(value) => {
+                  setFilterActice(true);
+                  setPagination({ current: 1, pageSize: pagination.pageSize });
+                  setRequestFilter((prev) => ({
+                    ...prev,
+                    genderName: value, // Cập nhật giá trị nhập vào
+                  }));
+                  console.log(requestFilter);
+                }}
+                options={[
+                  { value: null, label: "Tất cả giới tính" },
+                  ...dataSelectGender?.map((g) => ({
+                    value: g.genderName,
+                    label: g.genderName,
+                  })),
+                ]}
+              />
+            </Col>
           </Row>
+          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}></Row>
         </Row>
         <Row>
           {/* <Link to={"add"}>
@@ -1014,25 +1063,41 @@ const Product = () => {
             </Button>
           </Link> */}
 
-          <Button
-            style={{
-             
-              
-              
+          <Popconfirm
+            title="Chọn kiểu xuất"
+            placement="right"
+            onConfirm={handleExportClick}
+            onCancel={exportToExcel}
+            okText="Xuất tất cả sản phẩm"
+            cancelText="Xuất trang hiện tại"
+            okButtonProps={{
+              type: "primary",
+              // style: {
+              //   backgroundColor: `${COLORS.backgroundcolor}`,
+              //   color: `${COLORS.color}`,
+              //   border: "none",
+              //   padding: "10px 20px",
+              // },
             }}
-            type="primary"
-            onClick={exportToExcel}
-            icon={<PlusOutlined />}
+            cancelButtonProps={{
+              type: "primary",
+            }}
           >
-            Xuất excel
-          </Button>
+            <Button
+              type="primary"
+              // onClick={handleExportClick}
+            >
+              <TiExport size={22} />
+              Xuất Excel
+            </Button>
+          </Popconfirm>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);
             }}
             isOpen={openUpdate}
             title={"Sản phẩm"}
-            getProductDetail={selectedProductDetail}
+            getProductDetail={memoizedProductDetail}
             handleSubmit={handleConfirmUpdate}
             dataType={dataSelectType}
             dataBrand={dataSelectBrand}

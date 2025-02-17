@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { COLORS } from "../../../constants/constants.";
+import { COLORS } from "../../../constants/constants";
 import { BiDownload } from "react-icons/bi";
 import { IoMdDownload } from "react-icons/io";
 
@@ -129,8 +129,13 @@ const Detail = () => {
           </span>
         </Descriptions.Item>
         <Descriptions.Item label="Mô tả">
-          {product.description || "Không có mô tả"}
+          <div
+            dangerouslySetInnerHTML={{
+              __html: product.description || "Không có mô tả",
+            }}
+          />
         </Descriptions.Item>
+
         <Descriptions.Item label="QR">
           <Row>
             <Col span={24}>
@@ -148,14 +153,12 @@ const Detail = () => {
                 title="Tải xuống"
                 description="Bạn tải qr về máy"
                 placement="rightBottom"
-
                 okText="Xác nhận"
                 cancelText="Hủy"
                 onConfirm={downloadQRCodeCanvas}
               >
                 <Button
                   type="primary"
-                  
                   style={{
                    
                     
@@ -174,11 +177,11 @@ const Detail = () => {
           {/* {product.description || "Không có mô tả"} */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <Image.PreviewGroup>
-              {images.map((src, index) => (
+              {product.image?.map((item, index) => (
                 <Image
                   key={index}
                   width={90}
-                  src={src}
+                  src={item.url}
                   alt={`Ảnh ${index + 1}`}
                 />
               ))}

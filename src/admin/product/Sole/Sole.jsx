@@ -17,7 +17,7 @@ import {
   Grid,
   Popconfirm,
 } from "antd";
-import {COLORS} from "../../../constants/constants..js"
+import {COLORS} from "../../../constants/constants.js"
 import styles from "./Sole.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -315,7 +315,7 @@ const Sole = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Đế giàynày kh"
@@ -327,7 +327,7 @@ const Sole = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );

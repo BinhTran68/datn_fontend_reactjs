@@ -39,7 +39,7 @@ const UpdateCustomer = () => {
                 const provinceName = addressParts[3] || '';
 
                 // Assuming you have a way to get provinceId, districtId, and wardId from their names
-              
+
 
                 form.setFieldsValue({
                     ...customer,
@@ -47,9 +47,9 @@ const UpdateCustomer = () => {
                     CitizenId: customer.citizenId,
                     phoneNumber: customer.phoneNumber,
                     email: customer.email,
-                    gender: customer.gender === "Nam" ? 'true' : 'false',
+                    gender: customer.gender,
                     dateBirth: moment(customer.dateBirth, 'YYYY-MM-DD HH:mm:ss'),
-                    status: customer.status === 'Kích hoạt' ? 1 : 0,
+                    status: customer.status === 'Kích hoạt' ? 0 : 1,
                     password: customer.password,
                 });
 
@@ -147,7 +147,7 @@ const UpdateCustomer = () => {
             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Chỉnh sửa khách hàng</h2>
 
             <Row gutter={16}>
-                <Col span={6}>
+                {/* <Col span={6}>
                     <Card>
                         <Form.Item label="Ảnh đại diện">
                             <Upload
@@ -161,7 +161,7 @@ const UpdateCustomer = () => {
                             </Upload>
                         </Form.Item>
                     </Card>
-                </Col>
+                </Col> */}
 
                 <Col span={18}>
                     <Card>
@@ -204,10 +204,11 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="true">Nam</Radio>
-                                            <Radio value="false">Nữ</Radio>
+                                            <Radio value={true}>Nam</Radio>
+                                            <Radio value={false}>Nữ</Radio>
                                         </Radio.Group>
                                     </Form.Item>
+
                                 </Col>
                             </Row>
 
@@ -250,8 +251,8 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                                     >
                                         <Select>
-                                            <Option value="1">Kích hoạt</Option>
-                                            <Option value="0">Khóa</Option>
+                                            <Option value={1}>Kích hoạt</Option>
+                                            <Option value={0}>Khóa</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>

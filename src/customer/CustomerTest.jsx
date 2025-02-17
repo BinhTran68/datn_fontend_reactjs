@@ -4,9 +4,9 @@ import { SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, PlusOutli
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import {FaEdit, FaMapMarkedAlt} from "react-icons/fa";
+import { FaEdit, FaMapMarkedAlt } from "react-icons/fa";
 import { generateAddressString } from "../helpers/Helpers.js";
-import {COLORS} from "../constants/constants..js";
+import { COLORS } from"../constants/constants.js";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -27,6 +27,8 @@ const CustomerTest = () => {
     const [wards, setWards] = useState([]);
     const [selectedProvince, setSelectedProvince] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
+    const [isEditing, setIsEditing] = useState(false); // Flag to indicate if we are editing an address
+    const [editingAddressId, setEditingAddressId] = useState(null); // ID of the address being edited
 
     useEffect(() => {
         fetchData();
@@ -86,21 +88,34 @@ const CustomerTest = () => {
     };
 
     const handleSearch = () => {
-        const filtered = data.filter((item) => {
-            const nameMatch = item.fullName.toLowerCase().includes(searchText.toLowerCase());
-            const phoneMatch = item.phoneNumber.includes(searchText);
+        const params = {
+            searchText: searchText,
+            status: status,
+            startDate: dobRange[0] ? dobRange[0].format('YYYY-MM-DDTHH:mm:ss') : null,
+            endDate: dobRange[1] ? dobRange[1].format('YYYY-MM-DDTHH:mm:ss') : null,
+            minAge: ageRange[0],
+            maxAge: ageRange[1],
+        };
 
-            const statusMatch = status === 'Tất cả' || item.status === status;
-
-            const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');
-            const dobFromMatch = !dobRange[0] || dob.isSameOrAfter(dobRange[0], 'minute');
-            const dobToMatch = !dobRange[1] || dob.isSameOrBefore(dobRange[1], 'minute');
-
-            const age = moment().diff(dob, 'years');
-            const ageMatch = age >= ageRange[0] && age <= ageRange[1];
-            return (nameMatch || phoneMatch) && statusMatch && dobFromMatch && dobToMatch && ageMatch;
-        });
-        setData(filtered);
+        axios.get('http://localhost:8080/api/customers/filter', { params })
+            .then((response) => {
+                const fetchedData = response.data.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setData(fetchedData);
+            })
+            .catch((error) => console.error('Error fetching filtered data:', error));
     };
 
     const handleReset = () => {
@@ -142,7 +157,7 @@ const CustomerTest = () => {
             const addressStrings = await Promise.all(
                 record.addresses.map(async (el) => {
                     const addressString = await generateAddressString(el.provinceId, el.districtId, el.wardId, el.specificAddress);
-                    return { id: el.id, address: addressString, isDefault: el.isAddressDefault };
+                    return { id: el.id, address: addressString, isDefault: el.isAddressDefault, provinceId: el.provinceId, districtId: el.districtId, wardId: el.wardId, specificAddress: el.specificAddress };
                 })
             );
             setAddresses(addressStrings);
@@ -155,46 +170,164 @@ const CustomerTest = () => {
         setSelectedProvince(null);
         setSelectedDistrict(null);
         setWards([]);
+        setIsEditing(false);
     };
 
-    const handleAddAddress = () => {
-        axios.post(`http://localhost:8080/api/customers/add-address/${recordSelected.id}`, newAddress)
-            .then((response) => {
-                message.success('Thêm địa chỉ thành công!');
-                setAddresses([...addresses, response.data]);
-                setNewAddress({});
-                setIsDrawerOpen(false);
-                fetchData();
-            })
-            .catch((error) => {
-                console.error('Error adding address:', error);
-                message.error('Thêm địa chỉ thất bại!');
-            });
-    };
+    // const handleAddAddress = () => {
+    //     if (isEditing) {
+    //         handleEditAddress(editingAddressId);
+    //     } else {
+    //         axios.post(`http://localhost:8080/api/customers/add-address/${recordSelected.id}`, newAddress)
+    //             .then((response) => {
+    //                 message.success('Thêm địa chỉ thành công!');
+    //                 setAddresses([...addresses, response.data]);
+    //                 setNewAddress({});
+    //                 setIsDrawerOpen(false);
+    //                 fetchData();
+    //             })
+    //             .catch((error) => {
+    //                 console.error('Error adding address:', error);
+    //                 message.error('Thêm địa chỉ thất bại!');
+    //             });
+    //     }
+    // };
 
-    const handleEditAddress = (addressId) => {
-        axios.put(`http://localhost:8080/api/customers/update-address/${addressId}`, newAddress)
-            .then((response) => {
-                message.success('Cập nhật địa chỉ thành công!');
-                setAddresses(addresses.map(address => address.id === addressId ? response.data : address));
-                setNewAddress({});
-                setIsDrawerOpen(false);
-                fetchData();
-            })
-            .catch((error) => {
-                console.error('Error updating address:', error);
-                message.error('Cập nhật địa chỉ thất bại!');
-            });
-    };
+    const handleAddAddress = async () => {
+        try {
+          const response = await axios.post(
+            `http://localhost:8080/api/customers/add-address/${recordSelected.id}`,
+            newAddress
+          );
+      
+          message.success("Thêm địa chỉ thành công!");
+      
+          // Chuyển đổi ID thành chuỗi nếu cần
+          const provinceId = String(response.data.provinceId);
+          const districtId = String(response.data.districtId);
+          const wardId = String(response.data.wardId);
+      
+          const newAddressString = await generateAddressString(
+            provinceId,
+            districtId,
+            wardId,
+            response.data.specificAddress
+          );
+      
+          setAddresses((prevAddresses) => [
+            
+            {
+              ...response.data,
+              address: newAddressString,
+            },
+            ...prevAddresses,
+          ]);
+      
+          setNewAddress({});
+          setIsDrawerOpen(false);
+          fetchData(); // Có thể không cần thiết
+        } catch (error) {
+          console.error("Error adding address:", error);
+          message.error("Thêm địa chỉ thất bại!");
+        }
+      };
 
- 
+    // const handleEditAddress = (addressId) => {
+    //     axios.put(`http://localhost:8080/api/customers/update-address/${addressId}`, newAddress)
+    //         .then((response) => {
+    //             message.success('Cập nhật địa chỉ thành công!');
+    //             setAddresses(addresses.map(address => address.id === addressId ? response.data : address));
+    //             setNewAddress({});
+    //             setIsDrawerOpen(false);
+    //             fetchData();
+    //         })
+    //         .catch((error) => {
+    //             console.error('Error updating address:', error);
+    //             message.error('Cập nhật địa chỉ thất bại!');
+    //         });
+    // };
+
+
+    const handleEditAddress = async (addressId) => {
+        try {
+          const response = await axios.put(
+            `http://localhost:8080/api/customers/update-address/${addressId}`,
+            newAddress
+          );
+      
+          message.success("Cập nhật địa chỉ thành công!");
+      
+          // Chuyển đổi ID thành chuỗi nếu cần
+          const provinceId = String(response.data.provinceId);
+          const districtId = String(response.data.districtId);
+          const wardId = String(response.data.wardId);
+      
+          const updatedAddressString = await generateAddressString(
+            provinceId,
+            districtId,
+            wardId,
+            response.data.specificAddress
+          );
+      
+          setAddresses((prevAddresses) =>
+            prevAddresses.map((address) =>
+              address.id === addressId
+                ? {
+                    ...address,
+                    ...response.data,
+                    address: updatedAddressString,
+                  }
+                : address
+            )
+          );
+      
+          setNewAddress({});
+          setIsDrawerOpen(false);
+          fetchData(); // Có thể không cần thiết
+        } catch (error) {
+          console.error("Error updating address:", error);
+          message.error("Cập nhật địa chỉ thất bại!");
+        }
+      };
+
+    // const handleSetDefaultAddress = (addressId) => {
+    //     axios.put(`http://localhost:8080/api/customers/set-default-address/${addressId}`)
+    //         .then(() => {
+    //             setAddresses(addresses.map(address => ({
+    //                 ...address,
+    //                 isDefault: address.id === addressId
+    //             })));
+    //             message.success('Đặt làm mặc định thành công!');
+    //             fetchData();
+    //         })
+    //         .catch((error) => {
+    //             console.error('Error setting default address:', error);
+    //             message.error('Đặt làm mặc định thất bại!');
+    //         });
+    // };
 
     const handleSetDefaultAddress = (addressId) => {
-        setAddresses(addresses.map(address => ({
-            ...address,
-            isDefault: address.id === addressId
-        })));
-        message.success('Đặt làm mặc định thành công!');
+        axios.put(`http://localhost:8080/api/customers/set-default-address/${addressId}`)
+            .then(() => {
+                // 1. Cập nhật trạng thái addresses
+                setAddresses(prevAddresses => {
+                    const updatedAddresses = prevAddresses.map(address => ({
+                        ...address,
+                        isDefault: address.id === addressId
+                    }));
+    
+                    // 2. Sắp xếp lại danh sách địa chỉ, địa chỉ mặc định lên đầu
+                    return updatedAddresses.sort((a, b) => b.isDefault - a.isDefault);
+                });
+    
+                message.success('Đặt làm mặc định thành công!');
+    
+                // 3. Gọi fetchData để cập nhật dữ liệu từ server và render lại component
+                fetchData();
+            })
+            .catch((error) => {
+                console.error('Error setting default address:', error);
+                message.error('Đặt làm mặc định thất bại!');
+            });
     };
 
     const handleProvinceChange = (value) => {
@@ -211,19 +344,27 @@ const CustomerTest = () => {
         fetchWards(value);
     };
 
+    const handleEditAddressClick = (address) => {
+        setNewAddress({
+            specificAddress: address.specificAddress,
+            provinceId: address.provinceId,
+            districtId: address.districtId,
+            wardId: address.wardId
+        });
+        setSelectedProvince(address.provinceId);
+        setSelectedDistrict(address.districtId);
+        fetchDistricts(address.provinceId);
+        fetchWards(address.districtId);
+        setIsDrawerOpen(true);
+        setIsEditing(true);
+        setEditingAddressId(address.id);
+    };
+
     const columns = [
         {
             title: 'STT',
             dataIndex: 'key',
             key: 'key',
-        },
-        {
-            title: 'Avatar',
-            dataIndex: 'avatar',
-            key: 'avatar',
-            render: (src) => (
-                <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
-            ),
         },
         {
             title: 'Họ và tên',
@@ -282,7 +423,6 @@ const CustomerTest = () => {
                                 <FaEdit
                                     style={{
                                         color: `${COLORS.primary}`,
-                                        // marginRight: 8,
                                         fontSize: "1.5rem",
                                     }}
                                 />
@@ -306,7 +446,7 @@ const CustomerTest = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <h2 >Quản lý tài khoản khách hàng</h2>
+            <h2>Quản lý tài khoản khách hàng</h2>
 
             <Modal
                 title={`Danh sách địa chỉ của ${recordSelected?.fullName} - ${recordSelected?.phoneNumber}`}
@@ -340,18 +480,9 @@ const CustomerTest = () => {
                                 <Button
                                     type="default"
                                     icon={<EditOutlined />}
-                                    onClick={() => {
-                                        setNewAddress({
-                                            specificAddress: addressObj.specificAddress,
-                                            provinceId: addressObj.provinceId,
-                                            districtId: addressObj.districtId,
-                                            wardId: addressObj.wardId
-                                        });
-                                        setIsDrawerOpen(true);
-                                    }}
+                                    onClick={() => handleEditAddressClick(addressObj)}
                                     style={{ marginLeft: '10px', borderRadius: '5px' }}
                                 />
-                            
                                 <Button
                                     type="primary"
                                     onClick={() => handleSetDefaultAddress(addressObj.id)}
@@ -370,7 +501,7 @@ const CustomerTest = () => {
             </Modal>
 
             <Drawer
-                title="Thêm địa chỉ mới"
+                title={isEditing ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}
                 width={360}
                 onClose={() => setIsDrawerOpen(false)}
                 visible={isDrawerOpen}
@@ -419,13 +550,13 @@ const CustomerTest = () => {
                     onClick={handleAddAddress}
                     style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
                 >
-                    Thêm địa chỉ
+                    {isEditing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ'}
                 </Button>
             </Drawer>
 
-            <Card >
+            <Card>
                 <h3>Bộ lọc</h3>
-                <hr/>
+                <hr />
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
                     <label style={{ marginRight: '10px', fontWeight: '500' }}>Tìm kiếm:</label>
                     <Input
@@ -487,7 +618,6 @@ const CustomerTest = () => {
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
-
                         >
                             Thêm mới
                         </Button>
@@ -497,10 +627,9 @@ const CustomerTest = () => {
 
             <Card className={"mt-3"}>
                 <h3>Danh sách khách hàng</h3>
-                <hr/>
+                <hr />
                 <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
             </Card>
-
         </div>
     );
 };

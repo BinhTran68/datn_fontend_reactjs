@@ -1,242 +1,260 @@
+import React, { useState, useMemo } from "react";
+import {
+  Form,
+  Input,
+  Select,
+  Button,
+  message,
+  Row,
+  Col,
+  Table,
+  Divider,
+  Radio,
+} from "antd";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Content } from "antd/es/layout/layout";
+import Title from "antd/es/typography/Title";
+import Paragraph from "antd/es/typography/Paragraph";
 
-import React, { useState } from 'react';
-import styles from './PayMent.module.css';
+const { Option } = Select;
+
+// Schema validation
+const schema = yup.object().shape({
+  fullname: yup.string().required("Vui lòng nhập họ và tên."),
+  phone: yup
+    .string()
+    .required("Vui lòng nhập số điện thoại.")
+    .matches(/^\d{10,11}$/, "Số điện thoại không hợp lệ"),
+  email: yup
+    .string()
+    .email("Email không hợp lệ")
+    .required("Vui lòng nhập email."),
+  city: yup.string().required("Vui lòng chọn tỉnh/thành phố."),
+  district: yup.string().required("Vui lòng chọn quận/huyện."),
+  address: yup.string().required("Vui lòng nhập địa chỉ."),
+});
+
+// Danh sách sản phẩm
+const productData = [
+  {
+    key: "1",
+    product: "Giày Nike Zoom Vapor Pro 2 HC White' DR6191-101-42 x 2",
+    price: "3,500,000 ₫",
+    quantity: 2,
+  },
+  {
+    key: "2",
+    product: "Áo Thể Thao Adidas Tiro 23 Competition",
+    price: "1,200,000 ₫",
+    quantity: 1,
+  },
+];
+
+// Hàm chuyển đổi giá từ string thành số
+const parsePrice = (price) => Number(price.replace(/[^\d]/g, "")); // Loại bỏ ký tự không phải số
 
 const PayMent = () => {
-    const [fullname, setFullname] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
-    const [city, setCity] = useState('');
-    const [district, setDistrict] = useState('');
-    const [address, setAddress] = useState('');
-    const [note, setNote] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-    const [errors, setErrors] = useState({});
-    const [successMessage, setSuccessMessage] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState(null);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  // Tính tổng tiền tự động
+  const totalAmount = useMemo(() => {
+    return productData.reduce(
+      (sum, item) => sum + parsePrice(item.price) * item.quantity,
+      0
+    );
+  }, []);
 
-        // Kiểm tra các trường bắt buộc
-        const newErrors = {};
-        if (!fullname) newErrors.fullname = 'Vui lòng nhập họ và tên.';
-        if (!phone) newErrors.phone = 'Vui lòng nhập số điện thoại.';
-        if (!email) newErrors.email = 'Vui lòng nhập email.';
-        if (!city) newErrors.city = 'Vui lòng chọn tỉnh/thành phố.';
-        if (!district) newErrors.district = 'Vui lòng chọn quận/huyện.';
-        if (!address) newErrors.address = 'Vui lòng nhập địa chỉ.';
-        if (!paymentMethod) newErrors.paymentMethod = 'Vui lòng chọn phương thức thanh toán.';
+  const columns = [
+    {
+      title: "SẢN PHẨM",
+      dataIndex: "product",
+      key: "product",
+    },
+    {
+      title: "SỐ LƯỢNG",
+      dataIndex: "quantity",
+      key: "quantity",
+      align: "center",
+    },
+    {
+      title: "TẠM TÍNH",
+      dataIndex: "price",
+      key: "price",
+      align: "right",
+    },
+  ];
 
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            setSuccessMessage(''); // Xóa thông báo thành công nếu có lỗi
-            return;
-        }
+  const onSubmit = (data) => {
+    console.log("Dữ liệu gửi đi:", data);
+    message.success("Đặt hàng thành công!");
+    reset(); // Reset form sau khi gửi
+  };
 
-        // Xử lý thanh toán nếu không có lỗi
-        setSuccessMessage('Đặt hàng thành công! Cảm ơn bạn đã mua hàng.');
+  return (
+    <Content style={{ backgroundColor: "white", padding: "20px" }}>
+      <Row gutter={[20, 20]}>
+        {/* Form thông tin khách hàng */}
+        <Col span={12} style={{padding:"1rem"}}>
+          <Form layout="vertical" onFinish={handleSubmit(onSubmit)} id="paymentForm">
+            <Form.Item
+              label="Họ và tên"
+              validateStatus={errors.fullname ? "error" : ""}
+              help={errors.fullname?.message}
+            >
+              <Controller
+                name="fullname"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Nhập họ và tên" />
+                )}
+              />
+            </Form.Item>
 
-        // Reset form sau khi thành công
-        setFullname('');
-        setPhone('');
-        setEmail('');
-        setCity('');
-        setDistrict('');
-        setAddress('');
-        setNote('');
-        setPaymentMethod('');
-        setErrors({});
-    };
+            <Form.Item
+              label="Số điện thoại"
+              validateStatus={errors.phone ? "error" : ""}
+              help={errors.phone?.message}
+            >
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Nhập số điện thoại" />
+                )}
+              />
+            </Form.Item>
 
-    return (
-        <div>
-            <div className="row">
-                <div className="col-7">
-                    <div className={styles.container}>
-                        <p>Bạn có mã ưu đãi? <a href="#">Ấn vào đây để nhập mã</a></p><hr />
-                        <h5>THÔNG TIN THANH TOÁN</h5>
-                        <label htmlFor="fullname">Họ và tên *</label><br />
-                        <input
-                            className={styles.input}
-                            type="text"
-                            id="fullname"
-                            placeholder="Nhập họ và tên"
-                            value={fullname}
-                            onChange={(e) => setFullname(e.target.value)}
-                        />
-                        {errors.fullname && <p className={styles.error}>{errors.fullname}</p>}<br />
+            <Form.Item
+              label="Email"
+              validateStatus={errors.email ? "error" : ""}
+              help={errors.email?.message}
+            >
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Nhập email" />
+                )}
+              />
+            </Form.Item>
 
-                        <div className="row">
-                            <div className="col-6">
-                                <label htmlFor="phone">Số điện thoại *</label><br />
-                                <input
-                                    className={styles.input}
-                                    type="text"
-                                    id="phone"
-                                    placeholder="Nhập số điện thoại"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                                {errors.phone && <p className={styles.error}>{errors.phone}</p>}
-                            </div>
-                            <div className="col-6">
-                                <label htmlFor="email">Địa chỉ email *</label><br />
-                                <input
-                                    className={styles.input}
-                                    type="email"
-                                    id="email"
-                                    placeholder="Nhập địa chỉ email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                {errors.email && <p className={styles.error}>{errors.email}</p>}
-                            </div>
-                        </div>
+            <Form.Item
+              label="Tỉnh/Thành phố"
+              validateStatus={errors.city ? "error" : ""}
+              help={errors.city?.message}
+            >
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} placeholder="Chọn Tỉnh/Thành phố">
+                    <Option value="HaNoi">Hà Nội</Option>
+                    <Option value="HoChiMinh">TP. Hồ Chí Minh</Option>
+                  </Select>
+                )}
+              />
+            </Form.Item>
 
-                        <div className="row">
-                            <div className="col-6">
-                                <label htmlFor="city">Tỉnh/Thành phố *</label><br />
-                                <select
-                                    id="city"
-                                    className={styles.select}
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                >
-                                    <option value="">Chọn Tỉnh/Thành phố</option>
-                                    <option value="HaNoi">Hà Nội</option>
-                                </select>
-                                {errors.city && <p className={styles.error}>{errors.city}</p>}
-                            </div>
-                            <div className="col-6">
-                                <label htmlFor="district">Quận/Huyện *</label><br />
-                                <select
-                                    id="district"
-                                    className={styles.select}
-                                    value={district}
-                                    onChange={(e) => setDistrict(e.target.value)}
-                                >
-                                    <option value="">Chọn Quận/Huyện</option>
-                                    <option value="1">a</option>
-                                </select>
-                                {errors.district && <p className={styles.error}>{errors.district}</p>}
-                            </div>
-                        </div>
+            <Form.Item
+              label="Quận/Huyện"
+              validateStatus={errors.district ? "error" : ""}
+              help={errors.district?.message}
+            >
+              <Controller
+                name="district"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} placeholder="Chọn Quận/Huyện">
+                    <Option value="1">Quận 1</Option>
+                    <Option value="2">Quận 2</Option>
+                  </Select>
+                )}
+              />
+            </Form.Item>
 
-                        <label htmlFor="address">Địa chỉ *</label><br />
-                        <textarea
-                            className={styles.textarea}
-                            id="address"
-                            placeholder="Nhập địa chỉ cụ thể. Số nhà, tên đường..."
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                        ></textarea>
-                        {errors.address && <p className={styles.error}>{errors.address}</p>}
+            <Form.Item
+              label="Địa chỉ"
+              validateStatus={errors.address ? "error" : ""}
+              help={errors.address?.message}
+            >
+              <Controller
+                name="address"
+                control={control}
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Nhập địa chỉ cụ thể"
+                  />
+                )}
+              />
+            </Form.Item>
 
-                        <h5>THÔNG TIN BỔ SUNG</h5>
+          
+          </Form>
+        </Col>
 
-                        <label htmlFor="note">Ghi chú đơn hàng (tùy chọn)</label><br />
-                        <textarea
-                            className={styles.textarea}
-                            id="note"
-                            placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay chỉ dẫn địa điểm giao hàng chi tiết hơn."
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                        ></textarea>
+        {/* Thông tin đơn hàng */}
+        <Col span={12} style={{padding:"1rem", border:"1px solid #ddd"}}>
+          <Title level={5}>ĐƠN HÀNG CỦA BẠN</Title>
+          <Table
+            columns={columns}
+            dataSource={productData}
+            pagination={false}
+          />
+          <Divider />
+          <h3 style={{ textAlign: "right" }}>
+            Tổng: {totalAmount.toLocaleString()} ₫
+          </h3>
 
-                    </div>
-                </div>
+          <Divider />
 
-                <div className="col-5"><br /><br />
-                    <div className={styles.orderBox}>
-                        <h5>ĐƠN HÀNG CỦA BẠN</h5>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th className="col-10">SẢN PHẨM</th>
-                                    <th className="col-2">TẠM TÍNH</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Giày Nike Zoom Vapor Pro 2 HC White' DR6191-101-42 x 2</td>
-                                    <td>7,000,000 ₫</td>
-                                </tr>
-                                <tr>
-                                    <td className={styles.total}>Tổng</td>
-                                    <td className={styles.total}>7,000,000 ₫</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div>
-                            <div className={styles.formCheck}>
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="paymentMethod"
-                                    id="flexRadioDefault1"
-                                    onChange={() => setPaymentMethod('bankTransfer')}
-                                />
-                                <label className="form-check-label" htmlFor="flexRadioDefault1">
-                                    Chuyển khoản ngân hàng
-                                </label>
-                                <p>Thực hiện thanh toán vào ngay tài khoản ngân hàng của Authentic Shoes. Vui lòng sử dụng Mã đơn hàng của bạn trong phần Nội dung thanh toán.</p>
-                                <img src="https://authentic-shoes.com/wp-content/uploads/2023/11/Screenshot-2023-11-24-at-23.19.42.png" alt="" width="419" />
-                                <hr />
-                            </div>
-                            <div className={styles.formCheck}>
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="paymentMethod"
-                                    id="flexRadioDefault2"
-                                    onChange={() => setPaymentMethod('cashOnDelivery')}
-                                />
-                                <label className="form-check-label" htmlFor="flexRadioDefault2">
-                                    Kiểm tra thanh toán
-                                </label><hr />
-                            </div>
-                            <div className={styles.formCheck}>
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="paymentMethod"
-                                    id="flexRadioDefault3"
-                                    onChange={() => setPaymentMethod('creditCard')}
-                                />
-                                <label className="form-check-label" htmlFor="flexRadioDefault3">
-                                    Thẻ ATM/Visa/Master/JCB/QR Pay qua cổng VNPAY
-                                </label><hr />
-                            </div>
-                            <div className={styles.formCheck}>
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="paymentMethod"
-                                    id="flexRadioDefault4"
-                                    onChange={() => setPaymentMethod('installment')}
-                                />
-                                <label className="form-check-label" htmlFor="flexRadioDefault4">
-                                    Fundiin - Mua trước trả sau 0% lãi suất
-                                </label>
-                            </div>
-                        </div><br />
-
-                        <button onClick={handleSubmit} className={styles.orderButton}>ĐẶT HÀNG</button>
-
-                        {successMessage && <p className={styles.success}>{successMessage}</p>} {/* Hiển thị thông báo thanh toán thành công ngay tại đây */}
-
-                        <p className={styles.note}>Thông tin cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng, tăng trải nghiệm sử dụng website, và cho các mục đích cụ thể khác đã được mô tả trong chính sách riêng tư của chúng tôi.</p>
-
-                    </div>
-                </div>
+          <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)}>
+            <div>
+              <Radio value="bankTransfer">Chuyển khoản ngân hàng</Radio>
+              <Paragraph type="secondary">
+                Thực hiện thanh toán vào tài khoản ngân hàng. Vui lòng sử dụng
+                Mã đơn hàng trong nội dung thanh toán.
+              </Paragraph>
+            </div>
+            <img
+              src="https://authentic-shoes.com/wp-content/uploads/2023/11/Screenshot-2023-11-24-at-23.19.42.png"
+              alt="Bank transfer"
+              width="300"
+            />
+            <div>
+              <Radio value="cashOnDelivery">Kiểm tra thanh toán</Radio>
             </div>
 
-            <br />
-        </div>
-    );
-}
+            <div>
+              <Radio value="creditCard">
+                Thẻ ATM/Visa/Master/JCB/QR Pay qua cổng VNPAY
+              </Radio>
+            </div>
+          </Radio.Group>
+
+          <Button type="primary" block onClick={handleSubmit(onSubmit)} >
+            ĐẶT HÀNG
+          </Button>
+
+          <Paragraph type="secondary">
+            Thông tin cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và tăng
+            trải nghiệm sử dụng website.
+          </Paragraph>
+        </Col>
+      </Row>
+    </Content>
+  );
+};
 
 export default PayMent;
-
