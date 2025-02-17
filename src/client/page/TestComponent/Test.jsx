@@ -54,36 +54,23 @@ function ProductList() {
   }, []); // [] chỉ chạy 1 lần khi component mount
 
   // Hiển thị loading trong khi dữ liệu chưa được tải
-  if (loading) {
-    return (
-      <div>
-        {/* <LoadingOutlined spin /> Hiển thị biểu tượng loading */}
-        <span> Loading...</span>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div>
+  //       {/* <LoadingOutlined spin /> Hiển thị biểu tượng loading */}
+  //       <span> Loading...</span>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div>
-      <h1>Brand List</h1>
       {/* Hiển thị thông báo message từ API nếu có */}
       {message && <p>{message}</p>}
 
-      {/* Hiển thị danh sách các brand */}
-      {brands.length > 0 ? (
-        brands.map((brand) => (
-          <div key={brand.id}>
-            <p>Brand Name: {brand.brandName || 'N/A'}</p> {/* Hiển thị tên brand, nếu không có thì hiển thị 'N/A' */}
-            <p>Status: {brand.status}</p>
-            <p>Updated At: {new Date(brand.updateAt).toLocaleString()}</p> {/* Hiển thị ngày tháng được định dạng */}
-            <hr />
-          </div>
-        ))
-      ) : (
-        <p>No brands available</p> // Nếu không có brand nào, hiển thị thông báo này
-      )}
+   
       <Product/>
-      <ProductDetail/>
+      {/* <ProductDetail/> */}
       
     </div>
   );
