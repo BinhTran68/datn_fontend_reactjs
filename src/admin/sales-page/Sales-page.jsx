@@ -305,6 +305,7 @@ const SalesPage = () => {
                     const updatedProductList = item.productList.map(p => {
                             if (p.key === product.key) {
                                 if (value >= product.quantity) {
+                                    toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`)
                                     return {...p, quantityInCart: product.quantity}
                                 }
                                 return {...p, quantityInCart: value}
@@ -482,7 +483,7 @@ const SalesPage = () => {
                 shippingAddressId: bill.customerInfo?.addresses?.[0]?.id || null,
                 numberPhone: bill.customerInfo?.phoneNumber || "",
                 email: bill.customerInfo?.email || "",
-                typeBill: "ONLINE", // Hoặc "OFFLINE" tùy vào logic của bạn
+                typeBill: "OFFLINE", // Hoặc "OFFLINE" tùy vào logic của bạn
                 notes: "",
                 status: "DA_THANH_TOAN", // Có thể thay đổi trạng thái hóa đơn
                 billDetailRequests: bill.productList.map(product => {

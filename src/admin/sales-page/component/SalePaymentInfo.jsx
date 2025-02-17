@@ -175,7 +175,6 @@ const SalePaymentInfo = ({
                                     suffix="VNĐ"
                                 />
                             </Form.Item>
-
                             {customerMoney < amount && (
                                 <Text type="danger">Vui lòng nhập đủ tiền khách đưa!</Text>
                             )}
@@ -189,15 +188,46 @@ const SalePaymentInfo = ({
                                 </Checkbox>
                             </Form.Item>
 
-                            <Form.Item name={"address"}>
-                                <Radio.Group
-                                    style={style}
-                                    onChange={onAddressSelected}
-                                    value={addressShipping}
-                                    options={customerAddresses}
+                            <Form.Item hidden={!isShipping} name={"address"}>
+                                <div hidden={!isShipping}>
+                                    <Radio.Group
+                                        style={style}
+                                        onChange={onAddressSelected}
+                                        value={addressShipping}
+                                        options={customerAddresses}
+                                    />
+                                </div>
+                            </Form.Item>
+
+                            <Form.Item
+                                hidden={!isShipping}
+                                label="Tên người nhận"
+                            >
+                                <Input
+                                    placeholder="Nhập tên người nhận"
+
+
                                 />
                             </Form.Item>
                             <Form.Item
+                                hidden={!isShipping}
+                                label="Số điện thoại người nhận"
+                            >
+                                <Input
+                                    type="text"
+                                    placeholder="Nhập số điện thoại"
+
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                hidden={!isShipping}
+                                label="Địa chỉ giao hàng"
+                            >
+                                <AddressSelectorAntd onAddressChange={onAddressChange} />
+                            </Form.Item>
+                            <Form.Item
+                                hidden={!isShipping}
                                 label="Phí vận chuyển"
                             >
                                 <Input
@@ -209,6 +239,7 @@ const SalePaymentInfo = ({
                                     suffix="VNĐ"
                                 />
                             </Form.Item>
+
                             <Form.Item hidden={isSuccess}>
                                 <Button onClick={handleOnPayment} type="primary" block
                                         disabled={!canPayment}>

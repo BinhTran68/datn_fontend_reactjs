@@ -11,7 +11,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         ),
         onCell: () => ({
             style: {
-                width: "20px",
+                width: "50px",
                 height: "50px",
                 lineHeight: "50px",
                 overflow: "hidden",
@@ -24,7 +24,10 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         title: "Sản phẩm",
         dataIndex: "productName",
         key: "productName",
-
+        render: (_, record) => {
+            const { productName, sizeName, colorName } = record;
+            return `${productName} - [${sizeName}] - [${colorName}]`;
+        },
         onCell: () => ({
             style: {
                 width: "100px",
@@ -42,7 +45,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         key: "productName",
         onCell: () => ({
             style: {
-                width: "200px",
+                width: "100px",
                 height: "50px",
                 lineHeight: "50px",
                 overflow: "hidden",
@@ -102,6 +105,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         title: "Kích cỡ",
         dataIndex: "sizeName",
         key: "productName",
+
         onCell: () => ({
             style: {
                 width: "100px",
