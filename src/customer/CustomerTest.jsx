@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaEdit, FaMapMarkedAlt } from "react-icons/fa";
 import { generateAddressString } from "../helpers/Helpers.js";
-import { COLORS } from "../constants/constants..js";
+import { COLORS } from"../constants/constants.js";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
