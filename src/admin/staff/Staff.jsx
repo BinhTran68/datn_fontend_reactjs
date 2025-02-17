@@ -126,14 +126,14 @@ const Staff = () => {
             dataIndex: 'key',
             key: 'key',
         },
-        {
-            title: 'Avatar',
-            dataIndex: 'avatar',
-            key: 'avatar',
-            render: (src) => (
-                <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
-            ),
-        },
+        // {
+        //     title: 'Avatar',
+        //     dataIndex: 'avatar',
+        //     key: 'avatar',
+        //     render: (src) => (
+        //         <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
+        //     ),
+        // },
         {
             title: 'Họ và tên',
             dataIndex: 'fullName',
