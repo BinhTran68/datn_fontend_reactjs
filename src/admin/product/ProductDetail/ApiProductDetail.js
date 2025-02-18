@@ -245,6 +245,24 @@ export const updateProduct = async (productId, productData) => {
       error.response?.data?.message ||
       "Có lỗi xảy ra khi cập nhật thương hiệu.";
     console.error(errorMessage);
+    // message.error(errorMessage);
+    throw error;
+  }
+};
+export const exitsProductDetail = async ( productData) => {
+  console.log(productData);
+
+  try {
+    const response = await api.post(
+      `/productdetail/existsproductdetail`,
+      productData
+    );
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message ||
+      "lỗi";
+    console.error(errorMessage);
     message.error(errorMessage);
     throw error;
   }

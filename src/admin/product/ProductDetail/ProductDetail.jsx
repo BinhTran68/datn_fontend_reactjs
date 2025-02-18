@@ -409,22 +409,22 @@ const Product = () => {
       console.log("đã chạy tới dayd");
 
       notification.success({
-        message: "Success",
+        message: "Thành công",
         duration: 4,
         pauseOnHover: false,
         showProgress: true,
-        description: `Cập nhật sản phẩm  thành công!`,
+        description: `Cập nhật sản phẩm thành công!`,
       });
       setOpenUpdate(false); // setCurrentPage(1);
       // await fetchProductsData();
     } catch (error) {
       console.error("Failed to update san pham", error);
       notification.error({
-        message: "Error",
+        message: "Lỗi",
         duration: 4,
         pauseOnHover: false,
         showProgress: true,
-        description: "Failed to update san pham",
+        description: `Cập nhật thất bại do: ${error.response?.data?.message}`,
       });
     } finally {
       // setLoading(false);
