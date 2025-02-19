@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message } from 'antd';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { color } from 'framer-motion';
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import moment from 'moment';
+import { baseUrl } from '../../helpers/Helpers.js';
+
 
 
 
@@ -52,16 +52,52 @@ const columnsCustomers = [
 
 ];
 
-const AddVoucher = () => {
+const DetailVoucher = () => {
     const [form] = Form.useForm();
     const [value, setValue] = useState("PUBLIC");
     const [customers, setCustomers] = useState([]);
+    const [voucher, setVoucher] = useState([]);
+
     const [error, setError] = useState(null);
     const [showTable, setShowTable] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedCustomers, setSelectedCustomers] = useState([]);
     const navigate = useNavigate(); // Khởi tạo navigate
+
+    const { id } = useParams();
+
+
+    useEffect(() => {
+        const fetchVoucherDetail = async () => {
+            if (!id) return;
+            try {
+                const response = await axios.get(`${baseUrl}/api/admin/voucher/detail/${id}`);
+                const data = response.data.data;
+    
+                setValue(data.voucherType); // Cập nhật loại voucher
+                setVoucher(data);
+                form.setFieldsValue({
+                    ...data,
+                    startDate: data.startDate ? moment(data.startDate) : null,
+                    endDate: data.endDate ? moment(data.endDate) : null,
+                });
+    
+                if (data.voucherType === "PRIVATE") {
+                    await fetchCustomers(); // Gọi API lấy danh sách khách hàng
+                    setShowTable(true);
+                    setSelectedRowKeys(data.customerIds || []); // Chọn khách hàng đã lưu trước đó
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu voucher:", error);
+            }
+        };
+    
+        fetchVoucherDetail();
+    }, [id, form]);
+    
+    
+
     const showConfirm = () => {
         Modal.confirm({
             title: "Xác nhận thêm phiếu giảm giá",
@@ -77,18 +113,11 @@ const AddVoucher = () => {
             },
             cancelText: "Hủy",
             centered: true,
-            onOk: handleOk, // Gọi hàm handleOk khi nhấn xác nhận
+            onOk: () => handleOk(),
+            // Gọi hàm handleOk khi nhấn xác nhận
 
         });
     }
-
-
-
-    // const [editingVoucher, setEditingVoucher] = useState(null);
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [isDetail, setIsDeatil] = useState(false);
-
-
     const start = () => {
         setLoading(true);
         setTimeout(() => {
@@ -105,13 +134,17 @@ const AddVoucher = () => {
 
     useEffect(() => {
         if (value === "PRIVATE") {
-            // Khi chọn "Riêng tư", cập nhật số lượng bằng số lượng khách hàng được chọn
-            form.setFieldsValue({ quantity: selectedCustomers.length });
+            form.setFieldsValue({ quantity: selectedRowKeys.length }); 
         }
-    }, [selectedCustomers, value, form]);
+    }, [selectedRowKeys, value, form]);
+    
+
     const rowSelection = {
         selectedRowKeys,
         onChange: onSelectChange,
+        getCheckboxProps: (record) => ({
+            disabled: true, // Vô hiệu hóa checkbox trên tất cả các hàng
+        }),
     };
 
     const hasSelected = selectedRowKeys.length > 0;
@@ -122,12 +155,18 @@ const AddVoucher = () => {
         setError(null);
         try {
             const response = await axios.get("http://localhost:8080/api/customers/");
-            setCustomers(response.data);
+            const customerData = response.data.map(c => ({ ...c, key: c.id }));
+
+            setCustomers(customerData);
+
+            // Giữ nguyên danh sách khách hàng đã chọn khi cập nhật dữ liệu
+            setSelectedRowKeys(prevKeys => prevKeys.filter(id => customerData.some(c => c.id === id)));
         } catch (err) {
             setError("Lỗi khi tải danh sách khách hàng!");
         }
         setLoading(false);
     };
+
 
     // Xử lý khi chọn loại phiếu giảm giá
     const onChange = (e) => {
@@ -162,13 +201,13 @@ const AddVoucher = () => {
 
             const requestData = {
                 ...values,
+                quantity: value === "PRIVATE" ? selectedCustomers.length : values.quantity, 
                 voucherType: value, // Truyền loại voucher (1: công khai, 2: riêng tư)
                 gmailkh: selectedEmails, // Gửi danh sách email thay vì ID khách hàng
             };
 
             console.log("Dữ liệu gửi lên API:", requestData);
-
-            await axios.post("http://localhost:8080/api/admin/voucher/add", requestData);
+            await axios.put(`${baseUrl}/api/admin/voucher/update/${id}`, requestData);
             message.success("Thêm mới phiếu giảm giá thành công!");
 
             form.resetFields();
@@ -183,13 +222,13 @@ const AddVoucher = () => {
 
 
 
-    //     };
+
     return (
         <Row gutter={20}>
             <Col span={8}>
                 <Card>
                     {/* <Modal title="Thêm mới phiếu giảm giá" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} okText="Xác nhận" cancelText="Hủy"> */}
-                    <Form form={form} layout="vertical">
+                    <Form form={form} layout="vertical" disabled>
                         <Form.Item name="voucherName" label="Tên phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
@@ -203,8 +242,9 @@ const AddVoucher = () => {
                                     return Promise.reject(new Error('Số lượng phải là số nguyên lớn hơn hoặc bằng 1'));
                                 },
                             }),
+                            
                         ]}>
-                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled={value === "PRIVATE"} />
+                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled={true} />
                         </Form.Item>
 
                         <Form.Item label="Giá trị giảm" required>
@@ -329,22 +369,22 @@ const AddVoucher = () => {
                             <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
-                            <Radio.Group onChange={onChange} value={value}>
+                            <Radio.Group onChange={onChange} value={value} disabled>
                                 <Radio checked={true} value={"PUBLIC"}>Công khai</Radio>
                                 <Radio value={"PRIVATE"}>Riêng tư</Radio>
                             </Radio.Group>
                         </Form.Item>
                     </Form>
                     {/* <Link to={"/admin/vouchelist"} > */}
-                    <Button type="primary"
+                    {/* <Button type="primary"
                         onClick={showConfirm}
                         style={{
                             marginBottom: '20px',
                             border: 'none',
                             backgroundColor: '#ff974d'
                         }}>
-                        Thêm mới
-                    </Button>
+                        Chỉnh sửa
+                    </Button> */}
                     {/* </Link> */}
                     {/* </Modal> */}
 
@@ -352,24 +392,14 @@ const AddVoucher = () => {
             </Col>
             <Col span={16}>
                 {/* Bảng khách hàng hiển thị khi chọn "Riêng tư" */}
-                {showTable && (
+                {showTable  && (
                     <>
 
-                        <Flex gap="middle" vertical>
+                        <Flex gap="middle" vertical >
                             {loading && <Spin style={{ marginTop: 10 }} />}
                             {error && <Alert message={error} type="error" showIcon style={{ marginTop: 10 }} />}
                             <Flex align="center" gap="middle">
-                                <Button type="primary"
-                                    onClick={() => {
-                                        setSelectedRowKeys([]); // Xóa các ô đã tích
-                                        fetchCustomers(); // Gọi API lấy lại danh sách khách hàng
-                                    }}
-                                    disabled={loading}
-                                    loading={loading}
-                                >
-                                    Tải lại danh sách khách hàng
-                                </Button>
-                                {hasSelected ? `Đã chọn ${selectedRowKeys.length} khách hàng` : null}
+                               
                             </Flex>
                             <Table rowSelection={rowSelection} columns={columnsCustomers}
                                 dataSource={customers} rowKey="id" style={{ marginTop: 20 }} />
@@ -381,4 +411,4 @@ const AddVoucher = () => {
     );
 };
 
-export default AddVoucher;
+export default DetailVoucher;

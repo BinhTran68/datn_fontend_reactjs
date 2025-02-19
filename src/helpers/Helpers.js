@@ -31,10 +31,7 @@ export const convertLongTimestampToDate = (timestamp) => {
     console.log("date", date);
     return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
 };
-export const convertStatusVoucher = (statusVoucher)=>{
-    // if(statusVoucher === null){
-    //     return null;
-    // }
+export const convertStatusVoucher = (statusVoucher)=>{                     
     if(statusVoucher === "dang_kich_hoat"){
         return "Đang kích hoạt";
     }
@@ -44,6 +41,26 @@ export const convertStatusVoucher = (statusVoucher)=>{
     if(statusVoucher === "chua_kich_hoat"){
         return "Chưa kích hoạt";
     }
+}
+export const ConvertvoucherType = (voucherType)=>{
+   
+    if(voucherType === "PUBLIC"){
+        return "Công khai";
+    }
+    if(voucherType === "PRIVATE"){
+        return "Riêng tư";
+    }
+    
+}
+export const ConvertdiscountType = (discountType)=>{
+   
+    if(discountType === "PERCENT"){
+        return "%";
+    }
+    if(discountType === "MONEY"){
+        return "đ";
+    }
+    
 }
 
 

@@ -6,6 +6,8 @@ import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
 import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 import AddVoucher from "../admin/Voucher/AddVoucher.jsx";
+import UpdateVoucher from "../admin/Voucher/UpdateVoucher.jsx";
+import DetailVoucher from "../admin/Voucher/DetailVoucher.jsx";
 import Admin from "../admin/Admin.jsx";
 import SalesPage from "../admin/sales-page/Sales-page.jsx";
 import Statistical from "../admin/statistical/Statistical.jsx";
@@ -181,7 +183,14 @@ const AdminRouters = {
             path: "voucher/add",
             element: <PrivateRoute element={<AddVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
-
+        {
+            path: "voucher/update/:id",
+            element: <PrivateRoute element={<UpdateVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "voucher/detail/:id",
+            element: <PrivateRoute element={<DetailVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
         {
             path: "staff",
             element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
