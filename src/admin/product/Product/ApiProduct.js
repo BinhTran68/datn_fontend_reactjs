@@ -119,9 +119,12 @@ export const getProduct = async (productId) => {
 };
 export const switchStatus = async (id, statusO) => {
   const { status } = statusO;
+console.log("đay là dữu liệu",statusO );
+console.log("đay là dữu liệu id",id );
+
 
   try {
-    const response = await api.get("/productdetail/switchstatus", {
+    const response = await api.get("/product/switchstatus", {
       params: {
         id: id,
         status: status,

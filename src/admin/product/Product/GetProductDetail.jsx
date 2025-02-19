@@ -53,6 +53,7 @@ import {
   createProductDetail,
   filterData,
   createProductDetailList,
+  switchStatus,
 } from "../ProductDetail/ApiProductDetail.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -64,7 +65,6 @@ import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
 import { Link, useParams } from "react-router-dom";
 import { FiEye } from "react-icons/fi";
-import { switchStatus } from "./ApiProduct.js";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
