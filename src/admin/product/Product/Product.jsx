@@ -50,6 +50,8 @@ import { Link } from "react-router-dom";
 import { CiBoxList, CiViewList } from "react-icons/ci";
 
 const Product = () => {
+  const [formUpdate] = Form.useForm();
+
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
@@ -85,38 +87,23 @@ const Product = () => {
 
   // validate cho create
   const [errorMessage, setErrorMessage] = useState("");
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      productName: values?.productName?.trim(),
+    };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessage(
-        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.productName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.productName]);
+    console.log(trimmedValues);
+
+    await handleUpdateProduct(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
 
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessageUpdate(
-        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.productName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.productName]);
   // Hàm fetch dữ liệu products
   useEffect(() => {
     fetchProductsData();
@@ -125,7 +112,7 @@ const Product = () => {
   const fetchProductsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameProduct(pagination, requestSearch)
         : await fetchProducts(pagination);
       setProducts(data);
@@ -216,10 +203,9 @@ const Product = () => {
         setSelectedProduct(productData);
         console.log(productData);
 
-        setRequest({
-          productName: productData.data.productName,
-          status: productData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        formUpdate.setFieldsValue({
+          productName: productData.data.productName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -478,8 +464,7 @@ const Product = () => {
           />
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa tên sản phẩm"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -500,8 +485,8 @@ const Product = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateProduct(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -509,52 +494,43 @@ const Product = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Sản phẩmvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.productName} // Bind to 'product' in state
-                name="productName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="productName"
+                label={`Tên sản phẩm`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên sản phẩm chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên sản phẩm tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>
