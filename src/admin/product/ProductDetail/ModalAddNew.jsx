@@ -6,11 +6,18 @@ const ModalAddNew = ({ open, onCreate, onCancel, loading, title, req }) => {
   const [form] = Form.useForm();
 
   const handleSubmit = async (values) => {
-    console.log(values);
-
-    await onCreate(values);
-    form.resetFields(); // Reset the form fields after submission
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      [req]: values[req].trim(),
+    };
+  
+    console.log(trimmedValues);
+  
+    await onCreate(trimmedValues);
+    form.resetFields(); // Reset form sau khi submit
   };
+  
   useEffect(() => {
     console.warn("dax chayj vaof ddaya-------------------", title);
   });
@@ -43,10 +50,19 @@ const ModalAddNew = ({ open, onCreate, onCancel, loading, title, req }) => {
           name={req}
           label={`Tên ${title}`}
           rules={[
-            { required: true, message: "Không được để trống" },
             {
-              pattern: /^[\p{L}\p{N}\s]{1,20}$/u,
-              message: `Tên ${title} là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt`,
+              validator: (_, value) => {
+                if (!value || !value.trim()) {
+                  return Promise.reject(new Error("Không được để trống hoặc chỉ có khoảng trắng"));
+                }
+                if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                  return Promise.reject(new Error(`Tên ${title} chỉ chứa chữ và số, không có ký tự đặc biệt`));
+                }
+                if (value.trim().length > 20) {
+                  return Promise.reject(new Error(`Tên ${title} tối đa 20 ký tự`));
+                }
+                return Promise.resolve();
+              },
             },
           ]}
         >

@@ -17,6 +17,7 @@ import {
   Grid,
   Popconfirm,
   Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -37,6 +38,7 @@ import {
   getProduct,
   searchNameProduct,
   existsByProductName,
+  switchStatus,
 } from "./ApiProduct.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -118,7 +120,7 @@ const Product = () => {
   // Hàm fetch dữ liệu products
   useEffect(() => {
     fetchProductsData();
-  }, [pagination,location.pathname]);
+  }, [pagination, location.pathname]);
 
   const fetchProductsData = async () => {
     setLoading(true);
@@ -308,7 +310,7 @@ const Product = () => {
     {
       title: "Thao tác",
       dataIndex: "actions",
-      width:"15rem",
+      width: "15rem",
       key: "actions",
       render: (_, record) => {
         if (!record.id || Object.keys(record).length === 0) {
@@ -318,21 +320,38 @@ const Product = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-             <Tooltip title="chỉnh sửa sản phẩm">
-             <Button
-                  onClick={() => handleGetProduct(record.id)}
-                  icon={
-                    <FaEdit
-                      style={{
-                        color: `${COLORS.primary}`,
-                        // marginRight: 8,
-                        fontSize: "1.5rem",
-                      }}
-                    />
-                  }
-                >
-                </Button>
-             </Tooltip>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status == 0}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchProductsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
+              <Col>
+                <Tooltip title="chỉnh sửa sản phẩm">
+                  <Button
+                    onClick={() => handleGetProduct(record.id)}
+                    icon={
+                      <FaEdit
+                        style={{
+                          color: `${COLORS.primary}`,
+                          // marginRight: 8,
+                          fontSize: "1.5rem",
+                        }}
+                      />
+                    }
+                  ></Button>
+                </Tooltip>
               </Col>
 
               {/* <Col>
@@ -349,13 +368,13 @@ const Product = () => {
                 </Popconfirm>
               </Col> */}
               <Col>
-              <Tooltip title="Xem chi tiết sản phẩm">
-              <Link to={`get-product-detail/${record.id}`}>
-                <Button
-                    icon={<FaEye color={`${COLORS.primary}`} size={20} />}
-                />
-              </Link>
-              </Tooltip>
+                <Tooltip title="Xem chi tiết sản phẩm">
+                  <Link to={`get-product-detail/${record.id}`}>
+                    <Button
+                      icon={<FaEye color={`${COLORS.primary}`} size={20} />}
+                    />
+                  </Link>
+                </Tooltip>
               </Col>
             </Row>
           </>
@@ -412,11 +431,7 @@ const Product = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -437,17 +452,10 @@ const Product = () => {
           >
             Thêm Sản Phẩm
           </Button> */}
-          <Row gutter={[16,16]}>
+          <Row gutter={[16, 16]}>
             <Col>
               <Link to={"add"}>
-                <Button
-                  style={{
-                   
-                    
-                    
-                  }}
-                  type="primary"
-                >
+                <Button style={{}} type="primary">
                   <PlusOutlined />
                   Thêm sản phẩm
                 </Button>
@@ -455,14 +463,7 @@ const Product = () => {
             </Col>
             <Col>
               <Link to={"productdetail"}>
-                <Button
-                  style={{
-
-
-                    
-                  }}
-                  type="primary"
-                >
+                <Button style={{}} type="primary">
                   <CiViewList size={20} />
                   Xem tất cả các sản phẩm chi tiết
                 </Button>
