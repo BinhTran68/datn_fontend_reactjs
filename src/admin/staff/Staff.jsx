@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import {FaEdit} from "react-icons/fa";
 import {COLORS} from "../../constants/constants..js";  // Import Link component
+import * as XLSX from 'xlsx'; // Import the xlsx library
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -60,6 +61,26 @@ const Staff = () => {
     //     });
     //     setData(filtered); 
     // };
+
+    const handleExport = () => {
+        // Convert data to a format suitable for an Excel file
+        const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
+            'Họ và tên': item.fullName,
+            'CCCD': item.CitizenId,
+            'Số điện thoại': item.phoneNumber,
+            'Ngày sinh': item.dateBirth,
+            'Email': item.email,
+            'Trạng Thái': item.status,
+        })));
+
+        // Create a new workbook and add the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Staff Data');
+
+        // Export the file
+        XLSX.writeFile(workbook, 'staff_data.xlsx');
+    };
+
 
     const handleSearch = () => {
         axios.get('http://localhost:8080/api/admin/staff/filterr', {
@@ -277,6 +298,13 @@ const Staff = () => {
                             Thêm mới
                         </Button>
                     </Link>
+                    <Button
+                        type="default"
+                        onClick={handleExport}
+                        style={{ marginLeft: '10px', backgroundColor: '#f5f5f5' }}
+                    >
+                        Xuất Excel
+                    </Button>
                 </div>
             </Card>
             <Card>
