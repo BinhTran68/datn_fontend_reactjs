@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Select, DatePicker, Slider, Button, Table, Space, Card, message, Modal, Drawer } from 'antd';
-import { SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import { FaEdit, FaMapMarkedAlt } from "react-icons/fa";
 import { generateAddressString } from "../helpers/Helpers.js";
 import { COLORS } from "../constants/constants..js";
 import { Tooltip } from 'antd';
+import * as XLSX from 'xlsx';
 
 
 const { Option } = Select;
@@ -36,6 +37,66 @@ const CustomerTest = () => {
         fetchData();
         fetchProvinces();
     }, []);
+
+
+    const handleExportToExcel = async () => {
+        try {
+            const exportData = await Promise.all(data.map(async (item) => {
+                const addressesString = await Promise.all(item.addresses.map(async (address) => {
+                    return await generateAddressString(address.provinceId, address.districtId, address.wardId, address.specificAddress);
+                }));
+    
+                return {
+                    'STT': item.key,
+                    'Họ và tên': item.fullName,
+                    'CCCD': item.CitizenId,
+                    'Số điện thoại': item.phoneNumber,
+                    'Ngày sinh': moment(item.dateBirth).format('DD/MM/YYYY'), // Format date for Excel
+                    'Email': item.email,
+                    'Trạng Thái': item.status,
+                    'Địa chỉ': addressesString.join('\n'),
+                };
+            }));
+    
+            const worksheet = XLSX.utils.json_to_sheet(exportData, { header: Object.keys(exportData[0]) }); // Include header row
+    
+            // Styling the header
+            const headerStyle = {
+                font: { bold: true },
+                alignment: { horizontal: 'center' }, // Center header text
+                fill: { fgColor: { rgb: 'FFD8BF' } }, // Light orange background
+            };
+    
+            for (let col in worksheet) {
+                if (col.startsWith('!')) continue; // Skip metadata properties
+                worksheet[col].s = headerStyle; // Apply header style
+            }
+    
+    
+            // Setting column widths (important for readability)
+            const columnWidths = [
+                { wch: 5 },  // STT (adjust as needed)
+                { wch: 20 }, // Họ và tên
+                { wch: 15 }, // CCCD
+                { wch: 15 }, // Số điện thoại
+                { wch: 12 }, // Ngày sinh
+                { wch: 25 }, // Email
+                { wch: 10 }, // Trạng Thái
+                { wch: 40 }, // Địa chỉ
+            ];
+            worksheet['!cols'] = columnWidths;
+    
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
+            XLSX.writeFile(workbook, `customers_${moment().format('YYYYMMDDHHmmss')}.xlsx`);
+            message.success('Xuất file Excel thành công!');
+    
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            message.error('Xuất file Excel thất bại!');
+        }
+    };
+    
 
     const fetchData = () => {
         axios.get('http://localhost:8080/api/customers/')
@@ -585,18 +646,27 @@ const CustomerTest = () => {
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}
+                            style={{ marginRight: "10px" }}
                         >
                             Thêm mới
                         </Button>
                     </Link>
+                    <Button  type="default" icon={<DownloadOutlined />} onClick={handleExportToExcel}>
+                        Xuất Excel
+                    </Button>
+                    
+                   
+              
+                <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
+            
                 </div>
             </Card>
 
-            <Card className={"mt-3"}>
+            {/* <Card className={"mt-3"}>
                 <h3>Danh sách khách hàng</h3>
                 <hr />
                 <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
-            </Card>
+            </Card> */}
         </div>
     );
 };

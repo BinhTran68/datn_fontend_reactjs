@@ -22,6 +22,7 @@ const AddCustomer = () => {
     const [qrModalVisible, setQrModalVisible] = useState(false);
     const [loading, setLoading] = useState(false); // Loading state
     const [emailError, setEmailError] = useState(null);
+    const [phoneError, setPhoneError] = useState(null);
     const videoRef = useRef(null);
     const codeReader = new BrowserMultiFormatReader();
 
@@ -185,9 +186,30 @@ const AddCustomer = () => {
         }
     };
 
+
+    const checkPhoneNumberAvailability = async (phoneNumber) => {
+        if (!phoneNumber) {
+            setPhoneError(null);
+            return;
+        }
+        try {
+            const response = await axios.get(`http://localhost:8080/api/customers/check-phone?phoneNumber=${phoneNumber}`);
+            if (response.data.exists) {
+                setPhoneError('Số điện thoại này đã được sử dụng.');
+                return Promise.reject('Số điện thoại đã tồn tại');
+            } else {
+                setPhoneError(null);
+                return Promise.resolve();
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra số điện thoại:', error);
+            setPhoneError('Số điện thoại đã tồn tại.');
+            return Promise.reject('Lỗi khi kiểm tra số điện thoại');
+        }
+    };
     // Thêm các hàm xác thực cho số điện thoại và CCCD
     const validatePhoneNumber = (_, value) => {
-        const phoneRegex = /^0\d{9}$/; // 10 chữ số bắt đầu bằng 0
+        const phoneRegex =  /^(0[3|5|7|8|9])+([0-9]{8})$/; // 10 chữ số bắt đầu bằng 0
         if (value && !phoneRegex.test(value)) {
             return Promise.reject(new Error('Số điện thoại không hợp lệ!'));
         }
@@ -278,15 +300,25 @@ const AddCustomer = () => {
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
-                                        <Form.Item
+                                    <Form.Item
                                             name="phoneNumber"
                                             label="Số điện thoại"
                                             rules={[
                                                 { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                                                { validator: validatePhoneNumber }
+                                                { validator: validatePhoneNumber },
+                                                () => ({
+                                                    validator(_, value) {
+                                                        return checkPhoneNumberAvailability(value);
+                                                    },
+                                                }),
                                             ]}
+                                            validateStatus={phoneError ? 'error' : ''}
+                                            help={phoneError || ''}
                                         >
-                                            <Input />
+                                            <Input
+                                                onBlur={(e) => checkPhoneNumberAvailability(e.target.value)}
+                                                onChange={() => setPhoneError(null)} // Reset error khi thay đổi
+                                            />
                                         </Form.Item>
                                     </Col>
                                 </Row>
