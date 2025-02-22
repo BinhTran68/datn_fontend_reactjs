@@ -33,14 +33,23 @@ const SalesPage = () => {
                 paymentMethods: "cash",
                 discount: 0,
                 amount: 0,
-
             },
             closable: true,
             billCode: null,
             isShipping: false,
+            isNewShippingInfo: false,
             shippingInfo: null,
             customerAddresses: [],
-            addressShipping: null
+            addressShipping: null,
+            detailAddressShipping: {
+                provinceId: null,
+                districtId: null,
+                wardId: null,
+                specificAddress: '',
+            },
+            recipientName: '',  // Số điện thoại người nhận hàng
+            recipientPhoneNumber: '', // Tên ngươi nhận
+            shippingFee: 0
         },
     ]);
 
@@ -161,14 +170,11 @@ const SalesPage = () => {
                     canPayment: canPay
                 };
             });
-            console.log(items)
-
             // So sánh mảng cũ và mới, nếu giống nhau thì không cập nhật state
             const isSame = prevItems.every((item, index) => item.canPayment === newItems[index].canPayment);
             return isSame ? prevItems : newItems;
         });
     }, [items]);
-
 
     const handleOnCreateBill = () => {
         if (items.length >= 10) {
@@ -182,7 +188,6 @@ const SalesPage = () => {
             label: `Hóa đơn (${timestamp})`, // Gán thời gian vào tên hóa đơn
             productList: [],
         };
-
         setItems([...items, newItem]);
     };
 
@@ -337,7 +342,6 @@ const SalesPage = () => {
 
     const onCustomerSelect = async (customer) => {
         // Hàm trợ giúp để lấy các trường địa chỉ một cách an toàn
-
         let customerAddresses = await Promise.all(customer?.addresses?.map(async (ca) => {
             return {
                 value: ca.id,
@@ -350,12 +354,18 @@ const SalesPage = () => {
         })
         // Cập nhật thông tin khách hàng và địa chỉ giao hàng cho hóa đơn hiện tại
         setItems((prevItems) =>
-            prevItems.map((item) =>
-                // Chỉ cập nhật mục có key trùng với currentBill
-                item.key === currentBill
-                    ? { ...item, customerInfo: customer,
-                        customerAddresses: customerAddresses}
-                    : item // Các mục khác giữ nguyên
+            prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item, customerInfo: customer,
+                            customerAddresses: customerAddresses,
+                            recipientName: customer?.fullName,
+                            recipientPhoneNumber: customer?.phoneNumber
+                        }
+                    }
+
+                    return item // Các mục khác giữ nguyên
+                }
             )
         );
     };
@@ -421,7 +431,9 @@ const SalesPage = () => {
 
     const handleCheckIsShipping = (e) => {
         const isChecked = e.target.checked;
-        console.log(isChecked);
+
+
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -572,19 +584,64 @@ const SalesPage = () => {
 
     const onAddressSelected = (e) => {
         const addressId = e.target.value
+        let detailAddress = null;
+        // tìm customer
+        // lấy ra địa chỉ nè
+        const customer = items.find((item) => item.key === currentBill)?.customerInfo
+        if  (customer && customer?.addresses) {
+          const address = customer.addresses.find((ads) => ads.id === addressId)
+            detailAddress = {
+                provinceId: address?.provinceId,
+                districtId: address?.districtId,
+                wardId: address?.wardId,
+                specificAddress: address?.specificAddress,
+            }
+        }
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-
                     return {
                         ...item,
-                        addressShipping: addressId
+                        addressShipping: addressId,
+                        isNewShippingInfo: addressId === "other",
+                        detailAddressShipping: detailAddress
                     };
                 }
                 return item;
             })
         );
     }
+
+    const  handleOnChangerRecipientPhoneNumber = (e) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        recipientPhoneNumber: e.target.value
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const handleOnChangerRecipientName = (e) => {
+
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        recipientName: e.target.value
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
 
     return (
         <div className={"d-flex flex-column gap-3"}>
@@ -694,6 +751,13 @@ const SalesPage = () => {
                 onAddressChange={onAddressChange}
                 customerAddresses={items.find((item) => item.key === currentBill)?.customerAddresses}
                 onAddressSelected={onAddressSelected}
+                recipientPhoneNumber={items.find((item) => item.key === currentBill)?.recipientPhoneNumber}
+                recipientName={items.find((item) => item.key === currentBill)?.recipientName}
+                isNewShippingInfo={items.find((item) => item.key === currentBill)?.isNewShippingInfo}
+                detailAddressShipping={items.find((item) => item.key === currentBill)?.detailAddressShipping}
+                customerInfo={items.find((item) => item.key === currentBill)?.customerInfo}
+                handleOnChangerRecipientName={handleOnChangerRecipientName}
+                handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
             />
         </div>
     );

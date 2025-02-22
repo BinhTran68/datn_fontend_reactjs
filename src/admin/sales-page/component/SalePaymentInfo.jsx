@@ -1,5 +1,5 @@
 import React from 'react';
-import {Avatar, Button, Card, Checkbox, Collapse, Form, Input, List, Select, Space} from "antd";
+import {Avatar, Button, Card, Checkbox, Col, Collapse, Form, Input, List, Row, Select, Space} from "antd";
 import {FaCheck, FaCheckCircle, FaTicketAlt} from "react-icons/fa";
 import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
@@ -44,13 +44,81 @@ const SalePaymentInfo = ({
                              onAddressChange,
                              onAddressSelected,
                              customerAddresses,
-                            addressShipping
+                             addressShipping,
+                             recipientName,
+                             recipientPhoneNumber,
+                             isNewShippingInfo,
+                             detailAddressShipping,
+                            customerInfo,
+                             handleOnChangerRecipientPhoneNumber,
+                             handleOnChangerRecipientName
                          }) => {
-
-
+    console.log(detailAddressShipping)
     return (
-
         <>
+
+            <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
+                Giao hàng
+            </Checkbox>
+
+            <Card>
+                <h3 style={{ marginBottom: '16px' }}>Thông tin giao hàng</h3>
+                <hr />
+                <Form layout="vertical">
+                    {isShipping && (
+                        <Form.Item name="address">
+                            <Radio.Group
+                                style={style}
+                                onChange={onAddressSelected}
+                                value={addressShipping}
+                                options={customerAddresses}
+                            />
+                        </Form.Item>
+                    )}
+
+                    {isShipping && (
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item label="Tên người nhận">
+                                    <Input value={recipientName}
+                                           onChange={handleOnChangerRecipientName}
+                                           placeholder="Nhập tên người nhận" />
+                                </Form.Item>
+                            </Col>
+
+                            <Col span={12}>
+                                <Form.Item label="Số điện thoại người nhận">
+                                    <Input value={recipientPhoneNumber}
+                                           onChange={handleOnChangerRecipientPhoneNumber}
+                                           type="text" placeholder="Nhập số điện thoại" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    )}
+
+                    {isShipping && ( isNewShippingInfo || !customerInfo ) && (
+                        <div style={{ marginBottom: '24px' }}>
+                            <Form.Item >
+                                <h5>Chọn địa chỉ giao hàng</h5>
+                                <AddressSelectorAntd onAddressChange={onAddressChange} />
+                            </Form.Item>
+                        </div>
+                    )}
+
+                    {isShipping && (
+                        <Form.Item label="Phí vận chuyển">
+                            <Input
+                                type="number"
+                                min={0}
+                                placeholder="Nhập số tiền"
+                                onChange={handleCashCustomerMoneyChange}
+                                value={parseInt(cashCustomerMoney)}
+                                suffix="VNĐ"
+                            />
+                        </Form.Item>
+                    )}
+                </Form>
+            </Card>
             <Card>
                 <h3>Thông tin thanh toán</h3>
                 <hr/>
@@ -186,58 +254,6 @@ const SalePaymentInfo = ({
                                 <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
                                     Giao hàng
                                 </Checkbox>
-                            </Form.Item>
-
-                            <Form.Item hidden={!isShipping} name={"address"}>
-                                <div hidden={!isShipping}>
-                                    <Radio.Group
-                                        style={style}
-                                        onChange={onAddressSelected}
-                                        value={addressShipping}
-                                        options={customerAddresses}
-                                    />
-                                </div>
-                            </Form.Item>
-
-                            <Form.Item
-                                hidden={!isShipping}
-                                label="Tên người nhận"
-                            >
-                                <Input
-                                    placeholder="Nhập tên người nhận"
-
-
-                                />
-                            </Form.Item>
-                            <Form.Item
-                                hidden={!isShipping}
-                                label="Số điện thoại người nhận"
-                            >
-                                <Input
-                                    type="text"
-                                    placeholder="Nhập số điện thoại"
-
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                hidden={!isShipping}
-                                label="Địa chỉ giao hàng"
-                            >
-                                <AddressSelectorAntd onAddressChange={onAddressChange} />
-                            </Form.Item>
-                            <Form.Item
-                                hidden={!isShipping}
-                                label="Phí vận chuyển"
-                            >
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    placeholder="Nhập số tiền"
-                                    onChange={handleCashCustomerMoneyChange}
-                                    value={parseInt(cashCustomerMoney)}
-                                    suffix="VNĐ"
-                                />
                             </Form.Item>
 
                             <Form.Item hidden={isSuccess}>

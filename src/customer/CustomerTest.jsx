@@ -517,7 +517,7 @@ const CustomerTest = () => {
                     placeholder="Chọn tỉnh/thành phố"
                     style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
                     onChange={handleProvinceChange}
-                    value={newAddress.provinceId}
+                    value={parseInt(newAddress?.provinceId)}
                 >
                     {provinces.map((province) => (
                         <Option key={province.code} value={province.code}>{province.name}</Option>

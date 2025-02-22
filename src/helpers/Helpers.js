@@ -130,3 +130,80 @@ export function formatVND(number) {
         currency: "VND",
     });
 }
+
+
+
+// Helper function to get GHN shipping fee
+const getGHNShippingFee = async ({ fromDistrictId, toDistrictId, weight }) => {
+    try {
+        const response = await axios.post(
+            'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
+            {
+                service_type_id: 2, // Chuyển phát tiêu chuẩn
+                    from_district_id: fromDistrictId,
+                    to_district_id: toDistrictId,
+                weight: weight,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Token: process.env.VITE_GHN_API_KEY, // Lấy API Key từ .env
+                },
+            }
+        );
+
+        return response.data.data.total; // Trả về số tiền vận chuyển
+    } catch (error) {
+        console.error('Error fetching GHN shipping fee:', error);
+        throw error;
+    }
+};
+
+export default getGHNShippingFee; // Xuất hàm để sử dụng ở component khác
+
+const GHN_API_URL = 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee';
+const SERVICE_TYPE_ID = 5; // Loại dịch vụ: Giao hàng tiêu chuẩn
+
+export const calculateShippingFee = async ({
+                                               token,
+                                               shopId,
+                                               fromDistrictId,
+                                               fromWardCode,
+                                               toDistrictId,
+                                               toWardCode,
+                                               length = 30,
+                                               width = 40,
+                                               height = 20,
+                                               weight = 3000,
+                                               insuranceValue = 0,
+                                               coupon = null,
+                                               items = []
+                                           }) => {
+    try {
+        const response = await axios.post(GHN_API_URL, {
+            service_type_id: SERVICE_TYPE_ID,
+            from_district_id: fromDistrictId,
+            from_ward_code: fromWardCode,
+            to_district_id: toDistrictId,
+            to_ward_code: toWardCode,
+            length,
+            width,
+            height,
+            weight,
+            insurance_value: insuranceValue,
+            coupon,
+            items
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': token,
+                'ShopId': shopId
+            }
+        });
+
+        return response.data.data.total;
+    } catch (error) {
+        console.error('Error calculating shipping fee:', error.response?.data || error.message);
+        throw new Error('Failed to calculate shipping fee');
+    }
+};
