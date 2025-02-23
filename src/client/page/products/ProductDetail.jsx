@@ -16,13 +16,15 @@ import { ShoppingCartOutlined } from "@ant-design/icons";
 import { COLORS } from "../../../constants/constants";
 import { FaCartPlus } from "react-icons/fa6";
 import Title from "antd/es/skeleton/Title";
-import PropProduct from "../TestComponent/PropProduct";
-import { Link } from "react-router-dom";
+import PropProduct from "./PropProduct";
+import { Link, useParams } from "react-router-dom";
 import SizeChart from "./SizeChart";
 import { FcBusinessman } from "react-icons/fc";
 import { FcNext } from "react-icons/fc";
 
 function ProductDetail() {
+      const { id } = useParams();
+  
   const products = {
     name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
     price: 50000,
@@ -435,7 +437,7 @@ function ProductDetail() {
             SẢN PHẨM NỔI BẬT
           </Col>
           <Col>
-            <Row gutter={[16, 16]}>
+            <Row gutter={[5, 5]}>
               {Array.from({ length: 6 }).map((_, index) => (
                 <Col key={index} span={4}>
                   <PropProduct product={products} />

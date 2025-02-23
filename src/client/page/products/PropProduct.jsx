@@ -1,6 +1,7 @@
-import React from "react";
+import React, { memo, useEffect } from "react";
 import style from "../TestComponent/TestComponent.module.css";
 import clsx from "clsx";
+import styles from "./Product.module.css";
 
 // import "bootstrap/dist/css/bootstrap.min.css";
 import {
@@ -11,28 +12,59 @@ import {
   FaStar,
 } from "react-icons/fa6";
 import { FaFireAlt, FaPhoneAlt } from "react-icons/fa";
-import { Button, Col, Flex, Row } from "antd";
+import { Button, Col, Flex, Rate, Row } from "antd";
 
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function PropProduct({ product }) {
+  const statusSaleContent =
+    {
+      Hot: (
+        <>
+          <FaFireAlt /> Hot
+        </>
+      ),
+      "Best Sale": (
+        <>
+          <FaStar /> Best Sale
+        </>
+      ),
+      "Flash Sale": (
+        <>
+          <FaBolt /> Flash Sale
+        </>
+      ),
+    }[product.statusSale] || null;
+  useEffect(() => {
+    console.log("prop đã ren");
+  });
   return (
     <>
-      <div className="card" style={{ height: "24rem" }}>
+      <div
+        className={clsx("card", styles.productcard)}
+        style={{
+          height: "21rem",
+          // height: "24rem",
+
+          transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        }}
+      >
         <img
           src={product.url}
           alt=""
           className="card-img-top p-0"
           style={{
             objectFit: "contain", // Giữ tỉ lệ ảnh ban đầu
-            height: "55%",
+            height: "59%",
           }}
         />
         <div className="position-absolute top">
-          {product?.statusSale && (
+          {/* Hiển thị trạng thái sale nếu có */}
+          {statusSaleContent && (
             <div
+              className={styles.statusBadge}
               style={{
-                fontSize: "1rem",
+                fontSize: "0.7rem",
                 fontWeight: "bold",
                 background: "#FEEEEA",
                 color: "#EE4D2D",
@@ -41,21 +73,7 @@ function PropProduct({ product }) {
                 margin: "0.2rem",
               }}
             >
-              {product.statusSale === "Hot" && (
-                <>
-                  Hot <FaFireAlt />
-                </>
-              )}
-              {product.statusSale === "Best Sale" && (
-                <>
-                  Best Sale <FaStar />
-                </>
-              )}
-              {product.statusSale === "Flash Sale" && (
-                <>
-                  Flash Sale <FaBolt />
-                </>
-              )}
+              {statusSaleContent}
             </div>
           )}
         </div>
@@ -67,13 +85,15 @@ function PropProduct({ product }) {
           }}
         >
           <div
-            className="card-title mb-2 "
+            className="card-title mb-3 "
             style={{
               fontSize: "1rem",
-              height: "35%",
+              height: "30%",
             }}
           >
-            {product.name}
+            {product.name.length > 45
+              ? product.name.slice(0, 45) + "..."
+              : product.name}
           </div>
 
           <div
@@ -82,9 +102,14 @@ function PropProduct({ product }) {
             }}
           >
             <div>
-              <span className="fw-bold fs-5 text-danger">{product.price}</span>
-              <span
-                class="badge"
+              <span className="fw-bold fs-5 text-danger">
+                {product.price.toLocaleString("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                })}
+              </span>
+              <sup
+                className="badge"
                 style={{
                   fontSize: "0.7rem",
                   background: "#FEEEEA",
@@ -93,19 +118,23 @@ function PropProduct({ product }) {
                 }}
               >
                 {product.promotion}
-              </span>
+              </sup>
             </div>
           </div>
-
+          <div><Rate value={product.rate} disabled style={{
+              fontSize:"0.8rem",
+              
+            }}/></div>
           <div className="d-flex justify-content-between align-items-center">
-            <div className={style.stars}>
+            {/* <div className={style.stars}>
               &#9733;&#9733;&#9733;&#9733;&#9733;
-            </div>
-            <div className="" style={{ fontSize: "0.8rem" }}>
-              Đã bán: {product.sale}
-            </div>
+            </div> */}
+            
+              
+            <div style={{ fontSize: "0.8rem" }}>Đã bán: {product.sale}</div>
+            <div style={{ fontSize: "0.8rem" }}>Lượt xem: {product.views}</div>
           </div>
-
+          {/* 
           <Flex>
             <Col
               span={10}
@@ -129,10 +158,10 @@ function PropProduct({ product }) {
                 Thêm <FaCartPlus size={20} />
               </Button>
             </Col>
-          </Flex>
+          </Flex> */}
         </div>
       </div>
     </>
   );
 }
-export default PropProduct;
+export default memo(PropProduct);

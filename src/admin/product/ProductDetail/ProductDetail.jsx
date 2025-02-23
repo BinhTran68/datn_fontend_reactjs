@@ -521,6 +521,16 @@ const Product = () => {
       title: "Màu sắc",
       dataIndex: "colorName",
       key: "colorName",
+      onCell: () => ({
+        style: {
+          width: "80px",
+          height: "50px",
+          lineHeight: "50px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
+      }),
       render: (text, record) => {
         // Tìm mã màu tương ứng
         const colorData = dataSelectColor.find(
@@ -550,7 +560,7 @@ const Product = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "80px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -565,7 +575,7 @@ const Product = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "40px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -597,7 +607,7 @@ const Product = () => {
 
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -612,7 +622,7 @@ const Product = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",

@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
 import React, { useState, useEffect } from 'react';
-import Product from './Product';
+import Product from '../products/Product';
 import ProductDetail from './ProductDetail';
 
 function ProductList() {
@@ -66,7 +66,6 @@ function ProductList() {
   return (
     <div>
       {/* Hiển thị thông báo message từ API nếu có */}
-      {message && <p>{message}</p>}
 
    
       <Product/>

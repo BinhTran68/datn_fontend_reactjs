@@ -466,7 +466,7 @@ const GetProductDetail = () => {
 
       onCell: () => ({
         style: {
-          width: "200px",
+          width: "100px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -495,6 +495,16 @@ const GetProductDetail = () => {
       title: "Màu sắc",
       dataIndex: "colorName",
       key: "colorName",
+      onCell: () => ({
+        style: {
+          width: "80px",
+          height: "50px",
+          lineHeight: "50px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
+      }),
       render: (text, record) => {
         // Tìm mã màu tương ứng
         const colorData = dataSelectColor.find(
@@ -524,7 +534,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "80px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -539,7 +549,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -586,7 +596,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
