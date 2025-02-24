@@ -17,7 +17,7 @@ import axios from "axios";
 import moment from "moment/moment.js";
 import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
-import {baseUrl, generateAddressString} from "../../helpers/Helpers.js";
+import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
 import {printBillService} from "../bill/services/printBillService.js";
 
 const SalesPage = () => {
@@ -33,14 +33,23 @@ const SalesPage = () => {
                 paymentMethods: "cash",
                 discount: 0,
                 amount: 0,
-
             },
             closable: true,
             billCode: null,
             isShipping: false,
+            isNewShippingInfo: false,
             shippingInfo: null,
             customerAddresses: [],
-            addressShipping: null
+            addressShipping: null,
+            detailAddressShipping: {
+                provinceId: null,
+                districtId: null,
+                wardId: null,
+                specificAddress: '',
+            },
+            recipientName: '',  // Số điện thoại người nhận hàng
+            recipientPhoneNumber: '', // Tên ngươi nhận
+            shippingFee: 0
         },
     ]);
 
@@ -161,14 +170,11 @@ const SalesPage = () => {
                     canPayment: canPay
                 };
             });
-            console.log(items)
-
             // So sánh mảng cũ và mới, nếu giống nhau thì không cập nhật state
             const isSame = prevItems.every((item, index) => item.canPayment === newItems[index].canPayment);
             return isSame ? prevItems : newItems;
         });
     }, [items]);
-
 
     const handleOnCreateBill = () => {
         if (items.length >= 10) {
@@ -182,7 +188,6 @@ const SalesPage = () => {
             label: `Hóa đơn (${timestamp})`, // Gán thời gian vào tên hóa đơn
             productList: [],
         };
-
         setItems([...items, newItem]);
     };
 
@@ -337,7 +342,6 @@ const SalesPage = () => {
 
     const onCustomerSelect = async (customer) => {
         // Hàm trợ giúp để lấy các trường địa chỉ một cách an toàn
-
         let customerAddresses = await Promise.all(customer?.addresses?.map(async (ca) => {
             return {
                 value: ca.id,
@@ -350,12 +354,18 @@ const SalesPage = () => {
         })
         // Cập nhật thông tin khách hàng và địa chỉ giao hàng cho hóa đơn hiện tại
         setItems((prevItems) =>
-            prevItems.map((item) =>
-                // Chỉ cập nhật mục có key trùng với currentBill
-                item.key === currentBill
-                    ? { ...item, customerInfo: customer,
-                        customerAddresses: customerAddresses}
-                    : item // Các mục khác giữ nguyên
+            prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item, customerInfo: customer,
+                            customerAddresses: customerAddresses,
+                            recipientName: customer?.fullName,
+                            recipientPhoneNumber: customer?.phoneNumber
+                        }
+                    }
+
+                    return item // Các mục khác giữ nguyên
+                }
             )
         );
     };
@@ -421,7 +431,9 @@ const SalesPage = () => {
 
     const handleCheckIsShipping = (e) => {
         const isChecked = e.target.checked;
-        console.log(isChecked);
+
+
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -471,32 +483,39 @@ const SalesPage = () => {
                 customerMoney: bill.payInfo?.customerMoney || 0,
                 cashCustomerMoney: bill.payInfo?.cashCustomerMoney || 0,
                 bankCustomerMoney: bill.payInfo?.bankCustomerMoney || 0,
-                isCashAndBank: bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney,
+                isCashAndBank: !!(bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney),
                 discountMoney: bill.payInfo?.discount || 0,
-                shipMoney: bill.payInfo?.isShipping ? bill.payInfo?.shipMoney || 0 : 0,
+                shipMoney: bill.isShipping ? bill.shippingFee || 0 : 0,
                 totalMoney: bill.payInfo?.amount || 0,
                 moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
                 completeDate: null, // Có thể cập nhật nếu cần
                 confirmDate: new Date().toISOString(),
                 desiredDateOfReceipt: null,
                 shipDate: null,
-                shippingAddressId: bill.customerInfo?.addresses?.[0]?.id || null,
-                numberPhone: bill.customerInfo?.phoneNumber || "",
+                shippingAddressId: bill.addressShipping?.id || bill.customerInfo?.addresses?.[0]?.id || null,
+                numberPhone: bill.recipientPhoneNumber || bill.customerInfo?.phoneNumber || "",
                 email: bill.customerInfo?.email || "",
-                typeBill: "OFFLINE", // Hoặc "OFFLINE" tùy vào logic của bạn
+                typeBill: "OFFLINE", // Hoặc "ONLINE" tùy vào logic của bạn
                 notes: "",
-                status: "DA_THANH_TOAN", // Có thể thay đổi trạng thái hóa đơn
-                billDetailRequests: bill.productList.map(product => {
-                    return {
-                        price: product.price,
-                        productDetailId: product.id,
-                        quantity: product.quantityInCart
-                    }
-                }),
-                voucherId: selectedVouchers[currentBill]?.id,
-                isShipping: bill.isShipping || false
-
+                status: "DA_HOAN_THANH", // Có thể thay đổi trạng thái hóa đơn
+                voucherId: selectedVouchers[currentBill]?.id || null,
+                isShipping: bill.isShipping || false,
+                recipientName: bill.recipientName || "",
+                recipientPhoneNumber: bill.recipientPhoneNumber || "",
+                shippingFee: bill.shippingFee || 0,
+                address: {
+                    provinceId: bill.detailAddressShipping?.provinceId || null,
+                    districtId: bill.detailAddressShipping?.districtId || null,
+                    wardId: bill.detailAddressShipping?.wardId || null,
+                    specificAddress: bill.detailAddressShipping?.specificAddress || "",
+                },
+                billDetailRequests: bill.productList.map(product => ({
+                    price: product.price,
+                    productDetailId: product.id,
+                    quantity: product.quantityInCart
+                }))
             };
+
 
             const response = await axios.post(`${baseUrl}/api/admin/bill/create`, payload);
             if (response.status === 200) {
@@ -519,7 +538,7 @@ const SalesPage = () => {
                 toast.error("Tạo hóa đơn thất bại!");
             }
         } catch (error) {
-            console.error("Lỗi khi tạo hóa đơn:", error);
+
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
@@ -548,7 +567,7 @@ const SalesPage = () => {
     const handleOnPrintBill = async () => {
         // GỌI HÀM IN HÓA ĐƠN
         const id = items.find((item) => item.key === currentBill).billCode;
-        console.log(id)
+
         if (id) {
             const result = await printBillService(id)
             const pdfBlob = new Blob([result], {type: 'application/pdf'});
@@ -566,19 +585,107 @@ const SalesPage = () => {
         }
     }
 
-    const onAddressChange = (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+    const onAddressChange = async (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+        let totalFee = items.find((item) => item.key === currentBill).shippingFee ?? 0
+        const isCurrentWard = !!items.find((item) => item.key === currentBill && item.detailAddressShipping.wardId === selectedWard);
+        console.log("isCurrentWard", isCurrentWard); // true hoặc false
+        if  (selectedWard && !isCurrentWard) {
+            const total = await calculateShippingFee({
+                toWardCode : String(selectedWard),
+                toDistrictId : selectedDistrict
+            });
+            console.log(total)
+            totalFee = total
+        }
+        setItems((prevItems) =>
+            prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item,
+                            detailAddressShipping: {
+                                provinceId: selectedProvince,
+                                districtId : selectedDistrict,
+                                wardId: selectedWard,
+                                specificAddress : specificAddress  ?? "",
+                            },
+                            shippingFee: totalFee
 
+                        }
+                    }
+
+                    return item // Các mục khác giữ nguyên
+                }
+            )
+        );
     }
 
     const onAddressSelected = (e) => {
         const addressId = e.target.value
+        let detailAddress = null;
+        // tìm customer
+        // lấy ra địa chỉ nè
+        const customer = items.find((item) => item.key === currentBill)?.customerInfo
+        if  (customer && customer?.addresses) {
+          const address = customer.addresses.find((ads) => ads.id === addressId)
+            detailAddress = {
+                provinceId: address?.provinceId,
+                districtId: address?.districtId,
+                wardId: address?.wardId,
+                specificAddress: address?.specificAddress,
+            }
+        }
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-
                     return {
                         ...item,
-                        addressShipping: addressId
+                        addressShipping: addressId,
+                        isNewShippingInfo: addressId === "other",
+                        detailAddressShipping: detailAddress
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const  handleOnChangerRecipientPhoneNumber = (e) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        recipientPhoneNumber: e.target.value
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const handleOnChangerRecipientName = (e) => {
+
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        recipientName: e.target.value
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const handleOnChangeShippingFee = (e) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        shippingFee: e.target.value
                     };
                 }
                 return item;
@@ -694,6 +801,15 @@ const SalesPage = () => {
                 onAddressChange={onAddressChange}
                 customerAddresses={items.find((item) => item.key === currentBill)?.customerAddresses}
                 onAddressSelected={onAddressSelected}
+                recipientPhoneNumber={items.find((item) => item.key === currentBill)?.recipientPhoneNumber}
+                recipientName={items.find((item) => item.key === currentBill)?.recipientName}
+                isNewShippingInfo={items.find((item) => item.key === currentBill)?.isNewShippingInfo}
+                detailAddressShipping={items.find((item) => item.key === currentBill)?.detailAddressShipping}
+                customerInfo={items.find((item) => item.key === currentBill)?.customerInfo}
+                shippingFee={items.find((item) => item.key === currentBill)?.shippingFee}
+                handleOnChangeShippingFee={handleOnChangeShippingFee}
+                handleOnChangerRecipientName={handleOnChangerRecipientName}
+                handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
             />
         </div>
     );

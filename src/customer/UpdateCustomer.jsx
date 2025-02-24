@@ -12,7 +12,7 @@ const { Password } = Input;
 const UpdateCustomer = () => {
     const [form] = Form.useForm();
     const { id } = useParams();
-    const navigate = useNavigate();
+        const navigate = useNavigate();
     const [fileList, setFileList] = useState([]);
     const [address, setAddress] = useState({
         provinceId: null,
