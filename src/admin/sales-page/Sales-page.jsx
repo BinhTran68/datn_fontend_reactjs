@@ -17,7 +17,7 @@ import axios from "axios";
 import moment from "moment/moment.js";
 import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
-import {baseUrl, generateAddressString} from "../../helpers/Helpers.js";
+import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
 import {printBillService} from "../bill/services/printBillService.js";
 
 const SalesPage = () => {
@@ -483,32 +483,39 @@ const SalesPage = () => {
                 customerMoney: bill.payInfo?.customerMoney || 0,
                 cashCustomerMoney: bill.payInfo?.cashCustomerMoney || 0,
                 bankCustomerMoney: bill.payInfo?.bankCustomerMoney || 0,
-                isCashAndBank: bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney,
+                isCashAndBank: !!(bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney),
                 discountMoney: bill.payInfo?.discount || 0,
-                shipMoney: bill.payInfo?.isShipping ? bill.payInfo?.shipMoney || 0 : 0,
+                shipMoney: bill.isShipping ? bill.shippingFee || 0 : 0,
                 totalMoney: bill.payInfo?.amount || 0,
                 moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
                 completeDate: null, // Có thể cập nhật nếu cần
                 confirmDate: new Date().toISOString(),
                 desiredDateOfReceipt: null,
                 shipDate: null,
-                shippingAddressId: bill.customerInfo?.addresses?.[0]?.id || null,
-                numberPhone: bill.customerInfo?.phoneNumber || "",
+                shippingAddressId: bill.addressShipping?.id || bill.customerInfo?.addresses?.[0]?.id || null,
+                numberPhone: bill.recipientPhoneNumber || bill.customerInfo?.phoneNumber || "",
                 email: bill.customerInfo?.email || "",
-                typeBill: "OFFLINE", // Hoặc "OFFLINE" tùy vào logic của bạn
+                typeBill: "OFFLINE", // Hoặc "ONLINE" tùy vào logic của bạn
                 notes: "",
-                status: "DA_THANH_TOAN", // Có thể thay đổi trạng thái hóa đơn
-                billDetailRequests: bill.productList.map(product => {
-                    return {
-                        price: product.price,
-                        productDetailId: product.id,
-                        quantity: product.quantityInCart
-                    }
-                }),
-                voucherId: selectedVouchers[currentBill]?.id,
-                isShipping: bill.isShipping || false
-
+                status: "DA_HOAN_THANH", // Có thể thay đổi trạng thái hóa đơn
+                voucherId: selectedVouchers[currentBill]?.id || null,
+                isShipping: bill.isShipping || false,
+                recipientName: bill.recipientName || "",
+                recipientPhoneNumber: bill.recipientPhoneNumber || "",
+                shippingFee: bill.shippingFee || 0,
+                address: {
+                    provinceId: bill.detailAddressShipping?.provinceId || null,
+                    districtId: bill.detailAddressShipping?.districtId || null,
+                    wardId: bill.detailAddressShipping?.wardId || null,
+                    specificAddress: bill.detailAddressShipping?.specificAddress || "",
+                },
+                billDetailRequests: bill.productList.map(product => ({
+                    price: product.price,
+                    productDetailId: product.id,
+                    quantity: product.quantityInCart
+                }))
             };
+
 
             const response = await axios.post(`${baseUrl}/api/admin/bill/create`, payload);
             if (response.status === 200) {
@@ -531,7 +538,7 @@ const SalesPage = () => {
                 toast.error("Tạo hóa đơn thất bại!");
             }
         } catch (error) {
-            console.error("Lỗi khi tạo hóa đơn:", error);
+
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
@@ -560,7 +567,7 @@ const SalesPage = () => {
     const handleOnPrintBill = async () => {
         // GỌI HÀM IN HÓA ĐƠN
         const id = items.find((item) => item.key === currentBill).billCode;
-        console.log(id)
+
         if (id) {
             const result = await printBillService(id)
             const pdfBlob = new Blob([result], {type: 'application/pdf'});
@@ -578,8 +585,38 @@ const SalesPage = () => {
         }
     }
 
-    const onAddressChange = (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+    const onAddressChange = async (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+        let totalFee = items.find((item) => item.key === currentBill).shippingFee ?? 0
+        const isCurrentWard = !!items.find((item) => item.key === currentBill && item.detailAddressShipping.wardId === selectedWard);
+        console.log("isCurrentWard", isCurrentWard); // true hoặc false
+        if  (selectedWard && !isCurrentWard) {
+            const total = await calculateShippingFee({
+                toWardCode : String(selectedWard),
+                toDistrictId : selectedDistrict
+            });
+            console.log(total)
+            totalFee = total
+        }
+        setItems((prevItems) =>
+            prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item,
+                            detailAddressShipping: {
+                                provinceId: selectedProvince,
+                                districtId : selectedDistrict,
+                                wardId: selectedWard,
+                                specificAddress : specificAddress  ?? "",
+                            },
+                            shippingFee: totalFee
 
+                        }
+                    }
+
+                    return item // Các mục khác giữ nguyên
+                }
+            )
+        );
     }
 
     const onAddressSelected = (e) => {
@@ -642,6 +679,19 @@ const SalesPage = () => {
         );
     }
 
+    const handleOnChangeShippingFee = (e) => {
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        shippingFee: e.target.value
+                    };
+                }
+                return item;
+            })
+        );
+    }
 
     return (
         <div className={"d-flex flex-column gap-3"}>
@@ -756,6 +806,8 @@ const SalesPage = () => {
                 isNewShippingInfo={items.find((item) => item.key === currentBill)?.isNewShippingInfo}
                 detailAddressShipping={items.find((item) => item.key === currentBill)?.detailAddressShipping}
                 customerInfo={items.find((item) => item.key === currentBill)?.customerInfo}
+                shippingFee={items.find((item) => item.key === currentBill)?.shippingFee}
+                handleOnChangeShippingFee={handleOnChangeShippingFee}
                 handleOnChangerRecipientName={handleOnChangerRecipientName}
                 handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
             />

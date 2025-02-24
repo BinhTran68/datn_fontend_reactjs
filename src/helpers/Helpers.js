@@ -1,4 +1,5 @@
 import axios from "axios";
+import Token from "@zxing/library/es2015/core/aztec/encoder/Token.js";
 
 export const validateEmail = (email) => {
     return String(email)
@@ -75,50 +76,57 @@ export const convertBillStatusToString = (status) => {
     return "Khác";
 }
 
+
+
 export async function generateAddressString(provinceId, districtId, wardId, specificAddressDefault) {
-    // Kiểm tra các tham số đầu vào có hợp lệ hay không
+
+    console.log(provinceId, districtId, wardId, specificAddressDefault)
+    const tokenGHN = import.meta.env.VITE_GHN_API_KEY;
+    const TOKEN = tokenGHN; // Thay bằng API Key của bạn
+
+    const GHN_API_URL = 'https://online-gateway.ghn.vn/shiip/public-api/master-data';
+
     if (!provinceId && !districtId && !wardId) {
-        return "Địa chỉ không hợp lệ";  // Trả về thông báo nếu không có thông tin địa chỉ
+        return "Địa chỉ không hợp lệ";
     }
 
     let provinceName = "";
     let districtName = "";
     let wardName = "";
 
-    // Gọi API chỉ khi provinceId có giá trị hợp lệ
-    if (provinceId) {
-        try {
-            const provinceResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceId}/?depth=2`);
-            provinceName = provinceResponse.data.name || "";  // Nếu không có tên tỉnh, dùng chuỗi rỗng
-        } catch (error) {
-            provinceName = "";  // Nếu có lỗi, gán thông báo lỗi
+    try {
+        if (provinceId) {
+            const provinceResponse = await axios.post(`${GHN_API_URL}/province`, {}, {
+                headers: { Token: TOKEN }
+            });
+            const province = provinceResponse.data.data.find(p => p.ProvinceID === parseInt(provinceId));
+            provinceName = province ? province.ProvinceName : "";
         }
+
+        if (districtId) {
+            const districtResponse  = await axios.post(`${GHN_API_URL}/district`,
+                {province_id: parseInt(provinceId)},
+                {
+                    headers: {Token: TOKEN},
+                },
+            );
+            const district = districtResponse.data.data.find(d => d.DistrictID === parseInt(districtId));
+            districtName = district ? district.DistrictName : "";
+        }
+
+        if (wardId) {
+            const wardResponse = await axios.post(`${GHN_API_URL}/ward`, { district_id: parseInt(districtId) }, {
+                headers: { Token: TOKEN }
+            });
+            const ward = wardResponse.data.data.find(w => w.WardCode === wardId);
+            wardName = ward ? ward.WardName : "";
+        }
+    } catch (error) {
+        console.error("Lỗi khi gọi API GHN:", error);
     }
 
-    // Gọi API chỉ khi districtId có giá trị hợp lệ
-    if (districtId) {
-        try {
-            const districtResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtId}/?depth=2`);
-            districtName = districtResponse.data.name || "";  // Nếu không có tên huyện, dùng chuỗi rỗng
-        } catch (error) {
-            districtName = "";  // Nếu có lỗi, gán thông báo lỗi
-        }
-    }
-
-    // Gọi API chỉ khi wardId có giá trị hợp lệ
-    if (wardId) {
-        try {
-            const wardResponse = await axios.get(`https://provinces.open-api.vn/api/w/${wardId}/?depth=2`);
-            wardName = wardResponse.data.name || "";  // Nếu không có tên xã/phường, dùng chuỗi rỗng
-        } catch (error) {
-            wardName = "";  // Nếu có lỗi, gán thông báo lỗi
-        }
-    }
-
-    // Tạo chuỗi địa chỉ
-    return `${specificAddressDefault ? (specificAddressDefault + `,`) : ""} ${wardName ? wardName + `,` : ""} ${districtName ? districtName + `,` : ""} ${provinceName ? provinceName + `,` : ""}`;
+    return `${specificAddressDefault ? specificAddressDefault + ", " : ""}${wardName ? wardName + ", " : ""}${districtName ? districtName + ", " : ""}${provinceName ? provinceName + ", " : ""}`.trim();
 }
-
 
 export function formatVND(number) {
     if (typeof number !== "number") {
@@ -132,41 +140,11 @@ export function formatVND(number) {
 }
 
 
-
-// Helper function to get GHN shipping fee
-const getGHNShippingFee = async ({ fromDistrictId, toDistrictId, weight }) => {
-    try {
-        const response = await axios.post(
-            'https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
-            {
-                service_type_id: 2, // Chuyển phát tiêu chuẩn
-                    from_district_id: fromDistrictId,
-                    to_district_id: toDistrictId,
-                weight: weight,
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Token: process.env.VITE_GHN_API_KEY, // Lấy API Key từ .env
-                },
-            }
-        );
-
-        return response.data.data.total; // Trả về số tiền vận chuyển
-    } catch (error) {
-        console.error('Error fetching GHN shipping fee:', error);
-        throw error;
-    }
-};
-
-export default getGHNShippingFee; // Xuất hàm để sử dụng ở component khác
-
 const GHN_API_URL = 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee';
 const SERVICE_TYPE_ID = 5; // Loại dịch vụ: Giao hàng tiêu chuẩn
 
 export const calculateShippingFee = async ({
-                                               token,
-                                               shopId,
+                                               shopId = 5638683 ,
                                                fromDistrictId,
                                                fromWardCode,
                                                toDistrictId,
@@ -174,12 +152,13 @@ export const calculateShippingFee = async ({
                                                length = 30,
                                                width = 40,
                                                height = 20,
-                                               weight = 3000,
+                                               weight = 1,
                                                insuranceValue = 0,
                                                coupon = null,
                                                items = []
                                            }) => {
     try {
+        const tokenGHN = import.meta.env.VITE_GHN_API_KEY;
         const response = await axios.post(GHN_API_URL, {
             service_type_id: SERVICE_TYPE_ID,
             from_district_id: fromDistrictId,
@@ -192,11 +171,19 @@ export const calculateShippingFee = async ({
             weight,
             insurance_value: insuranceValue,
             coupon,
-            items
+            items : [
+                {
+                    "name": "TEST1",
+                    "quantity": 1,
+                    "length": 200,
+                    "width": 20,
+                    "height": 20,
+                    "weight": 1
+                }]
         }, {
             headers: {
                 'Content-Type': 'application/json',
-                'Token': token,
+                'Token': tokenGHN,
                 'ShopId': shopId
             }
         });

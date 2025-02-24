@@ -1,93 +1,124 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {Select, Input, Row, Col, Form} from 'antd';
+import { Select, Input, Row, Col, Form } from 'antd';
 
-const {Option} = Select;
-
+const { Option } = Select;
 const tokenGHN = import.meta.env.VITE_GHN_API_KEY;
-
 const GHN_API_URL = 'https://online-gateway.ghn.vn/shiip/public-api/master-data';
-const TOKEN = tokenGHN; // Thay bằng API Key của bạn
+const TOKEN = tokenGHN;
 
-function AddressSelector({provinceId, districtId, wardId, specificAddressDefault, onAddressChange}) {
-
-    console.log("TOKEN", TOKEN)
-
+function AddressSelector({ provinceId, districtId, wardId, specificAddressDefault, onAddressChange }) {
+    console.log(provinceId, districtId, wardId, specificAddressDefault)
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
 
-    const [selectedProvince, setSelectedProvince] = useState(provinceId);
-    const [selectedDistrict, setSelectedDistrict] = useState(districtId);
-    const [selectedWard, setSelectedWard] = useState(wardId);
-    const [specificAddress, setSpecificAddress] = useState(specificAddressDefault);
+    // Đảm bảo provinceId, districtId,
+    const [selectedProvince, setSelectedProvince] = useState(provinceId ? Number(provinceId) : null);
+    const [selectedDistrict, setSelectedDistrict] = useState(districtId ? Number(districtId) : null);
+    const [selectedWard, setSelectedWard] = useState(wardId ? String(wardId) : null);
+    const [specificAddress, setSpecificAddress] = useState(specificAddressDefault || '');
 
-    const fetchProvinces = async () => {
-        try {
-            const response = await axios.get(`${GHN_API_URL}/province`, {
-                headers: {Token: TOKEN}
-            });
-            setProvinces(response.data.data);
-        } catch (error) {
-            console.error('Error fetching provinces:', error);
-        }
-    };
-
-    const fetchDistricts = async (provinceId) => {
-        try {
-            const response = await axios.post(`${GHN_API_URL}/district`,
-                {province_id: provinceId},
-                {
-                    headers: {Token: TOKEN},
-                },
-            );
-            setDistricts(response.data.data);
-        } catch (error) {
-            console.error('Error fetching districts:', error);
-        }
-    };
-
-    const fetchWards = async (districtId) => {
-        console.log("districtId", districtId)
-        try {
-            const response = await axios.post(`${GHN_API_URL}/ward`, {district_id: districtId},
-                {
-                    headers: {Token: TOKEN}
-                },
-            );
-            setWards(response.data.data);
-        } catch (error) {
-            console.error('Error fetching wards:', error);
-        }
-    };
-
+    // Fetch provinces
     useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const response = await axios.get(`${GHN_API_URL}/province`, { headers: { Token: TOKEN } });
+                setProvinces(response.data.data);
+            } catch (error) {
+                console.error('Error fetching provinces:', error);
+            }
+        };
         fetchProvinces();
     }, []);
 
+    // Fetch districts khi selectedProvince thay đổi
     useEffect(() => {
-        if (selectedProvince) fetchDistricts(selectedProvince);
-        setDistricts([]);
-        setSelectedDistrict(null);
-        setSelectedWard(null);
-        setWards([]);
-        onAddressChange(selectedProvince, null, null, specificAddress);
+        const fetchDistricts = async () => {
+            try {
+                const response = await axios.post(
+                    `${GHN_API_URL}/district`,
+                    { province_id: selectedProvince },
+                    { headers: { Token: TOKEN } }
+                );
+                setDistricts(response.data.data);
+            } catch (error) {
+                console.error('Error fetching districts:', error);
+            }
+        };
+
+        if (selectedProvince) {
+            fetchDistricts();
+        } else {
+            setDistricts([]);
+            setSelectedDistrict(null);
+        }
     }, [selectedProvince]);
 
+    // Fetch wards khi selectedDistrict thay đổi
     useEffect(() => {
-        if (selectedDistrict) fetchWards(selectedDistrict);
-        setSelectedWard(null);
-        setWards([]);
-        onAddressChange(selectedProvince, selectedDistrict, null, specificAddress);
+        const fetchWards = async () => {
+            try {
+                const response = await axios.post(
+                    `${GHN_API_URL}/ward`,
+                    { district_id: selectedDistrict },
+                    { headers: { Token: TOKEN } }
+                );
+                setWards(response.data.data);
+            } catch (error) {
+                console.error('Error fetching wards:', error);
+            }
+        };
+
+        if (selectedDistrict) {
+            fetchWards();
+        } else {
+            setWards([]);
+            setSelectedWard(null);
+        }
     }, [selectedDistrict]);
 
-    const handleProvinceChange = (value) => setSelectedProvince(value);
+    // Cập nhật lại khi props thay đổi
+    useEffect(() => {
+            setSelectedProvince(provinceId ? Number(provinceId) : null);
+    }, [provinceId]);
 
-    const handleDistrictChange = (value) => setSelectedDistrict(value);
+    useEffect(() => {
+        if (districtId) {
+            setSelectedDistrict(Number(districtId));
+        }
+    }, [districtId]);
+
+    useEffect(() => {
+        if (wardId) {
+            setSelectedWard(String(wardId));
+        }
+    }, [wardId]);
+
+    useEffect(() => {
+        setSpecificAddress(specificAddressDefault || '');
+    }, [specificAddressDefault]);
+
+    // Handle Select changes
+    const handleProvinceChange = (value) => {
+        setSelectedProvince(Number(value));
+        setSelectedDistrict(null);
+        setSelectedWard(null);
+        setDistricts([]);
+        setWards([]);
+        onAddressChange(Number(value), null, null, specificAddress);
+    };
+
+    const handleDistrictChange = (value) => {
+        setSelectedDistrict(Number(value));
+        setSelectedWard(null);
+        setWards([]);
+        onAddressChange(selectedProvince, Number(value), null, specificAddress);
+    };
 
     const handleWardChange = (value) => {
-        setSelectedWard(value);
-        onAddressChange(selectedProvince, selectedDistrict, value, specificAddress);
+        setSelectedWard(String(value));
+        onAddressChange(selectedProvince, selectedDistrict, Number(value), specificAddress);
     };
 
     const handleSpecificAddressChange = (e) => {
@@ -102,11 +133,11 @@ function AddressSelector({provinceId, districtId, wardId, specificAddressDefault
                 <Col span={12} className="mb-3">
                     <Form.Item label="Tỉnh/Thành phố">
                         <Select
-                            value={selectedProvince || null}
+                            value={selectedProvince}
                             onChange={handleProvinceChange}
                             placeholder="Chọn tỉnh/thành phố"
                         >
-                            {provinces.map(province => (
+                            {provinces.map((province) => (
                                 <Option key={province.ProvinceID} value={province.ProvinceID}>
                                     {province.ProvinceName}
                                 </Option>
@@ -118,12 +149,12 @@ function AddressSelector({provinceId, districtId, wardId, specificAddressDefault
                 <Col span={12}>
                     <Form.Item label="Quận/Huyện">
                         <Select
-                            value={selectedDistrict || null}
+                            value={selectedDistrict}
                             onChange={handleDistrictChange}
                             placeholder="Chọn quận/huyện"
                             disabled={!selectedProvince}
                         >
-                            {districts.map(district => (
+                            {districts.map((district) => (
                                 <Option key={district.DistrictID} value={district.DistrictID}>
                                     {district.DistrictName}
                                 </Option>
@@ -135,12 +166,12 @@ function AddressSelector({provinceId, districtId, wardId, specificAddressDefault
                 <Col span={12}>
                     <Form.Item label="Phường/Xã">
                         <Select
-                            value={selectedWard || null}
+                            value={selectedWard}
                             onChange={handleWardChange}
                             placeholder="Chọn xã/phường"
                             disabled={!selectedDistrict}
                         >
-                            {wards.map(ward => (
+                            {wards.map((ward) => (
                                 <Option key={ward.WardCode} value={ward.WardCode}>
                                     {ward.WardName}
                                 </Option>

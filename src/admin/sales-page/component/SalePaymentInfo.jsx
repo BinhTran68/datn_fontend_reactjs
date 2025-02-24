@@ -51,9 +51,11 @@ const SalePaymentInfo = ({
                              detailAddressShipping,
                             customerInfo,
                              handleOnChangerRecipientPhoneNumber,
-                             handleOnChangerRecipientName
+                             handleOnChangerRecipientName,
+                             shippingFee,
+                             handleOnChangeShippingFee
                          }) => {
-    console.log(detailAddressShipping)
+    console.log("shippingFee", shippingFee)
     return (
         <>
 
@@ -111,8 +113,8 @@ const SalePaymentInfo = ({
                                 type="number"
                                 min={0}
                                 placeholder="Nhập số tiền"
-                                onChange={handleCashCustomerMoneyChange}
-                                value={parseInt(cashCustomerMoney)}
+                                onChange={handleOnChangeShippingFee}
+                                value={parseInt(shippingFee)}
                                 suffix="VNĐ"
                             />
                         </Form.Item>
