@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+// ModalAddNewSize.jsx
+import React, { memo, useEffect, useState } from "react";
 import { Modal, Button, Form, Input } from "antd";
 
-const ModalAddProduct = ({ open, onCreate, onCancel, loading }) => {
+const ModalAddNewSize = ({ open, onCreate, onCancel, loading, title, req }) => {
   const [form] = Form.useForm();
-  const [request, setRequest] = useState({
-    productName: "",
-    status: "HOAT_DONG",
-  });
 
   const handleSubmit = async (values) => {
     // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
     const trimmedValues = {
       ...values,
-      productName: values.productName.trim(),
+      [req]: values[req].trim(),
     };
   
     console.log(trimmedValues);
@@ -21,11 +18,13 @@ const ModalAddProduct = ({ open, onCreate, onCancel, loading }) => {
     form.resetFields(); // Reset form sau khi submit
   };
   
-
+  useEffect(() => {
+    console.warn("dax chayj vaof ddaya-------------------", title);
+  });
   return (
     <Modal
       open={open}
-      title="Thêm Sản Phẩm"
+      title={`Thêm ${title}`}
       onCancel={onCancel}
       footer={[
         <Button key="back" onClick={onCancel}>
@@ -41,37 +40,42 @@ const ModalAddProduct = ({ open, onCreate, onCancel, loading }) => {
         </Button>,
       ]}
     >
-      <p>Nhập thông tin sản phẩm mới...</p>
+      <p>Nhập thông tin {title} mới...</p>
       <Form
         form={form}
         onFinish={handleSubmit} // Handle form submission
         layout="vertical"
       >
         <Form.Item
-          name="productName"
-          label="Tên sản phẩm"
+          name={req}
+          label={`Tên ${title}`}
           rules={[
             {
               validator: (_, value) => {
                 if (!value || !value.trim()) {
                   return Promise.reject(new Error("Không được để trống hoặc chỉ có khoảng trắng"));
                 }
-                if (!/^[\p{L}\p{N}]+$/u.test(value.trim())) {
-                  return Promise.reject(new Error(`Tên sản phẩm chỉ chứa chữ và số, không có ký tự đặc biệt`));
+                if (!/^[0-9]+$/u.test(value.trim())) {
+                  return Promise.reject(new Error(`Tên ${title} là số, không có ký tự đặc biệt`));
                 }
                 if (value.trim().length > 20) {
-                  return Promise.reject(new Error(`Tên sản phẩm tối đa 20 ký tự`));
+                  return Promise.reject(new Error(`Tên ${title} tối đa 20 ký tự`));
+                }
+                if (Number(value.trim()) > 49||Number(value.trim()) <36) {
+                  return Promise.reject(
+                    new Error(`kích cỡ nằm trong khoảng 36 đến 49`)
+                  );
                 }
                 return Promise.resolve();
               },
             },
           ]}
         >
-          <Input placeholder="Nhập tên sản phẩm vào đây!" allowClear />
+          <Input placeholder="Nhập tên mới vào đây!" allowClear />
         </Form.Item>
       </Form>
     </Modal>
   );
 };
 
-export default ModalAddProduct;
+export default memo(ModalAddNewSize);

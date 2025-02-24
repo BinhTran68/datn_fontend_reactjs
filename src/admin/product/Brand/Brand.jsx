@@ -16,6 +16,8 @@ import {
   Flex,
   Grid,
   Popconfirm,
+  Switch,
+  Tooltip,
 } from "antd";
 import styles from "./Brand.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -35,6 +37,7 @@ import {
   getBrand,
   searchNameBrand,
   existsByBrandName,
+  switchStatus,
 } from "./apibrand.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -56,6 +59,8 @@ const Category = () => {
   const [requestSearch, setRequestSearch] = useState({
     name: "",
   });
+  const [formCreate] = Form.useForm();
+  const [formUpdate] = Form.useForm();
 
   const [request, setRequest] = useState({
     brandName: "",
@@ -69,48 +74,37 @@ const Category = () => {
   const error = useRef(null);
   const errorUpdate = useRef(null);
 
-  const handleRequest = async (e) => {
-    const { name, value } = e.target;
-    setRequest((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      brandName: values?.brandName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleCreateBrand(trimmedValues);
+    setOpenCreate(false);
+    setRequestSearch("");
+    formCreate.resetFields(); // Reset form sau khi submit
   };
 
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      brandName: values?.brandName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleUpdateBrand(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
   // validate cho create
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.brandName)) {
-      setErrorMessage(
-        "Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.brandName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.brandName]);
-
-  const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.brandName)) {
-      setErrorMessageUpdate(
-        "Tên hãng là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.brandName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.brandName]);
   // Hàm fetch dữ liệu brands
   useEffect(() => {
     fetchBrandsData();
@@ -119,7 +113,7 @@ const Category = () => {
   const fetchBrandsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameBrand(pagination, requestSearch)
         : await fetchBrands(pagination);
       setBrands(data);
@@ -170,8 +164,6 @@ const Category = () => {
       setLoading(true);
 
       await updateBrand(selectedBrand.data.id, brandData);
-      console.log(selectedBrand.data.id);
-      setSelectedBrand(null);
       setOpenUpdate(false);
       message.success("Cập nhật Hãng thành công");
       fetchBrandsData(); // Refresh data after update
@@ -197,18 +189,18 @@ const Category = () => {
       setLoading(false);
     }
   });
+
   const handleGetBrand = useCallback(
     async (brandId) => {
       setLoading(true);
       try {
         const brandData = await getBrand(brandId);
         setSelectedBrand(brandData);
-        console.log(brandData);
-
-        setRequest({
-          brandName: brandData.data.brandName,
-          status: brandData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        console.log("id đang lấy", brandId);
+        console.log("ob đang lấy", selectedBrand);
+        formUpdate.setFieldsValue({
+          brandName: brandData.data.brandName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -281,8 +273,9 @@ const Category = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
+          </Tag>
         );
       },
     },
@@ -298,6 +291,24 @@ const Category = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchBrandsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
+              <Col>
                 <Button
                   icon={
                     <FaEdit
@@ -310,7 +321,7 @@ const Category = () => {
                   }
                   onClick={() => handleGetBrand(record.id)}
                 >
-                Cập nhật
+                  Cập nhật
                 </Button>
               </Col>
 
@@ -333,20 +344,6 @@ const Category = () => {
       },
     },
   ];
-
-  const handleCreate = () => {
-    setLoading(true);
-    handleCreateBrand(request);
-
-    setTimeout(() => {
-      setLoading(false);
-      setOpenCreate(false);
-      setRequest({
-        brandName: "",
-        status: "HOAT_DONG",
-      });
-    }, 800);
-  };
   const handleUpdate = () => {
     setLoading(true);
 
@@ -382,11 +379,7 @@ const Category = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -399,18 +392,13 @@ const Category = () => {
             onClick={() => {
               setOpenCreate(true);
             }}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Thêm Hãng
           </Button>
           <Modal
             open={openCreate}
             title="Thêm Hãng"
-            onOk={handleCreate}
             onCancel={() => {
               setOpenCreate(false);
             }}
@@ -427,32 +415,56 @@ const Category = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
+                onClick={() => formCreate.submit()}
+                // disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
             <p>Nhập thông tin hãng mới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên hãng vào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.brandName}
+            <Form
+              form={formCreate}
+              onFinish={handleSubmit} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
                 name="brandName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
+                label={`Tên hãng`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên Hãng chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên hãng tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
           <Modal
             open={openUpdate}
             title="Sửa Hãng"
-            onOk={handleUpdate}
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -473,8 +485,8 @@ const Category = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateBrand(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -482,52 +494,43 @@ const Category = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên hãng vào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.brandName} // Bind to 'brand' in state
-                name="brandName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="brandName"
+                label={`Tên hãng`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên Hãng chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên hãng tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>

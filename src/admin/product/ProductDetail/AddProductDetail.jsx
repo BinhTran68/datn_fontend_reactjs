@@ -47,6 +47,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import Breadcrumb from "../BreadCrumb";
 import { COLORS } from "../../../constants/constants";
 import ModalAddNew from "./ModalAddNew";
+import ModalAddNewSize from "./ModalAddNewSize";
 
 const { TextArea } = Input;
 
@@ -1585,7 +1586,7 @@ const ProductDetailDrawer = () => {
         req={"colorName"}
         onCreate={handleCreateColor}
       />
-      <ModalAddNew
+      <ModalAddNewSize
         open={addSizeModalVisible}
         onCancel={() => setAddSizeModalVisible(false)}
         title={"Kích cỡ"}

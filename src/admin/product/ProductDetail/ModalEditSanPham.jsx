@@ -23,6 +23,8 @@ import clsx from "clsx";
 import styles from "./ProductDetail.module.css";
 import { COLORS } from "../../../constants/constants.js";
 import { PlusOutlined } from "@ant-design/icons";
+import { forEach } from "lodash";
+import { exitsProductDetail } from "./ApiProductDetail.js";
 
 const ModalEditSanPham = ({
   isOpen,
@@ -42,20 +44,27 @@ const ModalEditSanPham = ({
   // ảnh
 
   const [cleanUpImage, setCleanUpImage] = useState([]);
+  const [deleted, setDeleted] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Cấu hình Cloudinary
   // Hàm upload ảnh lên Cloudinary và nhận URL và public_id
 
   const cleanUpImageRef = useRef(cleanUpImage);
+  const deletedRef = useRef(deleted);
 
   useEffect(() => {
     // Cập nhật giá trị mới của cleanUpImage vào ref khi nó thay đổi
     cleanUpImageRef.current = cleanUpImage;
+    deletedRef.current = deleted;
     console.log("ddayad la du lieu lay ra", getProductDetail);
     console.log("đây là cleanupimage", cleanUpImage);
 
     console.log("day la image", getValues("image"));
-  }, [cleanUpImage]);
+  }, [cleanUpImage, deleted]);
+  useEffect(() => {
+    console.warn("đây là deleted", deleted);
+  });
 
   // Hàm xóa ảnh
   const deleteImages = async (imageIds) => {
@@ -86,6 +95,34 @@ const ModalEditSanPham = ({
       cleanUpImageRef.current = null;
     }
   };
+  const deleteImagesAndUpdate = async (imageIds) => {
+    if (!imageIds || imageIds.length === 0) return;
+
+    try {
+      const deleteRequests = imageIds.map((id) =>
+        fetch("http://localhost:8080/cloudinary/deleteandupdatedb", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publicId: id.publicId,
+            productId: id.productId,
+            colorId: id.colorId,
+          }),
+        })
+          .then((res) => res.text())
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => console.error("Lỗi khi xóa ảnh:", error))
+      );
+
+      await Promise.all(deleteRequests); // Đợi tất cả các ảnh được xóa
+    } catch (error) {
+      console.error("Lỗi khi xóa ảnh hàng loạt:", error);
+    } finally {
+      cleanUpImageRef.current = null;
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -96,6 +133,7 @@ const ModalEditSanPham = ({
         deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh
       } finally {
         setCleanUpImage([]); // Đặt giá trị cho cleanUpImage
+        setDeleted([]);
       }
     };
   }, [isOpen]);
@@ -147,29 +185,30 @@ const ModalEditSanPham = ({
     console.log("file đang lấy để xóa", file);
 
     if (file.publicId || file.public_id) {
-      try {
-        const res = await fetch("http://localhost:8080/cloudinary/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ public_id: file.publicId || file.public_id }),
-        });
+      // try {
+      //   const res = await fetch("http://localhost:8080/cloudinary/delete", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({ public_id: file.publicId || file.public_id }),
+      //   });
 
-        const data = await res.json();
-        if (data.result === "ok") {
-          // Cập nhật dữ liệu hình ảnh trong form
-          const currentImages = getValues("image"); // Lấy giá trị hiện tại của hình ảnh
-          const updatedImages = currentImages.filter(
-            (img) => img.publicId !== file.publicId
-          );
+      //   const data = await res.json();
+      //   if (data.result === "ok") {
+      //     // Cập nhật dữ liệu hình ảnh trong form
+      //     const currentImages = getValues("image"); // Lấy giá trị hiện tại của hình ảnh
+      //     const updatedImages = currentImages.filter(
+      //       (img) => img.publicId !== file.publicId
+      //     );
 
-          // Cập nhật giá trị hình ảnh trong form
-          setValue("image", updatedImages);
-        } else {
-          console.error("Lỗi xóa ảnh:", data);
-        }
-      } catch (error) {
-        console.error("Lỗi khi xóa ảnh:", error);
-      }
+      //     // Cập nhật giá trị hình ảnh trong form
+      //     setValue("image", updatedImages);
+      //   } else {
+      //     console.error("Lỗi xóa ảnh:", data);
+      //   }
+      // } catch (error) {
+      //   console.error("Lỗi khi xóa ảnh:", error);
+      // }
+      setDeleted((pre) => [...pre, file.publicId || file.public_id]);
     } else {
       console.warn("Ảnh không có public_id, không thể xóa");
     }
@@ -177,6 +216,18 @@ const ModalEditSanPham = ({
     // Ghi chú: Bạn có thể bỏ qua đoạn log này nếu không cần thiết
     console.log("đây là dữ liệu", getValues);
   };
+// 
+const exits = async (productData) => {
+  try {
+    const response = await exitsProductDetail(productData);
+    console.log("Response from của esxits .......... API:", response); // Log response để kiểm tra dữ liệu trả về
+    return response.data
+  } catch (error) {
+    message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+  } finally {
+  }
+};
+
 
   // Hàm Preview
   const onPreview = async (file) => {
@@ -353,11 +404,27 @@ const ModalEditSanPham = ({
         <Button
           key="submit"
           type="primary"
-          onClick={handleFormSubmit((data) => {
-            setCleanUpImage([]); // Đặt giá trị cho cleanUpImage
-            handleSubmit(getProductDetail?.id, data);
-            console.warn("du lieu gửi tới sẻver", data);
+          onClick={handleFormSubmit(async (data) => {
+            setLoading(true);
+            setCleanUpImage([]);
+            // console.warn("đay là exit đấy",exits(data));
+            
+
+            // Xóa hình ảnh trước
+            const mappedDeleted = deletedRef.current.map((publicId) => ({
+              publicId,
+              productId: data.productId,
+              colorId: data.colorId,
+            }));
+
+            await deleteImagesAndUpdate(mappedDeleted); // Đợi xóa hoàn thành trước
+
+            // Sau khi xóa xong mới submit dữ liệu sản phẩm
+            await handleSubmit(getProductDetail?.id, data);
+            setLoading(false);
+            console.warn("Dữ liệu gửi tới server", data);
           })}
+          loading={loading}
         >
           Xác nhận
         </Button>,
@@ -366,7 +433,7 @@ const ModalEditSanPham = ({
       maskClosable={false}
     >
       <Row gutter={[16, 16]}>
-        <Col span={6}>
+        {/* <Col span={6}>
           <label className="text-sm block mb-2">
             <span className="text-red-600">*</span> Sản phẩm
           </label>
@@ -387,7 +454,7 @@ const ModalEditSanPham = ({
               />
             )}
           />
-        </Col>
+        </Col> */}
         <Col span={6}>
           <label className="text-sm block mb-2">
             <span className="text-red-600">*</span> Thương hiệu

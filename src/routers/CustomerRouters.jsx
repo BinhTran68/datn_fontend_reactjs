@@ -102,7 +102,7 @@ const CustomerRouters = {
     },
     // luồng bán hàng
     {
-      path: "products/product-detail",
+      path: "products/product-detail/:id",
       element: <RoleRedirect element={<ProductDetail />} />,
     },
   

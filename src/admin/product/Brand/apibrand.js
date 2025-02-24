@@ -52,6 +52,24 @@ export const searchNameBrand = async (pagination, paramName) => {
     throw error;
   }
 };
+export const switchStatus = async (id, statusO) => {
+  const { status } = statusO;
+
+  try {
+    const response = await api.get("/brand/switchstatus", {
+      params: {
+        id: id,
+        status: status,
+      },
+    });
+    return response.data
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
 
 export const createBrand = async (brandData) => {
   try {
