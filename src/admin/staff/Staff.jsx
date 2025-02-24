@@ -5,7 +5,7 @@ import { SearchOutlined, ReloadOutlined, CheckOutlined, EditOutlined, DeleteOutl
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import {FaEdit} from "react-icons/fa";
-import {COLORS} from "../../constants/constants..js";  // Import Link component
+import {COLORS} from "../../constants/constants.js";  // Import Link component
 import * as XLSX from 'xlsx'; // Import the xlsx library
 
 const { Option } = Select;
