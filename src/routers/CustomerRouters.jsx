@@ -101,10 +101,15 @@ const CustomerRouters = {
       element: <RoleRedirect element={<Trademark />} />,
     },
     // luồng bán hàng
+    // {
+    //   path: "products/product-detail",
+    //   element: <RoleRedirect element={<ProductDetail />} />,
+    // },
     {
-      path: "products/product-detail/:id",
+      path: "products/product-detail/:productId",
       element: <RoleRedirect element={<ProductDetail />} />,
     },
+    
   
   
     

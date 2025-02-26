@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -17,6 +17,7 @@ import { VscTag } from "react-icons/vsc";
 import { COLORS } from "../../../constants/constants";
 import { Content } from "antd/es/layout/layout";
 import { FaRegTrashCan } from "react-icons/fa6";
+import { getCart, getDeviceId, removeFromCart } from "./cart";
 
 const { Title, Text } = Typography;
 
@@ -27,7 +28,18 @@ const CartPage = () => {
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState(0);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
-
+  const [products, setProducts] = useState(getCart());
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setProducts(getCart()); // Cập nhật UI khi có thay đổi trong giỏ hàng
+    };
+  
+    window.addEventListener("storage", handleStorageChange);
+  
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
   const discountCodes = {
     SALE10: { type: "percent", value: 0.1 }, // 10% discount
     SALE20: { type: "percent", value: 0.2 }, // 20% discount
@@ -35,30 +47,35 @@ const CartPage = () => {
     FIXED200: { type: "fixed", value: 200000 }, // 200,000 VND fixed discount
   };
 
-  const products = [
-    {
-      name: "Giày Adidas Stan Smith Fairway M20324 - 36",
-      price: 2100000,
-      image:
-        "https://authentic-shoes.com/wp-content/uploads/2023/04/8880_01.jpg_c2f0a7080647417eb4a17324fed9919f-768x343.jpeg",
-    },
-    {
-      name: "Giày Nike Air Force 1 '07 LV8",
-      price: 2300000,
-      image: "https://example.com/nike-af1.jpg",
-    },
-    {
-      name: "Giày Puma RS-X Bold",
-      price: 1800000,
-      image: "https://example.com/puma-rsx.jpg",
-    },
-  ];
+  const handleRemoveFromCart = (productDetailId) => {
+    // Lọc bỏ sản phẩm đã xóa khỏi giỏ hàng
+    const updatedProducts = products.filter(
+      (product) => product.productDetailId !== productDetailId
+    );
+  
+    setProducts(updatedProducts); // Cập nhật lại danh sách sản phẩm
+    localStorage.setItem(`cart_${getDeviceId()}`, JSON.stringify(updatedProducts));
+    window.dispatchEvent(new Event("storage"));
 
-  const handleQuantityChange = (index, value) => {
-    const newQuantities = [...quantities];
-    newQuantities[index] = value;
-    setQuantities(newQuantities);
+    // Cập nhật lại danh sách sản phẩm đã chọn
+    // láy những sp ko giống với sp đã xóa và set lại
+    const updatedSelectedKeys = selectedRowKeys.filter(
+      (index) => products[index]?.productDetailId !== productDetailId
+    );
+    setSelectedRowKeys(updatedSelectedKeys);
+  
   };
+  
+  const handleQuantityChange = (index, value) => {
+    if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
+  
+    const updatedProducts = [...products];
+    updatedProducts[index].quantityAddCart = value;
+  
+    setProducts(updatedProducts); // Cập nhật state
+    localStorage.setItem(`cart_${getDeviceId()}`, JSON.stringify(updatedProducts)); // Lưu lại vào localStorage
+  };
+  
 
   const handleButtonClick = (msg) => {
     message.success(msg);
@@ -98,13 +115,15 @@ const CartPage = () => {
   };
 
   const totalSelectedPrice = selectedRowKeys.reduce(
-    (acc, index) => acc + quantities[index] * products[index].price,
+    (acc, index) => acc + products[index]?.quantityAddCart * products[index]?.price,
     0
   );
 
   const calculateDiscountedTotal = () => {
     let discountedTotal;
     console.log(discountType);
+    console.log(getCart());
+    
 
     if (discountType === "percent") {
       // Nếu có giảm giá theo phần trăm
@@ -136,8 +155,10 @@ const CartPage = () => {
       key: "product",
       render: (_, record) => (
         <Space>
-          <img src={record.image} alt={record.name} width={60} />
-          <Text>{record.name}</Text>
+          <img src={record.image} alt={record.productName} width={60} />
+          <Text>
+            {record.productName}[{record.colorName}-{record.sizeName}]
+          </Text>
         </Space>
       ),
     },
@@ -157,30 +178,29 @@ const CartPage = () => {
         <Flex gap={0.8}>
           <Button
             icon={<MinusOutlined />}
-            onClick={() =>
-              handleQuantityChange(index, Math.max(1, quantities[index] - 1))
-            }
+            onClick={() => handleQuantityChange(index, Math.max(1, record.quantityAddCart - 1))}
           />
           <InputNumber
             min={1}
-            value={quantities[index]}
+            value={record.quantityAddCart}
             onChange={(value) => handleQuantityChange(index, value)}
             style={{ width: "50px" }}
           />
           <Button
             icon={<PlusOutlined />}
-            onClick={() => handleQuantityChange(index, quantities[index] + 1)}
+            onClick={() => handleQuantityChange(index, record.quantityAddCart + 1)}
           />
         </Flex>
       ),
     },
+    
     {
       title: "TẠM TÍNH",
       dataIndex: "total",
       key: "total",
       render: (_, record, index) => (
         <Text strong>
-          {(record.price * quantities[index]).toLocaleString()} đ
+          {(record.price * record.quantityAddCart).toLocaleString()} đ
         </Text>
       ),
     },
@@ -201,9 +221,11 @@ const CartPage = () => {
                   description="Bạn có muốn xóa Màu sắc này kh"
                   okText="Xác nhận"
                   cancelText="Hủy"
-                  //  onConfirm={() => handleDeleteColor(record.id)}
+                  onConfirm={() => {
+                    handleRemoveFromCart(record.productDetailId);
+                  }}
                 >
-                  <Button >
+                  <Button>
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
@@ -253,9 +275,9 @@ const CartPage = () => {
                   block
                   onClick={() => handleButtonClick("Mua ngay thành công!")}
                 >
-                  MUA NGAY
+                  MUA HÀNG
                 </Button>
-                <Button
+                {/* <Button
                   type="dashed"
                   block
                   onClick={() => handleButtonClick("Chọn trả góp qua thẻ!")}
@@ -277,7 +299,7 @@ const CartPage = () => {
                   onClick={() => handleButtonClick("Tiến hành thanh toán!")}
                 >
                   TIẾN HÀNH THANH TOÁN
-                </Button>
+                </Button> */}
               </Space>
               <Content
                 title="Mã ưu đãi"

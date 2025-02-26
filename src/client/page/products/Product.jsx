@@ -357,7 +357,7 @@ function Product() {
                 {productHadSolDescs?.map((product, index) => (
                   <Col key={index} flex="20%">
                     <Link
-                      to={`/products/product-detail/${product.productId}`}
+                      to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
                       style={{
                         textDecoration: "none",
                         color: "black",
