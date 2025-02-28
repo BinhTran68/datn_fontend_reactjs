@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Drawer,
   Row,
@@ -29,6 +29,7 @@ import {
   fetchDataSelectSole,
   fetchDataSelectType,
 } from "./ApiProductDetail";
+import { PlusOutlined } from "@ant-design/icons";
 import { IoAddCircleOutline, IoAddCircleSharp } from "react-icons/io5";
 import { MdAdd, MdAddBox, MdAddCircleOutline } from "react-icons/md";
 import { BiSolidMessageSquareAdd } from "react-icons/bi";
@@ -44,7 +45,9 @@ import { createMaterial } from "../Material/ApiMaterial";
 import { createGender } from "../Gender/ApiGender";
 import { Navigate, useNavigate } from "react-router-dom";
 import Breadcrumb from "../BreadCrumb";
-import { COLORS } from "../../../constants/constants.";
+import { COLORS } from "../../../constants/constants";
+import ModalAddNew from "./ModalAddNew";
+import ModalAddNewSize from "./ModalAddNewSize";
 
 const { TextArea } = Input;
 
@@ -53,7 +56,6 @@ const ProductDetailDrawer = () => {
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  const [value, setValue] = useState("");
   const [tableData, setTableData] = useState([]);
   const [colors, setColors] = useState([]); // Khởi tạo với mảng rỗng để tránh lỗi
   const [sizes, setSizes] = useState([]);
@@ -72,27 +74,23 @@ const ProductDetailDrawer = () => {
 
   // modal
   const [openCreateProduct, setOpenCreateProduct] = useState(false);
+  const [addTypeModalVisible, setAddTypeModalVisible] = useState(false);
+  const [addBrandModalVisible, setAddBrandModalVisible] = useState(false);
+  const [addColorModalVisible, setAddColorModalVisible] = useState(false);
+  const [addSizeModalVisible, setAddSizeModalVisible] = useState(false);
+  const [addMaterialModalVisible, setAddMaterialModalVisible] = useState(false);
+  const [addSoleModalVisible, setAddSoleModalVisible] = useState(false);
+  const [addGenderModalVisible, setAddGenderModalVisible] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [filterActice, setFilterActice] = useState(false);
-  const [selectedProductDetail, setSelectedProductDetail] = useState();
-
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
-  const [idBrand, setIdBrand] = useState();
   const [dataSelectColor, setDataSelectColor] = useState([]);
-  const [idColor, setIdColor] = useState();
   const [dataSelectGender, setDataSelectGender] = useState([]);
-  const [idGender, setIdGender] = useState();
   const [dataSelectMaterial, setDataSelectMaterial] = useState([]);
-  const [idMaterial, setIdMaterial] = useState();
   const [dataSelectProduct, setDataSelectProduct] = useState([]);
-  const [idProduct, setIdProduct] = useState();
   const [dataSelectSize, setDataSelectSize] = useState([]);
-  const [idSize, setIdSize] = useState();
   const [dataSelectSole, setDataSelectSole] = useState([]);
-  const [idSole, setIdSole] = useState();
   const [dataSelectType, setDataSelectType] = useState([]);
-  const [idType, setIdType] = useState();
 
   const [totalProducts, setTotalProducts] = useState(0);
   const [request, setRequest] = useState(() => ({
@@ -123,7 +121,169 @@ const ProductDetailDrawer = () => {
     sortByQuantity: null,
     sortByPrice: null,
   });
+  // ảnh
+  const [cleanUpImage, setCleanUpImage] = useState([]);
 
+  // Cấu hình Cloudinary
+  // Hàm upload ảnh lên Cloudinary và nhận URL và public_id
+
+  const cleanUpImageRef = useRef(cleanUpImage);
+
+  useEffect(() => {
+    // Cập nhật giá trị mới của cleanUpImage vào ref khi nó thay đổi
+    cleanUpImageRef.current = cleanUpImage;
+  }, [cleanUpImage]);
+
+  // Hàm xóa ảnh
+  const deleteImages = async (imageIds) => {
+    if (!imageIds || imageIds.length === 0) return;
+
+    try {
+      const deleteRequests = imageIds.map((id) =>
+        fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: id }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.result === "ok") {
+              console.log(` Đã xóa ảnh ${id} khỏi Cloudinary`);
+            } else {
+              console.error("Lỗi xóa ảnh:", data);
+            }
+          })
+          .catch((error) => console.error("Lỗi khi xóa ảnh:", error))
+      );
+
+      await Promise.all(deleteRequests); // Đợi tất cả các ảnh được xóa
+    } catch (error) {
+      console.error("Lỗi khi xóa ảnh hàng loạt:", error);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      console.log("🧹 Dọn dẹp ảnh...");
+      console.log(cleanUpImageRef.current);
+
+      deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("Clean up images updated:", cleanUpImage);
+  }, [cleanUpImage]);
+
+  const cloudinaryUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "uploaddatn"); // Thay bằng preset của bạn
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
+      { method: "POST", body: formData }
+    );
+    const data = await res.json();
+    console.log("Cloudinary Upload Response:", data); // Log thông tin trả về từ Cloudinary
+    setCleanUpImage((pre) => [...pre, data.public_id]);
+
+    if (data.secure_url && data.public_id) {
+      // Trả về thông tin của ảnh (url và public_id)
+      return {
+        url: data.secure_url, // URL ảnh
+        public_id: data.public_id, // public_id ảnh
+      };
+    } else {
+      throw new Error("Upload failed");
+    }
+  };
+
+  // Hàm xử lý thay đổi (upload và thêm ảnh vào tableData)
+  const onChange = async (color, { fileList }) => {
+    const updatedImages = fileList.map((file) => ({
+      url: file.response?.url || file.url, // Lấy URL từ response (nếu có) hoặc từ fileList
+      publicId: file.response?.public_id || file.public_id, // Lấy public_id từ response
+      // uid: file.uid,
+      // status: file.status,
+    }));
+
+    // Cập nhật `tableData` ngay sau khi có URL từ Cloudinary
+    setTableData((prev) =>
+      prev.map((item) =>
+        item.color === color
+          ? { ...item, image: updatedImages.slice(0, 6) } // Giữ tối đa 6 ảnh
+          : item
+      )
+    );
+
+    console.log("Updated Table Data:", tableData);
+  };
+
+  // Hàm xử lý khi xóa ảnh
+  const handleRemove = async (file, color) => {
+    console.log(file);
+
+    if (file.response?.public_id) {
+      try {
+        const res = await fetch("http://localhost:8080/cloudinary/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: file.response?.public_id }),
+        });
+
+        const data = await res.json();
+        if (data.result === "ok") {
+          setTableData((prev) =>
+            prev.map((item) =>
+              item.color === color
+                ? {
+                    ...item,
+                    image: Array.isArray(item.image)
+                      ? item.image.filter(
+                          (img) => img.public_id !== file.response?.public_id
+                        )
+                      : [], // Nếu không phải là mảng, gán thành mảng rỗng
+                  }
+                : item
+            )
+          );
+        } else {
+          console.error("Lỗi xóa ảnh:", data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa ảnh:", error);
+      }
+    } else {
+      console.warn("Ảnh không có public_id, không thể xóa");
+    }
+    console.log("đây là dữ liệu", tableData);
+  };
+
+  // Hàm Preview
+  const onPreview = async (file) => {
+    let src = file.url;
+
+    if (!src && file.originFileObj) {
+      // Nếu chưa có URL, tạo URL tạm thời cho ảnh
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+
+    if (typeof src === "string") {
+      const image = new Image();
+      image.src = src;
+      const imgWindow = window.open(src);
+      imgWindow?.document.write(image.outerHTML);
+    }
+  };
+
+  // Cột trong bảng
+
+  // hết doạn up ảnh
   const handleModalOk = async () => {
     try {
       // Kích hoạt validation
@@ -202,6 +362,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Kích cỡ  thành công!`,
       });
+      setAddSizeModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -228,6 +389,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Màu sắc thành công!`,
       });
+      setAddColorModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -253,6 +415,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Thương hiệu thành công!`,
       });
+      setAddBrandModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -278,6 +441,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Đế giày thành công!`,
       });
+      setAddSoleModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -303,6 +467,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Loại giày thành công!`,
       });
+      setAddTypeModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -328,6 +493,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Chất liệu thành công!`,
       });
+      setAddMaterialModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -353,6 +519,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: `Thêm Giới tính thành công!`,
       });
+      setAddGenderModalVisible(false);
     } catch (error) {
       console.error(error);
       notification.error({
@@ -529,6 +696,7 @@ const ProductDetailDrawer = () => {
         showProgress: true,
         description: "Failed to update san pham",
       });
+      deleteImages(cleanUpImageRef.current); // Gọi hàm xóa ảnh khoit
     } finally {
       setLoading(false);
     }
@@ -656,16 +824,73 @@ const ProductDetailDrawer = () => {
       render: (text, record) => (
         <Button
           type="primary"
-          style={{
-           
-            
-            
-          }}
+          style={{}}
           onClick={() => handleDelete(record.key)}
         >
           Xóa
         </Button>
       ),
+    },
+    {
+      title: "Hình ảnh",
+      dataIndex: "color",
+      width: 400,
+      fixed: "right",
+      render: (text, record) => {
+        // Kiểm tra nếu là item đầu tiên có màu color
+        const isFirst =
+          record.key ===
+          tableData.find((item) => item.color === record.color)?.key;
+
+        // Đảm bảo record.image luôn là mảng và chứa các URL hợp lệ
+        const imageList = Array.isArray(record.image) ? record.image : [];
+
+        return isFirst ? (
+          <Form.Item label="" valuePropName="fileList">
+            <Upload
+              customRequest={({ file, onSuccess, onError }) => {
+                cloudinaryUpload(file)
+                  .then(({ url, public_id }) => {
+                    onSuccess({ url, public_id }); // Trả cả public_id về
+                  })
+                  .catch(onError);
+              }}
+              listType="picture-card"
+              // fileList={imageList.map(img => ({
+              //   url: img,          // Đảm bảo sử dụng đúng URL ảnh từ Cloudinary
+              //   uid: img,          // UID cho từng ảnh
+              //   status: 'done',    // Đánh dấu ảnh đã tải lên thành công
+              // }))}
+              onChange={(info) => onChange(record.color, info)} // Gọi hàm onChange khi ảnh thay đổi
+              onRemove={(file) => handleRemove(file, record.color)} // Xử lý khi ảnh bị xóa
+              onPreview={onPreview} // Hàm xem trước ảnh khi nhấp
+              multiple={true}
+            >
+              {/* Hiển thị nút upload nếu số lượng ảnh ít hơn 6 */}
+              {imageList.length < 6 && (
+                <button
+                  style={{
+                    border: 0,
+                    background: "none",
+                    width: "80px",
+                    height: "80px",
+                  }}
+                  type="button"
+                >
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </button>
+              )}
+            </Upload>
+          </Form.Item>
+        ) : null;
+      },
+      onCell: (record) => {
+        const sameColorItems = tableData.filter(
+          (item) => item.color === record.color
+        );
+        return { rowSpan: sameColorItems.length }; // Tính rowSpan để hiển thị đúng các hàng cùng màu
+      },
     },
   ];
   const generateTableData = (
@@ -696,7 +921,7 @@ const ProductDetailDrawer = () => {
           quantity: 0,
           price: 0,
           weight: 0,
-          image: "",
+          image: [],
           status: 1,
           color: color, // Thêm trường color để nhóm các dòng cùng màu
           // mỗi biến thể khi render ra đều có các thuộc tính
@@ -737,7 +962,6 @@ const ProductDetailDrawer = () => {
       ...prev,
       productId: selectedProduct,
     }));
-    
   };
   const handleDelete = (key) => {
     const updatedData = tableData.filter((item) => item.key !== key); // Lọc bỏ dòng có key tương ứng
@@ -790,11 +1014,11 @@ const ProductDetailDrawer = () => {
                 </Col>
                 <Col>
                   <Button
-                      style={{ padding: 0, backgroundColor: "green" }}
-                      onClick={() => setOpenCreateProduct(true)}
-                    >
-                      <MdAdd size={25} color="white" />
-                    </Button>
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setOpenCreateProduct(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -865,9 +1089,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddBrandModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -908,9 +1135,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddGenderModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -953,9 +1183,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddMaterialModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -996,9 +1229,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddTypeModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1039,9 +1275,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddSoleModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1098,9 +1337,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddColorModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1135,9 +1377,12 @@ const ProductDetailDrawer = () => {
                   />
                 </Col>
                 <Col>
-                  {/* <Button style={{ padding: 0, backgroundColor: "green" }}>
-                      <MdAdd size={25} color="white" />
-                    </Button> */}
+                  <Button
+                    style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
+                    onClick={() => setAddSizeModalVisible(true)}
+                  >
+                    <MdAdd size={25} color="white" />
+                  </Button>
                 </Col>
               </Row>
             </Col>
@@ -1156,14 +1401,11 @@ const ProductDetailDrawer = () => {
                         onClick={() => {
                           handleCreateProductDetail(tableData);
                           resetFrom();
+                          setCleanUpImage([]);
                           navigate(-1);
                         }}
                         type="primary"
-                        style={{
-                         
-                          
-                          
-                        }}
+                        style={{}}
                       >
                         Lưu thông tin
                       </Button>
@@ -1174,11 +1416,7 @@ const ProductDetailDrawer = () => {
                         onClick={() => setIsModalVisible(true)}
                         // disabled={!hasSelected}
                         loading={loading}
-                        style={{
-                         
-                          
-                          
-                        }}
+                        style={{}}
                       >
                         Chỉnh số lượng và giá chung
                       </Button>
@@ -1222,11 +1460,7 @@ const ProductDetailDrawer = () => {
             type="primary"
             loading={loading}
             onClick={handleModalOk}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Xác nhận
           </Button>,
@@ -1310,6 +1544,55 @@ const ProductDetailDrawer = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <ModalAddNew
+        open={addTypeModalVisible}
+        onCancel={() => setAddTypeModalVisible(false)}
+        title={"Loại giày"}
+        req={"typeName"}
+        onCreate={handleCreateType}
+      />
+      <ModalAddNew
+        open={addBrandModalVisible}
+        onCancel={() => setAddBrandModalVisible(false)}
+        title={"Thương hiệu"}
+        req={"brandName"}
+        onCreate={handleCreateBrand}
+      />
+      <ModalAddNew
+        open={addGenderModalVisible}
+        onCancel={() => setAddGenderModalVisible(false)}
+        title={"Giới tính"}
+        req={"genderName"}
+        onCreate={handleCreateGenDer}
+      />
+      <ModalAddNew
+        open={addMaterialModalVisible}
+        onCancel={() => setAddMaterialModalVisible(false)}
+        title={"Chất liệu"}
+        req={"materialName"}
+        onCreate={handleCreateMaterial}
+      />
+      <ModalAddNew
+        open={addSoleModalVisible}
+        onCancel={() => setAddSoleModalVisible(false)}
+        title={"Đế giày"}
+        req={"soleName"}
+        onCreate={handleCreateSole}
+      />
+      <ModalAddNew
+        open={addColorModalVisible}
+        onCancel={() => setAddColorModalVisible(false)}
+        title={"Màu sắc"}
+        req={"colorName"}
+        onCreate={handleCreateColor}
+      />
+      <ModalAddNewSize
+        open={addSizeModalVisible}
+        onCancel={() => setAddSizeModalVisible(false)}
+        title={"Kích cỡ"}
+        req={"sizeName"}
+        onCreate={handleCreateSize}
+      />
     </Row>
   );
 };

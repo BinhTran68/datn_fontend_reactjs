@@ -16,6 +16,8 @@ import {
   Flex,
   Grid,
   Popconfirm,
+  Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Material.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -35,13 +37,14 @@ import {
   getMaterial,
   searchNameMaterial,
   existsByMaterialName,
+  switchStatus,
 } from "./ApiMaterial.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Material = () => {
   const { Title } = Typography;
@@ -66,6 +69,39 @@ const Material = () => {
     current: 1,
     pageSize: 5, // Số dòng hiển thị mỗi trang
   });
+
+  const [formCreate] = Form.useForm();
+  const [formUpdate] = Form.useForm();
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      materialName: values?.materialName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleCreateMaterial(trimmedValues);
+    setOpenCreate(false);
+    setRequestSearch("");
+    formCreate.resetFields(); // Reset form sau khi submit
+  };
+
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      brandName: values?.brandName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleUpdateMaterial(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
   const error = useRef(null);
   const errorUpdate = useRef(null);
 
@@ -80,37 +116,7 @@ const Material = () => {
   // validate cho create
   const [errorMessage, setErrorMessage] = useState("");
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.materialName)) {
-      setErrorMessage(
-        "Tên Chất Liệulà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.materialName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.materialName]);
-
-  const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.materialName)) {
-      setErrorMessageUpdate(
-        "Tên Chất Liệulà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.materialName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.materialName]);
+ 
   // Hàm fetch dữ liệu materials
   useEffect(() => {
     fetchMaterialsData();
@@ -119,7 +125,7 @@ const Material = () => {
   const fetchMaterialsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameMaterial(pagination, requestSearch)
         : await fetchMaterials(pagination);
       setMaterials(data);
@@ -208,10 +214,9 @@ const Material = () => {
         setSelectedMaterial(materialData);
         console.log(materialData);
 
-        setRequest({
-          materialName: materialData.data.materialName,
-          status: materialData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        formUpdate.setFieldsValue({
+          materialName: materialData.data.materialName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -287,8 +292,9 @@ const Material = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
+          </Tag>
         );
       },
     },
@@ -303,6 +309,24 @@ const Material = () => {
         return (
           <>
             <Row gutter={[16, 16]}>
+              <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchMaterialsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
               <Col>
                 <Button
                   onClick={() => handleGetMaterial(record.id)}
@@ -320,7 +344,7 @@ const Material = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Chất Liệunày kh"
@@ -332,7 +356,7 @@ const Material = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );
@@ -388,11 +412,7 @@ const Material = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -405,18 +425,13 @@ const Material = () => {
             onClick={() => {
               setOpenCreate(true);
             }}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Thêm Chất liệu
           </Button>
           <Modal
             open={openCreate}
-            title="Thêm Chất liệu"
-            onOk={handleCreate}
+            title="Thêm chất liệu"
             onCancel={() => {
               setOpenCreate(false);
             }}
@@ -433,32 +448,56 @@ const Material = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
+                onClick={() => formCreate.submit()}
+                // disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
-            <p>Nhập thông tin Chất Liệumới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên Chất Liệuvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.materialName}
+            <p>Nhập thông tin chất liệu mới...</p>
+            <Form
+              form={formCreate}
+              onFinish={handleSubmit} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
                 name="materialName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
+                label={`Tên chất liệu`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên chất liệu chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên chất liệu tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa Chất liệu"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -479,8 +518,8 @@ const Material = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateMaterial(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -488,52 +527,43 @@ const Material = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Chất Liệuvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.materialName} // Bind to 'material' in state
-                name="materialName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="materialName"
+                label={`Tên Chất liệu`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên Chất liệu chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên chất liệu tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>

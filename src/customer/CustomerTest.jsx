@@ -1,18 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Input, Select, DatePicker, Slider, Button, Table, Space, Card, message, Modal, Drawer } from 'antd';
-import { SearchOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, PlusOutlined, DownloadOutlined } from '@ant-design/icons';
+import React, {useState, useEffect} from 'react';
+import {Input, Select, DatePicker, Slider, Button, Table, Space, Card, message, Modal, Drawer, Form} from 'antd';
+import {
+    SearchOutlined,
+    ReloadOutlined,
+    EditOutlined,
+    PlusOutlined,
+    DownloadOutlined
+} from '@ant-design/icons';
 import moment from 'moment';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import axios from 'axios';
-import { FaEdit, FaMapMarkedAlt } from "react-icons/fa";
-import { generateAddressString } from "../helpers/Helpers.js";
-import { COLORS } from "../constants/constants..js";
-import { Tooltip } from 'antd';
+import {FaEdit, FaMapMarkedAlt} from "react-icons/fa";
+import {generateAddressString} from "../helpers/Helpers.js";
+import {COLORS} from "../constants/constants.js";
+import {Tooltip} from 'antd';
 import * as XLSX from 'xlsx';
+import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
 
-
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+const {Option} = Select;
+const {RangePicker} = DatePicker;
 
 const CustomerTest = () => {
     const [searchText, setSearchText] = useState('');
@@ -24,20 +30,18 @@ const CustomerTest = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for drawer visibility
     const [recordSelected, setRecordSelected] = useState(null);
     const [addresses, setAddresses] = useState([]);
-    const [newAddress, setNewAddress] = useState({});
-    const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
-    const [selectedProvince, setSelectedProvince] = useState(null);
-    const [selectedDistrict, setSelectedDistrict] = useState(null);
+    const [newAddress, setNewAddress] = useState({
+        provinceId: null,
+        districtId: null,
+        wardId: null,
+        specificAddress: null
+    });
     const [isEditing, setIsEditing] = useState(false); // Flag to indicate if we are editing an address
     const [editingAddressId, setEditingAddressId] = useState(null); // ID of the address being edited
 
     useEffect(() => {
         fetchData();
-        fetchProvinces();
     }, []);
-
 
     const handleExportToExcel = async () => {
         try {
@@ -45,7 +49,7 @@ const CustomerTest = () => {
                 const addressesString = await Promise.all(item.addresses.map(async (address) => {
                     return await generateAddressString(address.provinceId, address.districtId, address.wardId, address.specificAddress);
                 }));
-    
+
                 return {
                     'STT': item.key,
                     'Họ và tên': item.fullName,
@@ -57,46 +61,44 @@ const CustomerTest = () => {
                     'Địa chỉ': addressesString.join('\n'),
                 };
             }));
-    
-            const worksheet = XLSX.utils.json_to_sheet(exportData, { header: Object.keys(exportData[0]) }); // Include header row
-    
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData, {header: Object.keys(exportData[0])}); // Include header row
+
             // Styling the header
             const headerStyle = {
-                font: { bold: true },
-                alignment: { horizontal: 'center' }, // Center header text
-                fill: { fgColor: { rgb: 'FFD8BF' } }, // Light orange background
+                font: {bold: true},
+                alignment: {horizontal: 'center'}, // Center header text
+                fill: {fgColor: {rgb: 'FFD8BF'}}, // Light orange background
             };
-    
+
             for (let col in worksheet) {
                 if (col.startsWith('!')) continue; // Skip metadata properties
                 worksheet[col].s = headerStyle; // Apply header style
             }
-    
-    
             // Setting column widths (important for readability)
             const columnWidths = [
-                { wch: 5 },  // STT (adjust as needed)
-                { wch: 20 }, // Họ và tên
-                { wch: 15 }, // CCCD
-                { wch: 15 }, // Số điện thoại
-                { wch: 12 }, // Ngày sinh
-                { wch: 25 }, // Email
-                { wch: 10 }, // Trạng Thái
-                { wch: 40 }, // Địa chỉ
+                {wch: 5},  // STT (adjust as needed)
+                {wch: 20}, // Họ và tên
+                {wch: 15}, // CCCD
+                {wch: 15}, // Số điện thoại
+                {wch: 12}, // Ngày sinh
+                {wch: 25}, // Email
+                {wch: 10}, // Trạng Thái
+                {wch: 40}, // Địa chỉ
             ];
             worksheet['!cols'] = columnWidths;
-    
+
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
             XLSX.writeFile(workbook, `customers_${moment().format('YYYYMMDDHHmmss')}.xlsx`);
             message.success('Xuất file Excel thành công!');
-    
+
         } catch (error) {
             console.error('Error exporting to Excel:', error);
             message.error('Xuất file Excel thất bại!');
         }
     };
-    
+
 
     const fetchData = () => {
         axios.get('http://localhost:8080/api/customers/')
@@ -116,38 +118,9 @@ const CustomerTest = () => {
                     password: item.password
                 }));
                 setData(fetchedData);
+
             })
             .catch((error) => console.error('Error fetching data:', error));
-    };
-
-    const fetchProvinces = () => {
-        axios.get('https://provinces.open-api.vn/api/p/')
-            .then((response) => {
-                setProvinces(response.data);
-            })
-            .catch((error) => {
-                console.error('Error fetching provinces:', error);
-            });
-    };
-
-    const fetchDistricts = (provinceCode) => {
-        axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}/?depth=2`)
-            .then((response) => {
-                setDistricts(response.data.districts);
-            })
-            .catch((error) => {
-                console.error('Error fetching districts:', error);
-            });
-    };
-
-    const fetchWards = (districtCode) => {
-        axios.get(`https://provinces.open-api.vn/api/d/${districtCode}/?depth=2`)
-            .then((response) => {
-                setWards(response.data.wards);
-            })
-            .catch((error) => {
-                console.error('Error fetching wards:', error);
-            });
     };
 
     const handleSearch = () => {
@@ -160,7 +133,7 @@ const CustomerTest = () => {
             maxAge: ageRange[1],
         };
 
-        axios.get('http://localhost:8080/api/customers/filter', { params })
+        axios.get('http://localhost:8080/api/customers/filter', {params})
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
@@ -189,19 +162,9 @@ const CustomerTest = () => {
         fetchData();
     };
 
-    const handleDelete = (record) => {
-        axios.delete(`http://localhost:8080/api/customers/delete/${record.id}`)
-            .then(() => {
-                message.success('Xóa khách hàng thành công!');
-                setData(prevData => prevData.filter(item => item.id !== record.id));
-            })
-            .catch((error) => {
-                console.error('Error deleting customer:', error);
-                message.error('Xóa khách hàng thất bại!');
-            });
-    };
 
     const showModalAddress = (record) => {
+
         setIsModalOpen(true);
         setRecordSelected(record);
         fetchAddresses(record);
@@ -220,23 +183,30 @@ const CustomerTest = () => {
             const addressStrings = await Promise.all(
                 record.addresses.map(async (el) => {
                     const addressString = await generateAddressString(el.provinceId, el.districtId, el.wardId, el.specificAddress);
-                    return { id: el.id, address: addressString, isDefault: el.isAddressDefault, provinceId: el.provinceId, districtId: el.districtId, wardId: el.wardId, specificAddress: el.specificAddress };
+                    return {
+                        id: el.id,
+                        address: addressString,
+                        isDefault: el.isAddressDefault,
+                        provinceId: el.provinceId,
+                        districtId: el.districtId,
+                        wardId: el.wardId,
+                        specificAddress: el.specificAddress
+                    };
                 })
             );
             setAddresses(addressStrings);
         }
     };
-
     const handleAddAddressClick = () => {
         setIsDrawerOpen(true);
-        setNewAddress({});
-        setSelectedProvince(null);
-        setSelectedDistrict(null);
-        setWards([]);
+        setNewAddress({
+            districtId: null,
+            wardId: null,
+            specificAddress: "",
+            provinceId: null
+        });
         setIsEditing(false);
     };
-
-
 
     const handleAddAddress = async () => {
         try {
@@ -245,7 +215,7 @@ const CustomerTest = () => {
                 `http://localhost:8080/api/customers/add-address/${recordSelected.id}`,
                 newAddress
             );
-
+            console.log(newAddress)
             message.success('Thêm địa chỉ thành công!');
             // Cập nhật lại danh sách addresses
             const provinceId = String(response.data.provinceId);
@@ -258,7 +228,6 @@ const CustomerTest = () => {
                 wardId,
                 response.data.specificAddress
             );
-
             // Thêm bản ghi mới lên đầu danh sách
             setAddresses((prevAddresses) => [
                 {
@@ -277,10 +246,6 @@ const CustomerTest = () => {
             message.error('Thêm địa chỉ thất bại!');
         }
     };
-
-
-
-
     const handleEditAddress = async (addressId) => {
         try {
             const response = await axios.put(
@@ -322,9 +287,6 @@ const CustomerTest = () => {
             message.error('Cập nhật địa chỉ thất bại!');
         }
     };
-
-
-
     const handleSetDefaultAddress = (addressId) => {
         axios
             .put(`http://localhost:8080/api/customers/set-default-address/${addressId}`)
@@ -350,36 +312,20 @@ const CustomerTest = () => {
             });
     };
 
-    const handleProvinceChange = (value) => {
-        setSelectedProvince(value);
-        setNewAddress({ ...newAddress, provinceId: value });
-        setSelectedDistrict(null);
-        setWards([]);
-        fetchDistricts(value);
-    };
-
-    const handleDistrictChange = (value) => {
-        setSelectedDistrict(value);
-        setNewAddress({ ...newAddress, districtId: value });
-        fetchWards(value);
-    };
-
     const handleEditAddressClick = (address) => {
+        console.log(address)
         setNewAddress({
             specificAddress: address.specificAddress,
             provinceId: address.provinceId,
             districtId: address.districtId,
             wardId: address.wardId
         });
-        setSelectedProvince(address.provinceId);
-        setSelectedDistrict(address.districtId);
-        fetchDistricts(address.provinceId);
-        fetchWards(address.districtId);
-        setIsDrawerOpen(true);
+
         setIsEditing(true);
         setEditingAddressId(address.id);
-    };
+        setIsDrawerOpen(true);
 
+    };
     const columns = [
         {
             title: 'STT',
@@ -454,7 +400,7 @@ const CustomerTest = () => {
                     <Tooltip title="Xem địa chỉ">
                         <Button
                             type="danger"
-                            icon={<FaMapMarkedAlt />}
+                            icon={<FaMapMarkedAlt/>}
                             onClick={() => showModalAddress(record)}
                             style={{
                                 borderRadius: '20px',
@@ -468,8 +414,19 @@ const CustomerTest = () => {
         },
     ];
 
+    const onAddressChange = (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
+        setNewAddress(
+            {
+                districtId: selectedDistrict,
+                provinceId: selectedProvince,
+                wardId: selectedWard,
+                specificAddress: specificAddress
+            }
+        )
+    }
+
     return (
-        <div style={{ padding: '20px' }}>
+        <div style={{padding: '20px'}}>
             <h2>Quản lý tài khoản khách hàng</h2>
 
             <Modal
@@ -479,10 +436,11 @@ const CustomerTest = () => {
                 onOk={handleOk}
                 onCancel={handleCancel}
             >
-                <Button type="primary" onClick={handleAddAddressClick} icon={<PlusOutlined />} style={{ marginBottom: '10px' }}>
+                <Button type="primary" onClick={handleAddAddressClick} icon={<PlusOutlined/>}
+                        style={{marginBottom: '10px'}}>
                     Thêm địa chỉ mới
                 </Button>
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <div style={{maxHeight: '300px', overflowY: 'auto'}}>
                     {addresses.length === 0 ? (
                         <p>Không có địa chỉ nào.</p>
                     ) : (
@@ -500,12 +458,12 @@ const CustomerTest = () => {
                                     backgroundColor: '#f9f9f9'
                                 }}
                             >
-                                <span style={{ flex: 1 }}>{addressObj.address}</span>
+                                <span style={{flex: 1}}>{addressObj.address}</span>
                                 <Button
                                     type="default"
-                                    icon={<EditOutlined />}
+                                    icon={<EditOutlined/>}
                                     onClick={() => handleEditAddressClick(addressObj)}
-                                    style={{ marginLeft: '10px', borderRadius: '5px' }}
+                                    style={{marginLeft: '10px', borderRadius: '5px'}}
                                 />
                                 <Button
                                     type="primary"
@@ -529,46 +487,19 @@ const CustomerTest = () => {
                 width={360}
                 onClose={() => setIsDrawerOpen(false)}
                 visible={isDrawerOpen}
-                bodyStyle={{ paddingBottom: 80 }}
+                bodyStyle={{paddingBottom: 80}}
             >
-                <Input
-                    placeholder="Nhập địa chỉ mới..."
-                    value={newAddress.specificAddress}
-                    onChange={(e) => setNewAddress({ ...newAddress, specificAddress: e.target.value })}
-                    style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
-                />
-                <Select
-                    placeholder="Chọn tỉnh/thành phố"
-                    style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
-                    onChange={handleProvinceChange}
-                    value={parseInt(newAddress.provinceId)}
-                >
-                    {provinces.map((province) => (
-                        <Option key={province.code} value={province.code}>{province.name}</Option>
-                    ))}
-                </Select>
-                <Select
-                    placeholder="Chọn quận/huyện"
-                    style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
-                    onChange={handleDistrictChange}
-                    value={parseInt(newAddress.districtId)}
-                    disabled={!selectedProvince}
-                >
-                    {districts.map((district) => (
-                        <Option key={district.code} value={district.code}>{district.name}</Option>
-                    ))}
-                </Select>
-                <Select
-                    placeholder="Chọn phường/xã"
-                    style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
-                    onChange={(value) => setNewAddress({ ...newAddress, wardId: value })}
-                    value={parseInt(newAddress.wardId)}
-                    disabled={!selectedDistrict}
-                >
-                    {wards.map((ward) => (
-                        <Option key={ward.code} value={ward.code}>{ward.name}</Option>
-                    ))}
-                </Select>
+                <Form layout="vertical">
+                    <Form.Item name="address">
+                        <AddressSelectorAntd
+                            provinceId={newAddress.provinceId}
+                            districtId={newAddress?.districtId}
+                            wardId={newAddress?.wardId}
+                            specificAddress={newAddress?.specificAddress}
+                            onAddressChange={onAddressChange}/>
+                    </Form.Item>
+
+                </Form>
                 <Button
                     type="primary"
                     onClick={() =>
@@ -576,7 +507,7 @@ const CustomerTest = () => {
                             ? handleEditAddress(editingAddressId)
                             : handleAddAddress()
                     }
-                    style={{ width: '100%', marginBottom: '10px', borderRadius: '5px' }}
+                    style={{width: '100%', marginBottom: '10px', borderRadius: '5px'}}
                 >
                     {isEditing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ'}
                 </Button>
@@ -584,60 +515,60 @@ const CustomerTest = () => {
 
             <Card>
                 <h3>Bộ lọc</h3>
-                <hr />
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Tìm kiếm:</label>
+                <hr/>
+                <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                    <label style={{marginRight: '10px', fontWeight: '500'}}>Tìm kiếm:</label>
                     <Input
                         placeholder="Tìm kiếm tên và sdt..."
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        style={{ width: '250px', marginRight: '20px', borderRadius: '10px' }}
+                        style={{width: '250px', marginRight: '20px', borderRadius: '10px'}}
                     />
 
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Ngày sinh:</label>
+                    <label style={{marginRight: '10px', fontWeight: '500'}}>Ngày sinh:</label>
                     <RangePicker
                         format="YYYY-MM-DD HH:mm:ss"
                         showTime
                         value={dobRange}
                         onChange={(dates) => setDobRange(dates)}
-                        style={{ marginRight: '20px', borderRadius: '10px' }}
+                        style={{marginRight: '20px', borderRadius: '10px'}}
                     />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Trạng thái:</label>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <label style={{marginRight: '10px', fontWeight: '500'}}>Trạng thái:</label>
                     <Select
                         value={status}
                         onChange={(value) => setStatus(value)}
-                        style={{ width: '250px', marginRight: "20px", borderRadius: '10px' }}
+                        style={{width: '250px', marginRight: "20px", borderRadius: '10px'}}
                     >
                         <Option value="Kích hoạt">Kích hoạt</Option>
                         <Option value="Khóa">Khóa</Option>
                     </Select>
 
-                    <label style={{ marginRight: '10px', fontWeight: '500' }}>Khoảng tuổi:</label>
+                    <label style={{marginRight: '10px', fontWeight: '500'}}>Khoảng tuổi:</label>
                     <Slider
                         range
                         min={0}
                         max={100}
                         value={ageRange}
                         onChange={(value) => setAgeRange(value)}
-                        style={{ width: '250px' }}
+                        style={{width: '250px'}}
                     />
                 </div>
-                <div style={{ marginTop: '20px' }}>
+                <div style={{marginTop: '20px'}}>
                     <Button
                         type="primary"
-                        icon={<SearchOutlined />}
+                        icon={<SearchOutlined/>}
                         onClick={handleSearch}
-                        style={{ marginRight: "10px" }}
+                        style={{marginRight: "10px"}}
                     >
                         Tìm kiếm
                     </Button>
                     <Button
                         type="default"
-                        icon={<ReloadOutlined />}
+                        icon={<ReloadOutlined/>}
                         onClick={handleReset}
-                        style={{ marginRight: "10px" }}
+                        style={{marginRight: "10px"}}
                     >
                         Làm mới bộ lọc
                     </Button>
@@ -645,28 +576,19 @@ const CustomerTest = () => {
                     <Link to="/admin/customer-create">
                         <Button
                             type="primary"
-                            icon={<PlusOutlined />}
-                            style={{ marginRight: "10px" }}
+                            icon={<PlusOutlined/>}
+                            style={{marginRight: "10px"}}
                         >
                             Thêm mới
                         </Button>
                     </Link>
-                    <Button  type="default" icon={<DownloadOutlined />} onClick={handleExportToExcel}>
+                    <Button type="default" icon={<DownloadOutlined/>} onClick={handleExportToExcel}>
                         Xuất Excel
                     </Button>
-                    
-                   
-              
-                <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
-            
+                    <Table columns={columns} dataSource={data} style={{marginTop: '20px'}}/>
+
                 </div>
             </Card>
-
-            {/* <Card className={"mt-3"}>
-                <h3>Danh sách khách hàng</h3>
-                <hr />
-                <Table columns={columns} dataSource={data} style={{ marginTop: '20px' }} />
-            </Card> */}
         </div>
     );
 };

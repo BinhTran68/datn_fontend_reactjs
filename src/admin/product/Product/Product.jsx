@@ -17,6 +17,7 @@ import {
   Grid,
   Popconfirm,
   Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -37,16 +38,20 @@ import {
   getProduct,
   searchNameProduct,
   existsByProductName,
+  switchStatus,
 } from "./ApiProduct.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
-import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { FaEdit, FaRegListAlt } from "react-icons/fa";
+import { COLORS } from "../../../constants/constants.js";
 import { Link } from "react-router-dom";
+import { CiBoxList, CiViewList } from "react-icons/ci";
 
 const Product = () => {
+  const [formUpdate] = Form.useForm();
+
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
@@ -82,47 +87,32 @@ const Product = () => {
 
   // validate cho create
   const [errorMessage, setErrorMessage] = useState("");
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      productName: values?.productName?.trim(),
+    };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessage(
-        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.productName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.productName]);
+    console.log(trimmedValues);
+
+    await handleUpdateProduct(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
 
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessageUpdate(
-        "Tên Sản phẩmlà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.productName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.productName]);
   // Hàm fetch dữ liệu products
   useEffect(() => {
     fetchProductsData();
-  }, [pagination]);
+  }, [pagination, location.pathname]);
 
   const fetchProductsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameProduct(pagination, requestSearch)
         : await fetchProducts(pagination);
       setProducts(data);
@@ -213,10 +203,9 @@ const Product = () => {
         setSelectedProduct(productData);
         console.log(productData);
 
-        setRequest({
-          productName: productData.data.productName,
-          status: productData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        formUpdate.setFieldsValue({
+          productName: productData.data.productName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -307,7 +296,7 @@ const Product = () => {
     {
       title: "Thao tác",
       dataIndex: "actions",
-      width:"15rem",
+      width: "15rem",
       key: "actions",
       render: (_, record) => {
         if (!record.id || Object.keys(record).length === 0) {
@@ -317,21 +306,38 @@ const Product = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
-             <Tooltip title="chỉnh sửa sản phẩm">
-             <Button
-                  onClick={() => handleGetProduct(record.id)}
-                  icon={
-                    <FaEdit
-                      style={{
-                        color: `${COLORS.primary}`,
-                        // marginRight: 8,
-                        fontSize: "1.5rem",
-                      }}
-                    />
-                  }
-                >
-                </Button>
-             </Tooltip>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status == 0}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchProductsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
+              <Col>
+                <Tooltip title="chỉnh sửa sản phẩm">
+                  <Button
+                    onClick={() => handleGetProduct(record.id)}
+                    icon={
+                      <FaEdit
+                        style={{
+                          color: `${COLORS.primary}`,
+                          // marginRight: 8,
+                          fontSize: "1.5rem",
+                        }}
+                      />
+                    }
+                  ></Button>
+                </Tooltip>
               </Col>
 
               {/* <Col>
@@ -348,13 +354,13 @@ const Product = () => {
                 </Popconfirm>
               </Col> */}
               <Col>
-              <Tooltip title="Xem chi tiết sản phẩm">
-              <Link to={`get-product-detail/${record.id}`}>
-                <Button
-                    icon={<FaEye color={`${COLORS.primary}`} size={20} />}
-                />
-              </Link>
-              </Tooltip>
+                <Tooltip title="Xem chi tiết sản phẩm">
+                  <Link to={`get-product-detail/${record.id}`}>
+                    <Button
+                      icon={<FaEye color={`${COLORS.primary}`} size={20} />}
+                    />
+                  </Link>
+                </Tooltip>
               </Col>
             </Row>
           </>
@@ -411,11 +417,7 @@ const Product = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -436,33 +438,19 @@ const Product = () => {
           >
             Thêm Sản Phẩm
           </Button> */}
-          <Row gutter={[16,16]}>
+          <Row gutter={[16, 16]}>
             <Col>
               <Link to={"add"}>
-                <Button
-                  style={{
-                   
-                    
-                    
-                  }}
-                  type="primary"
-                  icon={<PlusOutlined />}
-                >
+                <Button style={{}} type="primary">
+                  <PlusOutlined />
                   Thêm sản phẩm
                 </Button>
               </Link>
             </Col>
             <Col>
               <Link to={"productdetail"}>
-                <Button
-                  style={{
-
-
-                    
-                  }}
-                  type="primary"
-                  icon={<PlusOutlined />}
-                >
+                <Button style={{}} type="primary">
+                  <CiViewList size={20} />
                   Xem tất cả các sản phẩm chi tiết
                 </Button>
               </Link>
@@ -476,8 +464,7 @@ const Product = () => {
           />
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa tên sản phẩm"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -498,8 +485,8 @@ const Product = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateProduct(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -507,52 +494,43 @@ const Product = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Sản phẩmvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.productName} // Bind to 'product' in state
-                name="productName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="productName"
+                label={`Tên sản phẩm`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên sản phẩm chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên sản phẩm tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>

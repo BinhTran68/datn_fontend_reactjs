@@ -16,8 +16,10 @@ import {
   Flex,
   Grid,
   Popconfirm,
+  Tooltip,
+  Switch,
 } from "antd";
-import {COLORS} from "../../../constants/constants..js"
+import { COLORS } from "../../../constants/constants.js";
 import styles from "./Sole.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import {
@@ -36,6 +38,7 @@ import {
   getSole,
   searchNameSole,
   existsBySoleName,
+  switchStatus,
 } from "./ApiSole.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -80,38 +83,39 @@ const Sole = () => {
 
   // validate cho create
   const [errorMessage, setErrorMessage] = useState("");
+  const [formCreate] = Form.useForm();
+  const [formUpdate] = Form.useForm();
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      soleName: values?.soleName?.trim(),
+    };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.soleName)) {
-      setErrorMessage(
-        "Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.soleName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.soleName]);
+    console.log(trimmedValues);
 
-  const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
+    await handleCreateSole(trimmedValues);
+    setOpenCreate(false);
+    setRequestSearch("");
+    formCreate.resetFields(); // Reset form sau khi submit
+  };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.soleName)) {
-      setErrorMessageUpdate(
-        "Tên Đế giàylà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.soleName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.soleName]);
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      soleName: values?.soleName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleUpdateSole(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
+  
   // Hàm fetch dữ liệu soles
   useEffect(() => {
     fetchSolesData();
@@ -120,7 +124,7 @@ const Sole = () => {
   const fetchSolesData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameSole(pagination, requestSearch)
         : await fetchSoles(pagination);
       setSoles(data);
@@ -206,10 +210,9 @@ const Sole = () => {
         setSelectedSole(soleData);
         console.log(soleData);
 
-        setRequest({
-          soleName: soleData.data.soleName,
-          status: soleData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        formUpdate.setFieldsValue({
+          soleName: soleData.data.soleName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -282,8 +285,9 @@ const Sole = () => {
         }
         return (
           <Tag color={color} style={{ fontSize: "12px", padding: "5px 15px" }}>
-            {status==="HOAT_DONG"?"Hoạt động":"Ngừng hoạt động"} {/* Hiển thị status với chữ in hoa */}
-            </Tag>
+            {status === "HOAT_DONG" ? "Hoạt động" : "Ngừng hoạt động"}{" "}
+            {/* Hiển thị status với chữ in hoa */}
+          </Tag>
         );
       },
     },
@@ -298,6 +302,24 @@ const Sole = () => {
         return (
           <>
             <Row gutter={[16, 16]}>
+              <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchSolesData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
               <Col>
                 <Button
                   icon={
@@ -315,7 +337,7 @@ const Sole = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Đế giàynày kh"
@@ -327,7 +349,7 @@ const Sole = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
             </Row>
           </>
         );
@@ -383,11 +405,7 @@ const Sole = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -400,18 +418,13 @@ const Sole = () => {
             onClick={() => {
               setOpenCreate(true);
             }}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Thêm Đế giày
           </Button>
           <Modal
             open={openCreate}
-            title="Thêm Đế giày"
-            onOk={handleCreate}
+            title="Thêm đế giày"
             onCancel={() => {
               setOpenCreate(false);
             }}
@@ -428,32 +441,56 @@ const Sole = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
+                onClick={() => formCreate.submit()}
+                // disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
-            <p>Nhập thông tin Đế giàymới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên Đế giàyvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.soleName}
+            <p>Nhập thông tin đế giày mới...</p>
+            <Form
+              form={formCreate}
+              onFinish={handleSubmit} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
                 name="soleName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
+                label={`Tên đế giày`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên đế giày chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên đế giày tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa đế giày"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -474,8 +511,8 @@ const Sole = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateSole(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -483,52 +520,43 @@ const Sole = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Đế giàyvào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.soleName} // Bind to 'sole' in state
-                name="soleName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="soleName"
+                label={`Tên đế giày`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên đế giày chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên đế giày tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>

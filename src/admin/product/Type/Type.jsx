@@ -17,6 +17,8 @@ import {
   Grid,
   Popconfirm,
   notification,
+  Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Type.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -36,13 +38,14 @@ import {
   getType,
   searchNameType,
   existsByTypeName,
+  switchStatus,
 } from "./ApiType.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
-import { COLORS } from "../../../constants/constants..js";
+import { COLORS } from "../../../constants/constants.js";
 
 const Type = () => {
   const { Title } = Typography;
@@ -114,37 +117,43 @@ const Type = () => {
     });
   };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.typeName)) {
-      setErrorMessage(
-        "Tên Loạilà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.typeName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.typeName]);
+
 
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
+  const [formCreate] = Form.useForm();
+  const [formUpdate] = Form.useForm();
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      typeName: values?.typeName?.trim(),
+    };
 
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.typeName)) {
-      setErrorMessageUpdate(
-        "Tên Loạilà chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActiveUpdate(false);
-    } else if (request.typeName.trim() === "") {
-      setErrorMessageUpdate("Không được để trống");
-      setIsActiveUpdate(false);
-    } else {
-      setErrorMessageUpdate("Hợp lệ !!!");
-      setIsActiveUpdate(true);
-    }
-  }, [request.typeName]);
+    console.log(trimmedValues);
+
+    await handleCreateType(trimmedValues);
+    setOpenCreate(false);
+    setRequestSearch("");
+    formCreate.resetFields(); // Reset form sau khi submit
+  };
+
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      typeName: values?.typeName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleUpdateType(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
+  
+
   // Hàm fetch dữ liệu types
   useEffect(() => {
     fetchTypesData();
@@ -153,7 +162,7 @@ const Type = () => {
   const fetchTypesData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameType(pagination, requestSearch)
         : await fetchTypes(pagination);
       setTypes(data);
@@ -239,10 +248,9 @@ const Type = () => {
         setSelectedType(typeData);
         console.log(typeData);
 
-        setRequest({
-          typeName: typeData.data.typeName,
-          status: typeData.data.status,
-        }); // Cập nhật form với thông tin từ API
+        formUpdate.setFieldsValue({
+          typeName: typeData.data.typeName || "",
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -332,6 +340,24 @@ const Type = () => {
         return (
           <>
             <Row gutter={[16, 16]}>
+            <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchTypesData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
               <Col>
                 <Button
                   icon={
@@ -349,7 +375,7 @@ const Type = () => {
                 </Button>
               </Col>
 
-              <Col>
+              {/* <Col>
                 <Popconfirm
                   title="Xóa Hãng"
                   description="Bạn có muốn xóa Loạinày kh"
@@ -361,7 +387,8 @@ const Type = () => {
                     <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
                   </Button>
                 </Popconfirm>
-              </Col>
+              </Col> */}
+           
             </Row>
           </>
         );
@@ -424,11 +451,7 @@ const Type = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -441,18 +464,13 @@ const Type = () => {
             onClick={() => {
               setOpenCreate(true);
             }}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Thêm Loại giày
           </Button>
           <Modal
             open={openCreate}
-            title="Thêm Loại giày"
-            onOk={handleCreate}
+            title="Thêm loại giày"
             onCancel={() => {
               setOpenCreate(false);
             }}
@@ -469,32 +487,56 @@ const Type = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
+                onClick={() => formCreate.submit()}
+                // disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
-            <p>Nhập thông tin Loạimới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên Loạivào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.typeName}
+            <p>Nhập thông tin loại giày mới...</p>
+            <Form
+              form={formCreate}
+              onFinish={handleSubmit} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
                 name="typeName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
+                label={`Tên loại giày`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên loại giày chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên loại giày tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa loại giày"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -515,8 +557,8 @@ const Type = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateType(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -524,52 +566,43 @@ const Type = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Loạivào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.typeName} // Bind to 'type' in state
-                name="typeName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="typeName"
+                label={`Tên loại giày`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên loại giày chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên loại giày tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
             </Form>
           </Modal>
         </Row>

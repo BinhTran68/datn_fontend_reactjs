@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button} from "antd";
-import {COLORS} from "../../../constants/constants..js";
+import {COLORS} from "../../../constants/constants.js";
 import {convertBillStatusToString} from "../../../helpers/Helpers.js";
 
 const BillStatusComponent = ({

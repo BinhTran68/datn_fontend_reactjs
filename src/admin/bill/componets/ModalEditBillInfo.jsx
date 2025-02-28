@@ -3,6 +3,7 @@ import {Form, Input, Select, Button, message} from "antd";
 import axios from "axios";
 import {baseUrl} from "../../../helpers/Helpers.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
+import {toast} from "react-toastify";
 
 const {Option} = Select;
 
@@ -43,7 +44,10 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
 
             const response = await axios.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
             if (response.status === 200) {
-                message.success('Cập nhật thành công!');
+                toast.success("Cập nhật hóa đơn thành công")
+                toast.info("Thông tin")
+                toast.error("Thông tin")
+                toast.warning("Thông tin")
                 handleOnEdit(response.data.data);
             } else {
                 message.error('Có lỗi xảy ra khi cập nhật!');

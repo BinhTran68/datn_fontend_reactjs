@@ -1,50 +1,26 @@
-// ModalAddProduct.jsx
-import React, { useState, useLayoutEffect } from "react";
-import { Modal, Button, Form, Input, Radio } from "antd";
-import clsx from "clsx";
-import styles from "./Product.module.css";
+import React, { useState } from "react";
+import { Modal, Button, Form, Input } from "antd";
 
-const ModalAddProduct = ({
-  open,
-  onCreate,
-  onCancel,
-  loading,
-}) => {
+const ModalAddProduct = ({ open, onCreate, onCancel, loading }) => {
+  const [form] = Form.useForm();
   const [request, setRequest] = useState({
     productName: "",
     status: "HOAT_DONG",
   });
 
-  const [isActive, setIsActive] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleRequest = (e) => {
-    const { name, value } = e.target;
-    setRequest((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      productName: values.productName.trim(),
+    };
+  
+    console.log(trimmedValues);
+  
+    await onCreate(trimmedValues);
+    form.resetFields(); // Reset form sau khi submit
   };
-
-  useLayoutEffect(() => {
-    if (!/^[\p{L}\p{N}\s]{1,20}$/u.test(request.productName)) {
-      setErrorMessage(
-        "Tên sản phẩm là chữ, số tối đa 20 ký tự, và không chứa ký tự đặc biệt"
-      );
-      setIsActive(false);
-    } else if (request.productName.trim() === "") {
-      setErrorMessage("Không được để trống");
-      setIsActive(false);
-    } else {
-      setErrorMessage("Hợp lệ !!!");
-      setIsActive(true);
-    }
-  }, [request.productName]);
-
-  const handleSubmit =async () => {
-   await onCreate(request);
-    setRequest({ productName: "", status: "HOAT_DONG" });
-  };
+  
 
   return (
     <Modal
@@ -59,24 +35,40 @@ const ModalAddProduct = ({
           key="submit"
           type="primary"
           loading={loading}
-          onClick={handleSubmit}
-          disabled={!isActive}
+          onClick={() => form.submit()} // Submit the form
         >
           Xác nhận
         </Button>,
       ]}
     >
       <p>Nhập thông tin sản phẩm mới...</p>
-      <Form>
-        <Input
-          placeholder="Nhập tên sản phẩm vào đây!"
-          style={{ marginBottom: "0.3rem" }}
-          value={request.productName}
+      <Form
+        form={form}
+        onFinish={handleSubmit} // Handle form submission
+        layout="vertical"
+      >
+        <Form.Item
           name="productName"
-          onChange={handleRequest}
-          allowClear
-        />
-        <div style={{ color: isActive ? "green" : "red" }}>{errorMessage}</div>
+          label="Tên sản phẩm"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value || !value.trim()) {
+                  return Promise.reject(new Error("Không được để trống hoặc chỉ có khoảng trắng"));
+                }
+                if (!/^[\p{L}\p{N}]+$/u.test(value.trim())) {
+                  return Promise.reject(new Error(`Tên sản phẩm chỉ chứa chữ và số, không có ký tự đặc biệt`));
+                }
+                if (value.trim().length > 20) {
+                  return Promise.reject(new Error(`Tên sản phẩm tối đa 20 ký tự`));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input placeholder="Nhập tên sản phẩm vào đây!" allowClear />
+        </Form.Item>
       </Form>
     </Modal>
   );

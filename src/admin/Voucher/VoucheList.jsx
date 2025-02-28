@@ -1,125 +1,24 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Col, Row, theme } from 'antd';
+import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Col, Row, theme, Tag, Radio, Spin, List, Switch, Tooltip } from 'antd';
 import axios from 'axios';
-import { baseUrl, convertStatusVoucher } from '../../helpers/Helpers.js';
+import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
 import useUrlBuilders from './hooks/useURLS.jsx';
 import moment from 'moment';
 import { DownOutlined } from '@ant-design/icons';
 import "./StatusSelector.css";
 import { render } from 'react-dom';
-import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined,PlusOutlined } from '@ant-design/icons';
-import {FaEye} from "react-icons/fa6";
-import {FaEdit} from "react-icons/fa";
-import {COLORS} from "../../constants/constants..js";
+import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
+import { FaEye } from "react-icons/fa6";
+import { FaEdit } from "react-icons/fa";
+import { Link, useNavigate } from 'react-router-dom';
+
 
 
 
 const { Option } = Select;
 
 //table
-const columns = (handleEdit, handleDelete, handleDetail) => [
-    {
-        title: 'STT',
-        dataIndex: 'stt',
-        key: 'stt',
-        render: (text, record, index) => index + 1,
-    },
-    {
-        title: 'Mã phiếu giảm giá',
-        dataIndex: 'voucherCode',
-        key: 'voucherCode',
-    },
-    {
-        title: ' Tên loại phiếu giảm giá',
-        dataIndex: 'voucherType',
-        key: 'voucherType',
-    },
-    {
-        title: 'Số lượng phiếu giảm giá',
-        dataIndex: 'quantity',
-        key: 'quantity',
-    },
-    {
-        title: 'Giá trị giảm giá(VNĐ)',
-        dataIndex: 'discountValue',
-        key: 'discountValue',
-    },
-    {
-        title: 'Đơn tối thiểu(VNĐ)',
-        dataIndex: 'billMinValue',
-        key: 'billMinValue',
-    },
-    {
-        title: 'Ngày bắt đầu',
-        dataIndex: 'startDate',
-        render: (text) => new Date(text).toLocaleDateString(),
-        key: 'startDate',
-    },
-    {
-        title: 'Ngày kết thúc',
-        dataIndex: 'endDate',
-        render: (text) => new Date(text).toLocaleDateString(),
-        key: 'endDate',
-    },
-    {
-        title: 'Trạng thái',
-        dataIndex: 'statusVoucher',
-        key: 'statusVoucher',
-        render: (_, record) => {
-            let displayStatus = convertStatusVoucher(record.statusVoucher);
-            let color =
-                record.statusVoucher === 'dang_kich_hoat' ? '#52c41a' :
-                    record.statusVoucher === 'chua_kich_hoat' ? 'orange' :
-                        '#FF0033';
 
-            return (
-                <div
-                    style={{
-                        cursor: 'pointer',
-                        color: 'white',
-                        backgroundColor: color,
-                        borderRadius: '10px',
-                        textAlign: 'center',
-                        padding: '5px 10px',
-                        display: 'inline-block',
-                    }}
-                >
-                    {displayStatus}
-                </div>
-            );
-        },
-    },
-    ,
-    {
-        title: 'Thao tác',
-        key: 'action',
-        render: (_, record) => (
-            <Space size="middle">
-                <Button
-                    icon={
-                        <FaEdit
-                            style={{
-                                color: `${COLORS.primary}`,
-                                // marginRight: 8,
-                                fontSize: "1.5rem",
-                            }}
-                        />
-                    }
-                    onClick={() => handleEdit(record)}
-
-                >
-                </Button>
-                {/* <Button
-                    icon={<DeleteOutlined />}
-                    danger onClick={() => handleDelete(record.id)}></Button> */}
-
-                <Button
-                    icon={<FaEye color={"green"} size={20} />}
-                     onClick={() => handleDetail(record)}></Button>
-            </Space>
-        ),
-    },
-];
 
 const AdvancedSearchForm = ({ onSearch }) => {
     const { token } = theme.useToken();
@@ -180,6 +79,14 @@ const AdvancedSearchForm = ({ onSearch }) => {
     const onFinish = (values) => {
         onSearch(values);
     };
+    const handleSubmit = async () => {
+        try {
+            await form.validateFields(); // Kiểm tra toàn bộ form
+            handleOk(); // Nếu hợp lệ, tiếp tục xử lý
+        } catch (error) {
+            console.log("Có lỗi trong form:", error);
+        }
+    };
     return (
         <Card >
             <Form form={form} name="advanced_search" style={{ formStyle }}
@@ -198,7 +105,7 @@ const AdvancedSearchForm = ({ onSearch }) => {
                             onClick={() => {
                                 form.resetFields();
                             }}
-                            style={{ color: 'white', borderRadius: '20px', backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                            style={{ color: 'white', borderRadius: '20px', backgroundColor: '#ff974d', borderColor: '#ff974d' }}
 
 
                         >
@@ -220,16 +127,270 @@ const AdvancedSearchForm = ({ onSearch }) => {
 };
 
 const VoucherList = () => {
-    const [voucherData, setVoucherData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form] = Form.useForm();
-    const [editingVoucher, setEditingVoucher] = useState(null);
-
+    const [value, setValue] = useState(1);
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [pagination, setPagination] = useState({
         page: 0,
         size: 5,
         total: 7
     });
+    const columns = (handleEdit, handleDelete, handleDetail) => [
+        {
+            title: 'STT',
+            dataIndex: 'stt',
+            key: 'stt',
+            align: 'center',
+
+            render: (text, record, index) => index + 1,
+        },
+        {
+            title: 'Mã phiếu giảm giá',
+            dataIndex: 'voucherCode',
+            key: 'voucherCode',
+            align: 'center',
+
+        },
+        {
+            title: 'Tên phiếu giảm giá',
+            dataIndex: 'voucherName',
+            key: 'voucherName',
+            align: 'center',
+
+        },
+        {
+            title: 'Loại phiếu giảm giá',
+            dataIndex: 'voucherType',
+            key: 'voucherType',
+            align: 'center',
+
+            render: (text, record) => {
+                let displayStatus = ConvertvoucherType(record.voucherType);
+                let color = '';
+
+                if (record.voucherType === 'PUBLIC') {
+                    color = 'blue'; // Công khai (Màu xanh)
+                } else if (record.voucherType === 'PRIVATE') {
+                    color = 'purple'; // Riêng tư (Màu tím)
+                }
+
+                return (
+                    <Tag color={color} style={{ padding: '5px 10px', borderRadius: '10px', fontWeight: 'bold' }}>
+                        {displayStatus}
+                    </Tag>
+                );
+            },
+        },
+
+        // {
+        //     title: 'Loại giảm giá',
+        //     dataIndex: 'discountType',
+        //     key: 'discountType',
+        //     align: 'center',
+
+        //     render: (text, record) => {
+        //         // let displayStatus = ConvertdiscountType(record.discountType);
+        //         return (
+        //             <span>
+        //                 {record.discountType}
+        //             </span>
+        //         );
+        //     },
+        // },
+        {
+            title: 'Số lượng phiếu giảm giá',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            align: 'center',
+
+        },
+        {
+            title: 'Giá trị giảm',
+            dataIndex: 'discountValue',
+            key: 'discountValue',
+            align: 'center',
+
+            render: (text, record) => {
+                console.log("record.discountType:", record.discountType); // Debug
+                console.log("text:", text); // Debug
+
+                return (
+                    <span>
+                        {record.discountType === 'PERCENT'
+                            ? `${record.discountValue} %`
+                            : `${record.discountValue} đ`}
+                    </span>
+                );
+            },
+        }
+        ,
+
+        {
+            title: 'Giá trị tối thiểu',
+            dataIndex: 'billMinValue',
+            key: 'billMinValue',
+            align: 'center',
+
+            render: (text) => text ? <span>{text.toLocaleString()} đ</span> : <span>0 đ</span>,
+        },
+        {
+            title: 'Giá trị tối đa',
+
+            dataIndex: 'discountMaxValue',
+            key: 'discountMaxValue',
+            align: 'center',
+
+            render: (text) => text ? <span>{text.toLocaleString()} đ</span> : <span>0 đ</span>,
+        },
+        {
+            title: 'Ngày bắt đầu',
+            dataIndex: 'startDate',
+            key: 'startDate',
+            align: 'center',
+
+            render: (text) => new Date(text).toLocaleDateString(),
+        },
+        {
+            title: 'Ngày kết thúc',
+            dataIndex: 'endDate',
+            key: 'endDate',
+            align: 'center',
+
+            render: (text) => new Date(text).toLocaleDateString(),
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'statusVoucher',
+            key: 'statusVoucher',
+            align: 'center',
+
+            render: (_, record) => {
+                let displayStatus = convertStatusVoucher(record.statusVoucher);
+                let color =
+                    record.statusVoucher === 'dang_kich_hoat' ? '#389e0d' :
+                        record.statusVoucher === 'chua_kich_hoat' ? 'orange' :
+                            'red';
+
+                let backgroundColor =
+                    record.statusVoucher === 'dang_kich_hoat' ? '#f6ffed' :
+                        record.statusVoucher === 'chua_kich_hoat' ? '#fff4e6' :
+                            '#fff1f0';
+
+                return (
+                    <div
+                        style={{
+                            cursor: 'pointer',
+                            color: color,
+                            border: `1px solid ${color}`,
+                            borderRadius: '8px',
+                            textAlign: 'center',
+                            padding: '5px 10px',
+                            display: 'inline-block',
+                            backgroundColor: backgroundColor,
+                            fontSize: '12px',
+                        }}
+                    >
+                        {displayStatus}
+                    </div>
+                );
+            },
+        },
+
+
+        ,
+        {
+            title: 'Thao tác',
+            key: 'action',
+            render: (_, record) => (
+                <Space size="middle">
+                    {record.statusVoucher !== 'ngung_kich_hoat' && (
+                        <Button
+                            icon={
+                                <FaEdit
+                                    style={{
+                                        color: "#ff974d",
+                                        marginRight: "-3",
+                                        fontSize: "1.5rem",
+                                    }}
+                                />
+                            }
+                            onClick={() => handleEdit(record)}
+                        />
+
+                    )}
+
+                    {/* Nút bật/tắt trạng thái */}
+
+                    <Tooltip title="Thay đổi trạng thái">
+                        <Switch
+                            disabled={record.statusVoucher === "ngung_kich_hoat"}
+                            checked={record.statusVoucher === "dang_kich_hoat"}
+                            checkedChildren="Bật"
+                            unCheckedChildren="Tắt"
+                            onChange={async (checked) => {
+                                try {
+                                    const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";
+                                    console.log("Trạng thái mới:", newStatus);
+
+                                    await switchVoucherStatus(record.id, { status: newStatus });
+                                    getPageVoucher()
+                                    message.success("Cập nhật trạng thái thành công");
+                                } catch (error) {
+                                    message.error("Cập nhật trạng thái không thành công");
+                                }
+                            }}
+                        />
+                    </Tooltip>
+
+
+
+                    <Button
+                        icon={<FaEye style={{
+                            color: "#ff974d",
+                            marginRight: -1,
+                            fontSize: "1.3rem",
+                        }} />}
+                        onClick={() => handleDetail(record)}></Button>
+                    <Button style={{
+
+                        border: 'none',
+                    }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
+                </Space>
+            ),
+        },
+    ];
+    const [voucherData, setVoucherData] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const [editingVoucher, setEditingVoucher] = useState(null);
+    const navigate = useNavigate();
+
+    // Hàm gọi API
+    const switchVoucherStatus = async (id, statusO) => {
+        const { status } = statusO
+        console.log("toi ham nay");
+
+        try {
+            const response = await axios.get("http://localhost:8080/api/admin/voucher/switchStatus", {
+                params: { id, status }
+            });
+            console.log(response);
+
+        } catch (error) {
+            console.log(error);
+
+            throw error;
+        }
+    };
+
+
+    const style = {
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+    };
+
 
     // Fetching voucher data (you may want to keep this if it's not commented out)
     useEffect(() => {
@@ -239,6 +400,7 @@ const VoucherList = () => {
     const getPageVoucher = async () => {
         const response = await axios.get(`${baseUrl}/api/admin/voucher/page?page=${pagination.page}&size=${pagination.size}`);
         const data = response.data.data;
+        console.warn(data);
 
         const items = data.content.map((el) => {
             el.startDate = new Date(el.startDate);
@@ -246,6 +408,8 @@ const VoucherList = () => {
             return el;
         });
         setVoucherData(items);
+        console.log(items);
+
 
         const newPagination = {
             page: data.number,
@@ -271,14 +435,10 @@ const VoucherList = () => {
     };
 
     const handleEdit = (record) => {
-        setEditingVoucher(record);
-        setIsEdit(true)
-        setIsModalOpen(true);
-        form.setFieldsValue({
-            ...record,
-            startDate: moment(record.startDate),  // Use moment for startDate
-            endDate: moment(record.endDate)       // Use moment for endDate
-        });
+        navigate(`/admin/voucher/update/${record.id}`);
+    };
+    const handleDetail = (record) => {
+        navigate(`/admin/voucher/detail/${record.id}`);
     };
 
     const handleDelete = async (id) => {
@@ -294,48 +454,37 @@ const VoucherList = () => {
     const [isEdit, setIsEdit] = useState(false);
 
 
-    const handleDetail = (record) => {
-        setIsDeatil(true)
-        setIsEdit(false)
-        setEditingVoucher(record);
-        setIsModalOpen(true);
-        form.setFieldsValue({
-            ...record,
-            startDate: moment(record.startDate),  // Use moment for startDate
-            endDate: moment(record.endDate)       // Use moment for endDate
-        });
-        // try {
-        //     const response = await axios.get(`${baseUrl}/api/admin/voucher/detail/${id}`);
-        //     setDetailVoucher(response.data);  // Lưu thông tin chi tiết
-        //     setIsDetailModalOpen(true);  // Mở modal chi tiết
-        // } catch (error) {
-        //     message.error('Lỗi khi lấy chi tiết phiếu giảm giá!');
-        // }
-    };
 
+
+    // setIsDeatil(true)
+    // setIsEdit(false)
+    // setEditingVoucher(record);
+    // setIsModalOpen(true);
+    // form.setFieldsValue({
+    //     ...record,
+    //     startDate: moment(record.startDate),  // Use moment for startDate
+    //     endDate: moment(record.endDate)       // Use moment for endDate
+    // });
     const handleOk = async () => {
         if (isDetail) {
             setIsModalOpen(false);
             return
         }
         try {
-            const value = await form.validateFields(); 
+            const value = await form.validateFields();
             const values = form.getFieldsValue();
             if (editingVoucher) {
                 // Edit existing voucher
-                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values,value);
+                await axios.put(`${baseUrl}/api/admin/voucher/update/${editingVoucher.id}`, values, value);
                 message.success('Cập nhật phiếu giảm giá thành công!');
-            } else {
-                // Add new voucher
-                await axios.post(`${baseUrl}/api/admin/voucher/add`, values,value);
-                message.success('Thêm mới phiếu giảm giá thành công!');
             }
             getPageVoucher();  // Fetch updated list
             setIsModalOpen(false);
             form.resetFields();
         } catch (error) {
-            message.error('Lỗi khi lưu trữ liệu!',error);
+            message.error('Lỗi khi lưu trữ liệu!', error);
         }
+
     };
 
     const handleCancel = () => {
@@ -354,6 +503,17 @@ const VoucherList = () => {
     const handleSearch = (values) => {
         console.log('Search Values:', values);
     }
+    // const onChange = (e) => {
+    //     const selectedValue = e.target.value;
+    //     setValue(selectedValue);
+    // }
+    const [voucherType, setVoucherType] = useState(0); // Mặc định là Công khai
+
+    const onChange = (e) => {
+        setVoucherType(e.target.value);
+    };
+
+
     return (
         <>
             <h4>Bộ lọc </h4>
@@ -363,14 +523,17 @@ const VoucherList = () => {
             <h4 style={{ paddingTop: '15px' }}>Danh sách phiếu giảm giá</h4>
 
             <Card>
-                <Button type="primary" icon={<PlusOutlined />}
-                    onClick={handleAdd} style={{
-                        marginBottom: '20px',
-                        border: 'none',
-                         backgroundColor: '#52c41a'
-                    }}>
-                    Thêm mới
-                </Button>
+                <Link to={"/admin/voucher/add"} >
+                    <Button type="primary" icon={<PlusOutlined />}
+                        onClick={handleAdd} style={{
+                            marginBottom: '20px',
+                            border: 'none',
+                            backgroundColor: '#ff974d'
+                        }}>
+                        Thêm mới
+                    </Button>
+                </Link>
+
 
                 <Table
                     columns={columns(handleEdit, handleDelete, handleDetail)}
@@ -382,6 +545,7 @@ const VoucherList = () => {
                         total: pagination.total
                     }}
                     onChange={handleOnChangeTable}
+
 
 
                 />
@@ -409,35 +573,151 @@ const VoucherList = () => {
                 //màu label={<span style={{ color: '#1A3353', fontFamily: 'Poppins' }}>Mã phiếu giảm giá</span>}
 
                 >
-                    <Form form={form} layout="vertical" style={{ font: 'poppins' }}>
-                        {/* <Form.Item name="voucherCode" label="Mã đợt giảm giá" rules={[{ required: true,message:'Không được bỏ trống' }]}>
-                            <Input disabled={isDetail} />
-                        </Form.Item> */}
-                        <Form.Item name="voucherType" label="Tên phiếu giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
+                    <Form form={form} layout="vertical">
+                        <Form.Item name="voucherName" label="Tên phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
-                        <Form.Item name="quantity" label="Số lượng đợt giảm giá" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
-                            <Input placeholder="Nhập số lượng  giảm giá" />
+                        <Form.Item name="quantity" label="Số lượng" rules={[
+                            { required: true, message: 'Không được bỏ trống' },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || (Number(value) >= 1 && Number.isInteger(Number(value)))) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error('Số lượng phải là số nguyên lớn hơn hoặc bằng 1'));
+                                },
+                            }),
+                        ]}>
+                            <Input type="number" placeholder="Nhập số lượng" min={1} />
                         </Form.Item>
-                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true,message:'Không được bỏ trống' }]}>
-                            <Input placeholder="Nhập giá trị giảm giá"     suffix="VNĐ"/>
+
+                        <Form.Item label="Giá trị giảm" required>
+                            <Input.Group compact>
+                                <Form.Item
+                                    name="discountValue"
+                                    noStyle
+                                    dependencies={["discountType"]}
+                                    rules={[
+                                        ({ getFieldValue }) => ({
+                                            validator(_, value) {
+                                                const num = Number(value);
+                                                const type = getFieldValue("discountType");
+
+                                                if (!value) return Promise.reject(new Error('Không được bỏ trống'));
+
+                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 80)) {
+                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 80'));
+                                                }
+
+                                                if (num < 1) {
+                                                    return Promise.reject(new Error('Giá trị giảm phải lớn hơn 0'));
+                                                }
+
+                                                return Promise.resolve();
+                                            },
+                                        }),
+                                    ]}
+                                >
+                                    <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
+                                </Form.Item>
+
+                                <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+                                    <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
+                                        <Option value="PERCENT">%</Option>
+                                        <Option value="MONEY">đ</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Input.Group>
                         </Form.Item>
-                        <Form.Item name="billMinValue" label="Đơn tối thiểu" rules={[{ required: true,message:'Không được bỏ trống' }]}>
-                            <Input placeholder="Nhập giá trị giảm giá tối thiểu"     suffix="VNĐ" />
+
+
+                        <Form.Item
+                            name="billMinValue"
+                            label="Giá trị tối thiểu"
+                            rules={[
+                                { required: true, message: 'Không được bỏ trống' },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        const maxValue = getFieldValue("discountMaxValue");
+                                        if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
+                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
+                                        }
+                                        if (maxValue !== undefined && maxValue !== null && Number(value) >= Number(maxValue)) {
+                                            return Promise.reject(new Error('Giá trị tối thiểu phải nhỏ hơn giá trị tối đa!'));
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Input type="number" placeholder="Nhập giá trị tối thiểu" suffix="đ" />
                         </Form.Item>
-                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true ,message:'Không được bỏ trống'}]}>
-                            <DatePicker placeholder="Nhập thời gian" format="DD/MM/YYYY" style={{ width: '100%' }} />
+
+                        <Form.Item
+                            name="discountMaxValue"
+                            label="Giá trị tối đa"
+                            dependencies={["billMinValue"]}
+                            rules={[
+                                { required: true, message: 'Không được bỏ trống' },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        const minValue = getFieldValue("billMinValue");
+                                        if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
+                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
+                                        }
+                                        if (minValue !== undefined && minValue !== null && Number(value) <= Number(minValue)) {
+                                            return Promise.reject(new Error('Giá trị tối đa phải lớn hơn giá trị tối thiểu!'));
+                                        }
+                                        return Promise.resolve();
+                                    },
+                                }),
+                            ]}
+                        >
+                            <Input type="number" placeholder="Nhập giá trị tối đa" suffix="đ" />
                         </Form.Item>
-                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true,message:'Không được bỏ trống' }]}>
-                            <DatePicker placeholder="Nhập thời gian"  format="DD/MM/YYYY" style={{ width: '100%' }} />
+
+
+                        <Form.Item
+                            name="startDate"
+                            label="Ngày bắt đầu"
+                            rules={[
+                                { required: true, message: 'Không được bỏ trống' },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (!value || !getFieldValue('endDate') || value.isBefore(getFieldValue('endDate'))) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Ngày bắt đầu không được vượt quá ngày kết thúc!'));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
-                        {/* <Form.Item name="statusVoucher" label="Trạng thái" rules={[{ required: true }]}>
-                            <Select defaultValue={"dang_kich_hoat"}  >
-                                <Option value="dang_kich_hoat">Đang kích hoạt</Option>
-                                <Option value="ngung_kich_hoat">Ngừng kích hoạt</Option>
-                                <Option value="chua_kich_hoat">Chưa kích hoạt</Option>
-                            </Select>
-                        </Form.Item> */}
+
+                        <Form.Item
+                            name="endDate"
+                            label="Ngày kết thúc"
+                            rules={[
+                                { required: true, message: 'Không được bỏ trống' },
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (!value || !getFieldValue('startDate') || value.isAfter(getFieldValue('startDate'))) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Ngày kết thúc phải lớn hơn ngày bắt đầu!'));
+                                    },
+                                }),
+                            ]}
+                        >
+                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                        </Form.Item>
+                        <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+                            <Radio.Group onChange={onChange} value={voucherType} disabled>
+                                <Radio value={"PUBLIC"}>Công khai</Radio>
+                                <Radio value={"PRIVATE"}>Riêng tư</Radio>
+                            </Radio.Group>
+                        </Form.Item>
                     </Form>
                 </Modal>
             </Card>

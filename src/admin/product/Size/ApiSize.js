@@ -117,3 +117,21 @@ export const getSize = async (sizeId) => {
     throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
   }
 };
+export const switchStatus = async (id, statusO) => {
+  const { status } = statusO;
+
+  try {
+    const response = await api.get("/size/switchstatus", {
+      params: {
+        id: id,
+        status: status,
+      },
+    });
+    return response.data
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};

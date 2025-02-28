@@ -8,7 +8,7 @@ import { Content } from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
 import img from "./../../public/img/thehands.png";
-import { COLORS } from "../constants/constants..js";
+import { COLORS } from "../constants/constants.js";
 
 const { Header, Sider } = Layout;
 
