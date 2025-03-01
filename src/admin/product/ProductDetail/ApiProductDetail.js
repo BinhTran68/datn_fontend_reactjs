@@ -245,6 +245,24 @@ export const updateProduct = async (productId, productData) => {
       error.response?.data?.message ||
       "Có lỗi xảy ra khi cập nhật thương hiệu.";
     console.error(errorMessage);
+    // message.error(errorMessage);
+    throw error;
+  }
+};
+export const exitsProductDetail = async ( productData) => {
+  console.log(productData);
+
+  try {
+    const response = await api.post(
+      `/productdetail/existsproductdetail`,
+      productData
+    );
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message ||
+      "lỗi";
+    console.error(errorMessage);
     message.error(errorMessage);
     throw error;
   }
@@ -269,5 +287,23 @@ export const getProduct = async (productId) => {
       error.response?.data?.message || "Có lỗi xảy ra khi get thương hiệu.";
     console.error(errorMessage);
     throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
+  }
+};
+export const switchStatus = async (id, statusO) => {
+  const { status } = statusO;
+
+  try {
+    const response = await api.get("/productdetail/switchstatus", {
+      params: {
+        id: id,
+        status: status,
+      },
+    });
+    return response.data
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
   }
 };

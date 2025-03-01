@@ -17,6 +17,8 @@ import {
   Grid,
   Popconfirm,
   ColorPicker,
+  Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Color.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -36,6 +38,7 @@ import {
   getColor,
   searchNameColor,
   existsByColorName,
+  switchStatus,
 } from "./ApiColor.js";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -61,7 +64,7 @@ const Color = () => {
   const [request, setRequest] = useState({
     colorName: "",
     status: "HOAT_DONG",
-    code: "#000000"
+    code: "#000000",
   });
 
   const [pagination, setPagination] = useState({
@@ -70,7 +73,38 @@ const Color = () => {
   });
   const error = useRef(null);
   const errorUpdate = useRef(null);
+  const [formCreate] = Form.useForm();
+  const [formUpdate] = Form.useForm();
+  const handleSubmit = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      colorName: values?.colorName?.trim(),
+    };
 
+    console.log(trimmedValues);
+
+    await handleCreateColor(trimmedValues);
+    setOpenCreate(false);
+    setRequestSearch("");
+    formCreate.resetFields(); // Reset form sau khi submit
+  };
+
+  const handleSubmitUpdate = async (values) => {
+    // Cắt khoảng trắng ở đầu và cuối trước khi gửi request
+    const trimmedValues = {
+      ...values,
+      colorName: values?.colorName?.trim(),
+    };
+
+    console.log(trimmedValues);
+
+    await handleUpdateColor(trimmedValues);
+    setOpenUpdate(false);
+    setRequestSearch("");
+
+    formUpdate.resetFields(); // Reset form sau khi submit
+  };
   const handleRequest = async (e) => {
     const { name, value } = e.target;
     setRequest((prev) => ({
@@ -121,7 +155,7 @@ const Color = () => {
   const fetchColorsData = async () => {
     setLoading(true);
     try {
-      const { data, total } = requestSearch.name.trim()
+      const { data, total } = requestSearch.name?.trim()
         ? await searchNameColor(pagination, requestSearch)
         : await fetchColors(pagination);
       setColors(data);
@@ -167,8 +201,8 @@ const Color = () => {
       setRequest({
         colorName: "",
         status: "HOAT_DONG",
-        code: "#000000"
-      })
+        code: "#000000",
+      });
     }
   };
 
@@ -190,8 +224,8 @@ const Color = () => {
       setRequest({
         colorName: "",
         status: "HOAT_DONG",
-        code: "#000000"
-      })
+        code: "#000000",
+      });
     }
   });
 
@@ -217,11 +251,10 @@ const Color = () => {
         setSelectedColor(brandData);
         console.log(brandData);
 
-        setRequest({
-          colorName: brandData.data.colorName,
-          status: brandData.data.status,
+        formUpdate.setFieldsValue({
+          colorName: brandData.data.colorName || "",
           code: brandData.data.code,
-        }); // Cập nhật form với thông tin từ API
+        });
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
@@ -270,8 +303,8 @@ const Color = () => {
         // Tìm mã màu tương ứng
         if (!record.id) return null;
 
-        const colorCode = record.code? record.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
-    
+        const colorCode = record.code ? record.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
+
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
@@ -281,11 +314,10 @@ const Color = () => {
                 borderRadius: "50%", // Tạo hình tròn
                 backgroundColor: colorCode, // Mã màu nền
                 marginRight: "8px",
-                border: "1px solid gray", 
-
+                border: "1px solid gray",
               }}
             />
-            <span>{record.colorName}</span> 
+            <span>{record.colorName}</span>
           </div>
         );
       },
@@ -334,6 +366,24 @@ const Color = () => {
           <>
             <Row gutter={[16, 16]}>
               <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchColorsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
+              <Col>
                 <Button
                   icon={
                     <FaEdit
@@ -369,29 +419,6 @@ const Color = () => {
       },
     },
   ];
-
-  const handleCreate = () => {
-    setLoading(true);
-    handleCreateColor(request);
-
-    setTimeout(() => {
-      setLoading(false);
-      setOpenCreate(false);
-      setRequest({
-        colorName: "",
-        status: "HOAT_DONG",
-      });
-    }, 800);
-  };
-  const handleUpdate = () => {
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setOpenUpdate(false);
-    }, 800);
-  };
-
   return (
     <Card>
       <Title level={2}>Màu sắc</Title>
@@ -418,11 +445,7 @@ const Color = () => {
               type="primary"
               icon={<SearchOutlined />}
               onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>
@@ -435,18 +458,13 @@ const Color = () => {
             onClick={() => {
               setOpenCreate(true);
             }}
-            style={{
-             
-              
-              
-            }}
+            style={{}}
           >
             Thêm Màu sắc
           </Button>
           <Modal
             open={openCreate}
-            title="Thêm Màu sắc"
-            onOk={handleCreate}
+            title="Thêm màu sắc"
             onCancel={() => {
               setOpenCreate(false);
             }}
@@ -463,37 +481,60 @@ const Color = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={handleCreate}
-                disabled={!isActive}
+                onClick={() => formCreate.submit()}
+                // disabled={!isActive}
               >
                 Xác nhận
               </Button>,
             ]}
           >
-            <p>Nhập thông tin Màu sắc mới...</p>
-            <Form>
-              <Input
-                placeholder="Nhập tên Màu sắc vào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.colorName}
+            <p>Nhập thông tin giới tính mới...</p>
+            <Form
+              form={formCreate}
+              onFinish={handleSubmit} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
                 name="colorName"
-                onChange={handleRequest}
-                allowClear
-              />
-              <div style={{ color: isActive ? "green" : "red" }}>
-                {errorMessage}
-              </div>
-              <Form.Item>
+                label={`Tên màu sắc`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên màu sắc chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên màu sắc tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
+              <Form.Item name="code">
                 <div>Chọn màu</div>
                 <ColorPicker
                   defaultValue={"#000000"}
                   onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      code: value.toHexString(),
-                    }));
-                    console.log(request);
-                    
+                    formCreate.setFieldsValue({
+                      code: value.toHexString() || "",
+                    });
+                    console.log(value);
                   }}
                 />
               </Form.Item>
@@ -501,8 +542,7 @@ const Color = () => {
           </Modal>
           <Modal
             open={openUpdate}
-            title="Sửa Hãng"
-            onOk={handleUpdate}
+            title="Sửa màu sắc"
             onCancel={() => {
               setOpenUpdate(false);
               setRequest({
@@ -523,8 +563,8 @@ const Color = () => {
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => handleUpdateColor(request)}
-                disabled={!isActiveUpdate}
+                onClick={() => formUpdate.submit()}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,
@@ -532,64 +572,49 @@ const Color = () => {
           >
             <p>Nhập thông tin Muốn sửa...</p>
 
-            <Form>
-              <Input
-                placeholder="Nhập tên Màu sắc vào đây!"
-                style={{ marginBottom: "0.3rem" }}
-                value={request.colorName} // Bind to 'brand' in state
-                name="colorName" // Ensure 'name' matches the key in the state
-                onChange={handleRequest} // Update state when input changes
-                allowClear
-              />
-              <div style={{ color: isActiveUpdate ? "green" : "red" }}>
-                {errorMessageUpdate}
-              </div>
-
-              <Radio.Group
-                onChange={handleRequest} // Handle the status change
-                value={request.status} // Bind to 'status' in state
-                name="status" // Ensure 'name' matches the key in the state
+            <Form
+              form={formUpdate}
+              onFinish={handleSubmitUpdate} // Handle form submission
+              layout="vertical"
+            >
+              <Form.Item
+                name="colorName"
+                label={`Tên màu sắc`}
+                rules={[
+                  {
+                    validator: (_, value) => {
+                      if (!value || !value.trim()) {
+                        return Promise.reject(
+                          new Error(
+                            "Không được để trống hoặc chỉ có khoảng trắng"
+                          )
+                        );
+                      }
+                      if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
+                        return Promise.reject(
+                          new Error(
+                            `Tên màu sắc chỉ chứa chữ và số, không có ký tự đặc biệt`
+                          )
+                        );
+                      }
+                      if (value.trim().length > 20) {
+                        return Promise.reject(
+                          new Error(`Tên màu sắc tối đa 20 ký tự`)
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Row gutter={[1, 1]}>
-                  <Col>
-                    <Radio.Button
-                      value="HOAT_DONG"
-                      className={clsx(
-                        request.status === "HOAT_DONG" ? styles.statushd : "",
-                        styles.statushdhv
-                      )}
-                    >
-                      HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-
-                  <Col>
-                    <Radio.Button
-                      value="NGUNG_HOAT_DONG"
-                      className={clsx(
-                        request.status === "NGUNG_HOAT_DONG"
-                          ? styles.statusnhd
-                          : "",
-                        styles.statusnhdhv
-                      )}
-                    >
-                      NGỪNG HOẠT ĐỘNG
-                    </Radio.Button>
-                  </Col>
-                </Row>
-              </Radio.Group>
-              <Form.Item>
-                <div>Chọn màu</div>
+                <Input placeholder="Nhập tên mới vào đây!" allowClear />
+              </Form.Item>
+              <Form.Item label="Chọn màu" name="code">
                 <ColorPicker
-                  // defaultValue={"#000000"}
-                  value={request.code}
-                  onChange={(value) => {
-                    setRequest((prev) => ({
-                      ...prev,
-                      code: value.toHexString(),
-                    }));
-                    console.log(request);
-                    
+                  value={formUpdate.getFieldValue("code")} // Hiển thị màu hiện tại
+                  onChange={(color) => {
+                    const hexColor = color.toHexString(); // Lấy mã hex
+                    formUpdate.setFieldsValue({ code: hexColor });
                   }}
                 />
               </Form.Item>

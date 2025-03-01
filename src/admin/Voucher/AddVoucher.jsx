@@ -19,11 +19,6 @@ const columnsCustomers = [
         key: 'stt',
         render: (_, __, index) => index + 1,
     },
-    // {
-    //     title: 'ID',
-    //     dataIndex: 'id',
-    //     key: 'id',
-    // },
     {
         title: 'Họ và tên',
         dataIndex: 'fullName',

@@ -21,6 +21,7 @@ import {
   InputNumber,
   notification,
   Tooltip,
+  Switch,
 } from "antd";
 import ModalEditSanPham from "../ProductDetail/ModalEditSanPham.jsx";
 //   import styles from "./ProductDetail.module.css";
@@ -52,6 +53,7 @@ import {
   createProductDetail,
   filterData,
   createProductDetailList,
+  switchStatus,
 } from "../ProductDetail/ApiProductDetail.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -62,7 +64,7 @@ import { FaEdit } from "react-icons/fa";
 // import DrawerAdd from "./Drawer.jsx";
 import { COLORS } from "../../../constants/constants.js";
 import { Link, useParams } from "react-router-dom";
-import {FiEye} from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -464,7 +466,7 @@ const GetProductDetail = () => {
 
       onCell: () => ({
         style: {
-          width: "200px",
+          width: "100px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -493,11 +495,23 @@ const GetProductDetail = () => {
       title: "Màu sắc",
       dataIndex: "colorName",
       key: "colorName",
+      onCell: () => ({
+        style: {
+          width: "80px",
+          height: "50px",
+          lineHeight: "50px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
+      }),
       render: (text, record) => {
         // Tìm mã màu tương ứng
-        const colorData = dataSelectColor.find(color => color.colorName === record.colorName);
+        const colorData = dataSelectColor.find(
+          (color) => color.colorName === record.colorName
+        );
         const colorCode = colorData ? colorData.code : "#FFFFFF"; // Mặc định màu trắng nếu không tìm thấy
-    
+
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
@@ -509,7 +523,7 @@ const GetProductDetail = () => {
                 marginRight: "8px",
               }}
             />
-            <span style={{ color: colorCode }}>{text}</span> 
+            <span style={{ color: colorCode }}>{text}</span>
           </div>
         );
       },
@@ -520,7 +534,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "80px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -535,7 +549,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -582,7 +596,7 @@ const GetProductDetail = () => {
       key: "productName",
       onCell: () => ({
         style: {
-          width: "100px",
+          width: "50px",
           height: "50px",
           lineHeight: "50px",
           overflow: "hidden",
@@ -655,23 +669,42 @@ const GetProductDetail = () => {
         }
         return (
           <>
-            <Row gutter={[16, 16]}>
-              <Tooltip title="Chỉnh sửa sản phẩm">
-                <Button
-                  onClick={() => {
-                    handleGetProduct(record.id);
-                  }}
-                  icon={
-                    <FaEdit
-                      style={{
-                        color: `${COLORS.primary}`,
-                        fontSize: "1.5rem",
-                      }}
-                    />
-                  }
-                  style={{ marginRight: "1rem" }}
-                />
-              </Tooltip>
+            <Row gutter={5}>
+              <Col>
+                <Tooltip title="Thay đổi trạng thái">
+                  <Switch
+                    checked={record.status === "HOAT_DONG"}
+                    onChange={async (checked) => {
+                      try {
+                        await switchStatus(record.id, {
+                          status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
+                        });
+                        message.success("Cập nhật trạng thái thành công!");
+                        fetchProductsData();
+                      } catch (error) {
+                        message.error("Cập nhật trạng thái thất bại!");
+                      }
+                    }}
+                  />
+                </Tooltip>
+              </Col>
+              <Col>
+                <Tooltip title="Chỉnh sửa sản phẩm">
+                  <Button
+                    onClick={() => {
+                      handleGetProduct(record.id);
+                    }}
+                    icon={
+                      <FaEdit
+                        style={{
+                          color: `${COLORS.primary}`,
+                          fontSize: "1.5rem",
+                        }}
+                      />
+                    }
+                  />
+                </Tooltip>
+              </Col>
 
               {/* <Popconfirm
                   title="Xóa Hãng"
@@ -686,11 +719,13 @@ const GetProductDetail = () => {
                   ></Button>
                 </Popconfirm> */}
 
-              <Tooltip title="Xem chi tiết sản phẩm">
-                <Link to={`${record.id}`}>
-                  <Button icon={<FiEye  />} />
-                </Link>
-              </Tooltip>
+              <Col>
+                <Tooltip title="Xem chi tiết sản phẩm">
+                  <Link to={`${record.id}`}>
+                    <Button icon={<FiEye />} />
+                  </Link>
+                </Tooltip>
+              </Col>
             </Row>
           </>
         );
@@ -717,11 +752,7 @@ const GetProductDetail = () => {
               type="primary"
               icon={<SearchOutlined />}
               // onClick={searchName}
-              style={{
-               
-                
-                
-              }}
+              style={{}}
             >
               Tìm kiếm
             </Button>

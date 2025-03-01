@@ -187,7 +187,7 @@ const EditStaff = () => {
                 form.setFieldsValue({
                     ...staffData,
                     dateBirth: moment(staffData.dateBirth, 'YYYY-MM-DDTHH:mm:ss'),
-                    status: staffData.status === 'Kích hoạt' ? 1 : 0,
+                    // status: staffData.status === 'Kích hoạt' ? 1 : 0,
                 });
 
                 if (staffData.avatar) {
