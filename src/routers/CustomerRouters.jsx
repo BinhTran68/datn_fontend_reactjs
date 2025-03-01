@@ -15,6 +15,8 @@ import Client from "../client/Client.jsx";
 import  CartPage  from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
+
+
 // import Product from "../admin/product/product.jsx";
 // import ProductManagement from "../admin/product/ProductManagement.jsx";
 // import Sole from "../admin/product/sole.jsx";
@@ -26,6 +28,8 @@ import Test from "../client/page/TestComponent/Test.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
+import ContactFrom from "../admin/contact/ContactForm.jsx";
+import CustomerProfile from "../admin/profile/CustomerProfile.jsx";
 
 
 
@@ -105,6 +109,15 @@ const CustomerRouters = {
       path: "products/product-detail/:id",
       element: <RoleRedirect element={<ProductDetail />} />,
     },
+    {
+      path: "contact",
+      element: <RoleRedirect element={<ContactFrom />} />,
+    },
+    {
+      path: "profile",
+      element: <RoleRedirect element={<CustomerProfile />} />,
+    },
+   
   
   
     
