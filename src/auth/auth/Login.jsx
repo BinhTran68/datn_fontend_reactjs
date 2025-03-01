@@ -7,7 +7,7 @@ import {Input} from "antd";
 
 
 const Login = () => {
-    const [formData, setFormData] = useState({ username: "", password: "" });
+    const [formData, setFormData] = useState({ email: "", password: "" });
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
@@ -24,29 +24,17 @@ const Login = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8080/api/v1/auth/login",
+                "http://localhost:8080/api/authentication/login",
                 {
-                    username: formData.username.trim(),
+                    email: formData.email.trim(),
                     password: formData.password.trim(),
                 }
             );
-
-            const data = response.data;
-            if (data.code === 1000) {
-                const token = data.data.accessToken;
-                localStorage.setItem("accessToken", token);
-
-                const profileResponse = await axios.get(
-                    "http://localhost:8080/api/v1/auth/profile",
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
-                );
-
-                if (profileResponse.data) {
-                    localStorage.setItem("userInfo", JSON.stringify(profileResponse.data.data));
-                }
-
+            if (response.status === 200) {
+                console.log(response)
+                const data = response.data;
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.customer));
                 navigate("/");
             } else {
                 setErrorMessage("Invalid login credentials. Please try again.");
@@ -83,18 +71,12 @@ const Login = () => {
                     )}
 
                     <form onSubmit={handleSubmit}>
-                        <Input   name="username" // Định danh cho field này
-                                 value={formData.username}
-                                 onChange={handleInputChange}
-
-                        />
-
 
                         <CustomInput
                             label="Tên đăng nhập"
                             type="text"
-                            name="username"
-                            value={formData.username}
+                            name="email"
+                            value={formData.email}
                             onChange={handleInputChange}
                             disabled={loading}
                         />

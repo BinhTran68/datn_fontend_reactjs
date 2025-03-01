@@ -1,14 +1,8 @@
-import React from "react";
-import stype from "../HeaderNav/HeaderNav.module.css";
-import clsx from "clsx";
+import React, {useEffect, useState} from "react";
 
-// import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { AiOutlineGlobal } from "react-icons/ai";
-import { MdOutlineAccountCircle } from "react-icons/md";
-import { RiShoppingCartLine } from "react-icons/ri";
-import { IoIosSearch } from "react-icons/io";
 import { COLORS } from "../../../constants/constants.js";
 import { Badge, Button, Col, Flex, Input, Row, Space } from "antd";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
@@ -16,6 +10,21 @@ import Nav from "../Nav/index.jsx";
 import { ceil } from "lodash";
 
 function Home() {
+
+  const [isAuthentication, setIsAuthentication] = useState(false);
+  const [customer, setCustomer] = useState(null);
+
+
+  useEffect(() => {
+    const customerLogin = localStorage.getItem("customer");
+    if (customerLogin) {
+      setIsAuthentication(true);
+      setCustomer(JSON.parse(customerLogin));
+    }
+
+
+  }, []);
+
   return (
     <>
       <div className={"w-100"}>
@@ -69,15 +78,17 @@ function Home() {
               </Col>
               <Col>
                 <Link
+                    hidden={isAuthentication}
                   href="/"
                   className="text-decoration-none text-black fw-normal"
                   to="/login"
                 >
-                  Đăng Nhập
+                  Đăng Nhập {customer?.fullName ?? "fullName"}
                 </Link>
               </Col>
               <Col>
                 <Link
+                    hidden={isAuthentication}
                   href="/"
                   className="text-decoration-none text-black fw-normal"
                   to="/register"
