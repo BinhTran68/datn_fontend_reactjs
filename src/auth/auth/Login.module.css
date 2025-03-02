@@ -1,0 +1,248 @@
+/* Login.module.css */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .formContainer {
+    display: flex;
+    width: 800px;
+    height: 500px;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .leftPanel {
+    flex: 1;
+    background-color: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .rightPanel {
+    flex: 1;
+    background-image: url('/api/placeholder/400/500');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+  }
+  
+  .logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 20px;
+    align-self: center;
+  }
+  
+  .title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    color: #777;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .inputGroup {
+    margin-bottom: 20px;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .input:focus {
+    border-color: #2c7c9c;
+  }
+  
+  .loginButton, 
+  .signupButton {
+    width: 100%;
+    padding: 12px;
+    background-color: #2c7c9c;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-transform: uppercase;
+  }
+  
+  .loginButton:hover, 
+  .signupButton:hover {
+    background-color: #235f77;
+  }
+  
+  .forgotPassword {
+    text-align: center;
+    margin-top: 15px;
+  }
+  
+  .forgotPassword a {
+    color: #777;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .forgotPassword a:hover {
+    color: #2c7c9c;
+    text-decoration: underline;
+  }
+  
+  .errorMessage {
+    background-color: #ffebee;
+    color: #d32f2f;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .socialContainer {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 30px;
+    border-radius: 5px;
+    width: 80%;
+  }
+  
+  .socialTitle {
+    font-size: 28px;
+    margin-bottom: 5px;
+  }
+  
+  .socialSubtitle {
+    font-size: 14px;
+    margin-bottom: 30px;
+    opacity: 0.8;
+  }
+  
+  .orDivider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+    color: white;
+  }
+  
+  .orDivider::before,
+  .orDivider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .orDivider::before {
+    left: 0;
+  }
+  
+  .orDivider::after {
+    right: 0;
+  }
+  
+  .socialButtons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .socialButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: transform 0.3s;
+  }
+  
+  .socialButton:hover {
+    transform: scale(1.1);
+  }
+  
+  .facebook {
+    background-color: #3b5998;
+  }
+  
+  .twitter {
+    background-color: #1da1f2;
+  }
+  
+  .google {
+    background-color: #db4437;
+  }
+  
+  .signupLink, 
+  .loginLink {
+    margin-top: auto;
+    text-align: center;
+    color: white;
+  }
+  
+  .signupLink p, 
+  .loginLink p {
+    margin-bottom: 5px;
+    color: #ccc;
+  }
+  
+  .signupButton, 
+  .loginButtonLink {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .signupButton:hover, 
+  .loginButtonLink:hover {
+    text-decoration: underline;
+  }
+  
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
