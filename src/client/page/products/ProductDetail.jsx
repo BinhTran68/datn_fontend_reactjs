@@ -7,6 +7,7 @@ import {
   Input,
   InputNumber,
   message,
+  notification,
   Radio,
   Row,
   Space,
@@ -457,8 +458,16 @@ function ProductDetail() {
                         productName: getProductDetail.productName,
                         image: getProductDetail.image[0].url,
                         sizeName: getProductDetail.sizeName,
-                        colorName: getProductDetail.colorName
+                        colorName: getProductDetail.colorName,
                       });
+                      // notification.success({
+                      //   message: "Success",
+                      //   duration: 4,
+                      //   pauseOnHover: false,
+                      //   showProgress: true,
+                      //   description: `Thêm vào giỏ hàng thành công!`,
+                      // });
+                      message.success("Thêm vào giỏ hàng thành công!")
                       console.log(getCart());
                     }}
                   >

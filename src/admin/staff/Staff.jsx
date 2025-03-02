@@ -6,6 +6,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import {FaEdit} from "react-icons/fa";
 import {COLORS} from "../../constants/constants.js";  // Import Link component
+import * as XLSX from 'xlsx'; // Import the xlsx library
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -43,23 +44,73 @@ const Staff = () => {
             .catch((error) => console.error('Error fetching data:', error));
     };
 
-    const handleSearch = () => {
-        const filtered = data.filter((item) => {
-            const nameMatch = item.fullName.toLowerCase().includes(searchText.toLowerCase());
-            const phoneMatch = item.phoneNumber.includes(searchText);
+    // const handleSearch = () => {
+    //     const filtered = data.filter((item) => {
+    //         const nameMatch = item.fullName.toLowerCase().includes(searchText.toLowerCase());
+    //         const phoneMatch = item.phoneNumber.includes(searchText);
 
-            const statusMatch = status === 'Tất cả' || item.status === status;
+    //         const statusMatch = status === 'Tất cả' || item.status === status;
 
-            const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');  
-            const dobFromMatch = !dobRange[0] || dob.isSameOrAfter(dobRange[0], 'minute');
-            const dobToMatch = !dobRange[1] || dob.isSameOrBefore(dobRange[1], 'minute');
+    //         const dob = moment(item.dateBirth, 'YYYY-MM-DD HH:mm:ss');  
+    //         const dobFromMatch = !dobRange[0] || dob.isSameOrAfter(dobRange[0], 'minute');
+    //         const dobToMatch = !dobRange[1] || dob.isSameOrBefore(dobRange[1], 'minute');
 
-            const age = moment().diff(dob, 'years');
-            const ageMatch = age >= ageRange[0] && age <= ageRange[1];
-            return (nameMatch || phoneMatch) && statusMatch && dobFromMatch && dobToMatch && ageMatch;
-        });
-        setData(filtered); 
+    //         const age = moment().diff(dob, 'years');
+    //         const ageMatch = age >= ageRange[0] && age <= ageRange[1];
+    //         return (nameMatch || phoneMatch) && statusMatch && dobFromMatch && dobToMatch && ageMatch;
+    //     });
+    //     setData(filtered); 
+    // };
+
+    const handleExport = () => {
+        // Convert data to a format suitable for an Excel file
+        const worksheet = XLSX.utils.json_to_sheet(data.map(item => ({
+            'Họ và tên': item.fullName,
+            'CCCD': item.CitizenId,
+            'Số điện thoại': item.phoneNumber,
+            'Ngày sinh': item.dateBirth,
+            'Email': item.email,
+            'Trạng Thái': item.status,
+        })));
+
+        // Create a new workbook and add the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Staff Data');
+
+        // Export the file
+        XLSX.writeFile(workbook, 'staff_data.xlsx');
     };
+
+
+    const handleSearch = () => {
+        axios.get('http://localhost:8080/api/admin/staff/filterr', {
+            params: {
+                searchText: searchText,
+                status: status,
+                dobFrom: dobRange[0] ? dobRange[0].format('YYYY-MM-DD HH:mm:ss') : null,
+                dobTo: dobRange[1] ? dobRange[1].format('YYYY-MM-DD HH:mm:ss') : null,
+                ageFrom: ageRange[0],
+                ageTo: ageRange[1],
+            }
+        })
+        .then((response) => {
+            const filteredData = response.data.map((item, index) => ({
+                key: index + 1,
+                id: item.id,
+                avatar: item.avatar,
+                fullName: item.fullName,
+                CitizenId: item.CitizenId,
+                phoneNumber: item.phoneNumber,
+                dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                status: item.status === 0 ? 'Kích hoạt' : 'Khóa',
+                email: item.email,
+                gender: item.gender,
+            }));
+            setData(filteredData);
+        })
+        .catch((error) => console.error('Error fetching filtered data:', error));
+    };
+
 
     const handleReset = () => {
         setSearchText('');
@@ -96,14 +147,14 @@ const Staff = () => {
             dataIndex: 'key',
             key: 'key',
         },
-        {
-            title: 'Avatar',
-            dataIndex: 'avatar',
-            key: 'avatar',
-            render: (src) => (
-                <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
-            ),
-        },
+        // {
+        //     title: 'Avatar',
+        //     dataIndex: 'avatar',
+        //     key: 'avatar',
+        //     render: (src) => (
+        //         <img src={src} alt="avatar" style={{ width: 50, height: 50, borderRadius: '50%' }} />
+        //     ),
+        // },
         {
             title: 'Họ và tên',
             dataIndex: 'fullName',
@@ -247,6 +298,13 @@ const Staff = () => {
                             Thêm mới
                         </Button>
                     </Link>
+                    <Button
+                        type="default"
+                        onClick={handleExport}
+                        style={{ marginLeft: '10px', backgroundColor: '#f5f5f5' }}
+                    >
+                        Xuất Excel
+                    </Button>
                 </div>
             </Card>
             <Card>

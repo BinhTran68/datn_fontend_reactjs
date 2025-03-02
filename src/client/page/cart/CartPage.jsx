@@ -11,6 +11,7 @@ import {
   Row,
   Flex,
   Popconfirm,
+  notification,
 } from "antd";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { VscTag } from "react-icons/vsc";
@@ -18,10 +19,18 @@ import { COLORS } from "../../../constants/constants";
 import { Content } from "antd/es/layout/layout";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { getCart, getDeviceId, removeFromCart } from "./cart";
+import { addToBill, clearBill, getBill } from "./bill";
+import { useProduct } from "../../../store/ProductContext";
+import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
 
 const CartPage = () => {
+  const navigate = useNavigate();
+  const { updateProducts } = useProduct();
+  const [selectedRitem, setSelecteditem] = useState([]);
+
   const [quantities, setQuantities] = useState([1, 1, 1]);
   const [discountCode, setDiscountCode] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -33,13 +42,16 @@ const CartPage = () => {
     const handleStorageChange = () => {
       setProducts(getCart()); // Cập nhật UI khi có thay đổi trong giỏ hàng
     };
-  
+
     window.addEventListener("storage", handleStorageChange);
-  
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      console.log("thêm vào bill khi un moutd", getBill());
+      // clearBill()
     };
   }, []);
+
   const discountCodes = {
     SALE10: { type: "percent", value: 0.1 }, // 10% discount
     SALE20: { type: "percent", value: 0.2 }, // 20% discount
@@ -52,9 +64,12 @@ const CartPage = () => {
     const updatedProducts = products.filter(
       (product) => product.productDetailId !== productDetailId
     );
-  
+
     setProducts(updatedProducts); // Cập nhật lại danh sách sản phẩm
-    localStorage.setItem(`cart_${getDeviceId()}`, JSON.stringify(updatedProducts));
+    localStorage.setItem(
+      `cart_${getDeviceId()}`,
+      JSON.stringify(updatedProducts)
+    );
     window.dispatchEvent(new Event("storage"));
 
     // Cập nhật lại danh sách sản phẩm đã chọn
@@ -63,19 +78,20 @@ const CartPage = () => {
       (index) => products[index]?.productDetailId !== productDetailId
     );
     setSelectedRowKeys(updatedSelectedKeys);
-  
   };
-  
+
   const handleQuantityChange = (index, value) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
-  
+
     const updatedProducts = [...products];
     updatedProducts[index].quantityAddCart = value;
-  
+
     setProducts(updatedProducts); // Cập nhật state
-    localStorage.setItem(`cart_${getDeviceId()}`, JSON.stringify(updatedProducts)); // Lưu lại vào localStorage
+    localStorage.setItem(
+      `cart_${getDeviceId()}`,
+      JSON.stringify(updatedProducts)
+    ); // Lưu lại vào localStorage
   };
-  
 
   const handleButtonClick = (msg) => {
     message.success(msg);
@@ -115,15 +131,13 @@ const CartPage = () => {
   };
 
   const totalSelectedPrice = selectedRowKeys.reduce(
-    (acc, index) => acc + products[index]?.quantityAddCart * products[index]?.price,
+    (acc, index) =>
+      acc + products[index]?.quantityAddCart * products[index]?.price,
     0
   );
 
   const calculateDiscountedTotal = () => {
     let discountedTotal;
-    console.log(discountType);
-    console.log(getCart());
-    
 
     if (discountType === "percent") {
       // Nếu có giảm giá theo phần trăm
@@ -142,6 +156,20 @@ const CartPage = () => {
 
   // Gọi hàm để tính discountedTotal
   const discountedTotal = calculateDiscountedTotal();
+  useEffect(() => {
+    if (selectedRowKeys.length === 0) return; // Nếu không có hàng nào được chọn, không làm gì cả
+
+    // Tìm những sản phẩm có key nằm trong selectedRowKeys
+    const selectedItems = products.filter((_, index) =>
+      selectedRowKeys.includes(index)
+    );
+    setSelecteditem(selectedItems);
+    console.log(
+      "🔍 Danh sách sản phẩm được chọn:",
+      selectedItems,
+      selectedRowKeys
+    );
+  }, [selectedRowKeys]);
 
   const rowSelection = {
     selectedRowKeys,
@@ -178,7 +206,12 @@ const CartPage = () => {
         <Flex gap={0.8}>
           <Button
             icon={<MinusOutlined />}
-            onClick={() => handleQuantityChange(index, Math.max(1, record.quantityAddCart - 1))}
+            onClick={() =>
+              handleQuantityChange(
+                index,
+                Math.max(1, record.quantityAddCart - 1)
+              )
+            }
           />
           <InputNumber
             min={1}
@@ -188,12 +221,14 @@ const CartPage = () => {
           />
           <Button
             icon={<PlusOutlined />}
-            onClick={() => handleQuantityChange(index, record.quantityAddCart + 1)}
+            onClick={() =>
+              handleQuantityChange(index, record.quantityAddCart + 1)
+            }
           />
         </Flex>
       ),
     },
-    
+
     {
       title: "TẠM TÍNH",
       dataIndex: "total",
@@ -273,7 +308,17 @@ const CartPage = () => {
                 <Button
                   type="primary"
                   block
-                  onClick={() => handleButtonClick("Mua ngay thành công!")}
+                  onClick={() => {
+                    // handleButtonClick("Mua ngay thành công!");
+                    if (selectedRitem.length > 0) {
+                      updateProducts(selectedRitem);
+                      addToBill(selectedRitem);
+                      navigate("/payment");
+                      toast.success("xác nhận mua hàng");
+                    } else {
+                      toast.warn("chưa chọn sản phẩm nào")
+                    }
+                  }}
                 >
                   MUA HÀNG
                 </Button>

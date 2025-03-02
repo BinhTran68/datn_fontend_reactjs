@@ -6,6 +6,7 @@ import HeaderNav from "./component/HeaderNav";
 import { Layout } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Nav from "./component/Nav";
+import { ProductProvider } from "../store/ProductContext";
 // import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {

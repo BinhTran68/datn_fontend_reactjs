@@ -12,7 +12,7 @@ const { Password } = Input;
 const UpdateCustomer = () => {
     const [form] = Form.useForm();
     const { id } = useParams();
-    const navigate = useNavigate();
+        const navigate = useNavigate();
     const [fileList, setFileList] = useState([]);
     const [address, setAddress] = useState({
         provinceId: null,
@@ -21,50 +21,105 @@ const UpdateCustomer = () => {
         specificAddress: null,
     });
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [isAddressLoaded, setIsAddressLoaded] = useState(false);
 
     useEffect(() => {
         fetchCustomer(id);
     }, [id]);
 
-    const fetchCustomer = (id) => {
-        axios.get(`http://localhost:8080/api/customers/detail/${id}`)
-            .then((response) => {
-                const customer = response.data;
-                setSelectedRecord(customer);
+    // const fetchCustomer = (id) => {
+    //     axios.get(`http://localhost:8080/api/customers/detail/${id}`)
+    //         .then((response) => {
+    //             const customer = response.data;
+    //             setSelectedRecord(customer);
+    
+    //             // Lấy địa chỉ mặc định
+    //             const defaultAddress = customer.addresses?.find(addr => addr.isAddressDefault) || {};
+    
+    //             // Set giá trị địa chỉ vào state
+    //             setAddress({
+    //                 provinceId: defaultAddress.provinceId,
+    //                 districtId: defaultAddress.districtId,
+    //                 wardId: defaultAddress.wardId,
+    //                 specificAddress: defaultAddress.specificAddress
+    //             });
+    
+    //             // Set giá trị vào form
+    //             form.setFieldsValue({
+    //                 ...customer,
+    //                 fullName: customer.fullName,
+    //                 CitizenId: customer.citizenId,
+    //                 phoneNumber: customer.phoneNumber,
+    //                 email: customer.email,
+    //                 gender: customer.gender,
+    //                 dateBirth: moment(customer.dateBirth, 'YYYY-MM-DD HH:mm:ss'),
+    //                 status: customer.status === 1 ? 1 : 0, // Giả sử 1 là 'Kích hoạt'
+    //                 password: customer.password,
+    //             });
+    
+    //             // Xử lý avatar...
+    //             if (customer.avatar) {
+    //                 setFileList([{
+    //                     uid: '-1',
+    //                     name: 'avatar',
+    //                     status: 'done',
+    //                     url: customer.avatar,
+    //                 }]);
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Error fetching customer:', error);
+    //         });
+    // };
 
-                const addressParts = customer.address ? customer.address.split(', ') : [];
-                const specific = addressParts[0] || '';
-                const wardName = addressParts[1] || '';
-                const districtName = addressParts[2] || '';
-                const provinceName = addressParts[3] || '';
 
-                // Assuming you have a way to get provinceId, districtId, and wardId from their names
-              
+    const fetchCustomer = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/customers/detail/${id}`);
+            const customer = response.data;
+            setSelectedRecord(customer);
 
-                form.setFieldsValue({
-                    ...customer,
-                    fullName: customer.fullName,
-                    CitizenId: customer.citizenId,
-                    phoneNumber: customer.phoneNumber,
-                    email: customer.email,
-                    gender: customer.gender === "Nam" ? 'true' : 'false',
-                    dateBirth: moment(customer.dateBirth, 'YYYY-MM-DD HH:mm:ss'),
-                    status: customer.status === 'Kích hoạt' ? 1 : 0,
-                    password: customer.password,
-                });
+            // Find default address
+            const defaultAddress = customer.addresses?.find(addr => addr.isAddressDefault);
+            
+            if (defaultAddress) {
+                // Convert IDs to strings if they're numbers
+                const addressData = {
+                    provinceId: String(defaultAddress.provinceId),
+                    districtId: String(defaultAddress.districtId),
+                    wardId: String(defaultAddress.wardId),
+                    specificAddress: defaultAddress.specificAddress || ''
+                };
+                
+                setAddress(addressData);
+                setIsAddressLoaded(true);
+            }
 
-                if (customer.avatar) {
-                    setFileList([{
-                        uid: '-1',
-                        name: 'avatar',
-                        status: 'done',
-                        url: customer.avatar,
-                    }]);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching customer:', error);
+            // Set other form values
+            form.setFieldsValue({
+                fullName: customer.fullName,
+                CitizenId: customer.citizenId,
+                phoneNumber: customer.phoneNumber,
+                email: customer.email,
+                gender: customer.gender,
+                dateBirth: moment(customer.dateBirth),
+                status: customer.status,
+                password: customer.password,
             });
+
+            // Handle avatar
+            if (customer.avatar) {
+                setFileList([{
+                    uid: '-1',
+                    name: 'avatar',
+                    status: 'done',
+                    url: customer.avatar,
+                }]);
+            }
+        } catch (error) {
+            console.error('Error fetching customer:', error);
+            message.error('Không thể tải thông tin khách hàng');
+        }
     };
 
     const handleAvatarChange = ({ fileList: newFileList }) => {
@@ -83,63 +138,148 @@ const UpdateCustomer = () => {
         return isJpgOrPng && isLt2M;
     };
 
-    const handleOk = () => {
-        form.validateFields()
-            .then(async (values) => {
-                let avatarUrl = selectedRecord && selectedRecord.avatar ? selectedRecord.avatar : ''; // Keep existing avatar if not changed
 
-                // Handle file upload (if a new file is selected)
-                if (fileList.length > 0 && fileList[0].originFileObj) {
-                    const formData = new FormData();
-                    formData.append('file', fileList[0].originFileObj);
+    // const handleOk = () => {
+    //     form.validateFields()
+    //         .then(async (values) => {
+              
+    //             let avatarUrl = selectedRecord && selectedRecord.avatar ? selectedRecord.avatar : '';
+    
+    //             // Handle file upload (if a new file is selected)
+    //             if (fileList.length > 0 && fileList[0].originFileObj) {
+    //                 const formData = new FormData();
+    //                 formData.append('file', fileList[0].originFileObj);
+    //                 try {
+    //                     const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
+    //                         headers: {
+    //                             'Content-Type': 'multipart/form-data'
+    //                         }
+    //                     });
+    //                     avatarUrl = uploadRes.data;
+    //                 } catch (uploadError) {
+    //                     console.error('Error uploading image:', uploadError);
+    //                     message.error('Lỗi tải ảnh lên!');
+    //                     return;
+    //                 }
+    //             }
+    
+    //             // Lấy địa chỉ mặc định từ danh sách addresses
+    //             const defaultAddress = selectedRecord.addresses?.find(addr => addr.isAddressDefault) || {};
+    
+    //             // Cập nhật thông tin khách hàng
+    //             const updatedCustomerData = {
+    //                 fullName: values.fullName,
+    //                 citizenId: values.CitizenId,
+    //                 phoneNumber: values.phoneNumber,
+    //                 email: values.email,
+    //                 gender: values.gender,
+    //                 dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
+    //                 status: values.status,
+    //                 avatar: avatarUrl,
+    //                 password: values.password,
+    //             };
+    
+    //             // Cập nhật địa chỉ mặc định (nếu có thay đổi)
+    //             const updatedAddressData = {
+    //                 provinceId: address.provinceId,
+    //                 districtId: address.districtId,
+    //                 wardId: address.wardId,
+    //                 specificAddress: address.specificAddress,
+    //                 isAddressDefault: true,
+    //             };
+    
+    //             try {
+    //                 // Cập nhật thông tin khách hàng
+    //                 await axios.put(`http://localhost:8080/api/customers/update/${selectedRecord.id}`, updatedCustomerData);
+    
+    //                 // Cập nhật địa chỉ mặc định (nếu tồn tại)
+    //                 if (defaultAddress.id) {
+    //                     await axios.put(`http://localhost:8080/api/customers/update-address/${defaultAddress.id}`, updatedAddressData);
+    //                 } else {
+    //                     // Thêm địa chỉ mới nếu chưa có
+    //                     await axios.post(`http://localhost:8080/api/customers/add-address/${selectedRecord.id}`, updatedAddressData);
+    //                 }
+    
+    //                 message.success('Cập nhật khách hàng thành công!');
+    //                 navigate("/admin/customer");
+    //             } catch (error) {
+    //                 console.error('Error updating customer:', error);
+    //                 message.error('Cập nhật khách hàng thất bại!');
+    //             }
+    //         })
+    //         .catch((info) => {
+    //             console.log('Validate Failed:', info);
+    //         });
+    // };
 
-                    try {
-                        const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data'
-                            }
-                        });
-                        avatarUrl = uploadRes.data;
-                    } catch (uploadError) {
-                        console.error('Error uploading image:', uploadError);
-                        message.error('Lỗi tải ảnh lên!');
-                        return;
-                    }
-                }
+    const handleOk = async () => {
+        try {
+            const values = await form.validateFields();
+            
+            // Handle avatar upload if needed
+            let avatarUrl = selectedRecord?.avatar || '';
+            if (fileList.length > 0 && fileList[0].originFileObj) {
+                const formData = new FormData();
+                formData.append('file', fileList[0].originFileObj);
+                const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                avatarUrl = uploadRes.data;
+            }
 
-                const updatedData = {
-                    fullName: values.fullName,
-                    citizenId: values.CitizenId,
-                    phoneNumber: values.phoneNumber,
-                    email: values.email,
-                    gender: values.gender,
-                    dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
-                    status: values.status,
-                    avatar: avatarUrl,
-                    provinceId: address.provinceId,
-                    districtId: address.districtId,
-                    wardId: address.wardId,
-                    specificAddress: address.specificAddress,
-                    password: values.password,
-                };
+            // Prepare customer data
+            const customerData = {
+                fullName: values.fullName,
+                citizenId: values.CitizenId,
+                phoneNumber: values.phoneNumber,
+                email: values.email,
+                gender: values.gender,
+                dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
+                status: values.status,
+                avatar: avatarUrl,
+                password: values.password,
+            };
 
-                axios.put(`http://localhost:8080/api/customers/update/${selectedRecord.id}`, updatedData)
-                    .then(() => {
-                        message.success('Cập nhật khách hàng thành công!');
-                        navigate("/admin/customer")
-                    })
-                    .catch((error) => {
-                        console.error('Error updating customer:', error);
-                        message.error('Cập nhật khách hàng thất bại!');
-                    });
-            })
-            .catch((info) => {
-                console.log('Validate Failed:', info);
-            });
+            // Update customer info
+            await axios.put(`http://localhost:8080/api/customers/update/${id}`, customerData);
+
+            // Handle address update
+            const defaultAddress = selectedRecord.addresses?.find(addr => addr.isAddressDefault);
+            const addressData = {
+                provinceId: address.provinceId,
+                districtId: address.districtId,
+                wardId: address.wardId,
+                specificAddress: address.specificAddress,
+                isAddressDefault: true
+            };
+
+            if (defaultAddress) {
+                await axios.put(`http://localhost:8080/api/customers/update-address/${defaultAddress.id}`, addressData);
+            } else {
+                await axios.post(`http://localhost:8080/api/customers/add-address/${id}`, addressData);
+            }
+
+            message.success('Cập nhật khách hàng thành công!');
+            navigate("/admin/customer");
+        } catch (error) {
+            console.error('Error updating customer:', error);
+            message.error('Cập nhật khách hàng thất bại!');
+        }
     };
 
+
+
+    // const handleAddressChange = (provinceId, districtId, wardId, specificAddress) => {
+    //     setAddress({ ...address, districtId: districtId, provinceId: provinceId, wardId: wardId, specificAddress: specificAddress });
+    // };
+
     const handleAddressChange = (provinceId, districtId, wardId, specificAddress) => {
-        setAddress({ ...address, districtId: districtId, provinceId: provinceId, wardId: wardId, specificAddress: specificAddress });
+        setAddress({
+            provinceId: provinceId,
+            districtId: districtId,
+            wardId: wardId,
+            specificAddress: specificAddress
+        });
     };
 
     return (
@@ -147,7 +287,7 @@ const UpdateCustomer = () => {
             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Chỉnh sửa khách hàng</h2>
 
             <Row gutter={16}>
-                <Col span={6}>
+                {/* <Col span={6}>
                     <Card>
                         <Form.Item label="Ảnh đại diện">
                             <Upload
@@ -161,7 +301,7 @@ const UpdateCustomer = () => {
                             </Upload>
                         </Form.Item>
                     </Card>
-                </Col>
+                </Col> */}
 
                 <Col span={18}>
                     <Card>
@@ -204,10 +344,11 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                     >
                                         <Radio.Group>
-                                            <Radio value="true">Nam</Radio>
-                                            <Radio value="false">Nữ</Radio>
+                                            <Radio value={true}>Nam</Radio>
+                                            <Radio value={false}>Nữ</Radio>
                                         </Radio.Group>
                                     </Form.Item>
+
                                 </Col>
                             </Row>
 
@@ -232,15 +373,17 @@ const UpdateCustomer = () => {
                                 </Col>
                             </Row>
 
-                            <Form.Item label="Địa chỉ">
-                                <AddressSelectorAntd
-                                    provinceId={address.provinceId}
-                                    districtId={address.districtId}
-                                    wardId={address.wardId}
-                                    specificAddressDefault={address.specificAddress}
-                                    onAddressChange={handleAddressChange}
-                                />
-                            </Form.Item>
+                            {isAddressLoaded && (
+                                <Form.Item label="Địa chỉ">
+                                    <AddressSelectorAntd
+                                        provinceId={parseInt(address.provinceId)}
+                                        districtId={parseInt(address.districtId)}
+                                        wardId={parseInt(address.wardId)}
+                                        specificAddressDefault={address.specificAddress}
+                                        onAddressChange={handleAddressChange}
+                                    />
+                                </Form.Item>
+                            )}
 
                             <Row gutter={16}>
                                 <Col span={12}>
@@ -250,8 +393,8 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                                     >
                                         <Select>
-                                            <Option value="1">Kích hoạt</Option>
-                                            <Option value="0">Khóa</Option>
+                                            <Option value={1}>Kích hoạt</Option>
+                                            <Option value={0}>Khóa</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
