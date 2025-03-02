@@ -27,6 +27,7 @@ import { clearBill, getBill } from "./bill";
 import { formatVND } from "../../../helpers/Helpers";
 import { useNavigate } from "react-router-dom";
 import { FcShipped } from "react-icons/fc";
+import { apiCreateBillClient } from "./payment";
 
 const { Option } = Select;
 
@@ -72,40 +73,39 @@ const parsePrice = (price) => {
 
 const PayMent = () => {
   const navigate = useNavigate();
-  const [currentBill, setCurrentBill] = useState(); // 1 mảng các sản phẩm
+  const [billDone, setBillDone] = useState(); // 1 mảng các sản phẩm
+  const [loading, setLoading] = useState(false); // 1 mảng các sản phẩm
+
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
 
-  const [items, setItems] = useState([
-    {
-      key: "1",
-      label: `Hóa đơn ${moment().format("HH:mm:ss")}`,
-      productList: [],
-      isSuccess: false,
-      canPayment: false,
-      customerInfo: null,
-      payInfo: {
-        paymentMethods: "cash",
-        discount: 0,
-        amount: 0,
-      },
-      closable: true,
-      billCode: null,
-      isShipping: false,
-      isNewShippingInfo: false,
-      shippingInfo: null,
-      customerAddresses: [],
-      addressShipping: null,
-      detailAddressShipping: {
-        provinceId: null,
-        districtId: null,
-        wardId: null,
-        specificAddress: "",
-      },
-      recipientName: "", // Số điện thoại người nhận hàng
-      recipientPhoneNumber: "", // Tên ngươi nhận
-      shippingFee: 0,
+  const [bill, setbill] = useState({
+    customerId: null,
+    customerMoney: null,
+    discountMoney: 0,
+    totalMoney: 0,
+    moneyAfter: 0,
+    desiredDateOfReceipt: null,
+    shipDate: null,
+    shippingAddressId: null,
+    email: "string",
+    notes: "string",
+    voucherId: 0,
+    recipientName: "string",
+    recipientPhoneNumber: "string",
+    shipMoney: 0,
+    address: {
+      provinceId: "string",
+      districtId: "string",
+      wardId: "string",
+      isAddressDefault: true,
+      specificAddress: "string",
     },
-  ]);
+    billDetailRequests: getBill().map((item) => ({
+      productDetailId: item.productDetailId,
+      quantity: item.quantityAddCart, // Đảm bảo đúng field
+      price: item.price,
+    })),
+  });
   const {
     control,
     handleSubmit,
@@ -131,6 +131,7 @@ const PayMent = () => {
   }, []);
 
   const [paymentMethod, setPaymentMethod] = useState(null);
+
   const onAddressChange = async (
     selectedProvince,
     selectedDistrict,
@@ -144,28 +145,41 @@ const PayMent = () => {
         toDistrictId: selectedDistrict,
       });
     }
-    setItems((prevItems) => ({
-      ...prevItems,
+    setbill((prevbill) => ({
+      ...prevbill,
       detailAddressShipping: {
         provinceId: selectedProvince,
         districtId: selectedDistrict,
         wardId: selectedWard,
         specificAddress: specificAddress ?? "",
       },
-      shippingFee: totalFee,
+      shipMoney: totalFee,
     }));
   };
-
+  // taohoas dơn
+  const createBillClient = async () => {
+    setLoading(true);
+    try {
+      const  response =await apiCreateBillClient(bill)
+      console.log("Response hóa dơn tạo:", response); // Log response để kiểm tra dữ liệu trả về
+      setBillDone(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tạo hóa đơn.");
+    } finally {
+      setLoading(false);
+    }
+  };
   // Tính tổng tiền tự động
   const totalAmount = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
 
-    const sum = productData.reduce(
+    let sum = productData.reduce(
       (sum, item) => sum + parsePrice(item.price || 0) * (item.quantity || 1),
       0
     );
-    return sum + (parseInt(items?.shippingFee) || 0);
-  }, [productData, items?.shippingFee]);
+    sum += parseInt(bill?.shipMoney) || 0;
+    return sum;
+  }, [productData, bill?.shipMoney]);
 
   const columns = [
     {
@@ -192,12 +206,34 @@ const PayMent = () => {
       align: "right",
     },
   ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = (data) => {
+    setbill((prev) => ({
+      ...prev,
+      recipientName: data.fullname,
+      recipientPhoneNumber: data.phone,
+      email: data.email,
+    }));
+
+    setIsSubmitting(true); // Đánh dấu đang submit
+  };
+
+  // Khi bill cập nhật xong thì gọi onSubmit
+  useEffect(() => {
+    if (isSubmitting) {
+      console.log("✅ Bill sau khi cập nhật:", bill);
+      onSubmit(bill);
+      setIsSubmitting(false); // Reset lại
+      message.success("Đặt hàng thành công!");
+      createBillClient()
+    }
+  }, [bill, isSubmitting]);
 
   const onSubmit = (data) => {
     console.log("Dữ liệu gửi đi:", data);
-    message.success("Đặt hàng thành công!");
+    console.log("đơn hàng đặt", bill);
     navigate("/success");
-
     reset(); // Reset form sau khi gửi
   };
 
@@ -330,7 +366,7 @@ const PayMent = () => {
             pagination={false}
           />
           <FcShipped size={25} /> Phí vận chuyển (GHN):{" "}
-          {formatVND(parseInt(items?.shippingFee) || 0)}
+          {formatVND(parseInt(bill?.shipMoney) || 0)}
           <Divider />
           <h3 style={{ textAlign: "right" }}>
             Tổng: {totalAmount?.toLocaleString()} ₫
@@ -354,12 +390,13 @@ const PayMent = () => {
               <Radio value="creditCard">Thanh toán khi nhận hàng (COD)</Radio>
             </div>
           </Radio.Group>
-          <Button type="primary" block onClick={handleSubmit(onSubmit)}>
+          <Button type="primary" block onClick={handleSubmit(handleFormSubmit)}>
             ĐẶT HÀNG
           </Button>
           <Paragraph type="secondary">
             Thông tin cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và tăng
-            trải nghiệm sử dụng website. khi ấn đặt hàng chắc chắn rằng bạn đã đồng ý với <a style={{color:"blue"}}> Chính sách mua hàng </a> 
+            trải nghiệm sử dụng website. khi ấn đặt hàng chắc chắn rằng bạn đã
+            đồng ý với <a style={{ color: "blue" }}> Chính sách mua hàng </a>
             của cửa hàng
           </Paragraph>
         </Col>

@@ -7,13 +7,13 @@ function Success() {
     <>
       <Result
         status="success"
-        title="Successfully Purchased Cloud Server ECS!"
+        title="Cảm ơn bạn đã mua hàng! Đơn hàng của bạn đã được tạo thành công! "
         subTitle="Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait."
         extra={[
           <Button type="primary" key="console">
-            Go Console
+            Xem thêm sản phẩm
           </Button>,
-          <Button key="buy">Buy Again</Button>,
+          <Button key="buy">Mua thêm</Button>,
         ]}
         style={{
             backgroundColor:"white"
