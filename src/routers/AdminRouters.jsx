@@ -35,25 +35,15 @@ import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 import AddStaff from "../admin/staff/AddStaff.jsx";
 import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
+import {getRole} from "../helpers/Helpers.js";
 // import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
 
-const getRole = () => {
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-        const parsedUserInfo = JSON.parse(storedUserInfo);
-        return parsedUserInfo?.vaiTro || null;
-    }
-    return null;
-};
+
 
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
-    // if (allowedRoles.includes(role)) {
-    //   return element;
-    // }
-
 
     if (true) {
         return element;

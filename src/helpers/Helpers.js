@@ -233,3 +233,14 @@ export const calculateShippingFee = async ({
     throw new Error("Failed to calculate shipping fee");
   }
 };
+
+
+export const getRole = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        console.log("user", user)
+        return user?.role || null;
+    }
+    return null;
+};

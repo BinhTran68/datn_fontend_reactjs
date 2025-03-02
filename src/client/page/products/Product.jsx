@@ -32,6 +32,7 @@ import {
 } from "@ant-design/icons";
 import { COLORS } from "../../../constants/constants.js";
 import {
+  apiAddViewProduct,
   getAllProductHadCreatedAtDesc,
   getAllProducthadPromotion,
   getAllProducthadSoldDesc,
@@ -194,6 +195,16 @@ function Product() {
         response
       ); // Log response để kiểm tra dữ liệu trả về
       setProductHadSolDescs(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addViewProduct = async (productId) => {
+    setLoading(true);
+    try {
+      const response = await apiAddViewProduct(productId);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -363,6 +374,7 @@ function Product() {
                         color: "black",
                         fontWeight: "normal",
                       }}
+                      onClick={() => addViewProduct(product.productId)} // Gọi addViewProduct khi click
                     >
                       <PropProduct
                         product={{

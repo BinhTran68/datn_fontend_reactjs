@@ -32,6 +32,7 @@ const App = () => {
           <div className="container">
             {/* <Outlet  context={{ searchValue }} /> */}
             <Nav/>
+
             <Outlet />
           </div>
         </Content>

@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {
+    Badge,
     Button,
     Card,
     message, Modal,
     Pagination,
-    Select,
     Table,
     Tabs,
-    Typography
 } from "antd";
 import {toast} from "react-toastify";
 import {salesColumns} from "./columns/columns.jsx";
@@ -19,12 +18,21 @@ import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
 import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
 import {printBillService} from "../bill/services/printBillService.js";
+import {LiaStackExchange} from "react-icons/lia";
+import {postChangeQuantityProduct} from "./billService.js";
+import axiosInstance from "../../utils/axiosInstance.js";
 
 const SalesPage = () => {
     const [items, setItems] = useState([
         {
             key: "1",
-            label: `Hóa đơn ${moment().format("HH:mm:ss")}`,
+            itemName: ` Hóa đơn ${moment().format("HH:mm:ss")}`,
+            label: (
+                <span>
+                     Hóa đơn {moment().format("HH:mm:ss")} <Badge showZero={true} className={"mb-2"} count={12}
+                                                                  offset={[5, -5]}/>
+                </span>
+            ),
             productList: [],
             isSuccess: false,
             canPayment: false,
@@ -62,6 +70,8 @@ const SalesPage = () => {
         }
     };
 
+
+
     const [products, setProducts] = useState([]);
     const [customers, setCustomers] = useState([])
     const [pagination, setPagination] = useState({
@@ -97,7 +107,13 @@ const SalesPage = () => {
         fetchProductsData()
         getAllCustomer()
         getAllVoucher()
+        getCurrentUserLogin()
     }, []);
+
+    const getCurrentUserLogin = async () => {
+        const response = await axiosInstance.get("/api/authentication/user-info")
+        console.log("response", response)
+    }
 
     const handleCustomerMoneyChange = (e) => {
         const value = parseFloat(e.target.value) || 0;
@@ -185,11 +201,28 @@ const SalesPage = () => {
         const timestamp = moment().format("HH:mm:ss"); // Lấy thời gian hiện tại (giờ:phút:giây)
         const newItem = {
             key: newKey,
-            label: `Hóa đơn (${timestamp})`, // Gán thời gian vào tên hóa đơn
+            itemName: ` Hóa đơn ${moment().format("HH:mm:ss")}`,
+            label: (
+                <span>
+                     Hóa đơn {timestamp} <Badge showZero={true} className={"mb-2"} count={
+                    0
+                } offset={[5, -5]}/>
+                </span>
+            ),
             productList: [],
         };
         setItems([...items, newItem]);
     };
+
+    useEffect(() => {
+        // Chờ đợi sau 0.5 thì gửi api về server trừ đi product bên trong.
+        const timeout = setTimeout(() => {
+            postChangeQuantityProduct(products)
+        }, 500);
+
+        return () => clearTimeout(timeout); // Dọn dẹp timeout nếu `products` thay đổi trước khi 0.5s trôi qua
+    }, products)
+
 
 
     const handleOnAddProductToBill = (record) => {
@@ -229,9 +262,31 @@ const SalesPage = () => {
                         [currentBill]: bestVoucher
                     }));
 
+                    // Gọi api về trừ số lượng trong kho đồng thời tìm kiếm trừ ở table
+
+
+                    setProducts(prevProducts => prevProducts.map(
+                        (product) => {
+                            if (product.id === record.id) {
+                                return {
+                                    ...product,
+                                    quantity: product.quantity - 1
+                                }
+                            }
+                            return product
+                        }
+                    ))
+
                     return {
                         ...item,
                         productList: updatedProductList,
+                        label: (
+                            <span>
+                                  {item.itemName} <Badge showZero={true} className={"mb-2"}
+                                                         count={updatedProductList.length ?? 0}/>
+                              </span>
+                        ),
+
                         payInfo: {
                             ...item.payInfo,
                             amount: newTotalAfterDiscount,
@@ -431,9 +486,6 @@ const SalesPage = () => {
 
     const handleCheckIsShipping = (e) => {
         const isChecked = e.target.checked;
-
-
-
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -477,7 +529,6 @@ const SalesPage = () => {
                 toast.error("Không tìm thấy hóa đơn hiện tại.");
                 return;
             }
-
             const payload = {
                 customerId: bill.customerInfo?.id || null,
                 customerMoney: bill.payInfo?.customerMoney || 0,
@@ -589,10 +640,11 @@ const SalesPage = () => {
         let totalFee = items.find((item) => item.key === currentBill).shippingFee ?? 0
         const isCurrentWard = !!items.find((item) => item.key === currentBill && item.detailAddressShipping.wardId === selectedWard);
         console.log("isCurrentWard", isCurrentWard); // true hoặc false
-        if  (selectedWard && !isCurrentWard) {
-            const total = await calculateShippingFee({
-                toWardCode : String(selectedWard),
-                toDistrictId : selectedDistrict
+        if (selectedWard && !isCurrentWard) {
+            const total =
+                await calculateShippingFee({
+                toWardCode: String(selectedWard),
+                toDistrictId: selectedDistrict
             });
             console.log(total)
             totalFee = total
@@ -604,9 +656,9 @@ const SalesPage = () => {
                             ...item,
                             detailAddressShipping: {
                                 provinceId: selectedProvince,
-                                districtId : selectedDistrict,
+                                districtId: selectedDistrict,
                                 wardId: selectedWard,
-                                specificAddress : specificAddress  ?? "",
+                                specificAddress: specificAddress ?? "",
                             },
                             shippingFee: totalFee
 
@@ -625,8 +677,8 @@ const SalesPage = () => {
         // tìm customer
         // lấy ra địa chỉ nè
         const customer = items.find((item) => item.key === currentBill)?.customerInfo
-        if  (customer && customer?.addresses) {
-          const address = customer.addresses.find((ads) => ads.id === addressId)
+        if (customer && customer?.addresses) {
+            const address = customer.addresses.find((ads) => ads.id === addressId)
             detailAddress = {
                 provinceId: address?.provinceId,
                 districtId: address?.districtId,
@@ -650,7 +702,7 @@ const SalesPage = () => {
         );
     }
 
-    const  handleOnChangerRecipientPhoneNumber = (e) => {
+    const handleOnChangerRecipientPhoneNumber = (e) => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {

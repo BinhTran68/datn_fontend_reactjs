@@ -126,3 +126,16 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
+  export const apiAddViewProduct = async (productId) => {
+    try {
+      const response = await api.get("/addviewproduct", {
+        params: { productId: productId },
+      });
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+      console.error(errorMessage);
+      throw error;
+    }
+  };

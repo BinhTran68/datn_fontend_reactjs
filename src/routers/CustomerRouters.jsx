@@ -37,21 +37,34 @@ import ProductDetail from "../client/page/products/ProductDetail.jsx";
 import { ProductProvider } from "../store/ProductContext.jsx";
 import Success from "../client/page/cart/Success.jsx";
 
-const getRole = () => {
-  const storedUserInfo = localStorage.getItem("userInfo");
-  if (storedUserInfo) {
-    const parsedUserInfo = JSON.parse(storedUserInfo);
-    return parsedUserInfo?.vaiTro || null;
-  }
-  return null;
-};
+// const getRole = () => {
+//   const storedUserInfo = localStorage.getItem("userInfo");
+//   if (storedUserInfo) {
+//     const parsedUserInfo = JSON.parse(storedUserInfo);
+//     return parsedUserInfo?.vaiTro || null;
+//   }
+//   return null;
+// };
 
 console.log(1);
-const RoleRedirect = ({ element }) => {
-  const role = getRole();
+import UserLogin from "../client/UserLogin.jsx";
+import React from "react";
+import {getRole} from "../helpers/Helpers.js";
 
+
+
+
+const RoleRedirect = ({ element, allowRole }) => {
+  const role = getRole();
+  console.log(role)
   if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
     return <Navigate to="/admin/dashboard" replace />;
+  }
+  if(!allowRole) {
+    return element;
+  }
+  if(allowRole && allowRole !== role) {
+    return <Navigate to="/forbidden" replace/>;
   }
   return element;
 };
@@ -78,7 +91,7 @@ const CustomerRouters = {
     },
     {
       path: "payment",
-      element: <RoleRedirect element={<PayMent />} />,
+      element: <RoleRedirect element={<PayMent />}  />,
     },
     {
       path: "products",
@@ -90,7 +103,7 @@ const CustomerRouters = {
     },
     {
       path: "admin/login",
-      element: <RoleRedirect element={<ProductsPage />} />,
+      element: <RoleRedirect element={<ProductsPage />}  />,
     },
     {
       path: "register",
@@ -101,11 +114,7 @@ const CustomerRouters = {
       path: "admin/trademark",
       element: <RoleRedirect element={<Trademark />} />,
     },
-    // luồng bán hàng
-    // {
-    //   path: "products/product-detail",
-    //   element: <RoleRedirect element={<ProductDetail />} />,
-    // },
+
     {
       path: "products/product-detail/:productId",
       element: <RoleRedirect element={<ProductDetail />} />,
@@ -113,6 +122,10 @@ const CustomerRouters = {
     {
       path: "success",
       element: <RoleRedirect element={<Success />} />,
+    },
+    {
+      path: "test/auth-user",
+      element: <RoleRedirect element={<UserLogin/>} allowRole={"CUSTOMER"} />,
     },
 
     // {

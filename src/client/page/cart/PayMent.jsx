@@ -26,6 +26,7 @@ import { useProduct } from "../../../store/ProductContext";
 import { clearBill, getBill } from "./bill";
 import { formatVND } from "../../../helpers/Helpers";
 import { useNavigate } from "react-router-dom";
+import { FcShipped } from "react-icons/fc";
 
 const { Option } = Select;
 
@@ -70,7 +71,7 @@ const parsePrice = (price) => {
 };
 
 const PayMent = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [currentBill, setCurrentBill] = useState(); // 1 mảng các sản phẩm
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
 
@@ -119,9 +120,14 @@ const PayMent = () => {
     // setProductData(getBill());
     console.log("prodauct day nay", products);
     console.log("🛒 Đây là bill hiện tại:", getBill());
-    return ()=>{
-      clearBill()
-    }
+    console.log(
+      "🛒 Đây là user hiện tại:",
+      JSON.parse(localStorage.getItem(`user`)) || []
+    );
+
+    return () => {
+      clearBill();
+    };
   }, []);
 
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -150,30 +156,16 @@ const PayMent = () => {
     }));
   };
 
-  const handleOnChangeShippingFee = (e) => {
-    setItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.key === currentBill) {
-          return {
-            ...item,
-            shippingFee: e.target.value,
-          };
-        }
-        return item;
-      })
-    );
-  };
   // Tính tổng tiền tự động
   const totalAmount = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
-  
-    return productData.reduce(
+
+    const sum = productData.reduce(
       (sum, item) => sum + parsePrice(item.price || 0) * (item.quantity || 1),
       0
     );
-  }, [productData]);
-  
-  
+    return sum + (parseInt(items?.shippingFee) || 0);
+  }, [productData, items?.shippingFee]);
 
   const columns = [
     {
@@ -314,25 +306,20 @@ const PayMent = () => {
           </Form>
           <h5>Chọn địa chỉ giao hàng</h5>
           <AddressSelectorGHN onAddressChange={onAddressChange} />
-          Phí ship: {formatVND(parseInt(items?.shippingFee) || 0)}
-
           <Form.Item
-              label="Lưu ý khi vận chuyển"
-              validateStatus={errors.address ? "error" : ""}
-              help={errors.address?.message}
-            >
-              <Controller
-                name="address"
-                control={control}
-                render={({ field }) => (
-                  <Input.TextArea
-                    {...field}
-                    placeholder="Nhập địa chỉ cụ thể"
-                  />
-                )}
-              />
-            </Form.Item> 
-          </Col>
+            label="Lưu ý khi vận chuyển"
+            validateStatus={errors.address ? "error" : ""}
+            help={errors.address?.message}
+          >
+            <Controller
+              name="address"
+              control={control}
+              render={({ field }) => (
+                <Input.TextArea {...field} placeholder="Nhập địa chỉ cụ thể" />
+              )}
+            />
+          </Form.Item>
+        </Col>
 
         {/* Thông tin đơn hàng */}
         <Col span={12} style={{ padding: "1rem", border: "1px solid #ddd" }}>
@@ -342,13 +329,13 @@ const PayMent = () => {
             dataSource={productData}
             pagination={false}
           />
+          <FcShipped size={25} /> Phí vận chuyển (GHN):{" "}
+          {formatVND(parseInt(items?.shippingFee) || 0)}
           <Divider />
           <h3 style={{ textAlign: "right" }}>
             Tổng: {totalAmount?.toLocaleString()} ₫
           </h3>
-
           <Divider />
-
           <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)}>
             <div>
               <Radio value="bankTransfer">Chuyển khoản ngân hàng</Radio>
@@ -357,29 +344,23 @@ const PayMent = () => {
                 Mã đơn hàng trong nội dung thanh toán.
               </Paragraph>
             </div>
-            <img
+            {/* <img
               src="https://authentic-shoes.com/wp-content/uploads/2023/11/Screenshot-2023-11-24-at-23.19.42.png"
               alt="Bank transfer"
               width="300"
-            />
-            <div>
-              <Radio value="cashOnDelivery">Kiểm tra thanh toán</Radio>
-            </div>
+            /> */}
 
             <div>
-              <Radio value="creditCard">
-                Thẻ ATM/Visa/Master/JCB/QR Pay qua cổng VNPAY
-              </Radio>
+              <Radio value="creditCard">Thanh toán khi nhận hàng (COD)</Radio>
             </div>
           </Radio.Group>
-
           <Button type="primary" block onClick={handleSubmit(onSubmit)}>
             ĐẶT HÀNG
           </Button>
-
           <Paragraph type="secondary">
             Thông tin cá nhân của bạn sẽ được sử dụng để xử lý đơn hàng và tăng
-            trải nghiệm sử dụng website.
+            trải nghiệm sử dụng website. khi ấn đặt hàng chắc chắn rằng bạn đã đồng ý với <a style={{color:"blue"}}> Chính sách mua hàng </a> 
+            của cửa hàng
           </Paragraph>
         </Col>
       </Row>
