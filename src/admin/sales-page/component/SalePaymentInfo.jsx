@@ -132,6 +132,7 @@ const SalePaymentInfo = ({
                         <div className={"py-2"}>
                             <Collapse
                                 expandIconPosition={"end"}
+                                defaultActiveKey={['1', '2']}
                                 items={[{
                                     key: '1',
                                     label: (
@@ -168,6 +169,7 @@ const SalePaymentInfo = ({
                                                             avatar={<img width={55} src={voucher_image}
                                                                          alt={"img voucher"}/>}
                                                             title={<a href="https://ant.design">{item?.voucherName}</a>}
+
                                                             description={
 
                                                                 <div>

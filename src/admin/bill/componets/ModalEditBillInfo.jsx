@@ -87,13 +87,6 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
             <Form.Item label={<span className="fw-bold text-black">Mã đơn hàng</span>} name="billCode">
                 <Input disabled/>
             </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Trạng thái</span>} name="status">
-                <Select disabled>
-                    <Option value="DA_THANH_TOAN">Đã thanh toán</Option>
-                    <Option value="CHO_THANH_TOAN">Chờ thanh toán</Option>
-                    <Option value="DA_HUY">Đã hủy</Option>
-                </Select>
-            </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Loại Hóa Đơn</span>} name="type">
                 <Select disabled>
                     <Option value="ONLINE">Online</Option>

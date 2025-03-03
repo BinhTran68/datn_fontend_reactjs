@@ -93,6 +93,17 @@ export const convertBillStatusToString = (status) => {
     return "Khác";
 }
 
+export const paymentTypeConvert = {
+    "THANH_TOAN_TRUOC": "Thanh toán trước",
+    "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng"
+};
+
+export const paymentMethodConvert = {
+    "TIEN_MAT": "Tiền mặt",
+    "CHUYEN_KHOAN": "Chuyển khoản",
+    "TIEN_MAT_AND_CHUYEN_KHOAN": "Tiền mặt và Chuyển khoản"
+};
+
 
 
 export async function generateAddressString(provinceId, districtId, wardId, specificAddressDefault) {
