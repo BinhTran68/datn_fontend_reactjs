@@ -1,9 +1,25 @@
 import { Badge, Col, Row } from "antd";
-import { Link } from "react-router-dom";
-import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { BsCart2 } from "react-icons/bs";
+import { getCart } from "../../page/cart/cart";
 
 function Nav() {
+  const [cartCount, setCartCount] = useState(getCart().length);
+  const navigate = useNavigate(); // Gọi useNavigate trong component
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCartCount(getCart().length);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   return (
     <>
       <Row
@@ -13,7 +29,7 @@ function Nav() {
           position: "sticky",
           top: 0,
           zIndex: 1000,
-          padding: "10px 0", // Adjust padding as needed
+          padding: "10px 0",
         }}
       >
         <Col
@@ -70,11 +86,12 @@ function Nav() {
           }}
         >
           <Row gutter={[20, 20]}>
-            <Col>
-              <Badge count={10}>
-                <BsCart2 style={{cursor:"pointer"}} size={22}/>
+            <Col onClick={()=>{
+              navigate("/cart")
+            }}>
+              <Badge count={cartCount}>
+                <BsCart2 style={{ cursor: "pointer" }} size={22} />
               </Badge>
-             {/* <span style={{fontSize:"15px"}}> Giỏ hàng</span> */}
             </Col>
           </Row>
         </Col>

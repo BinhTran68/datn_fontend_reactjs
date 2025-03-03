@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
@@ -10,10 +10,8 @@ import Nav from "../Nav/index.jsx";
 import { ceil } from "lodash";
 
 function Home() {
-
   const [isAuthentication, setIsAuthentication] = useState(false);
   const [customer, setCustomer] = useState(null);
-
 
   useEffect(() => {
     const customerLogin = localStorage.getItem("customer");
@@ -21,8 +19,6 @@ function Home() {
       setIsAuthentication(true);
       setCustomer(JSON.parse(customerLogin));
     }
-
-
   }, []);
 
   return (
@@ -78,17 +74,17 @@ function Home() {
               </Col>
               <Col>
                 <Link
-                    hidden={isAuthentication}
+                  hidden={isAuthentication}
                   href="/"
                   className="text-decoration-none text-black fw-normal"
                   to="/login"
                 >
-                  Đăng Nhập {customer?.fullName ?? "fullName"}
+                  {customer?.fullName ?? "Đăng Nhập"}
                 </Link>
               </Col>
               <Col>
                 <Link
-                    hidden={isAuthentication}
+                  hidden={isAuthentication}
                   href="/"
                   className="text-decoration-none text-black fw-normal"
                   to="/register"
