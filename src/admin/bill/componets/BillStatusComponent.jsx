@@ -8,6 +8,7 @@ const BillStatusComponent = ({
                          }) => {
     return (
         <div>
+
             <Button
 
                 disabled

@@ -29,7 +29,7 @@ const SalesPage = () => {
             itemName: ` Hóa đơn ${moment().format("HH:mm:ss")}`,
             label: (
                 <span>
-                     Hóa đơn {moment().format("HH:mm:ss")} <Badge showZero={true} className={"mb-2"} count={12}
+                     Hóa đơn {moment().format("HH:mm:ss")} <Badge showZero={true} className={"mb-2"} count={0}
                                                                   offset={[5, -5]}/>
                 </span>
             ),
@@ -568,7 +568,7 @@ const SalesPage = () => {
             };
 
 
-            const response = await axios.post(`${baseUrl}/api/admin/bill/create`, payload);
+            const response = await axiosInstance.post(`/api/admin/bill/create`, payload);
             if (response.status === 200) {
                 setItems(prevItems =>
                     prevItems.map(item => {

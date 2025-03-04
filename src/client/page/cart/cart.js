@@ -1,7 +1,6 @@
-
 import { v4 as uuidv4 } from "uuid";
 
-const getDeviceId = () => {
+export const getDeviceId = () => {
   let deviceId = localStorage.getItem("deviceId");
   if (!deviceId) {
     deviceId = uuidv4(); // Tạo ID duy nhất
@@ -10,15 +9,53 @@ const getDeviceId = () => {
   return deviceId;
 };
 
-const addToCart = (product) => {
-  const deviceId = getDeviceId();
-  let cart = JSON.parse(localStorage.getItem(`cart_${deviceId}`)) || [];
-  cart.push(product);
-  localStorage.setItem(`cart_${deviceId}`, JSON.stringify(cart));
-};
+export const addToCart = (product) => {
+    const deviceId = getDeviceId();
+    let cart = JSON.parse(localStorage.getItem(`cart_${deviceId}`)) || [];
+  
+    // Kiểm tra sản phẩm đã tồn tại trong giỏ hàng hay chưa
+    const existingProductIndex = cart.findIndex(
+      (item) => item.productDetailId === product.productDetailId
+    );
+  
+    if (existingProductIndex !== -1) {
+      // Nếu sản phẩm đã có trong giỏ, tăng số lượng
+      cart[existingProductIndex].quantityAddCart += product.quantityAddCart;
+    } else {
+      // Nếu chưa có, thêm mới vào giỏ hàng
+      cart.push(product);
+    }
+  
+    // Lưu lại vào localStorage
+    localStorage.setItem(`cart_${deviceId}`, JSON.stringify(cart));
+  
+    // Gửi sự kiện cập nhật giỏ hàng để UI tự động render lại
+    window.dispatchEvent(new Event("storage"));
+  };
+  
 
 // Khi người dùng mở lại trình duyệt
-const getCart = () => {
+export const getCart = () => {
   const deviceId = getDeviceId();
   return JSON.parse(localStorage.getItem(`cart_${deviceId}`)) || [];
+};
+
+export const clearCart = () => {
+  const deviceId = getDeviceId();
+  localStorage.removeItem(`cart_${deviceId}`);
+
+  // Cập nhật giỏ hàng trên toàn ứng dụng
+  window.dispatchEvent(new Event("storage"));
+};
+export const removeFromCart = (productDetailId) => {
+  const deviceId = getDeviceId();
+  let cart = JSON.parse(localStorage.getItem(`cart_${deviceId}`)) || [];
+
+  // Lọc ra các sản phẩm không trùng với productId cần xóa
+  cart = cart.filter((product) => product.productDetailId !== productDetailId);
+
+  localStorage.setItem(`cart_${deviceId}`, JSON.stringify(cart));
+
+  // Cập nhật giỏ hàng trên toàn ứng dụng
+  window.dispatchEvent(new Event("storage"));
 };

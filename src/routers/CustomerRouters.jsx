@@ -12,11 +12,9 @@
 import { Navigate } from "react-router-dom";
 import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
-import  CartPage  from "../client/page/cart/CartPage.jsx";
+import CartPage from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
-
-
 // import Product from "../admin/product/product.jsx";
 // import ProductManagement from "../admin/product/ProductManagement.jsx";
 // import Sole from "../admin/product/sole.jsx";
@@ -28,10 +26,8 @@ import Test from "../client/page/TestComponent/Test.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
-import ContactFrom from "../admin/contact/ContactForm.jsx";
-import CustomerProfile from "../admin/profile/CustomerProfile.jsx";
-
-
+import ContactForm from "../admin/contact/ContactForm.jsx"
+import CustomerProfile from "../admin/profile/CustomerProfile.jsx"
 
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
@@ -40,32 +36,48 @@ import { i } from "framer-motion/client";
 
 // luồng bán hàng client
 import ProductDetail from "../client/page/products/ProductDetail.jsx";
+import { ProductProvider } from "../store/ProductContext.jsx";
+import Success from "../client/page/cart/Success.jsx";
+
+// const getRole = () => {
+//   const storedUserInfo = localStorage.getItem("userInfo");
+//   if (storedUserInfo) {
+//     const parsedUserInfo = JSON.parse(storedUserInfo);
+//     return parsedUserInfo?.vaiTro || null;
+//   }
+//   return null;
+// };
+
+console.log(1);
+import UserLogin from "../client/UserLogin.jsx";
+import React from "react";
+import {getRole} from "../helpers/Helpers.js";
 
 
 
 
-const getRole = () => {
-  const storedUserInfo = localStorage.getItem("userInfo");
-  if (storedUserInfo) {
-    const parsedUserInfo = JSON.parse(storedUserInfo);
-    return parsedUserInfo?.vaiTro || null;
-  }
-  return null;
-};
-
-console.log(1)
-const RoleRedirect = ({ element }) => {
+const RoleRedirect = ({ element, allowRole }) => {
   const role = getRole();
-
+  console.log(role)
   if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
     return <Navigate to="/admin/dashboard" replace />;
+  }
+  if(!allowRole) {
+    return element;
+  }
+  if(allowRole && allowRole !== role) {
+    return <Navigate to="/forbidden" replace/>;
   }
   return element;
 };
 
 const CustomerRouters = {
   path: "/",
-  element: <Client />,
+  element: (
+    <ProductProvider>
+      <Client />
+    </ProductProvider>
+  ),
   children: [
     {
       index: true,
@@ -81,7 +93,7 @@ const CustomerRouters = {
     },
     {
       path: "payment",
-      element: <RoleRedirect element={<PayMent />} />,
+      element: <RoleRedirect element={<PayMent />}  />,
     },
     {
       path: "products",
@@ -93,36 +105,39 @@ const CustomerRouters = {
     },
     {
       path: "admin/login",
-      element: <RoleRedirect element={<ProductsPage />} />,
+      element: <RoleRedirect element={<ProductsPage />}  />,
     },
     {
       path: "register",
       element: <RoleRedirect element={<Register />} />,
     },
-    
+
     {
       path: "admin/trademark",
       element: <RoleRedirect element={<Trademark />} />,
     },
-    // luồng bán hàng
+
     {
-      path: "products/product-detail/:id",
+      path: "products/product-detail/:productId",
       element: <RoleRedirect element={<ProductDetail />} />,
     },
     {
+      path: "success",
+      element: <RoleRedirect element={<Success />} />,
+    },
+    {
+      path: "test/auth-user",
+      element: <RoleRedirect element={<UserLogin/>} allowRole={"CUSTOMER"} />,
+    },
+    {
       path: "contact",
-      element: <RoleRedirect element={<ContactFrom />} />,
+      element: <RoleRedirect element={<ContactForm />} />,
     },
     {
       path: "profile",
       element: <RoleRedirect element={<CustomerProfile />} />,
     },
-   
-  
-  
-    
-
-
+ 
 
     // {
     //   path: "filter",

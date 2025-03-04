@@ -156,6 +156,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./Login.module.css";
+import { COLORS } from "../../constants/constants.js";
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -183,8 +184,8 @@ const Login = () => {
             );
             if (response.status === 200) {
                 const data = response.data;
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify(data.customer));
+                localStorage.setItem("accessToken", data.token);
+                localStorage.setItem("userInfo", JSON.stringify(data.customer));
                 navigate("/");
             } else {
                 setErrorMessage("Invalid login credentials. Please try again.");
@@ -203,12 +204,12 @@ const Login = () => {
             <div className={styles.formContainer}>
                 <div className={styles.leftPanel}>
                     <img 
-                        src="http://localhost:5173/public/img/thehands.png" 
+                        src="/img/thehands.png" 
                         alt="Logo" 
                         className={styles.logo} 
                     />
-                    <h2 className={styles.title}>Log in</h2>
-                    <p className={styles.subtitle}>to your account</p>
+                    <h2 className={styles.title}>Đăng nhập</h2>
+                    <p className={styles.subtitle}>vào tài khoản của bạn</p>
 
                     {errorMessage && (
                         <div className={styles.errorMessage}>
@@ -223,7 +224,7 @@ const Login = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                placeholder="username"
+                                placeholder="Tên đăng nhập"
                                 className={styles.input}
                                 disabled={loading}
                             />
@@ -234,7 +235,7 @@ const Login = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleInputChange}
-                                placeholder="password"
+                                placeholder="Mật khẩu"
                                 className={styles.input}
                                 disabled={loading}
                             />
@@ -248,13 +249,13 @@ const Login = () => {
                             {loading ? (
                                 <span className={styles.spinner}></span>
                             ) : (
-                                "LOG IN"
+                                "ĐĂNG NHẬP"
                             )}
                         </button>
                         
                         <div className={styles.forgotPassword}>
                             <Link to="/auth/forgot-password">
-                                Forgot password?
+                                Quên mật khẩu?
                             </Link>
                         </div>
                     </form>
@@ -262,10 +263,10 @@ const Login = () => {
 
                 <div className={styles.rightPanel}>
                     <div className={styles.socialContainer}>
-                        <h2 className={styles.socialTitle}>Sign in</h2>
-                        <p className={styles.socialSubtitle}>with one of your social profiles</p>
+                        <h2 className={styles.socialTitle}>Đăng nhập</h2>
+                        <p className={styles.socialSubtitle}>bằng tài khoản mạng xã hội</p>
                         
-                        <div className={styles.orDivider}>or</div>
+                        <div className={styles.orDivider}>hoặc</div>
                         
                         <div className={styles.socialButtons}>
                             <a href="#" className={`${styles.socialButton} ${styles.facebook}`}>
@@ -283,9 +284,9 @@ const Login = () => {
                         </div>
                         
                         <div className={styles.signupLink}>
-                            <p>Don't have an account?</p>
+                            <p>Chưa có tài khoản?</p>
                             <Link to="/auth/register" className={styles.signupButton}>
-                                sign up
+                                Đăng ký
                             </Link>
                         </div>
                     </div>

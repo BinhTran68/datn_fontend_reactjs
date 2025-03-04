@@ -211,6 +211,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./Register.module.css";
 import { validateEmail } from "../../helpers/Helpers.js";
+import { COLORS } from "../../constants/constants.js";
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -303,11 +304,11 @@ const Register = () => {
             if (data.code === 1000) {
                 navigate("/auth/login");
             } else {
-                setErrorMessage("Failed to register. Please try again.");
+                setErrorMessage("Đăng ký không thành công. Vui lòng thử lại.");
             }
         } catch (error) {
             setErrorMessage(
-                error.response?.data?.message || "Something went wrong. Please try again."
+                error.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."
             );
         } finally {
             setLoading(false);
@@ -319,12 +320,12 @@ const Register = () => {
             <div className={styles.formContainer}>
                 <div className={styles.leftPanel}>
                     <img 
-                        src="http://localhost:5173/public/img/thehands.png" 
+                        src="/img/thehands.png" 
                         alt="Logo" 
                         className={styles.logo} 
                     />
-                    <h2 className={styles.title}>Sign up</h2>
-                    <p className={styles.subtitle}>create your account</p>
+                    <h2 className={styles.title}>Đăng ký</h2>
+                    <p className={styles.subtitle}>tạo tài khoản của bạn</p>
 
                     {errorMessage && (
                         <div className={styles.errorMessage}>
@@ -393,23 +394,23 @@ const Register = () => {
                             {loading ? (
                                 <span className={styles.spinner}></span>
                             ) : (
-                                "SIGN UP"
+                                "ĐĂNG KÝ"
                             )}
                         </button>
                     </form>
                     
                     <div className={styles.loginLink}>
-                        <p>Already have an account?</p>
+                        <p>Đã có tài khoản?</p>
                         <Link to="/auth/login" className={styles.loginButtonLink}>
-                            log in
+                            Đăng nhập
                         </Link>
                     </div>
                 </div>
 
                 <div className={styles.rightPanel}>
                     <div className={styles.socialContainer}>
-                        <h2 className={styles.socialTitle}>Sign in</h2>
-                        <p className={styles.socialSubtitle}>with one of your social profiles</p>
+                        <h2 className={styles.socialTitle}>Đăng nhập</h2>
+                        <p className={styles.socialSubtitle}>bằng tài khoản mạng xã hội</p>
                         
                         <div className={styles.socialButtons}>
                             <a href="#" className={`${styles.socialButton} ${styles.facebook}`}>
