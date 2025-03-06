@@ -67,7 +67,7 @@ function ContactForm() {
               <strong>SỐ ĐIỆN THOẠI:</strong> 078 5499555
             </div>
             <div className={styles.contactDetail}>
-              <strong>EMAIL:</strong> <a href="mailto:Service@AutheticShoes.com">Service@AutheticShoes.com</a>
+              <strong>EMAIL:</strong> <a href="mailto:vietne263204@gmail.com">vietne263204@gmail.com</a>
             </div>
             
             <div className={styles.mapContainer}>

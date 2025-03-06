@@ -26,8 +26,10 @@ import Test from "../client/page/TestComponent/Test.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
-import ContactForm from "../admin/contact/ContactForm.jsx"
-import CustomerProfile from "../admin/profile/CustomerProfile.jsx"
+import ContactForm from "../admin/contact/ContactForm.jsx";
+import CustomerProfile from "../admin/profile/CustomerProfile.jsx";
+import ProductPolicyPage from "../admin/productpolicy/ProductPolicyPage.jsx";
+import CustomerPolicyPage from "../admin/profile/CustomerPolicyPage.jsx";
 
 import Login from "../auth/auth/Login.jsx";
 import Register from "../auth/auth/Register.jsx";
@@ -136,6 +138,14 @@ const CustomerRouters = {
     {
       path: "profile",
       element: <RoleRedirect element={<CustomerProfile />} />,
+    },
+    {
+      path: "productpolicypage",
+      element: <RoleRedirect element={<ProductPolicyPage />} />,
+    },
+    {
+      path: "customerpolicypage",
+      element: <RoleRedirect element={<CustomerPolicyPage />} />,
     },
  
 
