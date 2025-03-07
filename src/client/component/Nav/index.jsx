@@ -11,33 +11,33 @@ function Nav() {
     JSON.parse(localStorage.getItem("user"))
   ); // Lấy user từ localStorage
   const navigate = useNavigate();
+  const fetchCart = async () => {
+    if (user) {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/client/getallcartforcustomeridnopage`,
+          {
+            params: { customerId: user.id }, // Truyền params đúng cách
+          }
+        );
+
+        setCartCount(response.data.data.length); // axios tự động parse JSON
+      } catch (error) {
+        console.error("Lỗi khi lấy giỏ hàng:", error);
+        setCartCount(0); // Tránh lỗi không cập nhật giao diện
+      }
+    } else {
+      setCartCount(getCart().length);
+    }
+  };
+  useEffect(() => {
+    fetchCart();
+  }, [user]);
 
   useEffect(() => {
-    const fetchCart = async () => {
-      if (user) {
-        try {
-          const response = await axios.get(
-            `http://localhost:8080/api/client/getallcartforcustomeridnopage`,
-            {
-              params: { customerId: user.id }, // Truyền params đúng cách
-            }
-          );
-
-          setCartCount(response.data.data.length); // axios tự động parse JSON
-        } catch (error) {
-          console.error("Lỗi khi lấy giỏ hàng:", error);
-          setCartCount(0); // Tránh lỗi không cập nhật giao diện
-        }
-      } else {
-        setCartCount(getCart().length);
-      }
-    };
-
     const handleCartChange = () => {
-      fetchCart();
+      setUser(JSON.parse(localStorage.getItem("user")));
     };
-
-    fetchCart(); // Gọi ngay khi component mount
 
     // Lắng nghe khi giỏ hàng thay đổi trong localStorage
     window.addEventListener("storage", handleCartChange);
@@ -47,7 +47,7 @@ function Nav() {
       window.removeEventListener("storage", handleCartChange);
       window.removeEventListener("cartUpdated", handleCartChange);
     };
-  }, [user]); // Gọi lại khi user thay đổi
+  }, []); // Gọi lại khi user thay đổi
 
   return (
     <>
@@ -115,6 +115,15 @@ function Nav() {
           }}
         >
           <Row gutter={[20, 20]}>
+            <Col>
+              <Link
+                href="/"
+                className="text-decoration-none text-black fw-normal"
+                to="/login"
+              >
+                {user?.fullName ?? "Đăng Nhập"}
+              </Link>
+            </Col>
             <Col onClick={() => navigate("/cart")}>
               <Badge count={cartCount}>
                 <BsCart2 style={{ cursor: "pointer" }} size={22} />
