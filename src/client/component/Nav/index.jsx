@@ -1,4 +1,4 @@
-import { Badge, Col, Row } from "antd";
+import { Badge, Col, Image, Row } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { BsCart2 } from "react-icons/bs";
@@ -114,16 +114,38 @@ function Nav() {
             paddingRight: "2rem",
           }}
         >
-          <Row gutter={[20, 20]}>
+          <Row gutter={[10, 10]} justify={"center"} align={"middle"}>
             <Col>
-              <Link
-                href="/"
-                className="text-decoration-none text-black fw-normal"
-                to="/login"
-              >
-                {user?.fullName ?? "Đăng Nhập"}
-              </Link>
+              <Image
+                preview={false}
+                src={`${
+                  !user?.avatar || "https://placehold.co/500x550?text=No+Image"
+                }`}
+                style={{
+                  width: "2rem",
+                  borderRadius: "50%",
+                }}
+              />
             </Col>
+            <Col>
+              {user?.fullName ? (
+                <Link
+                  to="/profile"
+                  className="text-decoration-none text-black fw-normal"
+                  // onClick={handleLogout} // Gọi hàm logout khi click
+                >
+                  {user.fullName}
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-decoration-none text-black fw-normal"
+                >
+                  Đăng Nhập
+                </Link>
+              )}
+            </Col>
+
             <Col onClick={() => navigate("/cart")}>
               <Badge count={cartCount}>
                 <BsCart2 style={{ cursor: "pointer" }} size={22} />
