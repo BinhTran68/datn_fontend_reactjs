@@ -33,6 +33,7 @@ import { apiCreateBillClient } from "./payment";
 const { Option } = Select;
 
 // Schema validation
+
 const schema = yup.object().shape({
   fullname: yup.string().required("Vui lòng nhập họ và tên."),
   phone: yup
@@ -57,6 +58,9 @@ const parsePrice = (price) => {
 
 const PayMent = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  ); // Lấy user từ localStorage
   const [billDone, setBillDone] = useState(); // 1 mảng các sản phẩm
   const [loading, setLoading] = useState(false); // 1 mảng các sản phẩm
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -99,6 +103,12 @@ const PayMent = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      fullname: user?.fullName || "",
+      phone: user?.phoneNumber || "",
+      email: user?.email || "",
+      notes: user?.address || "",
+    },
   });
   // contexxt
   const { products } = useProduct(); // Lấy danh sách sản phẩm từ Context
@@ -115,6 +125,7 @@ const PayMent = () => {
       clearBill();
     };
   }, []);
+  
   useEffect(() => {
     setbill((prev) => ({
       ...prev,
@@ -231,7 +242,7 @@ const PayMent = () => {
             console.log("✅ Bill sau khi cập nhật:", bill);
             setIsSubmitting(false); // Reset lại
             message.success("Đặt hàng thành công!");
-  
+
             try {
               const data = await createBillClient();
               if (data) {
@@ -245,7 +256,7 @@ const PayMent = () => {
             }
             break;
           }
-  
+
           default:
             console.log("✅ Bill sau khi cập nhật:", bill);
             onSubmit(bill);
@@ -257,16 +268,15 @@ const PayMent = () => {
         message.warning("Không có sản phẩm!");
       }
     };
-  
+
     handleOrder();
-  }, [bill, isSubmitting]); 
-  
+  }, [bill, isSubmitting]);
 
   const onSubmit = (data) => {
     console.log("Dữ liệu gửi đi:", data);
     console.log("đơn hàng đặt", bill);
 
-    navigate("/success");
+    navigate(`/success?status=1&&amount=${bill.totalMoney}&&apptransid=ShipCod`);
 
     reset(); // Reset form sau khi gửi
   };
@@ -360,10 +370,9 @@ const PayMent = () => {
             value={paymentMethod}
           >
             <div>
-              <Radio value="ZALO_PAY">Chuyển khoản ngân hàng</Radio>
+              <Radio value="ZALO_PAY">ZaloPay</Radio>
               <Paragraph type="secondary">
-                Thực hiện thanh toán vào tài khoản ngân hàng. Vui lòng sử dụng
-                Mã đơn hàng trong nội dung thanh toán.
+                Thực hiện thanh toán bằng ứng dụng zalo pay.
               </Paragraph>
             </div>
             {/* <img

@@ -3,22 +3,51 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { BsCart2 } from "react-icons/bs";
 import { getCart } from "../../page/cart/cart";
+import axios from "axios";
 
 function Nav() {
   const [cartCount, setCartCount] = useState(getCart().length);
-  const navigate = useNavigate(); // Gọi useNavigate trong component
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  ); // Lấy user từ localStorage
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setCartCount(getCart().length);
+    const fetchCart = async () => {
+      if (user) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8080/api/client/getallcartforcustomeridnopage`,
+            {
+              params: { customerId: user.id }, // Truyền params đúng cách
+            }
+          );
+
+          setCartCount(response.data.data.length); // axios tự động parse JSON
+        } catch (error) {
+          console.error("Lỗi khi lấy giỏ hàng:", error);
+          setCartCount(0); // Tránh lỗi không cập nhật giao diện
+        }
+      } else {
+        setCartCount(getCart().length);
+      }
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
+    const handleCartChange = () => {
+      fetchCart();
     };
-  }, []);
+
+    fetchCart(); // Gọi ngay khi component mount
+
+    // Lắng nghe khi giỏ hàng thay đổi trong localStorage
+    window.addEventListener("storage", handleCartChange);
+    window.addEventListener("cartUpdated", handleCartChange); // Custom event khi thêm sản phẩm vào giỏ hàng
+
+    return () => {
+      window.removeEventListener("storage", handleCartChange);
+      window.removeEventListener("cartUpdated", handleCartChange);
+    };
+  }, [user]); // Gọi lại khi user thay đổi
 
   return (
     <>
@@ -86,9 +115,7 @@ function Nav() {
           }}
         >
           <Row gutter={[20, 20]}>
-            <Col onClick={()=>{
-              navigate("/cart")
-            }}>
+            <Col onClick={() => navigate("/cart")}>
               <Badge count={cartCount}>
                 <BsCart2 style={{ cursor: "pointer" }} size={22} />
               </Badge>

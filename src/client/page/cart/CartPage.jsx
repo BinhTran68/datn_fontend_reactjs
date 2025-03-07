@@ -23,6 +23,8 @@ import { addToBill, clearBill, getBill } from "./bill";
 import { useProduct } from "../../../store/ProductContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { size } from "lodash";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 
@@ -38,27 +40,74 @@ const CartPage = () => {
   const [discountType, setDiscountType] = useState(0);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [products, setProducts] = useState(getCart());
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  ); // Lấy user từ localStorage
+  const [pageCart, setPageCart] = useState({
+    current: 1,
+    pageSize: 10,
+  });
   useEffect(() => {
-    const handleStorageChange = () => {
-      setProducts(getCart()); // Cập nhật UI khi có thay đổi trong giỏ hàng
+    const handleCartUpdate = () => {
+      fetchCart();
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    // Đăng ký sự kiện khi localStorage thay đổi hoặc giỏ hàng cập nhật
+    window.addEventListener("storage", handleCartUpdate);
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    // Fetch ngay khi component mount
+    fetchCart();
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      console.log("thêm vào bill khi un moutd", getBill());
-      // clearBill()
-    };
-  }, []);
+      window.removeEventListener("storage", handleCartUpdate);
+      window.removeEventListener("cartUpdated", handleCartUpdate);
 
+      console.log("Thêm vào bill khi unmount", getBill());
+      // clearBill(); // Nếu cần xóa bill khi unmount
+    };
+  }, [user?.id, pageCart.current, pageCart.pageSize]); // Depend vào user.id & phân trang
+  const fetchCart = async () => {
+    if (user?.id) {
+      // Đảm bảo user có id
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/api/client/getallcartforcustomerid",
+          {
+            params: {
+              customerId: user.id,
+              page: pageCart.current,
+              size: pageCart.pageSize,
+            },
+          }
+        );
+
+        setProducts(response.data?.data || []); // Nếu không có data, trả về mảng rỗng
+      } catch (error) {
+        console.error("Lỗi khi lấy giỏ hàng:", error);
+        setProducts([]); // Đảm bảo không bị crash giao diện
+      }
+    } else {
+      setProducts(getCart()); // Lấy từ localStorage nếu chưa đăng nhập
+    }
+  };
   const discountCodes = {
     SALE10: { type: "percent", value: 0.1 }, // 10% discount
     SALE20: { type: "percent", value: 0.2 }, // 20% discount
     FIXED100: { type: "fixed", value: 100000 }, // 100,000 VND fixed discount
     FIXED200: { type: "fixed", value: 200000 }, // 200,000 VND fixed discount
   };
-
+  const deleteItemInCart = async (cartDetailId) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/client/delete/${cartDetailId}`
+      );
+      fetchCart()
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (error) {
+      console.error("Lỗi khi xóa", error);
+    }
+  };
   const handleRemoveFromCart = (productDetailId) => {
     // Lọc bỏ sản phẩm đã xóa khỏi giỏ hàng
     const updatedProducts = products.filter(
@@ -183,9 +232,9 @@ const CartPage = () => {
       key: "product",
       render: (_, record) => (
         <Space>
-          <img src={record.image} alt={record.productName} width={60} />
+          <img src={record.image?record.image:"https://placehold.co/10x10?text=No+Image"} alt={"anhsp"} width={60} />
           <Text>
-            {record.productName}[{record.colorName}-{record.sizeName}]
+            {record.colorName?`${record.productName}[${record.colorName}-${record.sizeName}]`:`${record.productName}`}
           </Text>
         </Space>
       ),
@@ -215,6 +264,7 @@ const CartPage = () => {
           />
           <InputNumber
             min={1}
+            max={100}
             value={record.quantityAddCart}
             onChange={(value) => handleQuantityChange(index, value)}
             style={{ width: "50px" }}
@@ -257,7 +307,11 @@ const CartPage = () => {
                   okText="Xác nhận"
                   cancelText="Hủy"
                   onConfirm={() => {
-                    handleRemoveFromCart(record.productDetailId);
+                    if (user?.id) {
+                      deleteItemInCart(record.cartDetailId);
+                    } else {
+                      handleRemoveFromCart(record.productDetailId);
+                    }
                   }}
                 >
                   <Button>
@@ -316,7 +370,7 @@ const CartPage = () => {
                       navigate("/payment");
                       toast.success("xác nhận mua hàng");
                     } else {
-                      toast.warn("chưa chọn sản phẩm nào")
+                      toast.warn("chưa chọn sản phẩm nào");
                     }
                   }}
                 >
