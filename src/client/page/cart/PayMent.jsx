@@ -11,6 +11,7 @@ import {
   Divider,
   Radio,
   Space,
+  Switch,
 } from "antd";
 import { useForm, Controller, get } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -32,6 +33,7 @@ import { apiCreateBillClient } from "./payment";
 const { Option } = Select;
 
 // Schema validation
+
 const schema = yup.object().shape({
   fullname: yup.string().required("Vui lòng nhập họ và tên."),
   phone: yup
@@ -44,25 +46,8 @@ const schema = yup.object().shape({
     .required("Vui lòng nhập email."),
   // city: yup.string().required("Vui lòng chọn tỉnh/thành phố."),
   // district: yup.string().required("Vui lòng chọn quận/huyện."),
-  // address: yup.string().required("Vui lòng nhập địa chỉ."),
+  notes: yup.string().required("Vui lòng nhập địa chỉ."),
 });
-
-// Danh sách sản phẩm
-
-// const productData = [
-//   {
-//     key: "1",
-//     product: "Giày Nike Zoom Vapor Pro 2 HC White' DR6191-101-42 x 2",
-//     price: "3,500,000 ₫",
-//     quantity: 2,
-//   },
-//   {
-//     key: "2",
-//     product: "Áo Thể Thao Adidas Tiro 23 Competition",
-//     price: "1,200,000 ₫",
-//     quantity: 1,
-//   },
-// ];
 
 // Hàm chuyển đổi giá từ string thành số
 const parsePrice = (price) => {
@@ -73,12 +58,17 @@ const parsePrice = (price) => {
 
 const PayMent = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  ); // Lấy user từ localStorage
   const [billDone, setBillDone] = useState(); // 1 mảng các sản phẩm
   const [loading, setLoading] = useState(false); // 1 mảng các sản phẩm
+  const [paymentMethod, setPaymentMethod] = useState("COD");
 
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
 
   const [bill, setbill] = useState({
+    paymentMethodsType: "COD",
     customerId: null,
     customerMoney: null,
     discountMoney: 0,
@@ -113,6 +103,12 @@ const PayMent = () => {
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      fullname: user?.fullName || "",
+      phone: user?.phoneNumber || "",
+      email: user?.email || "",
+      notes: user?.address || "",
+    },
   });
   // contexxt
   const { products } = useProduct(); // Lấy danh sách sản phẩm từ Context
@@ -129,8 +125,13 @@ const PayMent = () => {
       clearBill();
     };
   }, []);
-
-  const [paymentMethod, setPaymentMethod] = useState(null);
+  
+  useEffect(() => {
+    setbill((prev) => ({
+      ...prev,
+      totalMoney: totalAmount,
+    }));
+  }, [bill?.shipMoney]);
 
   const onAddressChange = async (
     selectedProvince,
@@ -156,13 +157,22 @@ const PayMent = () => {
       shipMoney: totalFee,
     }));
   };
+  const handlePaymentMethodChange = (e) => {
+    const selectedMethod = e.target.value;
+    setPaymentMethod(selectedMethod);
+    setbill((prev) => ({
+      ...prev,
+      paymentMethod: selectedMethod, // Cập nhật vào bill
+    }));
+  };
   // taohoas dơn
   const createBillClient = async () => {
     setLoading(true);
     try {
-      const  response =await apiCreateBillClient(bill)
+      const response = await apiCreateBillClient(bill);
       console.log("Response hóa dơn tạo:", response); // Log response để kiểm tra dữ liệu trả về
       setBillDone(response.data);
+      return response.data;
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tạo hóa đơn.");
     } finally {
@@ -174,7 +184,8 @@ const PayMent = () => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
 
     let sum = productData.reduce(
-      (sum, item) => sum + parsePrice(item.price || 0) * (item.quantity || 1),
+      (sum, item) =>
+        sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
     sum += parseInt(bill?.shipMoney) || 0;
@@ -206,6 +217,7 @@ const PayMent = () => {
       align: "right",
     },
   ];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFormSubmit = (data) => {
@@ -214,6 +226,8 @@ const PayMent = () => {
       recipientName: data.fullname,
       recipientPhoneNumber: data.phone,
       email: data.email,
+      notes: data.notes,
+      paymentMethodsType: paymentMethod, // Thêm phương thức thanh toán vào dữ liệu gửi đi
     }));
 
     setIsSubmitting(true); // Đánh dấu đang submit
@@ -221,19 +235,49 @@ const PayMent = () => {
 
   // Khi bill cập nhật xong thì gọi onSubmit
   useEffect(() => {
-    if (isSubmitting) {
-      console.log("✅ Bill sau khi cập nhật:", bill);
-      onSubmit(bill);
-      setIsSubmitting(false); // Reset lại
-      message.success("Đặt hàng thành công!");
-      createBillClient()
-    }
+    const handleOrder = async () => {
+      if (isSubmitting && productData.length > 0) {
+        switch (paymentMethod) {
+          case "ZALO_PAY": {
+            console.log("✅ Bill sau khi cập nhật:", bill);
+            setIsSubmitting(false); // Reset lại
+            message.success("Đặt hàng thành công!");
+
+            try {
+              const data = await createBillClient();
+              if (data) {
+                window.location.href = data; // Chuyển hướng người dùng ngay lập tức
+              } else {
+                alert("Lỗi khi tạo đơn hàng!");
+              }
+            } catch (error) {
+              console.error("Lỗi khi tạo đơn hàng:", error);
+              message.error("Đặt hàng thất bại!");
+            }
+            break;
+          }
+
+          default:
+            console.log("✅ Bill sau khi cập nhật:", bill);
+            onSubmit(bill);
+            setIsSubmitting(false);
+            message.success("Đặt hàng thành công!");
+            createBillClient();
+        }
+      } else if (productData.length <= 0 && isSubmitting) {
+        message.warning("Không có sản phẩm!");
+      }
+    };
+
+    handleOrder();
   }, [bill, isSubmitting]);
 
   const onSubmit = (data) => {
     console.log("Dữ liệu gửi đi:", data);
     console.log("đơn hàng đặt", bill);
-    navigate("/success");
+
+    navigate(`/success?status=1&&amount=${bill.totalMoney}&&apptransid=ShipCod`);
+
     reset(); // Reset form sau khi gửi
   };
 
@@ -288,67 +332,16 @@ const PayMent = () => {
                 )}
               />
             </Form.Item>
-
-            {/* <Form.Item
-              label="Tỉnh/Thành phố"
-              validateStatus={errors.city ? "error" : ""}
-              help={errors.city?.message}
-            >
-              <Controller
-                name="city"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} placeholder="Chọn Tỉnh/Thành phố">
-                    <Option value="HaNoi">Hà Nội</Option>
-                    <Option value="HoChiMinh">TP. Hồ Chí Minh</Option>
-                  </Select>
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Quận/Huyện"
-              validateStatus={errors.district ? "error" : ""}
-              help={errors.district?.message}
-            >
-              <Controller
-                name="district"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} placeholder="Chọn Quận/Huyện">
-                    <Option value="1">Quận 1</Option>
-                    <Option value="2">Quận 2</Option>
-                  </Select>
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Địa chỉ"
-              validateStatus={errors.address ? "error" : ""}
-              help={errors.address?.message}
-            >
-              <Controller
-                name="address"
-                control={control}
-                render={({ field }) => (
-                  <Input.TextArea
-                    {...field}
-                    placeholder="Nhập địa chỉ cụ thể"
-                  />
-                )}
-              />
-            </Form.Item> */}
           </Form>
           <h5>Chọn địa chỉ giao hàng</h5>
           <AddressSelectorGHN onAddressChange={onAddressChange} />
           <Form.Item
             label="Lưu ý khi vận chuyển"
-            validateStatus={errors.address ? "error" : ""}
-            help={errors.address?.message}
+            validateStatus={errors.notes ? "error" : ""}
+            help={errors.notes?.message}
           >
             <Controller
-              name="address"
+              name="notes"
               control={control}
               render={({ field }) => (
                 <Input.TextArea {...field} placeholder="Nhập địa chỉ cụ thể" />
@@ -372,12 +365,14 @@ const PayMent = () => {
             Tổng: {totalAmount?.toLocaleString()} ₫
           </h3>
           <Divider />
-          <Radio.Group onChange={(e) => setPaymentMethod(e.target.value)}>
+          <Radio.Group
+            onChange={handlePaymentMethodChange}
+            value={paymentMethod}
+          >
             <div>
-              <Radio value="bankTransfer">Chuyển khoản ngân hàng</Radio>
+              <Radio value="ZALO_PAY">ZaloPay</Radio>
               <Paragraph type="secondary">
-                Thực hiện thanh toán vào tài khoản ngân hàng. Vui lòng sử dụng
-                Mã đơn hàng trong nội dung thanh toán.
+                Thực hiện thanh toán bằng ứng dụng zalo pay.
               </Paragraph>
             </div>
             {/* <img
@@ -387,7 +382,7 @@ const PayMent = () => {
             /> */}
 
             <div>
-              <Radio value="creditCard">Thanh toán khi nhận hàng (COD)</Radio>
+              <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
             </div>
           </Radio.Group>
           <Button type="primary" block onClick={handleSubmit(handleFormSubmit)}>

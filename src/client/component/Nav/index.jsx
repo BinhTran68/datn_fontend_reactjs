@@ -1,24 +1,53 @@
-import { Badge, Col, Row } from "antd";
+import { Badge, Col, Image, Row } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { BsCart2 } from "react-icons/bs";
 import { getCart } from "../../page/cart/cart";
+import axios from "axios";
 
 function Nav() {
   const [cartCount, setCartCount] = useState(getCart().length);
-  const navigate = useNavigate(); // Gọi useNavigate trong component
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  ); // Lấy user từ localStorage
+  const navigate = useNavigate();
+  const fetchCart = async () => {
+    if (user) {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/client/getallcartforcustomeridnopage`,
+          {
+            params: { customerId: user.id }, // Truyền params đúng cách
+          }
+        );
+
+        setCartCount(response.data.data.length); // axios tự động parse JSON
+      } catch (error) {
+        console.error("Lỗi khi lấy giỏ hàng:", error);
+        setCartCount(0); // Tránh lỗi không cập nhật giao diện
+      }
+    } else {
+      setCartCount(getCart().length);
+    }
+  };
+  useEffect(() => {
+    fetchCart();
+  }, [user]);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setCartCount(getCart().length);
+    const handleCartChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    
+    // Lắng nghe khi giỏ hàng thay đổi trong localStorage
+    window.addEventListener("storage", handleCartChange);
+    window.addEventListener("cartUpdated", handleCartChange); // Custom event khi thêm sản phẩm vào giỏ hàng
+
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("storage", handleCartChange);
+      window.removeEventListener("cartUpdated", handleCartChange);
     };
-  }, []);
+  }, []); // Gọi lại khi user thay đổi
 
   return (
     <>
@@ -85,10 +114,39 @@ function Nav() {
             paddingRight: "2rem",
           }}
         >
-          <Row gutter={[20, 20]}>
-            <Col onClick={()=>{
-              navigate("/cart")
-            }}>
+          <Row gutter={[10, 10]} justify={"center"} align={"middle"}>
+            <Col>
+              <Image
+                preview={false}
+                src={`${
+                  !user?.avatar || "https://placehold.co/500x550?text=No+Image"
+                }`}
+                style={{
+                  width: "2rem",
+                  borderRadius: "50%",
+                }}
+              />
+            </Col>
+            <Col>
+              {user?.fullName ? (
+                <Link
+                  to="/profile"
+                  className="text-decoration-none text-black fw-normal"
+                  // onClick={handleLogout} // Gọi hàm logout khi click
+                >
+                  {user.fullName}
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="text-decoration-none text-black fw-normal"
+                >
+                  Đăng Nhập
+                </Link>
+              )}
+            </Col>
+
+            <Col onClick={() => navigate("/cart")}>
               <Badge count={cartCount}>
                 <BsCart2 style={{ cursor: "pointer" }} size={22} />
               </Badge>

@@ -139,3 +139,15 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
+  
+  export const apiAddCart = async (productAddCart) => {
+    try {
+      const response = await api.post("/addcart",productAddCart);
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+      console.error(errorMessage);
+      throw error;
+    }
+  };

@@ -1,17 +1,36 @@
 import React, { useEffect, useState } from "react";
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { AiOutlineGlobal } from "react-icons/ai";
 import { COLORS } from "../../../constants/constants.js";
-import { Badge, Button, Col, Flex, Input, Row, Space } from "antd";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import Nav from "../Nav/index.jsx";
-import { ceil } from "lodash";
+import {
+  Badge,
+  Button,
+  Col,
+  Flex,
+  Input,
+  List,
+  Popover,
+  Row,
+  Space,
+} from "antd";
+import { SearchOutlined, SettingOutlined } from "@ant-design/icons";
 
 function Home() {
   const [isAuthentication, setIsAuthentication] = useState(false);
   const [customer, setCustomer] = useState(null);
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+      setUser(null); // Cập nhật ngay lập tức
+
+    window.dispatchEvent(new Event("cartUpdated")); // Cập nhật giỏ hàng
+    navigate("/login");
+  };
 
   useEffect(() => {
     const customerLogin = localStorage.getItem("customer");
@@ -21,11 +40,45 @@ function Home() {
     }
   }, []);
 
+  const [open, setOpen] = useState(false);
+
+  const settingsOptions = [
+    { key: "profile", label: "Hồ sơ" },
+    { key: "change-password", label: "Đổi mật khẩu" },
+    { key: "logout", label: "Đăng xuất" },
+  ];
+
+  const handleMenuClick = (key) => {
+    console.log("Chọn chức năng:", key);
+
+    if (key === "logout") {
+      handleLogout();
+    } else {
+      navigate(`/${key}`);
+    }
+
+    setTimeout(() => setOpen(false), 200);
+  };
+
+  const content = (
+    <List
+      dataSource={settingsOptions}
+      renderItem={(item) => (
+        <List.Item
+          onClick={() => handleMenuClick(item.key)}
+          style={{ cursor: "pointer" }}
+        >
+          {item.label}
+        </List.Item>
+      )}
+    />
+  );
+
   return (
     <>
       <div className={"w-100"}>
         <p
-          className="text-light text-center "
+          className="text-light text-center"
           style={{
             backgroundColor: `${COLORS.primary}`,
           }}
@@ -43,7 +96,7 @@ function Home() {
                   prefix={<SearchOutlined />}
                   allowClear
                   name="name"
-                  style={{ width: "40rem", height: "2.5rem" }} // Đặt chiều rộng cho Input
+                  style={{ width: "40rem", height: "2.5rem" }}
                 />
               </Col>
               <Col className="p-0">
@@ -51,7 +104,7 @@ function Home() {
                   type="primary"
                   icon={<SearchOutlined />}
                   style={{ height: "2.5rem", width: "2.5rem" }}
-                ></Button>
+                />
               </Col>
             </Row>
           </Col>
@@ -72,26 +125,26 @@ function Home() {
                   <span style={{ fontSize: "0.9rem" }}>Tiếng Việt</span>
                 </Space>
               </Col>
+
               <Col>
-                <Link
-                  hidden={isAuthentication}
-                  href="/"
-                  className="text-decoration-none text-black fw-normal"
-                  to="/login"
-                >
-                  {customer?.fullName ?? "Đăng Nhập"}
-                </Link>
+                {!isAuthentication && (
+                  <Link
+                    className="text-decoration-none text-black fw-normal"
+                    to="/register"
+                  >
+                    Đăng Kí
+                  </Link>
+                )}
               </Col>
-              <Col>
-                <Link
-                  hidden={isAuthentication}
-                  href="/"
-                  className="text-decoration-none text-black fw-normal"
-                  to="/register"
-                >
-                  Đăng Kí
-                </Link>
-              </Col>
+              <Popover
+                content={content}
+                trigger="click"
+                open={open}
+                onOpenChange={setOpen}
+                placement="bottomRight"
+              >
+                <SettingOutlined style={{ fontSize: 19, cursor: "pointer" }} />
+              </Popover>
             </Flex>
           </Col>
         </Row>

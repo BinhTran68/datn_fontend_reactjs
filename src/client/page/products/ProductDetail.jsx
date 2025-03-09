@@ -30,6 +30,7 @@ import SizeChart from "./SizeChart";
 import { FcBusinessman } from "react-icons/fc";
 import { FcNext } from "react-icons/fc";
 import {
+  apiAddCart,
   apiGetColorsOfProduct,
   apigetProductDetail,
   apiGetSizesOfProduct,
@@ -108,6 +109,10 @@ function ProductDetail() {
 
   useEffect(() => {
     // console.log(id);
+    console.log(
+      "🛒 Đây là user hiện tại:",
+      JSON.parse(localStorage.getItem(`user`)) || []
+    );
     getProductDetails(productId, colorId, sizeId);
     getSizesOfProductAndColors(productId, colorId);
     getColorsOfProduct(productId);
@@ -209,6 +214,17 @@ function ProductDetail() {
       const response = await apiGetColorsOfProduct(productId);
       console.log("Response get colors:", response); // Log response để kiểm tra dữ liệu trả về
       setColors(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addProductToCart = async (productAddCart) => {
+    setLoading(true);
+    try {
+      const response = await apiAddCart(productAddCart);
+      console.log("Response add cart:", response); // Log response để kiểm tra dữ liệu trả về
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -336,7 +352,7 @@ function ProductDetail() {
                         onChange={(e) => setColor(e.target.value)}
                       >
                         <Space>
-                          {colors.map((item) => (
+                          {Array.isArray(colors) &&colors.map((item) => (
                             <Radio.Button
                               key={item.id}
                               value={item.id}
@@ -449,17 +465,33 @@ function ProductDetail() {
                       backgroundColor: `${COLORS.backgroundcolor2}`,
                       padding: "25px",
                     }}
-                    onClick={() => {
+                    onClick={async() => {
                       // clearCart()
-                      addToCart({
-                        productDetailId: getProductDetail.id,
-                        quantityAddCart: quantityAddCart,
-                        price: getProductDetail.price,
-                        productName: getProductDetail.productName,
-                        image: getProductDetail.image[0].url,
-                        sizeName: getProductDetail.sizeName,
-                        colorName: getProductDetail.colorName,
-                      });
+                      const user = JSON.parse(localStorage.getItem(`user`))
+                      if (user) {
+                       await addProductToCart({
+                          customerId: user.id,
+                          productDetailId: getProductDetail.id,
+                          quantityAddCart: quantityAddCart,
+                          price: getProductDetail.price,
+                          productName: `${getProductDetail.productName} [${getProductDetail.colorName}-${getProductDetail.sizeName}]`,
+                          image: getProductDetail.image[0]?.url||"",
+                
+                        })
+                        window.dispatchEvent(new Event("cartUpdated"));
+
+                      }else{
+                        addToCart({
+                          productDetailId: getProductDetail.id,
+                          quantityAddCart: quantityAddCart,
+                          price: getProductDetail.price,
+                          productName: getProductDetail.productName,
+                          image: getProductDetail.image[0]?.url||"",
+                          sizeName: getProductDetail.sizeName,
+                          colorName: getProductDetail.colorName,
+                        });
+                      }
+                   
                       // notification.success({
                       //   message: "Success",
                       //   duration: 4,
