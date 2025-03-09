@@ -877,7 +877,7 @@ const SalesPage = () => {
                     quantity: product.quantityInCart || 0
                 }));
 
-                await axiosInstance.post('/api/admin/product/restore-quantity', restoreQuantityPayload);
+                await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
 
                 // Cập nhật lại state products local
                 setProducts(prevProducts => 
