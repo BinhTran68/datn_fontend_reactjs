@@ -26,7 +26,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         key: "productName",
         render: (_, record) => {
             const { productName, sizeName, colorName } = record;
-            return `${productName} - [${sizeName}] - [${colorName}]`;
+            return productName ? `${productName} - [${sizeName}] - [${colorName}]` : "";
         },
         onCell: () => ({
             style: {
@@ -159,7 +159,6 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
                 width: "100px",
                 height: "50px",
                 lineHeight: "50px",
-
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

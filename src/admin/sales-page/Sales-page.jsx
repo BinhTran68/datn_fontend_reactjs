@@ -4,7 +4,6 @@ import {
     Button,
     Card,
     message, Modal,
-    Pagination,
     Table,
     Tabs,
 } from "antd";
@@ -14,13 +13,12 @@ import {fetchProducts} from "../product/ProductDetail/ApiProductDetail.js";
 import CustomerSelect from "./component/CustomerSelect.jsx";
 import axios from "axios";
 import moment from "moment/moment.js";
-import {productTableColumn} from "./columns/productTableColumn.jsx";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
 import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
 import {printBillService} from "../bill/services/printBillService.js";
-import {LiaStackExchange} from "react-icons/lia";
 import {postChangeQuantityProduct} from "./billService.js";
 import axiosInstance from "../../utils/axiosInstance.js";
+import ProductDetailModal from "./component/ProductDetailModal.jsx";
 
 const SalesPage = () => {
     const [items, setItems] = useState([
@@ -63,14 +61,12 @@ const SalesPage = () => {
 
     const onEditTab = (targetKey, action) => {
         if (action === "remove") {
-            setItems(items.filter((item) => item.key !== targetKey));
+            handleCloseTab(targetKey);
         }
         if (action === "add") {
-            handleOnCreateBill()
+            handleOnCreateBill();
         }
     };
-
-
 
     const [products, setProducts] = useState([]);
     const [customers, setCustomers] = useState([])
@@ -215,13 +211,22 @@ const SalesPage = () => {
     };
 
     useEffect(() => {
-        // Chờ đợi sau 0.5 thì gửi api về server trừ đi product bên trong.
-        const timeout = setTimeout(() => {
-            postChangeQuantityProduct(products)
+        // Chờ đợi sau 0.5s thì gửi api về server để cập nhật số lượng sản phẩm
+        const timeout = setTimeout(async () => {
+            try {
+                await postChangeQuantityProduct(products);
+                // Có thể thêm thông báo thành công nếu cần
+                // toast.success("Cập nhật số lượng thành công");
+            } catch (error) {
+                // Xử lý lỗi và thông báo cho người dùng
+                toast.error("Lỗi khi cập nhật số lượng sản phẩm");
+                console.error("Error updating product quantities:", error);
+            }
         }, 500);
 
-        return () => clearTimeout(timeout); // Dọn dẹp timeout nếu `products` thay đổi trước khi 0.5s trôi qua
-    }, products)
+        // Cleanup function để tránh memory leak
+        return () => clearTimeout(timeout);
+    }, [products]); // Sửa lại dependency array
 
 
 
@@ -396,33 +401,91 @@ const SalesPage = () => {
     }
 
     const onCustomerSelect = async (customer) => {
-        // Hàm trợ giúp để lấy các trường địa chỉ một cách an toàn
-        let customerAddresses = await Promise.all(customer?.addresses?.map(async (ca) => {
-            return {
-                value: ca.id,
-                label: await generateAddressString(ca.provinceId, ca.districtId, ca.wardId, ca.specificAddress),
-            };
-        }));
-        customerAddresses.push({
-            value: "other",
-            label: "Khác"
-        })
-        // Cập nhật thông tin khách hàng và địa chỉ giao hàng cho hóa đơn hiện tại
-        setItems((prevItems) =>
-            prevItems.map((item) => {
+        // Nếu customer là null (trường hợp xóa selection)
+        if (!customer) {
+            setItems((prevItems) =>
+                prevItems.map((item) => {
                     if (item.key === currentBill) {
                         return {
-                            ...item, customerInfo: customer,
-                            customerAddresses: customerAddresses,
-                            recipientName: customer?.fullName,
-                            recipientPhoneNumber: customer?.phoneNumber
-                        }
+                            ...item,
+                            customerInfo: null,
+                            customerAddresses: [],
+                            recipientName: '',
+                            recipientPhoneNumber: '',
+                            addressShipping: null,
+                            detailAddressShipping: {
+                                provinceId: null,
+                                districtId: null,
+                                wardId: null,
+                                specificAddress: ''
+                            },
+                            isNewShippingInfo: false,
+                            feeShipping: 0
+                        };
                     }
+                    return item;
+                })
+            );
+            return;
+        }
 
-                    return item // Các mục khác giữ nguyên
-                }
-            )
-        );
+        // Trường hợp chọn khách hàng
+        try {
+            let customerAddresses = await Promise.all(
+                customer.addresses?.map(async (ca) => {
+                    const addressString = await generateAddressString(
+                        ca.provinceId,
+                        ca.districtId,
+                        ca.wardId,
+                        ca.specificAddress
+                    );
+                    return {
+                        value: ca.id,
+                        label: addressString,
+                        details: ca // Lưu thông tin chi tiết của địa chỉ
+                    };
+                }) || []
+            );
+
+            // Thêm option "Khác" vào cuối danh sách địa chỉ
+            customerAddresses.push({
+                value: "other",
+                label: "Địa chỉ khác"
+            });
+
+            setItems((prevItems) =>
+                prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item,
+                            customerInfo: customer,
+                            customerAddresses: customerAddresses,
+                            recipientName: customer.fullName || '',
+                            recipientPhoneNumber: customer.phoneNumber || '',
+                            // Nếu khách hàng có địa chỉ, set địa chỉ đầu tiên làm mặc định
+                            addressShipping: customer.addresses?.[0]?.id || null,
+                            detailAddressShipping: customer.addresses?.[0] ? {
+                                provinceId: customer.addresses[0].provinceId,
+                                districtId: customer.addresses[0].districtId,
+                                wardId: customer.addresses[0].wardId,
+                                specificAddress: customer.addresses[0].specificAddress
+                            } : {
+                                provinceId: null,
+                                districtId: null,
+                                wardId: null,
+                                specificAddress: ''
+                            },
+                            isNewShippingInfo: false
+                        };
+                    }
+                    return item;
+                })
+            );
+        } catch (error) {
+            console.error("Lỗi khi xử lý địa chỉ khách hàng:", error);
+            // Có thể thêm thông báo lỗi cho người dùng ở đây
+            message.error("Có lỗi xảy ra khi tải thông tin địa chỉ khách hàng");
+        }
     };
 
 
@@ -491,7 +554,8 @@ const SalesPage = () => {
                 if (item.key === currentBill) {
                     return {
                         ...item,
-                        isShipping: isChecked
+                        isShipping: isChecked,
+                        shippingFee: 0
                     };
                 }
                 return item;
@@ -671,9 +735,10 @@ const SalesPage = () => {
         );
     }
 
-    const onAddressSelected = (e) => {
+    const onAddressSelected = async (e) => {
         const addressId = e.target.value
         let detailAddress = null;
+        let feeShipping = 0;
         // tìm customer
         // lấy ra địa chỉ nè
         const customer = items.find((item) => item.key === currentBill)?.customerInfo
@@ -686,7 +751,15 @@ const SalesPage = () => {
                 specificAddress: address?.specificAddress,
             }
         }
-
+        console.log("detailAddress", detailAddress)
+        
+        if(detailAddress?.wardId && detailAddress?.districtId){
+             feeShipping = await calculateShippingFee({
+                toWardCode: String(detailAddress?.wardId),
+                toDistrictId: Number(detailAddress?.districtId)
+            })
+        }
+        
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -694,7 +767,8 @@ const SalesPage = () => {
                         ...item,
                         addressShipping: addressId,
                         isNewShippingInfo: addressId === "other",
-                        detailAddressShipping: detailAddress
+                        detailAddressShipping: detailAddress,
+                        shippingFee: feeShipping
                     };
                 }
                 return item;
@@ -745,6 +819,90 @@ const SalesPage = () => {
         );
     }
 
+    const  eventProductDetailChange = (value) => {
+        setItems(prevItems => 
+            prevItems.map(item => {
+                // Kiểm tra trong từng hóa đơn
+                const existingProductIndex = item.productList.findIndex(p => p.id === value.id);
+                console.log("existingProductIndex", existingProductIndex)
+                if (existingProductIndex !== -1) {
+                    // Nếu sản phẩm đã tồn tại trong hóa đơn
+                    const updatedProductList = [...item.productList];
+                    updatedProductList[existingProductIndex] = {
+                        ...value,
+                        quantityInCart: item.productList[existingProductIndex].quantityInCart
+                    };
+                    toast.success("Sản phẩm vừa được cập nhật")
+                    // Tính lại tổng tiền
+                    const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
+                    
+                    // Tìm và áp dụng lại voucher nếu có
+                    const bestVoucher = findBestVoucher(newTotalAmount);
+                    const discountAmount = bestVoucher
+                        ? bestVoucher.discountType === "PERCENT"
+                            ? (newTotalAmount * bestVoucher.discountValue) / 100
+                            : bestVoucher.discountValue
+                        : 0;
+    
+                    const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
+
+                    return {
+                        ...item,
+                        productList: updatedProductList,
+                        payInfo: {
+                            ...item.payInfo,
+                            amount: newTotalAfterDiscount,
+                            discount: discountAmount,
+                            change: ((item.payInfo?.cashCustomerMoney || 0) + (item.payInfo?.bankCustomerMoney || 0)) - newTotalAfterDiscount
+                        }
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
+    const handleCloseTab = async (targetKey) => {
+        try {
+            // Tìm bill đang đóng
+            const closingBill = items.find(item => item.key === targetKey);
+            
+            if (!closingBill) return;
+
+            // Nếu chưa thanh toán và có sản phẩm trong bill
+            if (!closingBill.isSuccess && closingBill.productList.length > 0) {
+                // Hoàn trả số lượng về server
+                const restoreQuantityPayload = closingBill.productList.map(product => ({
+                    id: product.id,
+                    quantity: product.quantityInCart || 0
+                }));
+
+                await axiosInstance.post('/api/admin/product/restore-quantity', restoreQuantityPayload);
+
+                // Cập nhật lại state products local
+                setProducts(prevProducts => 
+                    prevProducts.map(product => {
+                        const returnProduct = closingBill.productList.find(p => p.id === product.id);
+                        if (returnProduct) {
+                            return {
+                                ...product,
+                                quantity: product.quantity + (returnProduct.quantityInCart || 0)
+                            };
+                        }
+                        return product;
+                    })
+                );
+            }
+
+            // Xóa bill khỏi danh sách
+            setItems(items.filter(item => item.key !== targetKey));
+
+        } catch (error) {
+            console.error("Error when closing bill:", error);
+            toast.error("Có lỗi xảy ra khi đóng hóa đơn");
+        }
+    };
+
     return (
         <div className={"d-flex flex-column gap-3"}>
             <Modal
@@ -753,35 +911,14 @@ const SalesPage = () => {
                 onOk={handleOk}
                 onCancel={handleCancel}
             >
-                <h3>Danh sách sản phẩm</h3>
-                <hr/>
-                <Table
-                    columns={productTableColumn(pagination, handleOnAddProductToBill)}
-                    dataSource={handleDataSource()} // Dữ liệu đã xử lý với dòng trống
-                    pagination={false} // Bỏ pagination trong Table
-                    locale={{
-                        emptyText: (
-                            <div style={{textAlign: "center"}}>
-                                <p>No data</p>
-                            </div>
-                        ),
-                    }}
-                    // className="custom-table"
+
+                <ProductDetailModal
+                    handleOnAddProductToBill={handleOnAddProductToBill}
+                    eventProductDetailChange={eventProductDetailChange}
+                    products={products}
+                    setProducts={setProducts}
                 />
-                <Pagination
-                    current={pagination.current}
-                    pageSize={pagination.pageSize}
-                    onShowSizeChange={(current, pageSize) => {
-                        setPagination({
-                            current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
-                            pageSize,
-                        });
-                    }}
-                    onChange={(page, pageSize) => {
-                        setPagination({current: page, pageSize});
-                        // fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
-                    }}
-                />
+
             </Modal>
             <div>
                 <Button

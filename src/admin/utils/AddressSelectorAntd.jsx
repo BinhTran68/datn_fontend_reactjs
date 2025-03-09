@@ -136,6 +136,11 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
                             value={selectedProvince}
                             onChange={handleProvinceChange}
                             placeholder="Chọn tỉnh/thành phố"
+                            showSearch
+                            filterOption={(input, option) =>
+                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            optionFilterProp="children"
                         >
                             {provinces.map((province) => (
                                 <Option key={province.ProvinceID} value={province.ProvinceID}>
@@ -153,6 +158,11 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
                             onChange={handleDistrictChange}
                             placeholder="Chọn quận/huyện"
                             disabled={!selectedProvince}
+                            showSearch
+                            filterOption={(input, option) =>
+                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            optionFilterProp="children"
                         >
                             {districts.map((district) => (
                                 <Option key={district.DistrictID} value={district.DistrictID}>
@@ -170,6 +180,11 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
                             onChange={handleWardChange}
                             placeholder="Chọn xã/phường"
                             disabled={!selectedDistrict}
+                            showSearch
+                            filterOption={(input, option) =>
+                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                            }
+                            optionFilterProp="children"
                         >
                             {wards.map((ward) => (
                                 <Option key={ward.WardCode} value={ward.WardCode}>

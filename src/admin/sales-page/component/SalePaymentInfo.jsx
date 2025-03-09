@@ -136,7 +136,7 @@ const SalePaymentInfo = ({
                                 items={[{
                                     key: '1',
                                     label: (
-                                        <div className={"d-flex justif y-content-between align-items-center"}>
+                                        <div className={"d-flex justify-content-between align-items-center"}>
                                             <span className={"d-flex gap-3 align-items-center"}><FaTicketAlt/> Phiếu giảm giá</span>
                                             <span className={"bold"}>Chọn hoặc nhập mã giảm giá </span>
                                         </div>
