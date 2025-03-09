@@ -226,8 +226,7 @@ export const calculateShippingFee = async ({
 export const getRole = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-        const user = JSON.parse(storedUser);
-        console.log("user", user)
+        const user = JSON.parse(storedUser) ?? null;
         return user?.role || null;
     }
     return null;
