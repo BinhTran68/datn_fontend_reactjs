@@ -7,13 +7,14 @@ import SalesRevenue from "./componets/SalesRevenue.jsx"
 const Statistical = () => {
     return (
         <>
-            <h1 style={{textAlign:"center", color: "#2e95dd ", fontSize: 40, fontWeight: 'bold' }}>Thống kê</h1>
+            <h1 style={{textAlign:"center", color: "orange ", fontSize: 40, fontWeight: 'bold' }}>Thống kê</h1>
             {/* Thống kê doanh thu */}
             <SalesRevenue>
             </SalesRevenue>
 
             {/* Thống kê sản phẩm bán chạy và biểu đồ tròn */}
             <ChartStatusBill></ChartStatusBill>
+            
             {/* Thống kê sản phẩm tồn kho */}
             <CardStatical ></CardStatical>
         </>

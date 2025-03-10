@@ -60,6 +60,8 @@ const ChartComponent = () => {
     };
 
     return (
+        <>
+        
         <Card style={{ padding: "20px" }}>
             <Title level={3}>Phân tích</Title>
             <Space style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between" }}>
@@ -89,7 +91,9 @@ const ChartComponent = () => {
                     )}
                 </LineChart>
             </ResponsiveContainer>
-        </Card>
+        </Card>     
+           </>
+
     );
 };
 

@@ -1,162 +1,234 @@
 import React, { useState, useEffect } from "react";
-import { Table, InputNumber, Card, Row, Col } from "antd";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { CalendarOutlined, RiseOutlined } from "@ant-design/icons";
+import { Table, InputNumber, Card, Row, Col, Spin } from "antd";
+import { CalendarOutlined, RiseOutlined, FallOutlined } from "@ant-design/icons";
 
-// Component chính của trang Dashboard
 const Dashboard = () => {
   return (
+    <>
+        <h2 style={{ color: "orange", fontSize: 25, fontWeight: "bold", marginBottom: 10,marginTop:50 }}>
+        Thống kê số lượng sản phẩm sắp hết và tốc độ tăng trưởng của cửa hàng
+    </h2>
     <div style={{ padding: "20px" }}>
-      {/* <GrowthChart /> */}
-
       <Row gutter={[16, 16]}>
-
         <Col span={12}>
           <LowStockProducts />
         </Col>
-
         <Col span={12}>
           <StatisticsSummary />
         </Col>
       </Row>
+    </div>  
+      </>
 
-    </div>
   );
 };
 
-// Component danh sách sản phẩm sắp hết hàng
+// Component hiển thị danh sách sản phẩm sắp hết hàng
 const LowStockProducts = () => {
-  const [products, setProducts] = useState([]);
-  const [threshold, setThreshold] = useState(10);
+  const [products, setProducts] = useState([]); // State lưu danh sách sản phẩm
+  const [quantity, setQuantity] = useState(100); // State lưu số lượng nhập vào
+  const pageSize = 5; // Số lượng sản phẩm mỗi trang
+  const [currentPage, setCurrentPage] = useState(1); // State lưu trang hiện tại
 
+
+  // Gọi API khi component mount hoặc khi quantity thay đổi
   useEffect(() => {
     const fetchData = async () => {
-      const mockData = [
-        { key: 1, name: "Sản phẩm A", quantity: 5, price: 100000, size: "M" },
-        { key: 2, name: "Sản phẩm B", quantity: 12, price: 200000, size: "L" },
-        { key: 3, name: "Sản phẩm C", quantity: 8, price: 150000, size: "S" },
-      ];
-      setProducts(mockData.filter((item) => item.quantity <= threshold));
+      if (quantity < 1) return; // Đảm bảo quantity hợp lệ
+
+      try {
+        const response = await fetch(`http://localhost:8080/api/statistical/minProduct?quantity=${quantity}`);
+        const result = await response.json();
+
+        console.log("API response:", result);
+
+        if (result && result.data && Array.isArray(result.data)) {
+          setProducts(result.data);
+        } else {
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error("Error fetching low stock products:", error);
+      }
     };
     fetchData();
-  }, [threshold]);
+  }, [quantity]); // Dependency array đảm bảo fetch lại khi quantity thay đổi
 
   const columns = [
-    { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
-    { title: "Giá tiền", dataIndex: "price", key: "price" },
-    { title: "Kích cỡ", dataIndex: "size", key: "size" },
+    { title: "Ảnh", dataIndex: "imageUrl", key: "imageUrl",  align: "center", render: (url) => <img src={url} alt="Product" style={{ width: 50 }} /> },
+    { title: "Tên sản phẩm", dataIndex: "productName", key: "productName" ,  align: "center"},
+    { title: "Loại giày", dataIndex: "typeName", key: "typeName",  align: "center" },
+    { title: "Màu sắc", dataIndex: "colorName",  align: "center", key: "colorName" },
+    { title: "Kích cỡ", dataIndex: "sizeName",  align: "center", key: "sizeName" },
+    { title: "Đế giày", dataIndex: "soleName",  align: "center", key: "soleName" },
+    { title: "Giới tính", dataIndex: "genderName",  align: "center", key: "genderName" },
+    { title: "Giá bán", dataIndex: "price",  align: "center", key: "price" },
+    { title: "Số lượng bán", dataIndex: "quantity",  align: "center", key: "quantity" },
   ];
 
-  return (
-    <>
-      <h2 style={{ color: "#2e95dd ", fontSize: 20, fontWeight: 'bold' }}>Thống kê sản phẩm sắp hết</h2>
+  return (   
+    <Card
+      title="Danh sách sản phẩm sắp hết hàng"
+      style={{
+        marginBottom: 16,
+        background: "linear-gradient(180deg, orange, rgb(210, 209, 207))",
+        color: "white",
+        borderRadius: "12px",
+        padding: "16px",
+      }}
+      headStyle={{ color: "white" }}
+    >
+      {/* Ô nhập số lượng */}
+      <InputNumber
+        min={1}
+        max={500000}
+        value={quantity}
+        onChange={(value) => value !== null && setQuantity(value)}
+        style={{ marginBottom: "16px",        border:"1px solid #2e95dd"
+        }}
+      />
 
-      <Card
-        headStyle={{ color: "white ", background: "linear-gradient(180deg, #2e95dd, #ffbc74)", fontSize: "18px", fontWeight: "bold" }}
+      {/* Bọc Table trong div bo tròn */}
+      <div style={{ 
+        borderRadius: "12px", 
+        overflow: "hidden", 
+        boxShadow: "0 4px 10px rgba(0,0,0,0.15)" ,
+        border:"1px solid #2e95dd"
 
-        title="Danh sách sản phẩm sắp hết hàng" style={{ borderRadius: "10px", background: "linear-gradient(180deg, #2e95dd, #ffbc74)" }}>
-        <InputNumber min={1} max={50} value={threshold} onChange={setThreshold} style={{ marginBottom: "10px" }} />
+      }}>
         <Table
-          columns={columns} dataSource={products}
-          pagination={{ pageSize: 5 }}
-          style={{
-            background: "white", // Nền cho toàn bộ bảng
-            color: "white", // Màu chữ chung
+          columns={columns}
+          dataSource={products.map((item, index) => ({ ...item, key: index }))}
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            total: products.length,
+            onChange: (page) => setCurrentPage(page),
           }}
-          components={{
-            header: {
-              cell: (props) => (
-                <th
-                  {...props}
-                  style={{
-                    background: "linear-gradient(180deg, #2e95dd, #ffbc74)", // Màu nền header
-                    color: "white", // Màu chữ header
-                    fontWeight: "bold",
-                    textAlign: "center",
-                  }}
-                />
-              ),
-            },
-            body: {
-              row: (props) => (
-                <tr
-                  {...props}
-                  style={{
-                    background: "white", // Gradient nền dòng
-                    color: " #2e95dd", // Màu chữ trong bảng
-                    fontWeight: 'bold',
-                    textAlign: "center",
-
-                  }}
-                />
-              ),
-              cell: (props) => (
-                <td
-                  {...props}
-                  style={{
-                    color: "#2e95dd", // Màu chữ từng ô
-                    borderColor: "white", // Đổi màu viền bảng
-                    fontWeight: 'bold',
-                    textAlign: "center",
-
-                  }}
-                />
-              ),
-            },
-          }}
+          bordered={false} 
         />
-
-      </Card>    </>
-
+      </div>
+    </Card>
   );
 };
+
 
 // Component hiển thị thống kê tổng hợp
+
 const StatisticsSummary = () => {
-  const statistics = [
-    { title: "Doanh thu tháng", value: "59.892.500 VND" },
-    { title: "Doanh thu năm", value: "720.000.000 VND" },
-    { title: "Sản phẩm tháng", value: "256 Sản phẩm" },
-  ];
+  const [statistics, setStatistics] = useState({ monthly: null, yearly: null });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const [monthlyResponse, yearlyResponse] = await Promise.all([
+          fetch("http://localhost:8080/api/statistical/growthRateMonth"),
+          fetch("http://localhost:8080/api/statistical/growthRateYear"),
+        ]);
+
+        const monthlyData = await monthlyResponse.json();
+        const yearlyData = await yearlyResponse.json();
+
+        console.log("Monthly API response:", monthlyData);
+        console.log("Yearly API response:", yearlyData);
+
+        // Kiểm tra dữ liệu
+        const monthly = monthlyData.data?.length ? monthlyData.data[0] : null;
+        const yearly = yearlyData.data?.length ? yearlyData.data[0] : null;
+
+        setStatistics({
+          monthly: monthly
+            ? {
+              revenue: monthly.revenue || 0,
+              percentageChange: parseFloat(monthly.percentageChange.replace("%", "")) || 0,
+            }
+            : null,
+          yearly: yearly
+            ? {
+              revenue: yearly.revenue || 0,
+              percentageChange: parseFloat(yearly.percentageChange.replace("%", "")) || 0,
+            }
+            : null,
+        });
+
+        console.log("Final statistics state:", {
+          monthly,
+          yearly,
+        });
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatistics();
+  }, []);
 
   return (
-    <>
-      <h2 style={{ color: "#2e95dd ", fontSize: 20, fontWeight: 'bold' }}>Thống kê tăng trưởng của cửa hàng</h2>
+    
+    <Card title="Thống kê tốc độ phát triển" style={{
+      marginBottom: 16,
+      background: "linear-gradient(180deg, orange, rgb(210, 209, 207))",
+      color: "white",
+      borderRadius: "12px",
+      padding: "16px",
+    }}
+    headStyle={{ color: "white" }}>
+      <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Card style={{ background: "linear-gradient(180deg, orange, rgb(210, 207, 207))", color: "white", minHeight: "100px" }}>
+            {loading ? (
+              <Spin tip="Đang tải dữ liệu..." style={{ display: "flex", justifyContent: "center" }} />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 
-      <Card
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* Doanh thu năm */}
+                  <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
+                        <span >Doanh thu năm</span>
+                      </div>
+                      <span>{statistics.yearly?.revenue.toLocaleString()} VND</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>{statistics.yearly?.percentageChange}%</span>
+                        {statistics.yearly?.percentageChange >= 0 ? (
+                          <RiseOutlined style={{ color: "#00FF00", fontSize: "18px" }} />
+                        ) : (
+                          <FallOutlined style={{ color: "red", fontSize: "18px" }} />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
 
-        headStyle={{ color: "white ", background: "linear-gradient(180deg, #2e95dd, #ffbc74)", fontSize: "18px", fontWeight: "bold" }}
-
-        title="Thống kê tổng hợp" style={{ borderRadius: "10px", background: "linear-gradient(180deg, #2e95dd, #ffbc74)" }}>
-        <Row gutter={[16, 16]}>
-
-          {statistics.map((item, index) => (
-            <Col span={24} key={index}>
-              <Card
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  background: "linear-gradient(180deg, #2e95dd, #ffbc74)",
-                  color: "#fff",
-                  borderRadius: "8px",
-                }}
-                bodyStyle={{ padding: "16px" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <CalendarOutlined style={{ fontSize: "20px", color: "#fff" }} />
-                  <span style={{ fontSize: "16px", fontWeight: "bold", color: "#fff" }}>{item.title}</span>
+                  {/* Doanh thu tháng */}
+                  <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
+                        <span>Doanh thu tháng</span>
+                      </div>
+                      <span>{statistics.monthly?.revenue.toLocaleString()} VND</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>{statistics.monthly?.percentageChange}%</span>
+                        {statistics.monthly?.percentageChange >= 0 ? (
+                          <RiseOutlined style={{ color: "#00FF00", fontSize: "18px" }} />
+                        ) : (
+                          <FallOutlined style={{ color: "red", fontSize: "18px" }} />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-                <span style={{ fontSize: "16px", fontWeight: "bold", color: "#fff" }}>{item.value}</span>
-                <RiseOutlined style={{ fontSize: "20px", color: "#00FF00" }} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </Card></>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </Card>
   );
 };
-
-
 export default Dashboard;
