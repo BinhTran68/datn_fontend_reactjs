@@ -98,11 +98,32 @@ function Nav() {
             SẢN PHẨM
           </Link>
           <Link
+            to="/test"
+            className="text-decoration-none text-black"
+            style={{ margin: "0 10px" }}
+          >
+            SẢN PHẨM BÁN CHẠY
+          </Link>
+          <Link
             to="/contact"
             className="text-decoration-none text-black"
             style={{ margin: "0 10px" }}
           >
             LIÊN HỆ
+          </Link>
+          <Link
+            to="/contact"
+            className="text-decoration-none text-black"
+            style={{ margin: "0 10px" }}
+          >
+            HÕ TRỢ
+          </Link>
+          <Link
+            to="/contact"
+            className="text-decoration-none text-black"
+            style={{ margin: "0 10px" }}
+          >
+            TRA CỨU ĐƠN HÀNG
           </Link>
         </Col>
         <Col

@@ -39,6 +39,7 @@ import {
 } from "./api";
 import { addToCart, clearCart, getCart } from "../cart/cart.js";
 import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
+import { addToBill } from "../cart/bill.js";
 
 function ProductDetail() {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL
@@ -352,38 +353,39 @@ function ProductDetail() {
                         onChange={(e) => setColor(e.target.value)}
                       >
                         <Space>
-                          {Array.isArray(colors) &&colors.map((item) => (
-                            <Radio.Button
-                              key={item.id}
-                              value={item.id}
-                              style={{
-                                borderRadius: "10px",
-                                border: "1px solid #ccc",
-                                display: "flex",
-                                alignItems: "center",
-                                padding: "8px",
-                              }}
-                            >
-                              <div
+                          {Array.isArray(colors) &&
+                            colors.map((item) => (
+                              <Radio.Button
+                                key={item.id}
+                                value={item.id}
                                 style={{
+                                  borderRadius: "10px",
+                                  border: "1px solid #ccc",
                                   display: "flex",
                                   alignItems: "center",
-                                  gap: "8px",
+                                  padding: "8px",
                                 }}
                               >
                                 <div
                                   style={{
-                                    width: "1rem",
-                                    height: "1rem",
-                                    borderRadius: "50%",
-                                    backgroundColor: item.code,
-                                    border: "1px solid gray",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
                                   }}
-                                />
-                                <span>{item.colorName}</span>
-                              </div>
-                            </Radio.Button>
-                          ))}
+                                >
+                                  <div
+                                    style={{
+                                      width: "1rem",
+                                      height: "1rem",
+                                      borderRadius: "50%",
+                                      backgroundColor: item.code,
+                                      border: "1px solid gray",
+                                    }}
+                                  />
+                                  <span>{item.colorName}</span>
+                                </div>
+                              </Radio.Button>
+                            ))}
                         </Space>
                       </Radio.Group>
                     </Col>
@@ -465,33 +467,31 @@ function ProductDetail() {
                       backgroundColor: `${COLORS.backgroundcolor2}`,
                       padding: "25px",
                     }}
-                    onClick={async() => {
+                    onClick={async () => {
                       // clearCart()
-                      const user = JSON.parse(localStorage.getItem(`user`))
+                      const user = JSON.parse(localStorage.getItem(`user`));
                       if (user) {
-                       await addProductToCart({
+                        await addProductToCart({
                           customerId: user.id,
                           productDetailId: getProductDetail.id,
                           quantityAddCart: quantityAddCart,
                           price: getProductDetail.price,
                           productName: `${getProductDetail.productName} [${getProductDetail.colorName}-${getProductDetail.sizeName}]`,
-                          image: getProductDetail.image[0]?.url||"",
-                
-                        })
+                          image: getProductDetail.image[0]?.url || "",
+                        });
                         window.dispatchEvent(new Event("cartUpdated"));
-
-                      }else{
+                      } else {
                         addToCart({
                           productDetailId: getProductDetail.id,
                           quantityAddCart: quantityAddCart,
                           price: getProductDetail.price,
                           productName: getProductDetail.productName,
-                          image: getProductDetail.image[0]?.url||"",
+                          image: getProductDetail.image[0]?.url || "",
                           sizeName: getProductDetail.sizeName,
                           colorName: getProductDetail.colorName,
                         });
                       }
-                   
+
                       // notification.success({
                       //   message: "Success",
                       //   duration: 4,
@@ -499,7 +499,7 @@ function ProductDetail() {
                       //   showProgress: true,
                       //   description: `Thêm vào giỏ hàng thành công!`,
                       // });
-                      message.success("Thêm vào giỏ hàng thành công!")
+                      message.success("Thêm vào giỏ hàng thành công!");
                       console.log(getCart());
                     }}
                   >
@@ -514,6 +514,19 @@ function ProductDetail() {
                       backgroundColor: `${COLORS.primary}`,
                       borderColor: "#E44D26",
                       padding: "25px",
+                    }}
+                    onClick={() => {
+                      addToBill({
+                        productDetailId: getProductDetail.id,
+                        quantityAddCart: quantityAddCart,
+                        price: getProductDetail.price,
+                        productName: getProductDetail.productName,
+                        image: getProductDetail.image[0]?.url || "",
+                        sizeName: getProductDetail.sizeName,
+                        colorName: getProductDetail.colorName,
+                      });
+                      navigate("/payment");
+                      toast.success("xác nhận mua hàng");
                     }}
                   >
                     Mua Ngay

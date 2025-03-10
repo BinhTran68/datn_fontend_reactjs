@@ -35,6 +35,7 @@ const Login = () => {
                 const data = response.data;
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.customer));
+                window.dispatchEvent(new Event("cartUpdated")); // Cập nhật giỏ hàng
                 navigate("/");
             } else {
                 setErrorMessage("Invalid login credentials. Please try again.");
