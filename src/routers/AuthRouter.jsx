@@ -8,7 +8,7 @@ import ForgotPasswordAdmin from "../auth/auth/ForgotPasswordAdmin.jsx";
 
 
 const AuthRouters = {
-    path: "/auth",
+    path: "/",
     children: [
       {
         path: "login",

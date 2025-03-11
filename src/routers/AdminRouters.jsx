@@ -40,28 +40,20 @@ import {getRole} from "../helpers/Helpers.js";
 
 
 
-const getRole = () => {
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-        const parsedUserInfo = JSON.parse(storedUserInfo);
-        return parsedUserInfo?.vaiTro || null;
-    }
-    return null;
-};
-
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
-
-    if (true) {
-        return element;
+    if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
+        if (allowedRoles.includes(role)) {
+            return element;
+        }
+        return <Navigate to="/forbidden" replace/>;
     }
-
     return <Navigate to="/forbidden" replace/>;
 };
 
 const AdminRouters = {
     path: "/admin",
-    element: <Admin/>,
+    element: <PrivateRoute element={<Admin/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
     children: [
         {
             path: "dashboard",

@@ -1,9 +1,9 @@
-import { Button, Layout, theme, Card, Badge, Avatar } from "antd";
+import { Button, Layout, theme, Card, Badge, Avatar, Popover, List } from "antd";
 
 // import MenuList from "../component/sidebar/MenuList";
 import { useEffect, useState } from "react";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Content } from "antd/es/layout/layout";
 import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
@@ -15,16 +15,8 @@ const { Header, Sider } = Layout;
 function Admin() {
   const [darkTheme, setDarkTheme] = useState(false);
   const [collapse, setCollapse] = useState(false);
-  const [userInfo, setUserInfo] = useState({});
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [idRole, setIdRole] = useState(1);
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
 
-  const user = null;
-  // const user = {
-  //   name: "Hoàng Trung Thông",
-  //   role: "Chủ cửa hàng",
-  //   avatar: "https://i.pravatar.cc/150",
-  // };
   const toggleTheme = () => {
     setDarkTheme(!darkTheme);
   };
@@ -32,38 +24,23 @@ function Admin() {
     token: { colorBgContainer },
   } = theme.useToken();
 
-  const fetchUser = async () => {
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-      // const parsedUserInfo = JSON.parse(storedUserInfo);
-      // const id = parsedUserInfo.id;
-      // const params = {
-      //     email: parsedUserInfo.email,
-      // };
-      // const res = await getTaiKhoanByIdOwner(params);
-      // console.log(res);
-      // if (res.data) {
-      //     setIdRole(res.data.vaiTro.id);
-      // }
-    }
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleUserChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+    };
+    window.addEventListener("storage", handleUserChange);
+    return () => {
+      window.removeEventListener("storage", handleUserChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
   };
-
-  useEffect(() => {
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-      const parsedUserInfo = JSON.parse(storedUserInfo);
-      const id = parsedUserInfo.id;
-      fetchUser();
-      setUserInfo(parsedUserInfo);
-      console.log("Stored user info:", storedUserInfo);
-      console.log("Parsed user info:", parsedUserInfo);
-    }
-  }, []);
-
-  useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    setIsLoggedIn(!!accessToken);
-  }, []);
 
   return (
     <Layout>
@@ -76,7 +53,15 @@ function Admin() {
         className="sidebar min-vh-100"
       >
         <div className={"d-flex justify-content-center mt-5"}>
-          <img width={200} src={img} alt="" />
+          <img 
+            width={collapse ? 50 : 200}
+            src={img} 
+            alt="" 
+            style={{ 
+              transition: 'width 0.3s ease',
+              objectFit: 'contain' 
+            }}
+          />
         </div>
         <MenuList darkTheme={darkTheme} />
         {/*<ToggleThemeButton darkTheme={darkTheme} toggleTheme={toggleTheme} />*/}
@@ -100,8 +85,7 @@ function Admin() {
           />
 
           <div style={{ display: "flex", alignItems: "center" }}>
-            {isLoggedIn ? (
-              // Hiển thị thông tin người dùng khi đã đăng nhập
+            {user ? (
               <>
                 <div
                   style={{
@@ -117,24 +101,38 @@ function Admin() {
                       display: "block",
                     }}
                   >
-                    {userInfo.ten}
+                    {user.fullName}
                   </span>
                   <span style={{ color: "#888", fontSize: "14px" }}>
-                    {idRole === 1 ? "Chủ cửa hàng" : "Nhân viên"}
+                    {user.role === "ROLE_ADMIN" 
+                      ? "Chủ cửa hàng" 
+                      : user.role === "ROLE_MANAGER" 
+                      ? "Quản lý" 
+                      : user.role === "ROLE_STAFF_SALE" 
+                      ? "Nhân viên bán hàng"
+                      : "Nhân viên"}
                   </span>
                 </div>
-                <Avatar size={40} src={userInfo.avatar} />
+                <Popover 
+                  content={
+                    <List>
+                      <List.Item onClick={handleLogout} style={{ cursor: "pointer" }}>
+                        Đăng xuất
+                      </List.Item>
+                    </List>
+                  } 
+                  trigger="click"
+                >
+                  <Avatar 
+                    size={40} 
+                    src={user.avatar || "https://placehold.co/500x550?text=No+Image"} 
+                    style={{ cursor: "pointer" }}
+                  />
+                </Popover>
               </>
             ) : (
-              <Link to="/auth/login-admin">
-                <Button
-                   style={{
-                   
-                    
-
-                  }}
-                  type="primary"
-                >
+              <Link to="/login">
+                <Button type="primary" style={{ backgroundColor: '#F37021', borderColor: '#F37021' }}>
                   Đăng nhập
                 </Button>
               </Link>

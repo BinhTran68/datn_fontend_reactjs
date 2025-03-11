@@ -61,7 +61,7 @@ import {getRole} from "../helpers/Helpers.js";
 const RoleRedirect = ({ element, allowRole }) => {
   const role = getRole();
   console.log(role)
-  if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
+  if (role === "ROLE_ADMIN" || role === "ROLE_STAFF" || role === "ROLE_MANAGER") {
     return <Navigate to="/admin/dashboard" replace />;
   }
   if(!allowRole) {
@@ -101,18 +101,18 @@ const CustomerRouters = {
       path: "products",
       element: <RoleRedirect element={<ProductsPage />} />,
     },
-    {
-      path: "login",
-      element: <Login />,
-    },
+    // {
+    //   path: "login",
+    //   element: <Login />,
+    // },
     {
       path: "admin/login",
       element: <RoleRedirect element={<ProductsPage />}  />,
     },
-    {
-      path: "register",
-      element: <RoleRedirect element={<Register />} />,
-    },
+    // {
+    //   path: "register",
+    //   element: <RoleRedirect element={<Register />} />,
+    // },
 
     {
       path: "admin/trademark",

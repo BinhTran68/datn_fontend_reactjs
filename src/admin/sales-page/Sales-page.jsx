@@ -320,7 +320,7 @@ const SalesPage = () => {
 
 
     const getAllCustomer = () => {
-        axios.get('http://localhost:8080/api/customers/')
+        axios.get('http://localhost:8080/api/admin/customers/')
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
