@@ -33,7 +33,7 @@ import {productTableColumn} from "../columns/productTableColumn.jsx";
 import {Client} from "@stomp/stompjs";
 import { LOG } from "@zxing/library/esm/core/datamatrix/encoder/constants.js";
 
-const ProductDetailModal = ({
+const ProductDetailModal = ({ 
                               handleOnAddProductToBill,
                               eventProductDetailChange,
                               products = [],

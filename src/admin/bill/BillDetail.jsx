@@ -14,7 +14,7 @@ import {FaClipboardCheck} from "react-icons/fa";
 import StepProgress from "./componets/StepProgress.jsx";
 import {FaFileCircleCheck} from "react-icons/fa6";
 
-import {Input} from 'antd';
+import {Input, InputNumber} from 'antd';
 import TextArea from "antd/es/input/TextArea.js";
 import ModalConfirmUpdateStatusBill from "./componets/ModalConfirmUpdateStatusBill.jsx";
 import {GrDrag} from "react-icons/gr";
@@ -24,6 +24,8 @@ import ModalBillProductList from "./componets/ModalBillProductList.jsx";
 import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
 import BillStatusComponent from "./componets/BillTypeComponent.jsx";
 import axiosInstance from "../../utils/axiosInstance.js";
+import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
+
 
 
 const {Step} = Steps;
@@ -227,6 +229,10 @@ const BillDetail = () => {
         const [confirmNotes, setConfirmNotes] = useState('')
         const [widthModal, setWidthModal] = useState('50%')
         const [addressString, setAddressString] = useState('')
+        const [products, setProducts] = useState([])
+        const [isQuantityModalVisible, setIsQuantityModalVisible] = useState(false);
+        const [selectedProduct, setSelectedProduct] = useState(null);
+        const [inputQuantity, setInputQuantity] = useState(1);
 
 
         const handleOkModal = () => {
@@ -510,30 +516,62 @@ const BillDetail = () => {
 
         ];
         const handleOnRollbackSatus = async () => {
-            // setOpen(true)
-            // setWidthModal("40%")
-            // setConfirmNotes('')
-            // setModalType(modalUpdateStatusBillType)
-
-            const data = {
-                "status": billHistory[billHistory.length - 2]?.status ?? "CHO_XAC_NHAN",
-                "note": confirmNotes
+            // Kiểm tra nếu không có history hoặc đang ở trạng thái đầu
+            if (!billHistory.length || currentBill?.status === "CHO_XAC_NHAN") {
+                toast.error("Không thể quay lại trạng thái trước đó");
+                return;
             }
 
-            await axiosInstance.put(`/api/admin/bill/${id}/update`, data).then(
-                (res) => {
-                    const result = res.data.data;
-                    setCurrentBill(result.bill)
-                    if (result.bill.status === "DANG_VAN_CHUYEN") {
-                        handlePrintBillPdf()
-                    }
-                    setBillHistory(result.billHistory)
+            try {
+                const data = {
+                    status: billHistory[billHistory.length - 2]?.status,
+                    note: "Quay lại trạng thái trước đó"
                 }
-            ).catch((e) => {
 
-            })
-
+                const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
+                const result = response.data.data;
+                
+                setCurrentBill(result.bill);
+                setBillHistory(result.billHistory);
+                
+                toast.success("Đã quay lại trạng thái trước đó");
+            } catch (error) {
+                toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
+            }
         }
+
+        const handleOnAddProductToBill = (product) => {
+            setSelectedProduct(product);
+            setInputQuantity(1); // Reset về 1
+            setIsQuantityModalVisible(true);
+        };
+
+        const handleConfirmAddProduct = async () => {
+            try {
+                if (!selectedProduct || inputQuantity <= 0) {
+                    toast.error("Vui lòng nhập số lượng hợp lệ");
+                    return;
+                }
+
+                const response = await axiosInstance.post('/api/admin/bill-product-detail/add-product', {
+                    billCode: id,
+                    productDetailId: selectedProduct.id,
+                    quantity: inputQuantity,
+                    price: selectedProduct.price
+                });
+
+                if (response.status === 200) {
+                    toast.success("Thêm sản phẩm thành công");
+                    // Refresh lại data
+                    getBillProductDetail();
+                    getCurrentBill();
+                    // Đóng modal
+                    setIsQuantityModalVisible(false);
+                }
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Lỗi khi thêm sản phẩm");
+            }
+        };
 
         return (
             <div className={"flex-column d-flex gap-3"}>
@@ -542,12 +580,15 @@ const BillDetail = () => {
                     width={widthModal}
                     open={open}
                     onOk={handleOkModal}
-
                     confirmLoading={confirmLoading}
                     onCancel={handleCancel}
                 >
                     {modalType === modalBillHistoryType && modalBillHistoryTable()}
-                    {modalType === modalListProduct && <ModalBillProductList billProductList={billProductList}/>}
+                    {modalType === modalListProduct && <ProductDetailModal
+                        products={products}
+                        handleOnAddProductToBill={handleOnAddProductToBill}
+                        setProducts={setProducts}
+                    />}
                     {modalType === modalUpdateStatusBillType && (
                         <ModalConfirmUpdateStatusBill
                             notesUpdateStatusBillInput={confirmNotes}
@@ -685,6 +726,37 @@ const BillDetail = () => {
 
                 </Card>
 
+                <Modal
+                    title="Nhập số lượng sản phẩm"
+                    open={isQuantityModalVisible}
+                    onOk={handleConfirmAddProduct}
+                    onCancel={() => setIsQuantityModalVisible(false)}
+                >
+                    <div className="d-flex flex-column gap-3">
+                        {selectedProduct && (
+                            <div>
+                                <p><strong>Sản phẩm:</strong> {selectedProduct.productName}</p>
+                                <p><strong>Giá:</strong> {formatVND(selectedProduct.price)}</p>
+                                <p><strong>Tồn kho:</strong> {selectedProduct.quantity}</p>
+                            </div>
+                        )}
+                        
+                        <div>
+                            <label>Số lượng:</label>
+                            <InputNumber
+                                min={1}
+                                max={selectedProduct?.quantity || 1}
+                                value={inputQuantity}
+                                onChange={(value) => setInputQuantity(value)}
+                                style={{ width: '100%' }}
+                            />
+                        </div>
+
+                        <div>
+                            <p><strong>Thành tiền:</strong> {formatVND(inputQuantity * (selectedProduct?.price || 0))}</p>
+                        </div>
+                    </div>
+                </Modal>
 
             </div>
 

@@ -19,6 +19,7 @@ import {printBillService} from "../bill/services/printBillService.js";
 import {postChangeQuantityProduct} from "./billService.js";
 import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "./component/ProductDetailModal.jsx";
+import printJS from 'print-js';
 
 const SalesPage = () => {
     const [items, setItems] = useState([
@@ -231,20 +232,35 @@ const SalesPage = () => {
 
 
     const handleOnAddProductToBill = (record) => {
+        if (!currentBill) {
+            toast.warning("Vui lòng chọn hóa đơn trước khi thêm sản phẩm");
+            return;
+        }
+
+        if (record.quantity <= 0) {
+            toast.warning("Sản phẩm đã hết hàng");
+                return;
+        }
+        
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const existingProduct = item.productList.find(p => p.key === record.key);
+                    const existingProduct = item.productList?.find(p => p.id === record.id);
 
                     let updatedProductList;
                     if (existingProduct) {
+                        // Kiểm tra số lượng trước khi tăng
+                        if (existingProduct.quantityInCart >= record.quantity) {
+                            toast.warning(`Số lượng sản phẩm không đủ, tối đa ${record.quantity}`);
+                            return item;
+                        }
                         // Tăng số lượng nếu sản phẩm đã có
                         updatedProductList = item.productList.map(p =>
-                            p.key === record.key ? {...p, quantityInCart: p.quantityInCart + 1} : p
+                            p.id === record.id ? {...p, quantityInCart: p.quantityInCart + 1} : p
                         );
                     } else {
                         // Thêm sản phẩm mới
-                        updatedProductList = [...item.productList, {...record, quantityInCart: 1}];
+                        updatedProductList = [...(item.productList || []), {...record, quantityInCart: 1}];
                     }
 
                     // Tính tổng tiền mới sau khi thêm sản phẩm
@@ -267,9 +283,7 @@ const SalesPage = () => {
                         [currentBill]: bestVoucher
                     }));
 
-                    // Gọi api về trừ số lượng trong kho đồng thời tìm kiếm trừ ở table
-
-
+                    // Cập nhật số lượng sản phẩm trong kho
                     setProducts(prevProducts => prevProducts.map(
                         (product) => {
                             if (product.id === record.id) {
@@ -280,18 +294,17 @@ const SalesPage = () => {
                             }
                             return product
                         }
-                    ))
+                    ));
 
                     return {
                         ...item,
                         productList: updatedProductList,
                         label: (
                             <span>
-                                  {item.itemName} <Badge showZero={true} className={"mb-2"}
-                                                         count={updatedProductList.length ?? 0}/>
-                              </span>
+                                {item.itemName} <Badge showZero={true} className={"mb-2"}
+                                                 count={updatedProductList.length ?? 0}/>
+                            </span>
                         ),
-
                         payInfo: {
                             ...item.payInfo,
                             amount: newTotalAfterDiscount,
@@ -680,25 +693,87 @@ const SalesPage = () => {
     };
 
     const handleOnPrintBill = async () => {
-        // GỌI HÀM IN HÓA ĐƠN
-        const id = items.find((item) => item.key === currentBill).billCode;
+        try {
+            const id = items.find((item) => item.key === currentBill)?.billCode;
+            
+            if (!id) {
+                toast.error("Không tìm thấy mã hóa đơn");
+                return;
+            }
 
-        if (id) {
-            const result = await printBillService(id)
+            const result = await printBillService(id);
+            
+            // Tạo Blob và URL
             const pdfBlob = new Blob([result], {type: 'application/pdf'});
-            console.log(pdfBlob)
             const pdfUrl = URL.createObjectURL(pdfBlob);
 
-            const newTab = window.open(pdfUrl, "_blank"); // Mở tab mới với PDF
-            if (newTab) {
-                newTab.onload = () => {
-                    newTab.print(); // Tự động in
-                };
-            } else {
-                alert("Hãy cho phép mở popup để in PDF!");
-            }
+            // Tạo một div container cho PDF viewer
+            const printContainer = document.createElement('div');
+            printContainer.style.position = 'fixed';
+            printContainer.style.top = '0';
+            printContainer.style.left = '0';
+            printContainer.style.width = '100%';
+            printContainer.style.height = '100%';
+            printContainer.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            printContainer.style.zIndex = '9999';
+            printContainer.style.display = 'flex';
+            printContainer.style.justifyContent = 'center';
+            printContainer.style.alignItems = 'center';
+
+            // Tạo PDF viewer
+            const pdfViewer = document.createElement('embed');
+            pdfViewer.src = pdfUrl;
+            pdfViewer.type = 'application/pdf';
+            pdfViewer.style.width = '80%';
+            pdfViewer.style.height = '80%';
+
+            // Thêm nút đóng
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = 'Đóng';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '10px';
+            closeButton.style.padding = '5px 10px';
+            closeButton.style.cursor = 'pointer';
+
+            // Thêm nút in
+            const printButton = document.createElement('button');
+            printButton.innerHTML = 'In';
+            printButton.style.position = 'absolute';
+            printButton.style.top = '10px';
+            printButton.style.right = '80px';
+            printButton.style.padding = '5px 10px';
+            printButton.style.cursor = 'pointer';
+
+            // Thêm sự kiện cho nút đóng
+            closeButton.onclick = () => {
+                document.body.removeChild(printContainer);
+                URL.revokeObjectURL(pdfUrl);
+            };
+
+            // Thêm sự kiện cho nút in
+            printButton.onclick = () => {
+                const printWindow = window.open(pdfUrl, '_blank');
+                if (printWindow) {
+                    printWindow.addEventListener('load', () => {
+                        printWindow.print();
+                    });
+                } else {
+                    toast.warning("Vui lòng cho phép mở popup để in hóa đơn");
+                }
+            };
+
+            // Thêm các phần tử vào container
+            printContainer.appendChild(pdfViewer);
+            printContainer.appendChild(closeButton);
+            printContainer.appendChild(printButton);
+            document.body.appendChild(printContainer);
+
+        } catch (error) {
+            console.error("Lỗi khi in hóa đơn:", error);
+            toast.error("Có lỗi xảy ra khi in hóa đơn");
         }
-    }
+    };
 
     const onAddressChange = async (selectedProvince, selectedDistrict, selectedWard, specificAddress) => {
         let totalFee = items.find((item) => item.key === currentBill).shippingFee ?? 0

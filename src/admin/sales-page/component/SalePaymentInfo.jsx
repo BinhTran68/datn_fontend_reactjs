@@ -142,55 +142,85 @@ const SalePaymentInfo = ({
                                         </div>
                                     ),
                                     children: (
-                                        <div className={""} style={{}}>
-                                            <List
-
-                                                itemLayout="horizontal"
-                                                dataSource={vouchers}
-                                                renderItem={(item, index) => (
-                                                    <List.Item
-                                                        actions={[
-                                                            (
-                                                                selectedVouchers?.id === item.id ?
-                                                                    <FaCheckCircle size={25}
-                                                                                   color={`${COLORS.success}`}/> :
-                                                                    <Button
-                                                                        type={"primary"}
-                                                                        onClick={() => {
-                                                                            handleOnSelectedVoucher(item)
-                                                                        }}>Chọn</Button>
-                                                            )
-
-
-                                                        ]}
-                                                    >
-
-                                                        <List.Item.Meta
-                                                            avatar={<img width={55} src={voucher_image}
-                                                                         alt={"img voucher"}/>}
-                                                            title={<a href="https://ant.design">{item?.voucherName}</a>}
-
-                                                            description={
-
-                                                                <div>
-                                                                    <div>
-                                                                        Số lượng : {item?.quantity ?? 0}
-                                                                    </div>
-                                                                    <div>
-                                                                        Ngày hết hạn : {convertDate(item.endDate)}
-                                                                    </div>
-                                                                    <div>
-                                                                        Gía trị giảm
-                                                                        : {item?.discountValue && item.discountType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
-                                                                    </div>
-                                                                </div>
+                                        <>
+                                            {selectedVouchers && (
+                                                <div 
+                                                    style={{
+                                                        padding: '10px',
+                                                        marginBottom: '10px',
+                                                        backgroundColor: '#f6ffed',
+                                                        border: '1px solid #b7eb8f',
+                                                        borderRadius: '4px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px'
+                                                    }}
+                                                >
+                                                    <FaCheckCircle color={COLORS.success} />
+                                                    <div>
+                                                        <div style={{ fontWeight: 'bold' }}>
+                                                            Đã áp dụng voucher tốt nhất:
+                                                        </div>
+                                                        <div>
+                                                            {selectedVouchers.voucherName} - Giảm {' '}
+                                                            {selectedVouchers.discountType === "MONEY" 
+                                                                ? formatVND(selectedVouchers.discountValue) 
+                                                                : `${selectedVouchers.discountValue}%`
                                                             }
-                                                        />
-                                                    </List.Item>
-                                                )}
-                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                        </div>
+                                            <div className={""} style={{}}>
+                                                <List
+                                                    itemLayout="horizontal"
+                                                    dataSource={vouchers}
+                                                    renderItem={(item, index) => (
+                                                        <List.Item
+                                                            actions={[
+                                                                (
+                                                                    selectedVouchers?.id === item.id ?
+                                                                        <FaCheckCircle size={25}
+                                                                                       color={`${COLORS.success}`}/> :
+                                                                        <Button
+                                                                            type={"primary"}
+                                                                            onClick={() => {
+                                                                                handleOnSelectedVoucher(item)
+                                                                            }}>Chọn</Button>
+                                                                )
+
+
+                                                            ]}
+                                                        >
+
+                                                            <List.Item.Meta
+                                                                avatar={<img width={55} src={voucher_image}
+                                                                             alt={"img voucher"}/>}
+                                                                title={<a href="https://ant.design">{item?.voucherName}</a>}
+
+                                                                description={
+
+                                                                    <div>
+                                                                        <div>
+                                                                            Số lượng : {item?.quantity ?? 0}
+                                                                        </div>
+                                                                        <div>
+                                                                            Ngày hết hạn : {convertDate(item.endDate)}
+                                                                        </div>
+                                                                        <div>
+                                                                            Gía trị giảm
+                                                                            : {item?.discountValue && item.discountType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            />
+                                                        </List.Item>
+                                                    )}
+                                                />
+
+                                            </div>
+                                        </>
                                     )
                                 }]}
                             />
