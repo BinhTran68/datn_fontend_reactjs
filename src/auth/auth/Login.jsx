@@ -184,8 +184,9 @@ const Login = () => {
             );
             if (response.status === 200) {
                 const data = response.data;
-                localStorage.setItem("accessToken", data.token);
-                localStorage.setItem("userInfo", JSON.stringify(data.customer));
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.customer));
+                window.dispatchEvent(new Event("cartUpdated")); // Cập nhật giỏ hàng
                 navigate("/");
             } else {
                 setErrorMessage("Invalid login credentials. Please try again.");
@@ -203,10 +204,10 @@ const Login = () => {
         <div className={styles.container}>
             <div className={styles.formContainer}>
                 <div className={styles.leftPanel}>
-                    <img 
-                        src="/img/thehands.png" 
-                        alt="Logo" 
-                        className={styles.logo} 
+                    <img
+                        src="/img/thehands.png"
+                        alt="Logo"
+                        className={styles.logo}
                     />
                     <h2 className={styles.title}>Đăng nhập</h2>
                     <p className={styles.subtitle}>vào tài khoản của bạn</p>
@@ -252,7 +253,7 @@ const Login = () => {
                                 "ĐĂNG NHẬP"
                             )}
                         </button>
-                        
+
                         <div className={styles.forgotPassword}>
                             <Link to="/auth/forgot-password">
                                 Quên mật khẩu?
@@ -265,9 +266,9 @@ const Login = () => {
                     <div className={styles.socialContainer}>
                         <h2 className={styles.socialTitle}>Đăng nhập</h2>
                         <p className={styles.socialSubtitle}>bằng tài khoản mạng xã hội</p>
-                        
+
                         <div className={styles.orDivider}>hoặc</div>
-                        
+
                         <div className={styles.socialButtons}>
                             <a href="#" className={`${styles.socialButton} ${styles.facebook}`}>
                                 <span>f</span>
@@ -275,14 +276,14 @@ const Login = () => {
                             <a href="#" className={`${styles.socialButton} ${styles.twitter}`}>
                                 <span>t</span>
                             </a>
-                            <a 
+                            <a
                                 href="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/api/v1/auth/oauth/google&response_type=code&client_id=949623093363-hhnb82n3djt2h4ovguvmqdk714rnihqv.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline"
                                 className={`${styles.socialButton} ${styles.google}`}
                             >
                                 <span>G+</span>
                             </a>
                         </div>
-                        
+
                         <div className={styles.signupLink}>
                             <p>Chưa có tài khoản?</p>
                             <Link to="/auth/register" className={styles.signupButton}>
