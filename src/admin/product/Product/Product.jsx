@@ -1,44 +1,12 @@
-import {
-  Table,
-  Input,
-  Button,
-  Row,
-  Col,
-  Typography,
-  Card,
-  Modal,
-  Pagination,
-  message,
-  Tag,
-  Form,
-  Space,
-  Radio,
-  Flex,
-  Grid,
-  Popconfirm,
-  Tooltip,
-  Switch,
+import {  Table,  Input,  Button,  Row,  Col,  Typography,  Card,  Modal,  Pagination,  message,  Tag,  Form,  Space,  Radio,  Flex,  Grid, Popconfirm, Tooltip, Switch,
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import ModalAddProduct from "./ModalAddProduct.jsx";
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useLayoutEffect,
+import {  useEffect,  useState,  useCallback,  useRef,  useLayoutEffect,
 } from "react";
 import axios from "axios";
-import {
-  fetchProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  getProduct,
-  searchNameProduct,
-  existsByProductName,
-  switchStatus,
+import {  fetchProducts,  createProduct,  updateProduct,  deleteProduct,  getProduct,  searchNameProduct,  existsByProductName,  switchStatus,
 } from "./ApiProduct.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -261,6 +229,8 @@ const Product = () => {
       key: "totalQuantity",
       width: "20rem",
     },
+
+    
     {
       title: "Ngày cập nhật",
       dataIndex: "updatedAt",
@@ -486,7 +456,7 @@ const Product = () => {
                 type="primary"
                 loading={loading}
                 onClick={() => formUpdate.submit()}
-                // disabled={!isActiveUpdate}
+              // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,

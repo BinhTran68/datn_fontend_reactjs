@@ -1,253 +1,162 @@
-import React, { useState } from 'react';
-import { Form, Input, DatePicker, Select, Row, Col, Card, Table, Button, message } from 'antd';
-import axios from 'axios';
-import { baseUrl } from '../../helpers/Helpers.js';
-import moment from 'moment';
-import { Link } from 'react-router-dom';
-import "./StatusSelector.css";
-
-
-const { Option } = Select;
+import {
+    Table, Input, Button, Row, Col, Typography, Card, Checkbox, Pagination, message
+} from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const AddPromotion = () => {
-    const [promotionData, setPromotionData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form] = Form.useForm();
-    const [editingPromotion, setEditingPromotion] = useState(null);
-    //
+    const { Title } = Typography;
+    const [loading, setLoading] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [totalProducts, setTotalProducts] = useState(0);
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [requestSearch, setRequestSearch] = useState({ name: "" });
+    const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+
+    // Gọi API khi component render hoặc khi có thay đổi trong pagination hoặc requestSearch
+    useEffect(() => {
+        fetchProductsData();
+    }, [pagination, requestSearch]);
+
+    // API lấy danh sách sản phẩm
+    const fetchProductsData = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get("http://localhost:8080/api/productdetail/full", {
+                params: {
+                    page: pagination.current,
+                    pageSize: pagination.pageSize,
+                    name: requestSearch.name,
+                },
+            });
+            setProducts(response.data.data);
+            setTotalProducts(response.data.total);
+        } catch (error) {
+            message.error("Có lỗi xảy ra khi tải dữ liệu.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // API lấy chi tiết sản phẩm theo tên
+    // const fetchProductDetail = async (productName) => {
+    //     try {
+    //         const response = await axios.get(`http://localhost:8080/api/productdetail/name/${productName}`);
+    //         if (response.data && response.data.data) {
+    //             return response.data.data;
+    //         } else {
+    //             console.warn(`Không tìm thấy chi tiết sản phẩm cho: ${productName}`);
+    //             return null;
+    //         }
+    //     } catch (error) {
+    //         console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+    //         message.error("Lỗi khi tải chi tiết sản phẩm.");
+    //         return null;
+    //     }
+    // };
+
+
+    // Xử lý chọn checkbox
+    // const handleCheckboxChange = async (e, product) => {
+    //     const isChecked = e.target.checked;
+    
+    //     if (isChecked) {
+    //         setLoading(true);
+    //         const productDetail = await fetchProductDetail(product.productName);
+            
+    //         if (productDetail) {
+    //             setSelectedProducts((prev) => {
+    //                 // Lọc ra các sản phẩm có cùng tên sản phẩm (nếu đã có)
+    //                 const filteredProducts = prev.filter((p) => p.productName !== product.productName);
+    //                 return [...filteredProducts, { ...product, ...productDetail }];
+    //             });
+    //         }
+    //         setLoading(false);
+    //     } else {
+    //         // Khi bỏ chọn, xóa tất cả sản phẩm có cùng productName
+    //         setSelectedProducts((prev) => prev.filter((p) => p.productName !== product.productName));
+    //     }
+    // };
     
 
-  
-      //
+    // useEffect(() => {
+    //     console.log("Danh sách sản phẩm đã chọn:", selectedProducts);
+    // }, [selectedProducts]);
 
+    // Cấu hình cột cho bảng danh sách sản phẩm
+    // const columns = [
+    //     {
+    //         dataIndex: "select",
+    //         key: "select",
+    //         width: "5rem",
+    //         render: (_, record) => (
+    //             <Checkbox
+    //                 checked={selectedProducts.some((p) => p.id === record.id)}
+    //                 onChange={(e) => handleCheckboxChange(e, record)}
+    //             />
+    //         ),
+    //     },
+    //     { title: "STT", dataIndex: "stt", key: "stt", width: "5rem", render: (_, __, index) => index + 1 },
+    //     { title: "Tên Sản Phẩm", dataIndex: "productName", key: "productName", width: "20rem" },
+    //     { title: "Số lượng", dataIndex: "totalQuantity", key: "totalQuantity", width: "20rem" },
+    // ];
 
-    const columns = [
-        {
-            title: 'STT',
-            dataIndex: 'stt',
-            key: 'stt',
-            render: (text, record, index) => index + 1,
-        },
-        {
-            title: 'Mã sản phẩm',
-            dataIndex: 'code',
-            key: 'code',
-        },
-        {
-            title: 'Tên sản phẩm',
-            dataIndex: 'productName',
-            key: 'productName',
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (text) => (
-                <span >{text}</span>
-            ),
-        },
+    // Cấu hình cột cho bảng danh sách sản phẩm đã chọn
+    const columnsDetail = [
+        { title: "STT", dataIndex: "stt", key: "stt", width: "5rem", render: (_, __, index) => index + 1 },
+        { title: "Tên Sản Phẩm", dataIndex: "productName", key: "productName", width: "20rem" },
+        { title: "Thương Hiệu", dataIndex: "brandName", key: "brandName", width: "15rem" },
+        { title: "Loại", dataIndex: "typeName", key: "typeName", width: "15rem" },
+        { title: "Màu Sắc", dataIndex: "colorName", key: "colorName", width: "10rem" },
+        { title: "Chất Liệu", dataIndex: "materialName", key: "materialName", width: "15rem" },
+        { title: "Kích Cỡ", dataIndex: "sizeName", key: "sizeName", width: "10rem" },
+        { title: "Đế Giày", dataIndex: "soleName", key: "soleName", width: "15rem" },
+        { title: "Giới Tính", dataIndex: "genderName", key: "genderName", width: "10rem" },
+        { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: "10rem" },
+        { title: "Trọng Lượng (kg)", dataIndex: "weight", key: "weight", width: "10rem" },
     ];
-    const productData1 = [
-        {
-            "id": 2,
-            "code": "G01",
-            "productName": "Adidas",
-            "brandName": "Nike",
-            "typeName": "Sports Shoes",
-            "colorName": "Black",
-            "materialName": "Leather",
-            "sizeName": "37,38",
-            "soleName": "Rubber Sole",
-            "genderName": "Nam,Nữ",
-            "quantity": 200,
-            "price": 89.99,
-            "weight": 0.6,
-            "descrition": null,
-            "status": "HOAT_DONG",
-            "updateAt": 1735925166571,
-            "updateBy": null,
-            img: "https://authentic-shoes.com/wp-content/uploads/2024/01/Giay-Adidas-Forum-Low-Core-Black-IG5513-5-768x334.png"
-        },
-
-        {
-            "id": 3,
-            "code": "G02",
-            "productName": "Nike Air Max",
-            "brandName": "Nike",
-            "typeName": "Sports Shoes",
-            "colorName": "White-Red",
-            "materialName": "Leather",
-            "sizeName": "39,40",
-            "soleName": "Rubber Sole",
-            "genderName": "Nam,Nữ",
-            "quantity": 200,
-            "price": 89.99,
-            "weight": 0.6,
-            "descrition": null,
-            "status": "HOAT_DONG",
-            "updateAt": 1735925166571,
-            "updateBy": null,
-            img: "https://authentic-shoes.com/wp-content/uploads/2024/01/Giay-Nike-Air-Jordan-1-Low-SE-Year-of-the-Dragon-FJ5735-100-10-300x139.png"
-
-        }
-
-    ];
-
-    const columns1 = [
-
-        {
-            title: 'STT',
-            dataIndex: 'stt',
-            key: 'stt',
-            render: (text, record, index) => index + 1,
-        },
-        {
-            title: 'Ảnh',
-            dataIndex: 'img',
-            key: 'img',
-            render: (imgUrl) => (
-                <img
-                    src={imgUrl}
-                    alt="Sản phẩm"
-                    style={{ width: '100px', height: 'auto' }}
-                />
-            ),
-        },
-        {
-            title: 'Tên sản phẩm',
-            dataIndex: 'productName',
-            key: 'productName',
-        },
-        {
-            title: 'Giới tính',
-            dataIndex: 'genderName',
-            key: 'genderName',
-        },
-        {
-            title: 'Màu',
-            dataIndex: 'colorName',
-            key: 'colorName',
-        },
-        {
-            title: 'Kích thước',
-            dataIndex: 'sizeName',
-            key: 'sizeName',
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (text) => (
-                <span >{text}</span>
-            ),
-        },
-
-    ];
-
-    // Hàm thêm mới phiếu giảm giá
-    const [selectedProductDetails, setSelectedProductDetails] = useState([]);
-    const handleProductSelection = (selectedRowKeys, selectedRows) => {
-        setSelectedProductDetails(selectedRows);
-    };
-
-    const rowSelection = {
-        type: 'checkbox',
-        onChange: handleProductSelection,
-    };
-
-
-
-    const handleAdd = async () => {
-        try {
-            const values = await form.validateFields(); // Lấy dữ liệu từ form nếu hợp lệ
-            const response = await axios.post(`${baseUrl}/api/admin/promotion/add`, values);
-            message.success('Thêm mới phiếu giảm giá thành công!');
-            setIsModalOpen(false);
-            form.resetFields(); // Reset form
-        } catch (error) {
-            message.error('Lỗi khi lưu dữ liệu! Vui lòng kiểm tra lại.');
-        }
-    };
 
     return (
-
-        <>
-        
-       
-        
         <Row gutter={20}>
-            {/* Bảng thêm đợt giảm giá */}
-            <Col span={8}>
-                <Card title="Thêm đợt giảm giá" bordered>
-                    <Form form={form} layout="vertical">
-                        <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true, message: 'Mã đợt giảm giá không được bỏ trống! ' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true, message: 'Tên đợt giảm giá không được bỏ trống! ' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true, message: 'Loại đợt giảm giá không được bỏ trống! ' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="discountValue" label="Giá trị giảm(%)" rules={[{ required: true, message: 'Giá trị đợt giảm giá không được bỏ trống! ' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="quantity" label="Số lượng" rules={[{ required: true, message: 'Số lượng đợt giảm giá không được bỏ trống! ' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true, message: 'Thời gian không được bỏ trống! ' }]}>
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                        </Form.Item>
-                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true, message: ' Thời gian không được bỏ trống!' }]}>
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                        </Form.Item>
-                        <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Trạng thái đợt giảm giá không được bỏ trống! ' }]}>
-                            <Select>
-                                <Option value="HOAT_DONG">Hoạt động</Option>
-                                <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
-                            </Select>
-                        </Form.Item>
-                        <Link to={"/admin/PromotionList"} >
-                            <Button
-                                type="primary" htmlType="button" onClick={handleAdd}  style={{
-                                    marginBottom: '20px',
-
-                                    border: 'none',
-                                }}>
-                               
-
-                                Thêm
-                            </Button>
-                        </Link>
-
-                    </Form>
-                </Card>
-            </Col>
-
-            {/* Bảng sản phẩm */}
             <Col span={16}>
-                <Card title="Sản phẩm" bordered >
-                    <Table
-                        dataSource={productData1}
-                        columns={columns}
-                        rowKey="id"
-                        rowSelection={rowSelection}
+                <Card>
+                    <Title level={2}>Sản Phẩm</Title>
+                    <Row gutter={[16, 16]}>
+                        <Col span={20}>
+                            <Input
+                                placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
+                                prefix={<SearchOutlined />}
+                                allowClear
+                                value={requestSearch.name}
+                                onChange={(e) => setRequestSearch({ name: e.target.value })}
+                            />
+                        </Col>
+                        <Col span={4}>
+                            <Button type="primary" icon={<SearchOutlined />} onClick={fetchProductsData}>
+                                Tìm kiếm
+                            </Button>
+                        </Col>
+                    </Row>
+                    {/* Bảng danh sách sản phẩm */}
+                    {/* <Table columns={columns} dataSource={products} loading={loading} pagination={false} rowKey="id" /> */}
+                    <Table columns={columnsDetail} dataSource={products} rowKey="id" />
+
+                    {/* Phân trang */}
+                    <Pagination
+                        current={pagination.current}
+                        pageSize={pagination.pageSize}
+                        total={totalProducts}
+                        showSizeChanger
+                        pageSizeOptions={["3", "5", "10", "20"]}
+                        onChange={(page, pageSize) => setPagination({ current: page, pageSize })}
                     />
                 </Card>
-                <Card title="Sản phẩm chi tiết" >
-                    <Table
-                        dataSource={selectedProductDetails}
-                        columns={columns1}
-                        rowKey="id"
-                        rowSelection={rowSelection}
-
-                    />
+                {/* Bảng danh sách sản phẩm đã chọn */}
+                <Card title="Sản Phẩm Đã Chọn">
                 </Card>
             </Col>
         </Row>
-        </>
-
-        
     );
 };
 

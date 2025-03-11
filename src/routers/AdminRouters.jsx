@@ -40,7 +40,14 @@ import {getRole} from "../helpers/Helpers.js";
 
 
 
-
+const getRole = () => {
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+        const parsedUserInfo = JSON.parse(storedUserInfo);
+        return parsedUserInfo?.vaiTro || null;
+    }
+    return null;
+};
 
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
