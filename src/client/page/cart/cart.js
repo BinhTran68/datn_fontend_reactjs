@@ -35,7 +35,7 @@ export const addToCart = (product) => {
   
 
 // Khi người dùng mở lại trình duyệt
-export const getCart = () => {
+export const  getCart = () => {
   const deviceId = getDeviceId();
   return JSON.parse(localStorage.getItem(`cart_${deviceId}`)) || [];
 };
