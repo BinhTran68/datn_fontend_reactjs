@@ -70,7 +70,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
     useEffect(() => {
         const fetchData = async (type) => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/statistical/${type}`);
+                const response = await axios.get(`http://localhost:8080/api/admin/statistical/${type}`);
                 setData(prevState => ({
                     ...prevState,
                     [type.toLowerCase()]: response.data.data?.[0] || {
@@ -156,7 +156,7 @@ const DateFilter = ({ onSetCustomData, customData }) => {
             setDateRange({ startDate, endDate }); // Lưu khoảng thời gian đã chọn
 
             try {
-                const response = await axios.get(`http://localhost:8080/api/statistical/CustomDate?startDate=${startDate}&endDate=${endDate}`);
+                const response = await axios.get(`http://localhost:8080/api/admin/statistical/CustomDate?startDate=${startDate}&endDate=${endDate}`);
                 onSetCustomData(response.data.data?.[0] || null);
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu tùy chỉnh từ API:", error);

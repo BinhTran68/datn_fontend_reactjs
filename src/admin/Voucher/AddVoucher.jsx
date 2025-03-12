@@ -116,7 +116,7 @@ const AddVoucher = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get("http://localhost:8080/api/customers/");
+            const response = await axios.get("http://localhost:8080/api/admin/customers/");
             setCustomers(response.data);
         } catch (err) {
             setError("Lỗi khi tải danh sách khách hàng!");

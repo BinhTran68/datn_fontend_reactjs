@@ -42,13 +42,14 @@ import {getRole} from "../helpers/Helpers.js";
 
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
-    if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
-        if (allowedRoles.includes(role)) {
-            return element;
-        }
-        return <Navigate to="/forbidden" replace/>;
-    }
-    return <Navigate to="/forbidden" replace/>;
+    return element
+    // if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
+    //     if (allowedRoles.includes(role)) {
+    //         return element;
+    //     }
+    //     return <Navigate to="/forbidden" replace/>;
+    // }
+    // return <Navigate to="/forbidden" replace/>;
 };
 
 const AdminRouters = {

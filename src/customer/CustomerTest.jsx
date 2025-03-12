@@ -101,7 +101,7 @@ const CustomerTest = () => {
 
 
     const fetchData = () => {
-        axios.get('http://localhost:8080/api/customers/')
+        axios.get('http://localhost:8080/api/admin/customers/')
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
@@ -133,7 +133,7 @@ const CustomerTest = () => {
             maxAge: ageRange[1],
         };
 
-        axios.get('http://localhost:8080/api/customers/filter', {params})
+        axios.get('http://localhost:8080/api/admin/customers/filter', {params})
             .then((response) => {
                 const fetchedData = response.data.map((item, index) => ({
                     key: index + 1,
@@ -212,7 +212,7 @@ const CustomerTest = () => {
         try {
             // Gọi API thêm địa chỉ
             const response = await axios.post(
-                `http://localhost:8080/api/customers/add-address/${recordSelected.id}`,
+                `http://localhost:8080/api/admin/customers/add-address/${recordSelected.id}`,
                 newAddress
             );
             console.log(newAddress)
@@ -249,7 +249,7 @@ const CustomerTest = () => {
     const handleEditAddress = async (addressId) => {
         try {
             const response = await axios.put(
-                `http://localhost:8080/api/customers/update-address/${addressId}`,
+                `http://localhost:8080/api/admin/customers/update-address/${addressId}`,
                 newAddress
             );
 
@@ -289,7 +289,7 @@ const CustomerTest = () => {
     };
     const handleSetDefaultAddress = (addressId) => {
         axios
-            .put(`http://localhost:8080/api/customers/set-default-address/${addressId}`)
+            .put(`http://localhost:8080/api/admin/customers/set-default-address/${addressId}`)
             .then(() => {
                 message.success('Đặt làm mặc định thành công!');
 

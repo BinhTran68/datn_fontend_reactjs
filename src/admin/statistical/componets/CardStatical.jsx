@@ -37,7 +37,7 @@ const LowStockProducts = () => {
       if (quantity < 1) return; // Đảm bảo quantity hợp lệ
 
       try {
-        const response = await fetch(`http://localhost:8080/api/statistical/minProduct?quantity=${quantity}`);
+        const response = await fetch(`http://localhost:8080/api/admin/statistical/minProduct?quantity=${quantity}`);
         const result = await response.json();
 
         console.log("API response:", result);
@@ -123,8 +123,8 @@ const StatisticsSummary = () => {
     const fetchStatistics = async () => {
       try {
         const [monthlyResponse, yearlyResponse] = await Promise.all([
-          fetch("http://localhost:8080/api/statistical/growthRateMonth"),
-          fetch("http://localhost:8080/api/statistical/growthRateYear"),
+          fetch("http://localhost:8080/api/admin/statistical/growthRateMonth"),
+          fetch("http://localhost:8080/api/admin/statistical/growthRateYear"),
         ]);
 
         const monthlyData = await monthlyResponse.json();

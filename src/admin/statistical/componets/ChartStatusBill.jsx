@@ -17,19 +17,19 @@ const ChartStatusBill = () => {
   const pageSize = 5; // Số lượng sản phẩm mỗi trang
   const [currentPage, setCurrentPage] = useState(1); // State lưu trang hiện tại
   const apiUrls = {
-    day: "http://localhost:8080/api/statistical/bestday",
-    week: "http://localhost:8080/api/statistical/bestweek",
-    month: "http://localhost:8080/api/statistical/bestmonth",
-    year: "http://localhost:8080/api/statistical/bestyear",
-    custom: "http://localhost:8080/api/statistical/best-custom",
+    day: "http://localhost:8080/api/admin/statistical/bestday",
+    week: "http://localhost:8080/api/admin/statistical/bestweek",
+    month: "http://localhost:8080/api/admin/statistical/bestmonth",
+    year: "http://localhost:8080/api/admin/statistical/bestyear",
+    custom: "http://localhost:8080/api/admin/statistical/best-custom",
   };
 
   const chartApiUrls = {
-    day: "http://localhost:8080/api/statistical/chartDay",
-    week: "http://localhost:8080/api/statistical/chartWeek",
-    month: "http://localhost:8080/api/statistical/chartMonth",
-    year: "http://localhost:8080/api/statistical/chartYear",
-    custom: "http://localhost:8080/api/statistical/chartCustom",
+    day: "http://localhost:8080/api/admin/statistical/chartDay",
+    week: "http://localhost:8080/api/admin/statistical/chartWeek",
+    month: "http://localhost:8080/api/admin/statistical/chartMonth",
+    year: "http://localhost:8080/api/admin/statistical/chartYear",
+    custom: "http://localhost:8080/api/admin/statistical/chartCustom",
   }
 
   useEffect(() => {

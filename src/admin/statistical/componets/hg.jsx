@@ -15,19 +15,19 @@ const ChartStatusBill = () => {
 
   useEffect(() => {
     const apiUrls = {
-      day: "http://localhost:8080/api/statistical/bestday",
-      week: "http://localhost:8080/api/statistical/bestweek",
-      month: "http://localhost:8080/api/statistical/bestmonth",
-      year: "http://localhost:8080/api/statistical/bestyear",
-      custom: "http://localhost:8080/api/statistical/best-custom",
+      day: "http://localhost:8080/api/admin/statistical/bestday",
+      week: "http://localhost:8080/api/admin/statistical/bestweek",
+      month: "http://localhost:8080/api/admin/statistical/bestmonth",
+      year: "http://localhost:8080/api/admin/statistical/bestyear",
+      custom: "http://localhost:8080/api/admin/statistical/best-custom",
     };
 
     const chartApiUrls = {
-      day: "http://localhost:8080/api/statistical/chartDay",
-      week: "http://localhost:8080/api/statistical/chartWeek",
-      month: "http://localhost:8080/api/statistical/chartMonth",
-      year: "http://localhost:8080/api/statistical/chartYear",
-      custom: "http://localhost:8080/api/statistical/chartCustom",
+      day: "http://localhost:8080/api/admin/statistical/chartDay",
+      week: "http://localhost:8080/api/admin/statistical/chartWeek",
+      month: "http://localhost:8080/api/admin/statistical/chartMonth",
+      year: "http://localhost:8080/api/admin/statistical/chartYear",
+      custom: "http://localhost:8080/api/admin/statistical/chartCustom",
     };
 
     const fetchTableData = async () => {
@@ -65,7 +65,7 @@ const ChartStatusBill = () => {
 
     const fetchChartData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/statistical/chartYear"); // Thay đổi URL nếu cần
+        const response = await axios.get("http://localhost:8080/api/admin/statistical/chartYear"); // Thay đổi URL nếu cần
     
         if (response.data && Array.isArray(response.data.data)) {
           const formattedChartData = response.data.data.map((item) => ({
