@@ -5,9 +5,9 @@ import { CalendarOutlined, RiseOutlined, FallOutlined } from "@ant-design/icons"
 const Dashboard = () => {
   return (
     <>
-        <h2 style={{ color: "orange", fontSize: 25, fontWeight: "bold", marginBottom: 10,marginTop:50 }}>
+        <h5 style={{ color: "black", marginBottom: 10,marginTop:20,marginLeft:20 }}>
         Thống kê số lượng sản phẩm sắp hết và tốc độ tăng trưởng của cửa hàng
-    </h2>
+    </h5>
     <div style={{ padding: "20px" }}>
       <Row gutter={[16, 16]}>
         <Col span={12}>
@@ -37,7 +37,7 @@ const LowStockProducts = () => {
       if (quantity < 1) return; // Đảm bảo quantity hợp lệ
 
       try {
-        const response = await fetch(`http://localhost:8080/api/statistical/minProduct?quantity=${quantity}`);
+        const response = await fetch(`http://localhost:8080/api/admin/statistical/minProduct?quantity=${quantity}`);
         const result = await response.json();
 
         console.log("API response:", result);
@@ -71,12 +71,12 @@ const LowStockProducts = () => {
       title="Danh sách sản phẩm sắp hết hàng"
       style={{
         marginBottom: 16,
-        background: "linear-gradient(180deg, orange, rgb(210, 209, 207))",
-        color: "white",
+        background: "white",
+        color: "black",
         borderRadius: "12px",
         padding: "16px",
       }}
-      headStyle={{ color: "white" }}
+      headStyle={{ color: "black" }}
     >
       {/* Ô nhập số lượng */}
       <InputNumber
@@ -84,7 +84,7 @@ const LowStockProducts = () => {
         max={500000}
         value={quantity}
         onChange={(value) => value !== null && setQuantity(value)}
-        style={{ marginBottom: "16px",        border:"1px solid #2e95dd"
+        style={{ marginBottom: "16px",  border:"1px solid #2e95dd"
         }}
       />
 
@@ -116,19 +116,24 @@ const LowStockProducts = () => {
 // Component hiển thị thống kê tổng hợp
 
 const StatisticsSummary = () => {
-  const [statistics, setStatistics] = useState({ monthly: null, yearly: null });
+  const [statistics, setStatistics] = useState({ monthly: null, yearly: null,monthPro:null,yearPro:null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const [monthlyResponse, yearlyResponse] = await Promise.all([
-          fetch("http://localhost:8080/api/statistical/growthRateMonth"),
-          fetch("http://localhost:8080/api/statistical/growthRateYear"),
+        const [monthlyResponse, yearlyResponse,monthProductResponse,yearProductResponse] = await Promise.all([
+          fetch("http://localhost:8080/api/admin/statistical/growthRateMonth"),
+          fetch("http://localhost:8080/api/admin/statistical/growthRateYear"),
+          fetch("http://localhost:8080/api/admin/statistical/growthRateProductM"),
+          fetch("http://localhost:8080/api/admin/statistical/growthRateProductY"),         
         ]);
 
         const monthlyData = await monthlyResponse.json();
         const yearlyData = await yearlyResponse.json();
+        const monthProduct = await monthProductResponse.json();
+        const yearProduct = await yearProductResponse.json();
+
 
         console.log("Monthly API response:", monthlyData);
         console.log("Yearly API response:", yearlyData);
@@ -136,25 +141,27 @@ const StatisticsSummary = () => {
         // Kiểm tra dữ liệu
         const monthly = monthlyData.data?.length ? monthlyData.data[0] : null;
         const yearly = yearlyData.data?.length ? yearlyData.data[0] : null;
+        const monthPro = monthProduct.data?.length ? monthProduct.data[0] : null;
+        const yearPro = yearProduct.data?.length ? yearProduct.data[0] : null;
+
 
         setStatistics({
-          monthly: monthly
-            ? {
-              revenue: monthly.revenue || 0,
-              percentageChange: parseFloat(monthly.percentageChange.replace("%", "")) || 0,
-            }
-            : null,
-          yearly: yearly
-            ? {
-              revenue: yearly.revenue || 0,
-              percentageChange: parseFloat(yearly.percentageChange.replace("%", "")) || 0,
-            }
-            : null,
-        });
-
-        console.log("Final statistics state:", {
-          monthly,
-          yearly,
+          monthly: {
+            revenue: monthly?.revenue || 0,
+            percentageChange: parseFloat(monthly?.percentageChange) || 0, // Chuyển đổi sang số
+          },
+          yearly: {
+            revenue: yearly?.revenue || 0,
+            percentageChange: parseFloat(yearly?.percentageChange) || 0, // Chuyển đổi sang số
+          },
+          monthPro: {
+            quantityMonth: monthPro?.quantityMonth || 0,
+            percentageChange: parseFloat(monthPro?.percentageChange) || 0,
+          },
+          yearPro: {
+            quantityYear: yearPro?.quantityYear || 0,
+            percentageChange: parseFloat(yearPro?.yearPercentageChange) || 0,
+          },
         });
       } catch (error) {
         console.error("Error fetching statistics:", error);
@@ -170,15 +177,15 @@ const StatisticsSummary = () => {
     
     <Card title="Thống kê tốc độ phát triển" style={{
       marginBottom: 16,
-      background: "linear-gradient(180deg, orange, rgb(210, 209, 207))",
-      color: "white",
+      background: "white",
+      color: "red",
       borderRadius: "12px",
       padding: "16px",
     }}
-    headStyle={{ color: "white" }}>
+    headStyle={{ color: "black" }}>
       <Row gutter={[16, 16]}>
         <Col span={24}>
-          <Card style={{ background: "linear-gradient(180deg, orange, rgb(210, 207, 207))", color: "white", minHeight: "100px" }}>
+          <Card style={{ background: "white", color: "black", minHeight: "100px" }}>
             {loading ? (
               <Spin tip="Đang tải dữ liệu..." style={{ display: "flex", justifyContent: "center" }} />
             ) : (
@@ -215,6 +222,42 @@ const StatisticsSummary = () => {
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <span>{statistics.monthly?.percentageChange}%</span>
                         {statistics.monthly?.percentageChange >= 0 ? (
+                          <RiseOutlined style={{ color: "#00FF00", fontSize: "18px" }} />
+                        ) : (
+                          <FallOutlined style={{ color: "red", fontSize: "18px" }} />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                   {/* Sản phẩm năm */}
+                   <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
+                        <span>Sản phẩm bán theo năm</span>
+                      </div>
+                      <span>{statistics.yearPro?.quantityYear.toLocaleString()} ĐƠN</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>{statistics.yearPro?.percentageChange}%</span>
+                        {statistics.yearPro?.percentageChange >= 0 ? (
+                          <RiseOutlined style={{ color: "#00FF00", fontSize: "18px" }} />
+                        ) : (
+                          <FallOutlined style={{ color: "red", fontSize: "18px" }} />
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                   {/* Sản Phẩm tháng */}
+                   <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
+                        <span>Sản phẩm bán theo tháng</span>
+                      </div>
+                      <span>{statistics.monthPro?.quantityMonth.toLocaleString()} ĐƠN</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>{statistics.monthPro?.percentageChange}%</span>
+                        {statistics.monthPro?.percentageChange >= 0 ? (
                           <RiseOutlined style={{ color: "#00FF00", fontSize: "18px" }} />
                         ) : (
                           <FallOutlined style={{ color: "red", fontSize: "18px" }} />
