@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 
 import { Outlet } from "react-router-dom";
 import Footer from "./component/Footer";
-import HeaderNav from "./component/HeaderNav";
+import HeaderNav from "./component/HeaderNav/HeaderNav.jsx";
 import { Layout } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
-import Nav from "./component/Nav";
+import Nav from "./component/Nav/Nav.jsx";
+import { ProductProvider } from "../store/ProductContext";
 // import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {
@@ -18,7 +19,6 @@ const App = () => {
 
   return (
     <div className="">
-      {/* <Navigation searchValue={searchValue} setSearchValue={setSearchValue}/> */}
       <Layout>
         <Content
           style={{
@@ -28,9 +28,8 @@ const App = () => {
           <HeaderNav />
         </Content>
         <Content>
-          <div className="container">
-            {/* <Outlet  context={{ searchValue }} /> */}
-            <Nav/>
+          <div className="">
+            {/*<Nav/>*/}
             <Outlet />
           </div>
         </Content>

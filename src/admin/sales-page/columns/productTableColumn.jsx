@@ -21,12 +21,55 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         }),
     },
     {
+        title: "Ảnh",
+        dataIndex: "image",
+        key: "image",
+        render: (images) => {
+            if (images && Array.isArray(images) && images.length > 0) {
+                return (
+                    <img 
+                        src={images[0].url} 
+                        alt="Sản phẩm"
+                        style={{
+                            width: '50px',
+                            height: '50px',
+                            objectFit: 'cover',
+                            borderRadius: '4px'
+                        }}
+                    />
+                );
+            }
+            return (
+                <div 
+                    style={{
+                        width: '50px',
+                        height: '50px',
+                        backgroundColor: '#f5f5f5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '4px'
+                    }}
+                >
+                    No image
+                </div>
+            );
+        },
+        onCell: () => ({
+            style: {
+                width: "80px",
+                height: "60px",
+                padding: "5px",
+            },
+        }),
+    },
+    {
         title: "Sản phẩm",
         dataIndex: "productName",
         key: "productName",
         render: (_, record) => {
             const { productName, sizeName, colorName } = record;
-            return `${productName} - [${sizeName}] - [${colorName}]`;
+            return productName ? `${productName} - [${sizeName}] - [${colorName}]` : "";
         },
         onCell: () => ({
             style: {
@@ -159,7 +202,6 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
                 width: "100px",
                 height: "50px",
                 lineHeight: "50px",
-
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",

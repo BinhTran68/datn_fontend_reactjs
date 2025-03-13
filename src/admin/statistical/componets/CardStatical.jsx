@@ -126,7 +126,8 @@ const StatisticsSummary = () => {
           fetch("http://localhost:8080/api/admin/statistical/growthRateMonth"),
           fetch("http://localhost:8080/api/admin/statistical/growthRateYear"),
           fetch("http://localhost:8080/api/admin/statistical/growthRateProductM"),
-          fetch("http://localhost:8080/api/admin/statistical/growthRateProductY"),         
+          fetch("http://localhost:8080/api/admin/statistical/growthRateProductY"),
+
         ]);
 
         const monthlyData = await monthlyResponse.json();

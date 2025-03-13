@@ -7,14 +7,14 @@ import {
     baseUrl,
     convertBillStatusToString,
     convertLongTimestampToDate, formatVND,
-    generateAddressString
+    generateAddressString, paymentMethodConvert, paymentTypeConvert
 } from "../../helpers/Helpers.js";
 import {FiEye} from "react-icons/fi";
 import {FaClipboardCheck} from "react-icons/fa";
 import StepProgress from "./componets/StepProgress.jsx";
 import {FaFileCircleCheck} from "react-icons/fa6";
 
-import {Input} from 'antd';
+import {Input, InputNumber} from 'antd';
 import TextArea from "antd/es/input/TextArea.js";
 import ModalConfirmUpdateStatusBill from "./componets/ModalConfirmUpdateStatusBill.jsx";
 import {GrDrag} from "react-icons/gr";
@@ -23,6 +23,9 @@ import {IoAdd} from "react-icons/io5";
 import ModalBillProductList from "./componets/ModalBillProductList.jsx";
 import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
 import BillStatusComponent from "./componets/BillTypeComponent.jsx";
+import axiosInstance from "../../utils/axiosInstance.js";
+import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
+
 
 
 const {Step} = Steps;
@@ -39,17 +42,24 @@ const columnsPaymentMethodTable = [
         title: 'Mã giao dịch',
         dataIndex: 'transactionCode',
         key: 'transactionCode',
+        render: (record) => <span>{record ? record : "Không"}</span>,
     },
     {
         title: 'Loại giao dịch',
         dataIndex: 'paymentMethodsType',
         key: 'paymentMethodsType',
-        // render: (text) => <a>{text}</a>,
+        render: (text) => <Tag style={{
+            fontSize: 16
+        }} color={"purple"}>{paymentTypeConvert[text]}</Tag>,
     },
     {
         title: 'Phương thức thanh toán',
         dataIndex: 'paymentMethod',
         key: 'paymentMethod',
+        render: (text) => <Tag style={{
+            fontSize: 16
+        }} color={"blue"}>{paymentMethodConvert[text]}</Tag>,
+
     },
     {
         title: 'Thời gian',
@@ -64,6 +74,11 @@ const columnsPaymentMethodTable = [
         title: 'Tổng tiền',
         dataIndex: 'totalMoney',
         key: 'totalMoney',
+        render: (text) => (
+            <div>
+                {formatVND(text)}
+            </div>
+        )
     },
 
 
@@ -148,7 +163,6 @@ const columnsBillProductDetailTable = [
                     console.log(record?.productName);
                 }}
             >
-
             </Button>
         ),
 
@@ -166,13 +180,17 @@ const columnsBillHistory = [
     {
         title: 'Trạng thái',
         dataIndex: 'status',
-        render: (record) => <BillStatusComponent text={record} status={record}/>,
+        render: (record) => <div>
+            <Tag style={{
+                fontSize: 16
+            }} color={"purple"}>{convertBillStatusToString(record)}</Tag>
+        </div>,
         key: 'status',
     },
     {
         title: 'Người xác nhận',
-        dataIndex: 'customerName',
-        key: 'customerName',
+        dataIndex: 'createdBy',
+        key: 'createdBy',
     },
     {
         title: 'Ghi chú',
@@ -199,7 +217,7 @@ const BillDetail = () => {
         const modalUpdateStatusBillType = "modalUpdateStatusBillType";
         const modalListProduct = "modalListProduct";
         const modalEditForm = "modalEditForm";
-        const defaultURL = `${baseUrl}/api/admin`;
+        const defaultURL = `${baseUrl}`;
         const [paymentBillHistory, setPaymentBillHistory] = useState([])
         const [billProductDetails, setBillProductDetails] = useState()
         const [billProductList, setBillProductList] = useState()
@@ -211,6 +229,10 @@ const BillDetail = () => {
         const [confirmNotes, setConfirmNotes] = useState('')
         const [widthModal, setWidthModal] = useState('50%')
         const [addressString, setAddressString] = useState('')
+        const [products, setProducts] = useState([])
+        const [isQuantityModalVisible, setIsQuantityModalVisible] = useState(false);
+        const [selectedProduct, setSelectedProduct] = useState(null);
+        const [inputQuantity, setInputQuantity] = useState(1);
 
 
         const handleOkModal = () => {
@@ -237,11 +259,11 @@ const BillDetail = () => {
                 "note": confirmNotes
             }
 
-            await axios.put(`${defaultURL}/bill/${id}/update`, data).then(
+            await axiosInstance.put(`/api/admin/bill/${id}/update`, data).then(
                 (res) => {
                     const result = res.data.data;
                     setCurrentBill(result.bill)
-                    if(result.bill.status === "DANG_VAN_CHUYEN") {
+                    if (result.bill.status === "DANG_VAN_CHUYEN") {
                         handlePrintBillPdf()
                     }
                     setBillHistory(result.billHistory)
@@ -249,12 +271,11 @@ const BillDetail = () => {
             ).catch((e) => {
 
             })
-
         }
 
-        const handlePrintBillPdf =  async () => {
-            const response = await axios.get(`${defaultURL}/bill/print-bill/${id}`);
-            const  result = response.data
+        const handlePrintBillPdf = async () => {
+            const response = await axiosInstance.get(`/api/admin/bill/print-bill/${id}`);
+            const result = response.data
             print(result)
         }
 
@@ -284,19 +305,19 @@ const BillDetail = () => {
 
 
         const getPaymentsBill = async () => {
-            const response = await axios.get(`${defaultURL}/payment-bill?billCode=${id}`);
+            const response = await axiosInstance.get(`/api/admin/payment-bill?billCode=${id}`);
             setPaymentBillHistory(response.data.data)
         }
 
         const getBillHistory = async () => {
-            const response = await axios.get(`${defaultURL}/bill-history?billCode=${id}`);
+            const response = await axiosInstance.get(`/api/admin/bill-history?billCode=${id}`);
             const billHistoryResponse = response.data.data;
             setBillHistory(billHistoryResponse);
 
         }
 
         const getBillProductDetail = async () => {
-            const response = await axios.get(`${defaultURL}/bill-product-detail/${id}`);
+            const response = await axiosInstance.get(`/api/admin/bill-product-detail/${id}`);
             const data = response.data.data;
             setBillProductDetails(data)
             console.log(response);
@@ -305,7 +326,7 @@ const BillDetail = () => {
 
 
         const getCurrentBill = async () => {
-            const response = await axios.get(`${defaultURL}/bill/detail/${id}`);
+            const response = await axiosInstance.get(`/api/admin/bill/detail/${id}`);
             const bill = response.data.data;
             setCurrentBill(bill);
             console.log(bill);
@@ -350,7 +371,13 @@ const BillDetail = () => {
             }
 
             if (step === "DANG_VAN_CHUYEN") {
-                return "Xác nhận thanh toán";
+                const check = billHistory.find((el) => el.status === "DA_THANH_TOAN")
+                if (check) {
+                    return "Xác nhận hoàn thành"
+                } else {
+                    return "Xác nhận thanh toán"
+                }
+
             }
             if (step === "DA_THANH_TOAN") {
                 return "Xác nhận hoàn thành";
@@ -424,6 +451,7 @@ const BillDetail = () => {
         const handleOnConfirmUpdateValue = () => {
             setOpen(true)
             setWidthModal("40%")
+            setConfirmNotes('')
             setModalType(modalUpdateStatusBillType)
         };
 
@@ -435,7 +463,7 @@ const BillDetail = () => {
         };
 
         const getBillProducts = async () => {
-            const response = await axios.get(`${defaultURL}/bill-product-detail`);
+            const response = await axiosInstance.get(`/api/admin/bill-product-detail`);
             const data = response.data.data;
             setBillProductList(data.content)
         }
@@ -487,6 +515,63 @@ const BillDetail = () => {
             },
 
         ];
+        const handleOnRollbackSatus = async () => {
+            // Kiểm tra nếu không có history hoặc đang ở trạng thái đầu
+            if (!billHistory.length || currentBill?.status === "CHO_XAC_NHAN") {
+                toast.error("Không thể quay lại trạng thái trước đó");
+                return;
+            }
+
+            try {
+                const data = {
+                    status: billHistory[billHistory.length - 2]?.status,
+                    note: "Quay lại trạng thái trước đó"
+                }
+
+                const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
+                const result = response.data.data;
+                
+                setCurrentBill(result.bill);
+                setBillHistory(result.billHistory);
+                
+                toast.success("Đã quay lại trạng thái trước đó");
+            } catch (error) {
+                toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
+            }
+        }
+
+        const handleOnAddProductToBill = (product) => {
+            setSelectedProduct(product);
+            setInputQuantity(1); // Reset về 1
+            setIsQuantityModalVisible(true);
+        };
+
+        const handleConfirmAddProduct = async () => {
+            try {
+                if (!selectedProduct || inputQuantity <= 0) {
+                    toast.error("Vui lòng nhập số lượng hợp lệ");
+                    return;
+                }
+
+                const response = await axiosInstance.post('/api/admin/bill-product-detail/add-product', {
+                    billCode: id,
+                    productDetailId: selectedProduct.id,
+                    quantity: inputQuantity,
+                    price: selectedProduct.price
+                });
+
+                if (response.status === 200) {
+                    toast.success("Thêm sản phẩm thành công");
+                    // Refresh lại data
+                    getBillProductDetail();
+                    getCurrentBill();
+                    // Đóng modal
+                    setIsQuantityModalVisible(false);
+                }
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Lỗi khi thêm sản phẩm");
+            }
+        };
 
         return (
             <div className={"flex-column d-flex gap-3"}>
@@ -495,12 +580,15 @@ const BillDetail = () => {
                     width={widthModal}
                     open={open}
                     onOk={handleOkModal}
-
                     confirmLoading={confirmLoading}
                     onCancel={handleCancel}
                 >
                     {modalType === modalBillHistoryType && modalBillHistoryTable()}
-                    {modalType === modalListProduct && <ModalBillProductList billProductList={billProductList}/>}
+                    {modalType === modalListProduct && <ProductDetailModal
+                        products={products}
+                        handleOnAddProductToBill={handleOnAddProductToBill}
+                        setProducts={setProducts}
+                    />}
                     {modalType === modalUpdateStatusBillType && (
                         <ModalConfirmUpdateStatusBill
                             notesUpdateStatusBillInput={confirmNotes}
@@ -533,8 +621,8 @@ const BillDetail = () => {
                             }
                             {
                                 currentBill?.status !== "DA_HOAN_THANH" ?
-                                    <Button type={"primary"} danger={true}>
-                                        Hủy
+                                    <Button onClick={handleOnRollbackSatus} color={"danger"} type={""}>
+                                        Quay lại
                                     </Button> : <div></div>
                             }
                         </div>
@@ -574,7 +662,8 @@ const BillDetail = () => {
                             </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Tên khách hàng  </span>}>
-                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerName ?? ""}</Tag>
+                            <Tag style={{fontSize: 16}}
+                                 color="blue">  {currentBill?.customerName ? currentBill.customerName : "Khách lẻ"}</Tag>
                         </Descriptions.Item>
 
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Loại  </span>}>
@@ -583,7 +672,7 @@ const BillDetail = () => {
                             </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Số điện thoại  </span>}>
-                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerPhone ?? ""}</Tag>
+                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerPhone ? currentBill.customerPhone : "Khách lẻ" }</Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Địa chỉ  </span>} span={2}>
                             {addressString}
@@ -637,6 +726,37 @@ const BillDetail = () => {
 
                 </Card>
 
+                <Modal
+                    title="Nhập số lượng sản phẩm"
+                    open={isQuantityModalVisible}
+                    onOk={handleConfirmAddProduct}
+                    onCancel={() => setIsQuantityModalVisible(false)}
+                >
+                    <div className="d-flex flex-column gap-3">
+                        {selectedProduct && (
+                            <div>
+                                <p><strong>Sản phẩm:</strong> {selectedProduct.productName}</p>
+                                <p><strong>Giá:</strong> {formatVND(selectedProduct.price)}</p>
+                                <p><strong>Tồn kho:</strong> {selectedProduct.quantity}</p>
+                            </div>
+                        )}
+                        
+                        <div>
+                            <label>Số lượng:</label>
+                            <InputNumber
+                                min={1}
+                                max={selectedProduct?.quantity || 1}
+                                value={inputQuantity}
+                                onChange={(value) => setInputQuantity(value)}
+                                style={{ width: '100%' }}
+                            />
+                        </div>
+
+                        <div>
+                            <p><strong>Thành tiền:</strong> {formatVND(inputQuantity * (selectedProduct?.price || 0))}</p>
+                        </div>
+                    </div>
+                </Modal>
 
             </div>
 

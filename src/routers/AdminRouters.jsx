@@ -35,35 +35,26 @@ import UpdateCustomer from "../customer/UpdateCustomer.jsx";
 import AddStaff from "../admin/staff/AddStaff.jsx";
 import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
+import {getRole} from "../helpers/Helpers.js";
+// import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
-
-const getRole = () => {
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-        const parsedUserInfo = JSON.parse(storedUserInfo);
-        return parsedUserInfo?.vaiTro || null;
-    }
-    return null;
-};
 
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
-    // if (allowedRoles.includes(role)) {
-    //   return element;
+    return element
+    // if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
+    //     if (allowedRoles.includes(role)) {
+    //         return element;
+    //     }
+    //     return <Navigate to="/forbidden" replace/>;
     // }
-
-
-    if (true) {
-        return element;
-    }
-
-    return <Navigate to="/forbidden" replace/>;
+    // return <Navigate to="/forbidden" replace/>;
 };
 
 const AdminRouters = {
     path: "/admin",
-    element: <Admin/>,
+    element: <PrivateRoute element={<Admin/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
     children: [
         {
             path: "dashboard",

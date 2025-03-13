@@ -1,27 +1,20 @@
 import React from 'react';
-import {Button} from "antd";
+import {Button, Tag} from "antd";
 import {COLORS} from "../../../constants/constants.js";
 import {convertBillStatusToString} from "../../../helpers/Helpers.js";
 
 const BillTypeComponent = ({
-    status, text
-                         }) => {
+                               status, text, color = "green"
+                           }) => {
     return (
         <div>
-            <Button
-
-                disabled
+            <Tag
                 style={{
-                    borderRadius: '20px',
-                    padding: '6px 12px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    backgroundColor: status === 'ONLINE' ? `${COLORS.success}` : `${COLORS.error}`,
-                    color: 'white'
+                    fontSize: 16
                 }}
-            >
+                color={color}>
                 {text}
-            </Button>
+            </Tag>
 
         </div>
     );

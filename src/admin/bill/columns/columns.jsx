@@ -1,5 +1,5 @@
 import {Button, Image, Tag} from "antd";
-import {convertLongTimestampToDate, formatVND} from "../../../helpers/Helpers.js";
+import {convertBillStatusToString, convertLongTimestampToDate, formatVND} from "../../../helpers/Helpers.js";
 import {MdDelete} from "react-icons/md";
 import React from "react";
 import {Link} from "react-router-dom";
@@ -97,6 +97,13 @@ export  const  columnsBillList = () => {
             title: 'Khách Hàng',
             dataIndex: 'customerName',
             key: 'customerName',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {record.customerName ? record.customerName  : "Khách lẻ"}
+                    </div>
+                )
+            },
             align: 'center',
         },
         {
@@ -104,13 +111,20 @@ export  const  columnsBillList = () => {
             dataIndex: 'customerPhone',
             key: 'customerPhone',
             align: 'center',
+            render: (text, record, index) => {
+                return (
+                    <div>
+                        {record.customerPhone ? record.customerPhone  : "Khách lẻ"}
+                    </div>
+                )
+            },
         },
 
         {
             title: 'Loại đơn hàng',
             dataIndex: 'billType',
             key: 'billType',
-            render: (record) =>   <BillTypeComponent text={record}  status={record}/>,
+            render: (record) =>   <BillTypeComponent text={record}  status={record} color={"purple"}/>,
             align: 'center',
 
         },
@@ -135,7 +149,7 @@ export  const  columnsBillList = () => {
             title: 'Trạng thái',
             dataIndex: 'status',
             align: 'center',
-            render: (record) => <BillStatusComponent status={'DANG_HOAT_DONG'} text={record} />,
+            render: (record) =>  <BillTypeComponent text={convertBillStatusToString(record)}  status={record} color={"green"}/>,
             key: 'status',
         },
         {

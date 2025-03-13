@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message } from 'antd';
+import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message, InputNumber } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { color } from 'framer-motion';
@@ -116,7 +116,7 @@ const AddVoucher = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get("http://localhost:8080/api/customers/");
+            const response = await axios.get("http://localhost:8080/api/admin/customers/");
             setCustomers(response.data);
         } catch (err) {
             setError("Lỗi khi tải danh sách khách hàng!");
@@ -229,7 +229,12 @@ const AddVoucher = () => {
                                         }),
                                     ]}
                                 >
-                                    <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
+                                    <InputNumber placeholder="Nhập giá trị giảm" style={{ width: '70%' }}
+
+                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} // Thêm dấu phân cách hàng nghìn
+                                        parser={value => value.replace(/\$\s?|(,*)/g, '')} // Loại bỏ dấu ',' khi nhập
+
+                                    />
                                 </Form.Item>
 
                                 <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
@@ -245,7 +250,7 @@ const AddVoucher = () => {
 
                         <Form.Item
                             name="billMinValue"
-                            label="Giá trị tối thiểu"
+                            label="Giá trị đơn hàng tối thiểu"
                             rules={[
                                 { required: true, message: 'Không được bỏ trống' },
                                 ({ getFieldValue }) => ({
@@ -255,19 +260,26 @@ const AddVoucher = () => {
                                             return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
                                         }
                                         if (maxValue !== undefined && maxValue !== null && Number(value) >= Number(maxValue)) {
-                                            return Promise.reject(new Error('Giá trị tối thiểu phải nhỏ hơn giá trị tối đa!'));
+                                            return Promise.reject(new Error('Giá trị đơn tối thiểu phải nhỏ hơn giá trị đơn tối đa!'));
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối thiểu" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị đơn hàng tối thiểu"
+                                style={{ width: '100%' }}  // ✅ Fix ô nhập bị thu nhỏ
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                            />
                         </Form.Item>
+
 
                         <Form.Item
                             name="discountMaxValue"
-                            label="Giá trị tối đa"
+                            label="Giá trị đơn hàng tối đa"
                             dependencies={["billMinValue"]}
                             rules={[
                                 { required: true, message: 'Không được bỏ trống' },
@@ -278,14 +290,20 @@ const AddVoucher = () => {
                                             return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
                                         }
                                         if (minValue !== undefined && minValue !== null && Number(value) <= Number(minValue)) {
-                                            return Promise.reject(new Error('Giá trị tối đa phải lớn hơn giá trị tối thiểu!'));
+                                            return Promise.reject(new Error('Giá trị đơn tối đa phải lớn hơn giá trị đơn tối thiểu!'));
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối đa" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị đơn hàng tối đa"
+                                style={{ width: '100%' }}  // ✅ Sửa lỗi bị thu nhỏ
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                            />
                         </Form.Item>
 
                         <Form.Item

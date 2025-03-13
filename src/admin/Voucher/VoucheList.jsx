@@ -111,14 +111,14 @@ const AdvancedSearchForm = ({ onSearch }) => {
                         >
 
                         </Button>
-                        {/* <a
+                        <a
                             style={{ fontSize: 12 }}
                             onClick={() => {
                                 setExpand(!expand);
                             }}
                         >
                             <DownOutlined rotate={expand ? 180 : 0} /> {expand ? 'Thu gọn' : 'Mở rộng'}
-                        </a> */}
+                        </a>
                     </Space>
                 </div>
             </Form>
@@ -174,7 +174,6 @@ const VoucherList = () => {
                 } else if (record.voucherType === 'PRIVATE') {
                     color = 'purple'; // Riêng tư (Màu tím)
                 }
-
                 return (
                     <Tag color={color} style={{ padding: '5px 10px', borderRadius: '10px', fontWeight: 'bold' }}>
                         {displayStatus}
@@ -182,22 +181,6 @@ const VoucherList = () => {
                 );
             },
         },
-
-        // {
-        //     title: 'Loại giảm giá',
-        //     dataIndex: 'discountType',
-        //     key: 'discountType',
-        //     align: 'center',
-
-        //     render: (text, record) => {
-        //         // let displayStatus = ConvertdiscountType(record.discountType);
-        //         return (
-        //             <span>
-        //                 {record.discountType}
-        //             </span>
-        //         );
-        //     },
-        // },
         {
             title: 'Số lượng phiếu giảm giá',
             dataIndex: 'quantity',
@@ -323,25 +306,33 @@ const VoucherList = () => {
                     {/* Nút bật/tắt trạng thái */}
 
                     <Tooltip title="Thay đổi trạng thái">
-                        <Switch
-                            disabled={record.statusVoucher === "ngung_kich_hoat"}
-                            checked={record.statusVoucher === "dang_kich_hoat"}
-                            checkedChildren="Bật"
-                            unCheckedChildren="Tắt"
-                            onChange={async (checked) => {
-                                try {
-                                    const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";
-                                    console.log("Trạng thái mới:", newStatus);
+            <Switch
+                disabled={record.statusVoucher === "ngung_kich_hoat"}
+                checked={record.statusVoucher === "dang_kich_hoat"}
+                checkedChildren="Bật"
+                unCheckedChildren="Tắt"
+                onChange={(checked) => {
+                    Modal.confirm({
+                        title: "Xác nhận thay đổi trạng thái",
+                        content: `Bạn có chắc chắn muốn ${checked ? "bật" : "tắt"} voucher này không?`,
+                        okText: "Xác nhận",
+                        cancelText: "Hủy",
+                        onOk: async () => {
+                            try {
+                                const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";
+                                console.log("Trạng thái mới:", newStatus);
 
-                                    await switchVoucherStatus(record.id, { status: newStatus });
-                                    getPageVoucher()
-                                    message.success("Cập nhật trạng thái thành công");
-                                } catch (error) {
-                                    message.error("Cập nhật trạng thái không thành công");
-                                }
-                            }}
-                        />
-                    </Tooltip>
+                                await switchVoucherStatus(record.id, { status: newStatus });
+                                getPageVoucher();
+                                message.success("Cập nhật trạng thái thành công");
+                            } catch (error) {
+                                message.error("Cập nhật trạng thái không thành công");
+                            }
+                        }
+                    });
+                }}
+            />
+        </Tooltip>
 
 
 

@@ -1,67 +1,48 @@
-import React, { useState } from "react";
-import { Form, Input, Button, Divider, message, Spin } from "antd";
-import {
-  UserOutlined,
-  LockOutlined,
-  GoogleOutlined,
-  LoadingOutlined,
-} from "@ant-design/icons";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import React, {useState} from "react";
+import {motion} from "framer-motion";
+import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
+import CustomInput from "../../client/component/CustomInput.jsx";
+import {Input} from "antd";
+
 
 const LoginAdmin = () => {
-  const [form] = Form.useForm();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-  const onFinish = async (values) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    setErrorMessage("");
+
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/auth/admin/login",
-        {
-          username: values.username.trim(),
-          password: values.password.trim(),
-        }
-      );
-
-      const data = response.data;
-      if(data.code === 1000){
-        message.success("Login successful!");
-        const token = data.data.accessToken;
-        localStorage.setItem("accessToken", token);
-        const profileResponse = await axios.get(
-          "http://localhost:8080/api/v1/auth/profile-admin",
+          "http://localhost:8080/api/authentication/login-admin",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            email: formData.email.trim(),
+            password: formData.password.trim(),
           }
-        );
-
-        if (profileResponse.data) {
-          localStorage.setItem(
-            "userInfo",
-            JSON.stringify(profileResponse.data.data)
-          );
-        
-        }
-        
-        navigate("/admin");
-      }       
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error.response) {
-        message.error(
-          error.response.data.message || "Login failed. Please try again."
-        );
+      );
+      if (response.status === 200) {
+        console.log(response)
+        const data = response.data;
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/");
       } else {
-        message.error(
-          "Login failed. Please check your network connection and try again."
-        );
+        setErrorMessage("Invalid login credentials. Please try again.");
       }
+    } catch (error) {
+      setErrorMessage(
+          error.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -71,113 +52,97 @@ const LoginAdmin = () => {
     console.log("Google login clicked");
   };
 
-  const handleForgotPassword = () => {
-    console.log("Forgot password clicked");
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md"
-      >
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Welcome Back!
-        </h2>
-        <Form
-          form={form}
-          name="login"
-          onFinish={onFinish}
-          layout="vertical"
-          className="space-y-4"
-        >
-          <Form.Item
-            name="username"
-            rules={[
-              {
-                required: true,
-                message: "Please input your email!",
-              },
-              {
-                min: 3,
-                message: "Username must be at least 3 characters long",
-              },
-              { max: 50, message: "Username cannot exceed 50 characters" },
-            ]}
+      <div>
+        <div className="d-flex align-items-center p-5 justify-content-center bg-light">
+          <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white p-4  mb-5 rounded shadow w-100"
+              style={{ maxWidth: "400px", width: "100%" }}
           >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Email"
-              className="rounded-md"
-              disabled={loading}
-            />
-          </Form.Item>
-          <Form.Item
-            name="password"
-            rules={[
-              { required: true, message: "Please input your password!" },
-              {
-                min: 6,
-                message: "Password must be at least 6 characters long",
-              },
-            ]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Password"
-              className="rounded-md"
-              disabled={loading}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 border-0 rounded-md h-10 font-semibold text-lg"
-              disabled={loading}
-            >
-              {loading ? (
-                <Spin
-                  indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-                />
-              ) : (
-                "Log in"
-              )}
-            </Button>
-          </Form.Item>
-        </Form>
-        <div className="text-center mt-3">
-          <Link
-            to="/auth/forgot-password-admin"
-            className="text-sm text-purple-600 hover:text-purple-800 transition-colors duration-300"
-            onClick={handleForgotPassword}
-          >
-            Forgot Password?
-          </Link>
+            <h2 className="text-center fw-bold mb-4">Admin dashboard</h2>
+
+            {errorMessage && (
+                <div className="alert alert-danger" role="alert">
+                  {errorMessage}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+
+              <CustomInput
+                  label="Tên đăng nhập"
+                  type="text"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
+              <CustomInput
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={loading}
+              />
+
+              <div className="d-grid mb-3">
+                <button
+                    type="submit"
+                    className="btn btn-dark"
+                    disabled={loading}
+                >
+                  {loading ? (
+                      <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                      ></span>
+                  ) : (
+                      "Log in"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="text-center">
+              <Link to="/auth/forgot-password" className="text-decoration-none">
+                Forgot Password?
+              </Link>
+            </div>
+
+            {/*<div className="text-center my-3">or</div>*/}
+
+            {/*<div className="d-grid mb-3">*/}
+            {/*  <Link*/}
+            {/*      to="/auth/register"*/}
+            {/*      className="btn btn-outline-secondary text-decoration-none"*/}
+            {/*  >*/}
+            {/*    Register Account*/}
+            {/*  </Link>*/}
+            {/*</div>*/}
+
+            <div className="d-grid">
+              {/*<button*/}
+              {/*    type="button"*/}
+              {/*    className="btn btn-outline-secondary"*/}
+              {/*    onClick={handleGoogleLogin}*/}
+              {/*    disabled={loading}*/}
+              {/*>*/}
+              {/*  <Link*/}
+              {/*      to="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/api/v1/auth/oauth/google&response_type=code&client_id=949623093363-hhnb82n3djt2h4ovguvmqdk714rnihqv.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline"*/}
+              {/*      className="text-decoration-none"*/}
+              {/*  >*/}
+              {/*    Continue with Google*/}
+              {/*  </Link>*/}
+              {/*</button>*/}
+            </div>
+          </motion.div>
         </div>
-        {/* <Divider plain className="text-gray-400">
-          or
-        </Divider>
-        <Button
-          className="w-full h-10 flex items-center mb-3 justify-center space-x-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-300"
-          disabled={loading}
-        >
-          <Link to="/auth/register">Register Account</Link>
-        </Button>
-        <Button
-          icon={<GoogleOutlined />}
-          onClick={handleGoogleLogin}
-          className="w-full h-10 flex items-center justify-center space-x-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-300"
-          disabled={loading}
-        >
-          <Link to="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/api/v1/auth/oauth/google&response_type=code&client_id=949623093363-hhnb82n3djt2h4ovguvmqdk714rnihqv.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline">
-            <span>Continue with Google</span>
-          </Link>
-        </Button> */}
-      </motion.div>
-    </div>
+      </div>
   );
 };
 

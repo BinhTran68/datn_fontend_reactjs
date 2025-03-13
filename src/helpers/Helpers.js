@@ -2,22 +2,22 @@ import axios from "axios";
 import Token from "@zxing/library/es2015/core/aztec/encoder/Token.js";
 
 export const validateEmail = (email) => {
-    return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
 };
 
 export const baseUrl = "http://localhost:8080";
 
 export function convertDate(isoString) {
-    const date = new Date(isoString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
-    const year = String(date.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
+  const date = new Date(isoString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
+  const year = String(date.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
 
-    return `${day}-${month}-${year}`;
+  return `${day}-${month}-${year}`;
 }
 
 
@@ -92,6 +92,17 @@ export const convertBillStatusToString = (status) => {
     }
     return "Khác";
 }
+
+export const paymentTypeConvert = {
+    "THANH_TOAN_TRUOC": "Thanh toán trước",
+    "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng"
+};
+
+export const paymentMethodConvert = {
+    "TIEN_MAT": "Tiền mặt",
+    "CHUYEN_KHOAN": "Chuyển khoản",
+    "TIEN_MAT_AND_CHUYEN_KHOAN": "Tiền mặt và Chuyển khoản"
+};
 
 
 
@@ -210,4 +221,13 @@ export const calculateShippingFee = async ({
         console.error('Error calculating shipping fee:', error.response?.data || error.message);
         throw new Error('Failed to calculate shipping fee');
     }
+};
+
+export const getRole = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+        const user = JSON.parse(storedUser) ?? null;
+        return user?.role || null;
+    }
+    return null;
 };

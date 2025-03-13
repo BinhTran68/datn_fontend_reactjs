@@ -90,7 +90,7 @@ const AddCustomer = () => {
                     formData.append('file', fileList[0].originFileObj);
 
                     try {
-                        const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
+                        const uploadRes = await axios.post('http://localhost:8080/api/admin/customers/upload', formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }
@@ -123,7 +123,7 @@ const AddCustomer = () => {
                 };
 
                 try {
-                    await axios.post('http://localhost:8080/api/customers/add', newData);
+                    await axios.post('http://localhost:8080/api/admin/customers/add', newData);
                     message.success(`Thêm khách hàng thành công! Mật khẩu tạm thời đã được gửi đến email của khách hàng.`);
                     form.resetFields();
                     setEmailError(null); // Clear any previous email error
@@ -172,7 +172,7 @@ const AddCustomer = () => {
     const checkEmail = async (rule, value) => {
         if (value) {
             try {
-                const response = await axios.get(`http://localhost:8080/api/customers/check-email?email=${value}`);
+                const response = await axios.get(`http://localhost:8080/api/admin/customers/check-email?email=${value}`);
                 if (response.data.exists) {
                     throw new Error('Email này đã được sử dụng!');
                 }
@@ -193,7 +193,7 @@ const AddCustomer = () => {
             return;
         }
         try {
-            const response = await axios.get(`http://localhost:8080/api/customers/check-phone?phoneNumber=${phoneNumber}`);
+            const response = await axios.get(`http://localhost:8080/api/admin/customers/check-phone?phoneNumber=${phoneNumber}`);
             if (response.data.exists) {
                 setPhoneError('Số điện thoại này đã được sử dụng.');
                 return Promise.reject('Số điện thoại đã tồn tại');
