@@ -15,7 +15,7 @@ import {
   Flex,
 } from "antd";
 import { LuTicket } from "react-icons/lu";
-import { useForm, Controller, get } from "react-hook-form";
+import { useForm, Controller, get, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Content } from "antd/es/layout/layout";
@@ -23,19 +23,22 @@ import Title from "antd/es/typography/Title";
 import Paragraph from "antd/es/typography/Paragraph";
 // import AddressSelector from "../../../admin/utils/AddressSelectorAntd";
 import AddressSelectorGHN from "../../componetC/AddressSelectorGHN";
-import { calculateShippingFee } from "../../componetC/apiGHN";
+import {
+  calculateShippingFee,
+  generateAddressString,
+} from "../../componetC/apiGHN";
 import moment from "moment/moment";
 import { useProduct } from "../../../store/ProductContext";
 import { clearBill, getBill } from "./bill";
 import { formatVND } from "../../../helpers/Helpers";
 import { useNavigate } from "react-router-dom";
-import { FcShipped } from "react-icons/fc";
+import { FcAbout, FcShipped } from "react-icons/fc";
 import { apiCreateBillClient } from "./payment";
 import { clearVoucher, getVoucher } from "./voucher";
 import { COLORS } from "../../../constants/constants";
 import { removeBillFromCart } from "./cart";
-
-
+import { FaLocationDot } from "react-icons/fa6";
+  
 const { Option } = Select;
 
 // Schema validation
@@ -70,11 +73,10 @@ const PayMent = () => {
   const [billDone, setBillDone] = useState(); // 1 mảng các sản phẩm
   const [loading, setLoading] = useState(false); // 1 mảng các sản phẩm
   const [paymentMethod, setPaymentMethod] = useState("COD");
-
+  const [fullAddress, setFullAddress] = useState("Đang tải...");
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
   const [voucher, setVoucher] = useState(getVoucher()); // 1 mảng các sản phẩm
   const [selectedAddress, setSelectedAddress] = useState(null);
-
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
     customerId: null,
@@ -107,8 +109,8 @@ const PayMent = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
-    reset,
+    formState: { errors },getValues,
+    reset,watch
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -157,21 +159,25 @@ const PayMent = () => {
         toDistrictId: selectedDistrict,
       });
     }
-  
+
     const newAddress = {
       provinceId: selectedProvince,
       districtId: selectedDistrict,
       wardId: selectedWard,
       specificAddress: specificAddress ?? "",
     };
-  
+
     setSelectedAddress(newAddress); // Lưu địa chỉ được chọn
-  
+
     setbill((prevbill) => ({
       ...prevbill,
       detailAddressShipping: newAddress,
       shipMoney: totalFee,
     }));
+    generateAddressString(selectedProvince, selectedDistrict, selectedWard,specificAddress??"").then(address => {
+      setFullAddress(address);
+    });
+    
   };
   
   const handlePaymentMethodChange = (e) => {
@@ -205,7 +211,10 @@ const PayMent = () => {
         sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
-    sum = sum + parseFloat(bill?.shipMoney) - parseFloat(voucher[0]?.discountValue||0);
+    sum =
+      sum +
+      parseFloat(bill?.shipMoney) -
+      parseFloat(voucher[0]?.discountValue || 0);
     return sum;
   }, [productData, bill?.shipMoney]);
 
@@ -247,7 +256,12 @@ const PayMent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFormSubmit = (data) => {
-    if (!selectedAddress || !selectedAddress.provinceId || !selectedAddress.districtId || !selectedAddress.wardId) {
+    if (
+      !selectedAddress ||
+      !selectedAddress.provinceId ||
+      !selectedAddress.districtId ||
+      !selectedAddress.wardId
+    ) {
       message.error("Vui lòng chọn địa chỉ giao hàng trước khi đặt hàng!");
       return;
     }
@@ -261,7 +275,7 @@ const PayMent = () => {
       customerId: user?.id || null,
       voucherId: voucher[0]?.voucherId,
       discountMoney: voucher[0]?.discountValue,
-      moneyAfter:voucher[0]?.totalAfterDiscount,
+      moneyAfter: voucher[0]?.totalAfterDiscount,
     }));
 
     setIsSubmitting(true); // Đánh dấu đang submit
@@ -295,7 +309,7 @@ const PayMent = () => {
             console.log("✅ Bill sau khi cập nhật:", bill);
             onSubmit(bill);
             setIsSubmitting(false);
-            removeBillFromCart(productData)
+            removeBillFromCart(productData);
             message.success("Đặt hàng thành công!");
             createBillClient();
         }
@@ -329,7 +343,7 @@ const PayMent = () => {
             id="paymentForm"
           >
             <Form.Item
-              label="Họ và tên"
+              label="Họ và tên người nhận"
               validateStatus={errors.fullName ? "error" : ""}
               help={errors.fullName?.message}
             >
@@ -343,7 +357,7 @@ const PayMent = () => {
             </Form.Item>
 
             <Form.Item
-              label="Số điện thoại"
+              label="Số điện thoại người nhận"
               validateStatus={errors.phone ? "error" : ""}
               help={errors.phone?.message}
             >
@@ -357,7 +371,7 @@ const PayMent = () => {
             </Form.Item>
 
             <Form.Item
-              label="Email"
+              label="Email người nhận"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email?.message}
             >
@@ -370,7 +384,7 @@ const PayMent = () => {
               />
             </Form.Item>
           </Form>
-          <h5>Chọn địa chỉ giao hàng</h5>
+          <h5>Chọn địa chỉ nhận hàng</h5>
           <AddressSelectorGHN onAddressChange={onAddressChange} />
           <Form.Item
             label="Lưu ý khi vận chuyển"
@@ -381,7 +395,7 @@ const PayMent = () => {
               name="notes"
               control={control}
               render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Nhập địa chỉ cụ thể" />
+                <Input.TextArea {...field} placeholder="Nhập lưu ý khi giao hàng" maxLength={200} minLength={0} />
               )}
             />
           </Form.Item>
@@ -390,6 +404,9 @@ const PayMent = () => {
         {/* Thông tin đơn hàng */}
         <Col span={12} style={{ padding: "1rem", border: "1px solid #ddd" }}>
           <Title level={5}>ĐƠN HÀNG CỦA BẠN</Title>
+          <p><FcAbout size={25} />  Anh/Chị: {watch("fullName")} , sdt: {watch("phone")}</p>
+          <p><FaLocationDot size={25} style={{color:"#bd1727"}} />
+          Địa chỉ nhận hàng:  {fullAddress} </p>
           <Table
             columns={columns}
             dataSource={productData}
