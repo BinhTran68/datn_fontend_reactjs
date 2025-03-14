@@ -1,5 +1,5 @@
 import React, { useState, useEffect, PureComponent } from "react";
-import { Card, Button, Table, Row, Col, DatePicker } from "antd";
+import { Card, Button, Table, Row, Col, DatePicker, Radio } from "antd";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell, Tooltip, Legend, RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import { FileExcelOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -112,7 +112,7 @@ const ChartStatusBill = () => {
       "DAXACNHAN": "green",
       "CHOVANCHUYEN": "purple",
       "DANGVANCHUYEN": "brown",
-      "DATHANHTOAN": "yellow",
+      "DATHANHTOAN": "gold",
       "DAHOANTHANH": "orange",
       "DAHUY": "#ff8042",
       "TRAHANG": "#ff0000",
@@ -161,132 +161,166 @@ const ChartStatusBill = () => {
     { title: "Màu sắc", dataIndex: "colorName", key: "colorName", align: "center" },
     { title: "Kích cỡ", dataIndex: "sizeName", key: "sizeName", align: "center" },
     { title: "Đế giày", dataIndex: "soleName", key: "soleName", align: "center" },
-    { title: "Giới tính", dataIndex: "genderName", key: "genderName", align: "center" },
-    { title: "Giá bán", dataIndex: "price", key: "price", align: "center" },
+    // { title: "Giới tính", dataIndex: "genderName", key: "genderName", align: "center" },
+    { title: "Giá bán", dataIndex: "price", key: "price", align: "center", render: (price) => `${price.toLocaleString()} VNĐ` },
     { title: "Số lượng bán", dataIndex: "totalQuantitySold", key: "totalQuantitySold", align: "center" },
   ];
 
 
   return (
     <>
-        <h2 style={{ color: "orange", fontSize: 25, fontWeight: "bold", marginBottom: 20,marginTop:30 }}>
-        Thống kê số lượng sản phẩm bán chạy và biểu đồ trạng thái đơn hàng 
-    </h2>   
-    
-    <Row gutter={[16, 16]} align="stretch">
-  {/* Bảng thống kê sản phẩm */}
-  <Col xs={24} md={14}>
-    <Card 
-      title={<span style={{ color: "white", fontSize: 16 }}>{tableTitle}</span>} 
-      style={{ 
-        background: "linear-gradient(180deg, orange, rgb(210, 209, 207))", 
-        height: "100%" 
-      }}
-    >
-      <div style={{
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        border:"1px solid #2e95dd"
-      }}>
-        <Table
-          dataSource={apiData}
-          columns={columns}
-          pagination={{
-            current: currentPage,
-            pageSize: pageSize,
-            total: apiData.length,
-            onChange: (page) => setCurrentPage(page),
-          }}
-          bordered={false}
-        />
-      </div>
-    </Card>
-  </Col>
+      <Row gutter={[16, 16]} >
+        {/* Nút lọc thời gian dạng Radio */}
 
-  {/* Biểu đồ trạng thái đơn hàng */}
-  <Col xs={24} md={10}>
-    <Card 
-      title={<span style={{ color: "white", fontSize: 16 }}>{chartTitle}</span>} 
-      style={{ 
-        background: "linear-gradient(180deg, orange, rgb(210, 207, 207))", 
-        height: "100%" 
-      }}
-    >
-      <ResponsiveContainer width="100%" height={350}>
-        {chartData.length > 0 ? (
-          <RadarChart cx="50%" cy="50%" outerRadius="90%" data={chartData}>
-            <PolarGrid stroke="gray" strokeWidth={1} />
-            <PolarAngleAxis dataKey="name" tick={{ fontSize: 14, fill: "gold", fontWeight: "bold" }} />
-            <PolarRadiusAxis tick={{ fontSize: 13, fill: "pink" }} />
-            <Radar
-              name="Trạng thái đơn hàng"
-              dataKey="uv"
-              stroke="#2e95dd"
-              strokeWidth={2}
-              fill="#2e95dd"
-              fillOpacity={0.6}
+        <Col span={24}>
+          <Card
+            style={{
+              marginBottom: -10,
+              background: "white",
+              color: "black",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              border: "none",
+              display: "flex", 
+              justifyContent: "flex-end",
+              marginTop:-10,
+
+            }}
+          >
+        <h5 style={{ margin: 0, flexGrow: 1,marginLeft:-835 }}>Tốc độ kinh doanh</h5>
+
+            {/* Bộ lọc thời gian */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <Radio.Group
+                onChange={(e) => handleFilterChange(e.target.value)}
+                value={timeFilter}
+                style={{ display: "flex", gap: "12px" }}
+              >
+                {[
+                  { label: "Hôm nay", value: "day" },
+                  { label: "Tuần", value: "week" },
+                  { label: "Tháng", value: "month" },
+                  { label: "Năm", value: "year" },
+                ].map(({ label, value }) => (
+                  <Radio
+                    key={value}
+                    value={value}
+                    style={{
+                      fontSize: "12px",
+                    }}
+                  >
+                    {label}
+                  </Radio>
+                ))}
+              </Radio.Group>
+            </div>
+
+            {/* RangePicker hiển thị luôn */}
+            <RangePicker
+              style={{ marginLeft: 75 , width: "250px", height: "25px",marginTop:10}}
+              value={customRange}
+              onChange={handleCustomRangeChange}
             />
-            <Legend
-              formatter={(value) => STATUS_LABELS[value.toUpperCase()] || value}
-              wrapperStyle={{ fontSize: 14, fontWeight: "bold" }}
-              iconSize={15}
-              layout="horizontal"
-              verticalAlign="bottom"
-              align="left"
-            />
-            <Tooltip />
-          </RadarChart>
-        ) : (
-          <p style={{ textAlign: "center", color: "gray", fontSize: 16 }}>Không có dữ liệu để hiển thị</p>
-        )}
-      </ResponsiveContainer>
-    </Card>
-  </Col>
+          </Card>
+        </Col>
 
-  {/* Nút lọc thời gian */}
-  <Col span={24}>
-    <Card 
-      style={{ 
-        marginBottom: 16, 
-        background: "linear-gradient(180deg, orange, rgb(210, 209, 207))", 
-        color: "white",
-      }}
-    >
-      {[
-        { label: "Hôm nay", value: "day" },
-        { label: "Tuần này", value: "week" },
-        { label: "Tháng này", value: "month" },
-        { label: "Năm nay", value: "year" }
-      ].map(({ label, value }) => (
-        <Button
-          key={value}
-          type={timeFilter === value && !customRange ? "primary" : "default"}
-          style={{
-            marginRight: 8,
-            background: "linear-gradient(180deg, orange, rgb(210, 209, 207))",
-            color: "white",
-          }}
-          onClick={() => handleFilterChange(value, label)}
-        >
-          {label}
-        </Button>
-      ))}
 
-      <Button
-        style={{ marginLeft: 8, background: "linear-gradient(180deg, orange, rgb(210, 209, 207))", color: "white" }}
-        type={customRange ? "primary" : "default"}
-        onClick={() => setCustomRange([])}
-      >
-        TÙY CHỈNH
-      </Button>
-      {customRange && <RangePicker style={{ marginLeft: 16 }} onChange={handleCustomRangeChange} />}
-    </Card>
-  </Col>
-</Row>
+        {/* Bảng thống kê sản phẩm */}
+        <Col xs={24} md={14}>
+          <Card
+            title={<span style={{ color: "black", fontSize: 15 }}>{tableTitle}</span>}
+            style={{
+              background: "white",
+              height: "100%",
+              color: "black"
+            }}
+          >
+            <div style={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+              border: "1px solid #2e95dd"
+            }}>
+              <Table
+                dataSource={apiData}
+                columns={columns}
+                pagination={{
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: apiData.length,
+                  onChange: (page) => setCurrentPage(page),
+                }}
+                bordered={false}
+              />
+            </div>
+          </Card>
+        </Col>
 
-    
-      
+        {/* Biểu đồ trạng thái đơn hàng */}
+        <Col xs={24} md={10}>
+          <Card
+            title={<span style={{ color: "balck", fontSize: 15 }}>{chartTitle}</span>}
+            style={{
+              background: "white",
+              height: "100%",
+            }}
+          >
+            <ResponsiveContainer width="100%" height={350}>
+              {chartData.length > 0 ? (
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="uv"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    fill="#2e95dd"
+                    label={({ percent }) => (percent > 0 ? `${(percent * 100).toFixed(2)}%` : '')}
+                    labelLine={({ percent }) => percent > 0} // Ẩn gạch nếu giá trị là 0
+
+                  />
+                  <Tooltip
+                    content={({ payload }) =>
+                      payload.length ? <span>{payload[0].name}: {payload[0].value}%</span> : null
+                    }
+                  />
+
+                  <Legend content={({ payload }) => (
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      {payload.map((entry, index) => (
+                        <div key={`legend-${index}`} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              width: "8px",
+                              height: "8px",
+                              borderRadius: "50%",
+                              backgroundColor: entry.color
+                            }}
+                          />
+                          <span style={{ fontSize: "12px" }}>{entry.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )} />
+
+                </PieChart>
+              ) : (
+                <p style={{ textAlign: "center", color: "gray", fontSize: 16 }}>
+                  Không có dữ liệu để hiển thị
+                </p>
+              )}
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+
+
+      </Row>
+
+
+
     </>
   );
 };

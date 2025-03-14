@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message } from 'antd';
+import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message, InputNumber } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { color } from 'framer-motion';
@@ -189,13 +189,13 @@ const AddVoucher = () => {
                             <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
                         <Form.Item name="quantity" label="Số lượng" rules={[
-                            { required: true, message: 'Không được bỏ trống' },
+                            { required: true, message: 'Vui lòng nhập số lượng' },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || (Number(value) >= 1 && Number.isInteger(Number(value)))) {
                                         return Promise.resolve();
                                     }
-                                    return Promise.reject(new Error('Số lượng phải là số nguyên lớn hơn hoặc bằng 1'));
+                                    return Promise.reject(new Error('Số lượng phải là số nguyên dương lớn hơn hoặc bằng 1'));
                                 },
                             }),
                         ]}>
@@ -216,8 +216,8 @@ const AddVoucher = () => {
 
                                                 if (!value) return Promise.reject(new Error('Không được bỏ trống'));
 
-                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 80)) {
-                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 80'));
+                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 100)) {
+                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 100'));
                                                 }
 
                                                 if (num < 1) {
@@ -229,10 +229,13 @@ const AddVoucher = () => {
                                         }),
                                     ]}
                                 >
-                                    <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
+                                    <InputNumber placeholder="Nhập giá trị giảm" style={{ width: '70%' }}
+                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                    />
                                 </Form.Item>
 
-                                <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+                                <Form.Item name="discountType" initialValue="PERCENT" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                                     <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
                                         <Option value="PERCENT">%</Option>
                                         <Option value="MONEY">đ</Option>
@@ -245,60 +248,78 @@ const AddVoucher = () => {
 
                         <Form.Item
                             name="billMinValue"
-                            label="Giá trị tối thiểu"
+                            label="Giá trị đơn hàng tối thiểu"
                             rules={[
-                                { required: true, message: 'Không được bỏ trống' },
+                                { required: true, message: 'Vui lòng nhập giá trị đơn hàng tối thiểu' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        const maxValue = getFieldValue("discountMaxValue");
                                         if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
-                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
-                                        }
-                                        if (maxValue !== undefined && maxValue !== null && Number(value) >= Number(maxValue)) {
-                                            return Promise.reject(new Error('Giá trị tối thiểu phải nhỏ hơn giá trị tối đa!'));
+                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương'));
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối thiểu" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị đơn hàng tối thiểu"
+                                style={{ width: '100%' }}
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                            />
                         </Form.Item>
+
 
                         <Form.Item
                             name="discountMaxValue"
-                            label="Giá trị tối đa"
-                            dependencies={["billMinValue"]}
+                            label="Giá trị phiếu giảm giá tối đa"
+                            dependencies={["billMinValue", "discountType", "discountValue"]}
                             rules={[
-                                { required: true, message: 'Không được bỏ trống' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
+                                        const discountType = getFieldValue("discountType");
+                                        const discountValue = getFieldValue("discountValue");
                                         const minValue = getFieldValue("billMinValue");
-                                        if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
-                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
-                                        }
-                                        if (minValue !== undefined && minValue !== null && Number(value) <= Number(minValue)) {
-                                            return Promise.reject(new Error('Giá trị tối đa phải lớn hơn giá trị tối thiểu!'));
+
+                                        if (discountType === "MONEY") {
+                                            if (value !== discountValue) {
+                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa phải bằng giá trị giảm khi giảm giá bằng tiền'));
+                                            }
+                                        } else if (discountType === "PERCENT") {
+                                            if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
+                                                return Promise.reject(new Error('Giá trị phải là số nguyên dương'));
+                                            }
+                                            if (minValue !== undefined && minValue !== null && Number(value) > Number(minValue)) {
+                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa không được lớn hơn giá trị đơn hàng tối thiểu'));
+                                            }
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối đa" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị phiếu giảm giá tối đa"
+                                style={{ width: '100%' }}
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                                disabled={form.getFieldValue("discountType") === "MONEY"}
+                            />
                         </Form.Item>
 
                         <Form.Item
                             name="startDate"
                             label="Ngày bắt đầu"
                             rules={[
-                                { required: true, message: 'Không được bỏ trống' },
+                                { required: true, message: 'Vui lòng chọn ngày bắt đầu' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         if (!value || !getFieldValue('endDate') || value.isBefore(getFieldValue('endDate'))) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Ngày bắt đầu không được vượt quá ngày kết thúc!'));
+                                        return Promise.reject(new Error('Ngày bắt đầu phải trước ngày kết thúc'));
                                     },
                                 }),
                             ]}
