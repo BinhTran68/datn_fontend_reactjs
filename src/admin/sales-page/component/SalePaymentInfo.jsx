@@ -1,5 +1,5 @@
 import React from 'react';
-import {Avatar, Button, Card, Checkbox, Col, Collapse, Form, Input, List, Row, Select, Space} from "antd";
+import {Avatar, Button, Card, Checkbox, Col, Collapse, Form, Image, Input, List, Row, Select, Space} from "antd";
 import {FaCheck, FaCheckCircle, FaTicketAlt} from "react-icons/fa";
 import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
@@ -10,6 +10,8 @@ import {SiCheckio} from "react-icons/si";
 import {COLORS} from "../../../constants/constants.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 import {  Radio } from 'antd';
+import {genQrUrl} from "../../../utils/payment.js";
+import PaymentQRComponent from "./PaymentQRComponent.jsx";
 
 const {Text} = Typography;
 
@@ -53,9 +55,13 @@ const SalePaymentInfo = ({
                              handleOnChangerRecipientPhoneNumber,
                              handleOnChangerRecipientName,
                              shippingFee,
-                             handleOnChangeShippingFee
+                             handleOnChangeShippingFee,
+                             currentBill,
+                             transactionCode
                          }) => {
     console.log("shippingFee", shippingFee)
+    const missingAmount = Math.max(0, amount - customerMoney);
+
     return (
         <>
 
@@ -236,7 +242,9 @@ const SalePaymentInfo = ({
                                 <Text strong style={{color: "red"}}>{formatVND(amount)}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
-                                <Select onChange={handleChangePaymentMethod} value={paymentMethods} defaultValue="cash"
+                                <Select
+                                    disabled={transactionCode}
+                                    onChange={handleChangePaymentMethod} value={paymentMethods} defaultValue="cash"
                                         style={{width: "100%"}}>
                                     <Option value="cash">
                                         <MdOutlineDonutLarge/> Tiền mặt
@@ -264,6 +272,10 @@ const SalePaymentInfo = ({
                                 />
                             </Form.Item>
 
+                            <Form.Item hidden={paymentMethods !== "cashAndBank"} label="Số tiền cần chuyển khoản thêm">
+                                <Text type="danger">{missingAmount > 0 ? missingAmount.toLocaleString() : 0} đ</Text>
+                            </Form.Item>
+
                             <Form.Item
                                 hidden={paymentMethods !== "bank" && paymentMethods !== "cashAndBank"}
                                 label="Tiền khách chuyển khoản"
@@ -275,21 +287,35 @@ const SalePaymentInfo = ({
                                     onChange={handleBankCustomerMoneyChange}
                                     value={parseInt(bankCustomerMoney)}
                                     suffix="VNĐ"
+                                    disabled={paymentMethods === "bank" || paymentMethods === "cashAndBank" }
                                 />
                             </Form.Item>
+
+                            {(paymentMethods === "bank" || paymentMethods === "cashAndBank" ) && (
+                                <Form.Item label="Quét mã QR để thanh toán">
+                                    <PaymentQRComponent
+                                        amount={paymentMethods === "cashAndBank"  ? missingAmount :  amount}
+                                        handleBankCustomerMoneyChange={handleBankCustomerMoneyChange}
+                                        currentBill={currentBill}
+                                        transactionCode={transactionCode}
+                                        paymentMethods={paymentMethods}
+                                    />
+                                    <div>
+                                       Mã giao dịch :  {transactionCode ? transactionCode : ""}
+                                    </div>
+                                </Form.Item>
+                            )}
+
                             {customerMoney < amount && (
                                 <Text type="danger">Vui lòng nhập đủ tiền khách đưa!</Text>
                             )}
+                            <Form.Item label="Số tiền còn thiếu">
+                                <Text type="danger">{missingAmount > 0 ? missingAmount.toLocaleString() : 0} đ</Text>
+                            </Form.Item>
                             <Form.Item label="Tiền thừa">
                                 <Text strong>{change > 0 ? change.toLocaleString() : 0} đ</Text>
                             </Form.Item>
-
-                            <Form.Item>
-                                <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
-                                    Giao hàng
-                                </Checkbox>
-                            </Form.Item>
-
+                        
                             <Form.Item hidden={isSuccess}>
                                 <Button onClick={handleOnPayment} type="primary" block
                                         disabled={!canPayment}>

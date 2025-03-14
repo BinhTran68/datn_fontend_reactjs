@@ -99,21 +99,6 @@ const CustomerSelect = ({ customers, customer, onCustomerSelect }) => {
                                 </Descriptions.Item>
                             </Descriptions>
                         </Col>
-                        {customer.addresses && customer.addresses.length > 0 && (
-                            <Col span={24}>
-                                <h4>Địa chỉ đã lưu</h4>
-                                {customer.addresses.map((address, index) => (
-                                    <div key={index} className="address-item" style={{ 
-                                        padding: '8px', 
-                                        border: '1px solid #f0f0f0',
-                                        borderRadius: '4px',
-                                        marginBottom: '8px' 
-                                    }}>
-                                        {address.specificAddress}, {address.wardName}, {address.districtName}, {address.provinceName}
-                                    </div>
-                                ))}
-                            </Col>
-                        )}
                     </Row>
                 ) : (
                     <div className="text-center py-5">

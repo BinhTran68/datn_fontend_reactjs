@@ -42,6 +42,7 @@ import {getRole} from "../helpers/Helpers.js";
 
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
+    console.log(role)
     if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
         if (allowedRoles.includes(role)) {
             return element;

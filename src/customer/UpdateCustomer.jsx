@@ -28,7 +28,7 @@ const UpdateCustomer = () => {
     }, [id]);
 
     // const fetchCustomer = (id) => {
-    //     axios.get(`http://localhost:8080/api/customers/detail/${id}`)
+    //     axios.get(`http://localhost:8080/api/admin/customers/detail/${id}`)
     //         .then((response) => {
     //             const customer = response.data;
     //             setSelectedRecord(customer);
@@ -75,7 +75,7 @@ const UpdateCustomer = () => {
 
     const fetchCustomer = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/customers/detail/${id}`);
+            const response = await axios.get(`http://localhost:8080/api/admin/customers/detail/${id}`);
             const customer = response.data;
             setSelectedRecord(customer);
 
@@ -150,7 +150,7 @@ const UpdateCustomer = () => {
     //                 const formData = new FormData();
     //                 formData.append('file', fileList[0].originFileObj);
     //                 try {
-    //                     const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
+    //                     const uploadRes = await axios.post('http://localhost:8080/api/admin/customers/upload', formData, {
     //                         headers: {
     //                             'Content-Type': 'multipart/form-data'
     //                         }
@@ -190,14 +190,14 @@ const UpdateCustomer = () => {
     
     //             try {
     //                 // Cập nhật thông tin khách hàng
-    //                 await axios.put(`http://localhost:8080/api/customers/update/${selectedRecord.id}`, updatedCustomerData);
+    //                 await axios.put(`http://localhost:8080/api/admin/customers/update/${selectedRecord.id}`, updatedCustomerData);
     
     //                 // Cập nhật địa chỉ mặc định (nếu tồn tại)
     //                 if (defaultAddress.id) {
-    //                     await axios.put(`http://localhost:8080/api/customers/update-address/${defaultAddress.id}`, updatedAddressData);
+    //                     await axios.put(`http://localhost:8080/api/admin/customers/update-address/${defaultAddress.id}`, updatedAddressData);
     //                 } else {
     //                     // Thêm địa chỉ mới nếu chưa có
-    //                     await axios.post(`http://localhost:8080/api/customers/add-address/${selectedRecord.id}`, updatedAddressData);
+    //                     await axios.post(`http://localhost:8080/api/admin/customers/add-address/${selectedRecord.id}`, updatedAddressData);
     //                 }
     
     //                 message.success('Cập nhật khách hàng thành công!');
@@ -221,7 +221,7 @@ const UpdateCustomer = () => {
             if (fileList.length > 0 && fileList[0].originFileObj) {
                 const formData = new FormData();
                 formData.append('file', fileList[0].originFileObj);
-                const uploadRes = await axios.post('http://localhost:8080/api/customers/upload', formData, {
+                const uploadRes = await axios.post('http://localhost:8080/api/admin/customers/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 avatarUrl = uploadRes.data;
@@ -241,7 +241,7 @@ const UpdateCustomer = () => {
             };
 
             // Update customer info
-            await axios.put(`http://localhost:8080/api/customers/update/${id}`, customerData);
+            await axios.put(`http://localhost:8080/api/admin/customers/update/${id}`, customerData);
 
             // Handle address update
             const defaultAddress = selectedRecord.addresses?.find(addr => addr.isAddressDefault);
@@ -254,9 +254,9 @@ const UpdateCustomer = () => {
             };
 
             if (defaultAddress) {
-                await axios.put(`http://localhost:8080/api/customers/update-address/${defaultAddress.id}`, addressData);
+                await axios.put(`http://localhost:8080/api/admin/customers/update-address/${defaultAddress.id}`, addressData);
             } else {
-                await axios.post(`http://localhost:8080/api/customers/add-address/${id}`, addressData);
+                await axios.post(`http://localhost:8080/api/admin/customers/add-address/${id}`, addressData);
             }
 
             message.success('Cập nhật khách hàng thành công!');

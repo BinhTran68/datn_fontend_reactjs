@@ -151,7 +151,7 @@ const UpdateVoucher = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get("http://localhost:8080/api/customers/");
+            const response = await axios.get("http://localhost:8080/api/admin/customers/");
             const customerData = response.data.map(c => ({ ...c, key: c.id }));
 
             setCustomers(customerData);
