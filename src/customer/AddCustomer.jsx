@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
-import { Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio, Modal, Spin } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import {Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio, Modal, Spin} from 'antd';
+import {UploadOutlined} from '@ant-design/icons';
 import moment from 'moment';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
-import { useNavigate } from "react-router";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import {useNavigate} from "react-router";
+import {BrowserMultiFormatReader} from "@zxing/library";
 
-const { Option } = Select;
+const {Option} = Select;
 
 const AddCustomer = () => {
     const [form] = Form.useForm();
@@ -50,7 +50,7 @@ const AddCustomer = () => {
         }
     }, [qrModalVisible]);
 
-    const handleAvatarChange = ({ fileList: newFileList }) => {
+    const handleAvatarChange = ({fileList: newFileList}) => {
         setFileList(newFileList);
     };
 
@@ -103,9 +103,7 @@ const AddCustomer = () => {
                         return;
                     }
                 }
-
                 const newPassword = generateRandomPassword();
-
                 const newData = {
                     fullName: values.fullName,
                     citizenId: values.CitizenId,
@@ -136,7 +134,7 @@ const AddCustomer = () => {
                     console.error('Error adding customer:', error);
                     if (error.response && error.response.status === 400 && error.response.data.message === "Email already exists") {
                         setEmailError("Email này đã được sử dụng!");
-                        form.setFields([{ name: 'email', errors: ["Email này đã được sử dụng!"] }]);
+                        form.setFields([{name: 'email', errors: ["Email này đã được sử dụng!"]}]);
                     } else {
                         message.error('Thêm khách hàng thất bại!');
                     }
@@ -149,7 +147,13 @@ const AddCustomer = () => {
     };
 
     const handleAddressChange = (provinceId, districtId, wardId, specificAddress) => {
-        setAddress({ ...address, districtId: districtId, provinceId: provinceId, wardId: wardId, specificAddress: specificAddress });
+        setAddress({
+            ...address,
+            districtId: districtId,
+            provinceId: provinceId,
+            wardId: wardId,
+            specificAddress: specificAddress
+        });
     };
 
     const handleScanSuccess = (result) => {
@@ -157,7 +161,7 @@ const AddCustomer = () => {
             const numericValue = result.text.replace(/\D/g, '').slice(0, 12);
 
             if (numericValue.length === 12) {
-                form.setFieldsValue({ CitizenId: numericValue });
+                form.setFieldsValue({CitizenId: numericValue});
                 message.success(`Quét thành công: ${numericValue}`);
             } else {
                 message.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
@@ -209,7 +213,7 @@ const AddCustomer = () => {
     };
     // Thêm các hàm xác thực cho số điện thoại và CCCD
     const validatePhoneNumber = (_, value) => {
-        const phoneRegex =  /^(0[3|5|7|8|9])+([0-9]{8})$/; // 10 chữ số bắt đầu bằng 0
+        const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/; // 10 chữ số bắt đầu bằng 0
         if (value && !phoneRegex.test(value)) {
             return Promise.reject(new Error('Số điện thoại không hợp lệ!'));
         }
@@ -226,7 +230,7 @@ const AddCustomer = () => {
 
     return (
         <Spin spinning={loading} tip="Đang xử lý...">
-            <div style={{ padding: '20px' }}>
+            <div style={{padding: '20px'}}>
                 <h2>Thêm mới khách hàng</h2>
 
                 <Row gutter={24}>
@@ -238,20 +242,20 @@ const AddCustomer = () => {
                                         <Form.Item
                                             name="fullName"
                                             label="Tên khách hàng"
-                                            rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng!' }]}
+                                            rules={[{required: true, message: 'Vui lòng nhập tên khách hàng!'}]}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item
                                             name="dateBirth"
                                             label="Ngày sinh"
-                                            rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+                                            rules={[{required: true, message: "Vui lòng chọn ngày sinh!"}]}
                                         >
                                             <DatePicker
                                                 format="DD/MM/YYYY"
-                                                style={{ width: "100%" }}
+                                                style={{width: "100%"}}
                                                 disabledDate={disableUnder18}
                                             />
                                         </Form.Item>
@@ -264,18 +268,18 @@ const AddCustomer = () => {
                                             name="CitizenId"
                                             label="Căn cước công dân"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập CCCD!' },
-                                                { validator: validateCitizenId }
+                                                {required: true, message: 'Vui lòng nhập CCCD!'},
+                                                {validator: validateCitizenId}
                                             ]}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
                                         <Form.Item
                                             name="gender"
                                             label="Giới tính"
-                                            rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
+                                            rules={[{required: true, message: 'Vui lòng chọn giới tính!'}]}
                                         >
                                             <Radio.Group>
                                                 <Radio value="true">Nam</Radio>
@@ -291,21 +295,21 @@ const AddCustomer = () => {
                                             name="email"
                                             label="Email"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập email!' },
-                                                { type: 'email', message: 'Email không hợp lệ!' },
-                                                { validator: checkEmail }
+                                                {required: true, message: 'Vui lòng nhập email!'},
+                                                {type: 'email', message: 'Email không hợp lệ!'},
+                                                {validator: checkEmail}
                                             ]}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
-                                    <Form.Item
+                                        <Form.Item
                                             name="phoneNumber"
                                             label="Số điện thoại"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                                                { validator: validatePhoneNumber },
+                                                {required: true, message: 'Vui lòng nhập số điện thoại!'},
+                                                {validator: validatePhoneNumber},
                                                 () => ({
                                                     validator(_, value) {
                                                         return checkPhoneNumberAvailability(value);
@@ -334,10 +338,11 @@ const AddCustomer = () => {
                                 </Form.Item>
 
                                 <Form.Item>
-                                    <Button type="primary" onClick={handleOk} loading={loading} style={{ marginRight: '10px' }}>
+                                    <Button type="primary" onClick={handleOk} loading={loading}
+                                            style={{marginRight: '10px'}}>
                                         Thêm
                                     </Button>
-                                    <Button onClick={() => navigate('/admin/customer')} style={{ marginRight: '10px' }}>
+                                    <Button onClick={()  => navigate('/admin/customer')} style={{marginRight: '10px'}}>
                                         Hủy
                                     </Button>
                                     <Button onClick={() => setQrModalVisible(true)}>Quét QR</Button>

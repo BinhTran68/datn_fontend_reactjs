@@ -5,6 +5,8 @@ import LoginSuccess from "../auth/auth/LoginSuccess.jsx";
 import ResetPassword from "../auth/auth/ResetPassword.jsx";
 import LoginAdmin from "../auth/auth/LoginAdmin.jsx";
 import ForgotPasswordAdmin from "../auth/auth/ForgotPasswordAdmin.jsx";
+import PdfPrint from "../admin/PdfPrint.jsx";
+import React from "react";
 
 
 const AuthRouters = {
@@ -33,6 +35,10 @@ const AuthRouters = {
       {
         path: "login-admin",
         element: <LoginAdmin />,
+      },
+      {
+        path: "pdf-print",
+        element: <PdfPrint  />,
       },
       {
         path: "forgot-password-admin",

@@ -11,27 +11,64 @@ export const salesColumns = (onActionClick, handleOnChangeQuantityInCart, ) => [
         render: (text, record, index) => index + 1,
     },
     {
-        title: 'Ảnh sản phẩm',
-        dataIndex: 'imageUrl',
-        align: 'center',
-        key: 'imageUrl',
-        render: (url) => {
-            return (
-                <div className="d-flex justify-content-center">
+        title: "Ảnh",
+        dataIndex: "image",
+        key: "image",
+        render: (images) => {
+            if (images && Array.isArray(images) && images.length > 0) {
+                return (
                     <Image
-                        style={{ objectFit: 'contain' }}
-                        width={220}
-                        src={url ?? 'https://golfgroup.com.vn/wp-content/uploads/2023/04/giay-de-mem-nu-Adidas-GV9392-1.jpg'}
+                        src={images[0].url}
+                        alt="Sản phẩm"
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                            objectFit: 'cover',
+                            borderRadius: '4px'
+                        }}
                     />
+                );
+            }
+            return (
+                <div
+                    style={{
+                        width: '100px',
+                        height: '100px',
+                        backgroundColor: '#f5f5f5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '4px'
+                    }}
+                >
+                    No image
                 </div>
             );
         },
+        onCell: () => ({
+            style: {
+                width: "80px",
+                height: "60px",
+                padding: "5px",
+            },
+        }),
     },
     {
         title: 'Sản phẩm',
         dataIndex: 'productName',
         align: 'center',
         key: 'productName',
+        render: (_, record) => {
+            const { productName, sizeName, colorName, materialName, soleName } = record;
+            return productName ? (
+                <div>
+                    <div>{`${productName} - [${sizeName}] - [${colorName}]`}</div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>
+                        {`Chất liệu: ${materialName}, Đế: ${soleName}`}
+                    </div>
+                </div>
+            ) : "";
+        },
     },
     {
         title: 'Giá',

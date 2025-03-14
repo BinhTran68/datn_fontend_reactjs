@@ -54,6 +54,7 @@ console.log(1);
 import UserLogin from "../client/UserLogin.jsx";
 import React from "react";
 import {getRole} from "../helpers/Helpers.js";
+import PdfPrint from "../admin/PdfPrint.jsx";
 
 
 
@@ -89,6 +90,7 @@ const CustomerRouters = {
       path: "cart",
       element: <RoleRedirect element={<CartPage />} />,
     },
+
     {
       path: "test",
       element: <RoleRedirect element={<Test />} />,
