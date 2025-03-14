@@ -12,7 +12,9 @@ import {
   Radio,
   Space,
   Switch,
+  Flex,
 } from "antd";
+import { LuTicket } from "react-icons/lu";
 import { useForm, Controller, get } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -29,13 +31,17 @@ import { formatVND } from "../../../helpers/Helpers";
 import { useNavigate } from "react-router-dom";
 import { FcShipped } from "react-icons/fc";
 import { apiCreateBillClient } from "./payment";
+import { clearVoucher, getVoucher } from "./voucher";
+import { COLORS } from "../../../constants/constants";
+import { removeBillFromCart } from "./cart";
+
 
 const { Option } = Select;
 
 // Schema validation
 
 const schema = yup.object().shape({
-  fullname: yup.string().required("Vui lòng nhập họ và tên."),
+  fullName: yup.string().required("Vui lòng nhập họ và tên."),
   phone: yup
     .string()
     .required("Vui lòng nhập số điện thoại.")
@@ -66,6 +72,8 @@ const PayMent = () => {
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
+  const [voucher, setVoucher] = useState(getVoucher()); // 1 mảng các sản phẩm
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
@@ -104,7 +112,7 @@ const PayMent = () => {
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      fullname: user?.fullName || "",
+      fullName: user?.fullName || "",
       phone: user?.phoneNumber || "",
       email: user?.email || "",
       notes: user?.address || "",
@@ -116,6 +124,8 @@ const PayMent = () => {
     // setProductData(getBill());
     console.log("prodauct day nay", products);
     console.log("🛒 Đây là bill hiện tại:", getBill());
+    console.log("🛒 vocher:", getVoucher());
+
     console.log(
       "🛒 Đây là user hiện tại:",
       JSON.parse(localStorage.getItem(`user`)) || []
@@ -123,9 +133,10 @@ const PayMent = () => {
 
     return () => {
       clearBill();
+      clearVoucher();
     };
   }, []);
-  
+
   useEffect(() => {
     setbill((prev) => ({
       ...prev,
@@ -146,17 +157,23 @@ const PayMent = () => {
         toDistrictId: selectedDistrict,
       });
     }
+  
+    const newAddress = {
+      provinceId: selectedProvince,
+      districtId: selectedDistrict,
+      wardId: selectedWard,
+      specificAddress: specificAddress ?? "",
+    };
+  
+    setSelectedAddress(newAddress); // Lưu địa chỉ được chọn
+  
     setbill((prevbill) => ({
       ...prevbill,
-      detailAddressShipping: {
-        provinceId: selectedProvince,
-        districtId: selectedDistrict,
-        wardId: selectedWard,
-        specificAddress: specificAddress ?? "",
-      },
+      detailAddressShipping: newAddress,
       shipMoney: totalFee,
     }));
   };
+  
   const handlePaymentMethodChange = (e) => {
     const selectedMethod = e.target.value;
     setPaymentMethod(selectedMethod);
@@ -188,7 +205,7 @@ const PayMent = () => {
         sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
-    sum += parseInt(bill?.shipMoney) || 0;
+    sum = sum + parseFloat(bill?.shipMoney) - parseFloat(voucher[0]?.discountValue||0);
     return sum;
   }, [productData, bill?.shipMoney]);
 
@@ -211,23 +228,40 @@ const PayMent = () => {
       align: "center",
     },
     {
+      title: "ĐƠN GIÁ",
+      dataIndex: "price",
+      key: "price",
+      align: "right",
+    },
+    {
       title: "TẠM TÍNH",
       dataIndex: "price",
       key: "price",
       align: "right",
+      render: (_, record) => (
+        <Space>{record.price * record.quantityAddCart}đ</Space>
+      ),
     },
   ];
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFormSubmit = (data) => {
+    if (!selectedAddress || !selectedAddress.provinceId || !selectedAddress.districtId || !selectedAddress.wardId) {
+      message.error("Vui lòng chọn địa chỉ giao hàng trước khi đặt hàng!");
+      return;
+    }
     setbill((prev) => ({
       ...prev,
-      recipientName: data.fullname,
+      recipientName: data.fullName,
       recipientPhoneNumber: data.phone,
       email: data.email,
       notes: data.notes,
       paymentMethodsType: paymentMethod, // Thêm phương thức thanh toán vào dữ liệu gửi đi
+      customerId: user?.id || null,
+      voucherId: voucher[0]?.voucherId,
+      discountMoney: voucher[0]?.discountValue,
+      moneyAfter:voucher[0]?.totalAfterDiscount,
     }));
 
     setIsSubmitting(true); // Đánh dấu đang submit
@@ -261,6 +295,7 @@ const PayMent = () => {
             console.log("✅ Bill sau khi cập nhật:", bill);
             onSubmit(bill);
             setIsSubmitting(false);
+            removeBillFromCart(productData)
             message.success("Đặt hàng thành công!");
             createBillClient();
         }
@@ -276,7 +311,9 @@ const PayMent = () => {
     console.log("Dữ liệu gửi đi:", data);
     console.log("đơn hàng đặt", bill);
 
-    navigate(`/success?status=1&&amount=${bill.totalMoney}&&apptransid=ShipCod`);
+    navigate(
+      `/success?status=1&&amount=${bill.totalMoney}&&apptransid=ShipCod`
+    );
 
     reset(); // Reset form sau khi gửi
   };
@@ -293,11 +330,11 @@ const PayMent = () => {
           >
             <Form.Item
               label="Họ và tên"
-              validateStatus={errors.fullname ? "error" : ""}
-              help={errors.fullname?.message}
+              validateStatus={errors.fullName ? "error" : ""}
+              help={errors.fullName?.message}
             >
               <Controller
-                name="fullname"
+                name="fullName"
                 control={control}
                 render={({ field }) => (
                   <Input {...field} placeholder="Nhập họ và tên" />
@@ -358,11 +395,25 @@ const PayMent = () => {
             dataSource={productData}
             pagination={false}
           />
-          <FcShipped size={25} /> Phí vận chuyển (GHN):{" "}
-          {formatVND(parseInt(bill?.shipMoney) || 0)}
+          <Flex justify="space-between">
+            <Col>
+              <FcShipped size={27} /> Phí vận chuyển (GHN):{" "}
+            </Col>
+            + {formatVND(parseInt(bill?.shipMoney) || 0)}
+          </Flex>
+
+          {voucher.length > 0 && voucher[0].note && (
+            <Flex justify="space-between">
+              <Col>
+                <LuTicket size={27} style={{ color: `${COLORS.primary}` }} />
+                Voucher: {voucher[0].note}
+              </Col>
+              - {voucher[0].discountValue} đ
+            </Flex>
+          )}
           <Divider />
           <h3 style={{ textAlign: "right" }}>
-            Tổng: {totalAmount?.toLocaleString()} ₫
+            Tổng hóa đơn: {totalAmount?.toLocaleString()} ₫
           </h3>
           <Divider />
           <Radio.Group

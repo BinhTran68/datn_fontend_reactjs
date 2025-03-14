@@ -37,7 +37,7 @@ const Detail = () => {
       setLoading(true);
       // Thay thế URL này bằng API thật của bạn
       const response = await axios.get(
-        `http://localhost:8080/api/productdetail/${id}`
+        `http://localhost:8080/api/admin/productdetail/${id}`
       );
       setProduct(response.data.data); // Cập nhật state với dữ liệu từ API
       console.log(product);
