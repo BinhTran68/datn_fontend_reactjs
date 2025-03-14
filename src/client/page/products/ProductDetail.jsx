@@ -490,6 +490,8 @@ function ProductDetail() {
                           sizeName: getProductDetail.sizeName,
                           colorName: getProductDetail.colorName,
                         });
+                        window.dispatchEvent(new Event("cartUpdated"));
+
                       }
 
                       // notification.success({

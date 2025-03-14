@@ -12,7 +12,9 @@ import {
   Flex,
   Popconfirm,
   notification,
+  Select,
 } from "antd";
+import styles from "./CartPage.module.css";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { VscTag } from "react-icons/vsc";
 import { COLORS } from "../../../constants/constants";
@@ -23,8 +25,15 @@ import { addToBill, clearBill, getBill } from "./bill";
 import { useProduct } from "../../../store/ProductContext";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { size } from "lodash";
+import { set, size } from "lodash";
 import axios from "axios";
+import {
+  apiFindVoucherValid,
+  apiSetQuantityCart,
+  apiVoucherBest,
+} from "./apiCart";
+import { addToVoucher } from "./voucher";
+import { LuTicket } from "react-icons/lu";
 
 const { Title, Text } = Typography;
 
@@ -32,9 +41,10 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { updateProducts } = useProduct();
   const [selectedRitem, setSelecteditem] = useState([]);
+  const [voucherValid, setVoucherValid] = useState([]);
+  const [voucherBests, setVoucherBest] = useState([]);
 
-  const [quantities, setQuantities] = useState([1, 1, 1]);
-  const [discountCode, setDiscountCode] = useState("");
+  const [discountCode, setDiscountCode] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState(0);
@@ -47,6 +57,10 @@ const CartPage = () => {
     current: 1,
     pageSize: 10,
   });
+  useEffect(() => {
+    vouchersValid();
+    voucherBest();
+  }, [selectedRowKeys]);
   useEffect(() => {
     const handleCartUpdate = () => {
       fetchCart();
@@ -91,18 +105,35 @@ const CartPage = () => {
       setProducts(getCart()); // Lấy từ localStorage nếu chưa đăng nhập
     }
   };
-  const discountCodes = {
-    SALE10: { type: "percent", value: 0.1 }, // 10% discount
-    SALE20: { type: "percent", value: 0.2 }, // 20% discount
-    FIXED100: { type: "fixed", value: 100000 }, // 100,000 VND fixed discount
-    FIXED200: { type: "fixed", value: 200000 }, // 200,000 VND fixed discount
+  const vouchersValid = async () => {
+    try {
+      const res = await apiFindVoucherValid({ customerId: user?.id });
+      setVoucherValid(res.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
+  };
+  const voucherBest = async () => {
+    try {
+      const res = await apiVoucherBest({
+        customerId: user?.id,
+        totalBillMoney: totalSelectedPrice,
+      });
+      setVoucherBest(res.data);
+      setDiscountCode(res.data?.voucher?.id);
+      setDiscount(0);
+      setAppliedDiscount("");
+      console.log("vocher", res.data?.voucher?.id);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
   };
   const deleteItemInCart = async (cartDetailId) => {
     try {
       const response = await axios.delete(
         `http://localhost:8080/api/client/delete/${cartDetailId}`
       );
-      fetchCart()
+      fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       console.error("Lỗi khi xóa", error);
@@ -119,7 +150,7 @@ const CartPage = () => {
       `cart_${getDeviceId()}`,
       JSON.stringify(updatedProducts)
     );
-    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("cartUpdated"));
 
     // Cập nhật lại danh sách sản phẩm đã chọn
     // láy những sp ko giống với sp đã xóa và set lại
@@ -129,54 +160,76 @@ const CartPage = () => {
     setSelectedRowKeys(updatedSelectedKeys);
   };
 
-  const handleQuantityChange = (index, value) => {
+  const handleQuantityChange = async (index, value) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
+    if (user) {
+      try {
+        try {
+          console.log("ddddddddddddđ", products);
 
-    const updatedProducts = [...products];
-    updatedProducts[index].quantityAddCart = value;
+          const res = await apiSetQuantityCart({
+            cartDetailid: products[index]?.cartDetailId,
+            quantity: value,
+          });
+          console.log("số lượng ", res);
+          fetchCart();
+        } catch (error) {
+          message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+        }
+      } catch (error) {}
+    } else {
+      const updatedProducts = [...products];
+      updatedProducts[index].quantityAddCart = value;
 
-    setProducts(updatedProducts); // Cập nhật state
-    localStorage.setItem(
-      `cart_${getDeviceId()}`,
-      JSON.stringify(updatedProducts)
-    ); // Lưu lại vào localStorage
-  };
-
-  const handleButtonClick = (msg) => {
-    message.success(msg);
+      setProducts(updatedProducts); // Cập nhật state
+      localStorage.setItem(
+        `cart_${getDeviceId()}`,
+        JSON.stringify(updatedProducts)
+      ); // Lưu lại vào localStorage
+    }
   };
 
   const applyDiscount = () => {
-    const discountInfo = discountCodes[discountCode];
-    console.log(discountInfo);
-
-    if (discountInfo) {
-      if (discountInfo.type === "percent") {
-        setDiscount(discountInfo.value);
-        setDiscountType(discountInfo.type);
-        setAppliedDiscount(
-          `${discountCode} - Giảm ${discountInfo.value * 100}%`
-        );
-        message.success(
-          `Mã giảm giá ${discountInfo.value * 100}% đã được áp dụng!`
-        );
-      } else if (discountInfo.type === "fixed") {
-        const fixedDiscount = discountInfo.value;
-        setDiscount(discountInfo.value);
-        setDiscountType(discountInfo.type);
-
-        setAppliedDiscount(
-          `${discountCode} - Giảm ${fixedDiscount.toLocaleString()} đ`
-        );
-        message.success(
-          `Mã giảm giá ${fixedDiscount.toLocaleString()} đ đã được áp dụng!`
-        );
-      }
-    } else {
+    const selectedVoucher = voucherValid.find((v) => v.id === discountCode);
+    if (!selectedVoucher) {
       setDiscount(0);
       setAppliedDiscount(null);
       message.error("Mã giảm giá không hợp lệ!");
+      return;
     }
+    console.log("ádsadsadsads", selectedVoucher);
+
+    const {
+      voucherCode,
+      discountValue,
+      discountType,
+      discountMaxValue,
+      billMinValue,
+    } = selectedVoucher;
+    if (totalSelectedPrice < billMinValue) {
+      message.error(
+        "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng voucher!"
+      );
+      return;
+    }
+
+    let discountAmount = 0;
+    if (discountType === "PERCENT") {
+      discountAmount = (totalSelectedPrice * discountValue) / 100;
+      discountAmount = Math.min(discountAmount, discountMaxValue);
+      setDiscountType("PERCENT");
+    } else if (discountType === "MONEY") {
+      discountAmount = Math.min(discountValue, totalSelectedPrice);
+      setDiscountType("MONEY");
+    }
+
+    setDiscount(discountAmount);
+    console.log("diacount giảm giA", discount);
+
+    setAppliedDiscount(
+      `Mã ${voucherCode} - Giảm ${discountAmount.toLocaleString()} đ`
+    );
+    message.success("Mã giảm giá đã được áp dụng!");
   };
 
   const totalSelectedPrice = selectedRowKeys.reduce(
@@ -185,26 +238,9 @@ const CartPage = () => {
     0
   );
 
-  const calculateDiscountedTotal = () => {
-    let discountedTotal;
-
-    if (discountType === "percent") {
-      // Nếu có giảm giá theo phần trăm
-      discountedTotal = totalSelectedPrice * (1 - discount);
-    } else if (discountType === "fixed") {
-      // Nếu có mã giảm giá cố định
-
-      discountedTotal = totalSelectedPrice - discount;
-    } else {
-      // Nếu không có giảm giá
-      discountedTotal = totalSelectedPrice;
-    }
-
-    return discountedTotal;
-  };
-
-  // Gọi hàm để tính discountedTotal
+  const calculateDiscountedTotal = () => totalSelectedPrice - discount;
   const discountedTotal = calculateDiscountedTotal();
+
   useEffect(() => {
     if (selectedRowKeys.length === 0) return; // Nếu không có hàng nào được chọn, không làm gì cả
 
@@ -232,9 +268,19 @@ const CartPage = () => {
       key: "product",
       render: (_, record) => (
         <Space>
-          <img src={record.image?record.image:"https://placehold.co/10x10?text=No+Image"} alt={"anhsp"} width={60} />
+          <img
+            src={
+              record.image
+                ? record.image
+                : "https://placehold.co/10x10?text=No+Image"
+            }
+            alt={"anhsp"}
+            width={60}
+          />
           <Text>
-            {record.colorName?`${record.productName}[${record.colorName}-${record.sizeName}]`:`${record.productName}`}
+            {record.colorName
+              ? `${record.productName}[${record.colorName}-${record.sizeName}]`
+              : `${record.productName}`}
           </Text>
         </Space>
       ),
@@ -332,13 +378,14 @@ const CartPage = () => {
         <Row gutter={[16, 16]} style={{ padding: "20px" }}>
           <Col span={16}>
             <Content>
+              <Text style={{fontWeight:"bold"}}>Giỏ hàng</Text>
               <Table
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={products.map((product, index) => ({
                   ...product,
                   key: index,
-                }))}
+                }))}  
                 pagination={false}
               />
             </Content>
@@ -353,11 +400,12 @@ const CartPage = () => {
                 Tổng sau giảm giá:{" "}
                 <strong>{discountedTotal.toLocaleString()} đ</strong>
               </p>
-              {appliedDiscount && (
-                <p>
-                  <Text type="success">{appliedDiscount}</Text>
-                </p>
-              )}
+              <p style={{ minHeight: "25px" }}>
+                <Text type={appliedDiscount ? "success" : undefined}>
+                  {appliedDiscount || ""}
+                </Text>
+              </p>
+
               <Space direction="vertical" style={{ width: "100%" }}>
                 <Button
                   type="primary"
@@ -365,8 +413,16 @@ const CartPage = () => {
                   onClick={() => {
                     // handleButtonClick("Mua ngay thành công!");
                     if (selectedRitem.length > 0) {
+                      const vocher = {
+                        voucherId: discountCode || null, // ID của voucher nếu có
+                        totalAfterDiscount: discountedTotal, // Tổng tiền sau giảm giá
+                        discountValue: discount || null,
+                        note: appliedDiscount || null,
+                      };
+
                       updateProducts(selectedRitem);
                       addToBill(selectedRitem);
+                      addToVoucher(vocher);
                       navigate("/payment");
                       toast.success("xác nhận mua hàng");
                     } else {
@@ -406,17 +462,93 @@ const CartPage = () => {
                   marginTop: "1rem",
                 }}
               >
-                <Space>
-                  <VscTag size={22} style={{ color: `${COLORS.pending}` }} />
-                  <Input
-                    placeholder="Nhập mã ưu đãi"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                  />
+                <Row gutter={1} justify={"space-between"}>
+                  <Col>
+                    {" "}
+                    <LuTicket
+                      size={29}
+                      style={{ color: `${COLORS.primary}` }}
+                    />
+                  </Col>
+                  <Col>
+                    {" "}
+                    <Select
+                      showSearch
+                      style={{ width: "100%", minWidth: 300 }} // Mở rộng ô chọn
+                      placeholder="Chọn voucher"
+                      optionLabelProp="label"
+                      value={discountCode}
+                      dropdownStyle={{ width: "auto", minWidth: 400 }} // Mở rộng dropdown
+                      onChange={(value) => {
+                        setDiscountCode(value);
+                        console.log("diacadiecode", discountCode);
+                      }}
+                    >
+                      {voucherValid?.map((item) => (
+                        <Select.Option
+                          key={item.id}
+                          value={item.id}
+                          label={item.voucherCode}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              height: "120px",
+                            }}
+                          >
+                            {/* Ảnh thương hiệu */}
+                            <div className={styles.coupon}>
+                              <img
+                                src={
+                                  item.image ||
+                                  "https://down-vn.img.susercontent.com/file/vn-11134004-7ras8-m4re2imocx9s72.webp"
+                                }
+                                alt={item.voucherCode}
+                                style={{ width: "70px" }}
+                              />
+                            </div>
+
+                            {/* Thông tin voucher */}
+                            <div>
+                              <strong>{item.voucherCode}</strong>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: 12,
+                                  color: "#888",
+                                }}
+                              >
+                                Giảm {item.discountValue} {item.discountType} -{" "}
+                                <br />
+                                Tối đa {item.discountMaxValue}đ
+                              </p>
+                              <Text type="success">
+                                Đơn tối thiểu {item.billMinValue} đ
+                              </Text>
+                              <p>
+                                <Text type="warning">
+                                  Số lượng {item.quantity}
+                                </Text>
+                              </p>
+                            </div>
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Col>
+
                   <Button type="primary" onClick={applyDiscount}>
                     Áp dụng
                   </Button>
-                </Space>
+                </Row>
+                <div>
+                  {" "}
+                  <Text type="success" className="pt-10">
+                    {voucherBests.note}
+                  </Text>
+                </div>
               </Content>
             </Content>
           </Col>

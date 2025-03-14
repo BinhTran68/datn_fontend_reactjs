@@ -20,18 +20,26 @@ import {
   Avatar,
   Modal,
 } from "antd";
-import { SearchOutlined, SettingOutlined, MenuOutlined, UserOutlined, RobotOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  SettingOutlined,
+  MenuOutlined,
+  UserOutlined,
+  RobotOutlined,
+} from "@ant-design/icons";
 import { getCart } from "../../page/cart/cart";
 import axios from "axios";
 
 function HeaderNav() {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
   const [cartCount, setCartCount] = useState(getCart().length);
   const [open, setOpen] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isAIModalVisible, setIsAIModalVisible] = useState(false);
-  const [aiQuestion, setAiQuestion] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
   const navigate = useNavigate();
 
   // Fetch giỏ hàng
@@ -56,16 +64,14 @@ function HeaderNav() {
 
   useEffect(() => {
     fetchCart();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     const handleCartChange = () => {
-      setUser(JSON.parse(localStorage.getItem("user")));
+      fetchCart();
     };
-    window.addEventListener("storage", handleCartChange);
     window.addEventListener("cartUpdated", handleCartChange);
     return () => {
-      window.removeEventListener("storage", handleCartChange);
       window.removeEventListener("cartUpdated", handleCartChange);
     };
   }, []);
@@ -86,7 +92,7 @@ function HeaderNav() {
     { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/contact" },
   ];
 
-  const settingsOptions = user 
+  const settingsOptions = user
     ? [
         { key: "profile", label: "Hồ sơ" },
         { key: "orders", label: "Đơn hàng của tôi" },
@@ -136,10 +142,13 @@ function HeaderNav() {
   return (
     <div className="header-container">
       {/* Top bar */}
-      <div className="top-bar py-2" style={{ backgroundColor: '#F37021' }}>
+      <div className="top-bar py-2" style={{ backgroundColor: "#F37021" }}>
         <div className="container-fluid px-4 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-3">
-            <Link to="/store-system" className="text-white text-decoration-none">
+            <Link
+              to="/store-system"
+              className="text-white text-decoration-none"
+            >
               <i className="fas fa-store me-1"></i> Hệ thống cửa hàng
             </Link>
             <span className="text-white">|</span>
@@ -156,15 +165,15 @@ function HeaderNav() {
       </div>
 
       {/* Main Header */}
-      <div className="main-header py-3" style={{ backgroundColor: 'white' }}>
+      <div className="main-header py-3" style={{ backgroundColor: "white" }}>
         <div className="container-fluid px-4">
           <Row align="middle" gutter={16}>
             <Col xs={24} md={4}>
               <Link to="/" className="logo d-flex justify-content-center">
-                <img 
-                  src="/img/thehands.png" 
-                  alt="TheHands" 
-                  style={{ height: '120px', objectFit: 'contain' }} 
+                <img
+                  src="/img/thehands.png"
+                  alt="TheHands"
+                  style={{ height: "120px", objectFit: "contain" }}
                 />
               </Link>
             </Col>
@@ -173,9 +182,12 @@ function HeaderNav() {
                 placeholder="Tìm tên sản phẩm..."
                 size="large"
                 enterButton={
-                  <Button 
-                    type="primary" 
-                    style={{ backgroundColor: '#F37021', borderColor: '#F37021' }}
+                  <Button
+                    type="primary"
+                    style={{
+                      backgroundColor: "#F37021",
+                      borderColor: "#F37021",
+                    }}
                   >
                     <SearchOutlined />
                   </Button>
@@ -183,16 +195,18 @@ function HeaderNav() {
                 className="search-input"
               />
               <div className="quick-links mt-2 d-none d-md-flex gap-3">
-                {['Giày Nike', 'Giày Adidas', 'Giày Puma', 'Giày thể thao'].map(tag => (
-                  <Link 
-                    key={tag} 
-                    to={`/search?q=${tag}`}
-                    className="quick-link"
-                    style={{ color: '#666', fontSize: '13px' }}
-                  >
-                    {tag}
-                  </Link>
-                ))}
+                {["Giày Nike", "Giày Adidas", "Giày Puma", "Giày thể thao"].map(
+                  (tag) => (
+                    <Link
+                      key={tag}
+                      to={`/search?q=${tag}`}
+                      className="quick-link"
+                      style={{ color: "#666", fontSize: "13px" }}
+                    >
+                      {tag}
+                    </Link>
+                  )
+                )}
               </div>
             </Col>
             <Col xs={24} md={6}>
@@ -201,10 +215,10 @@ function HeaderNav() {
                   type="primary"
                   icon={<RobotOutlined />}
                   onClick={() => setIsAIModalVisible(true)}
-                  style={{ 
-                    backgroundColor: '#F37021',
-                    borderColor: '#F37021',
-                    marginRight: '10px'
+                  style={{
+                    backgroundColor: "#F37021",
+                    borderColor: "#F37021",
+                    marginRight: "10px",
                   }}
                 >
                   Hỏi AI
@@ -212,26 +226,40 @@ function HeaderNav() {
                 {user ? (
                   <>
                     <Badge count={5} className="notification-badge">
-                      <PiBellRinging size={22} style={{ cursor: 'pointer', color: '#666' }} />
+                      <PiBellRinging
+                        size={22}
+                        style={{ cursor: "pointer", color: "#666" }}
+                      />
                     </Badge>
                     <Popover content={content} trigger="click">
                       <div className="user-info d-flex align-items-center gap-2 px-2 py-1">
-                        <Avatar 
-                          src={user.avatar || "https://placehold.co/500x550?text=No+Image"}
+                        <Avatar
+                          src={
+                            user.avatar ||
+                            "https://placehold.co/500x550?text=No+Image"
+                          }
                           style={{ width: 35, height: 35 }}
                         />
-                        <span style={{ fontSize: '14px', color: '#333' }}>{user.fullName}</span>
+                        <span style={{ fontSize: "14px", color: "#333" }}>
+                          {user.fullName}
+                        </span>
                       </div>
                     </Popover>
                   </>
                 ) : (
-                  <Link to="/login" className="login-btn" style={{ color: '#F37021' }}>
+                  <Link
+                    to="/login"
+                    className="login-btn"
+                    style={{ color: "#F37021" }}
+                  >
                     Đăng nhập
                   </Link>
                 )}
                 <Badge count={cartCount}>
                   <Link to="/cart">
-                    <BsCart2 style={{ fontSize: 24, cursor: "pointer", color: '#666' }} />
+                    <BsCart2
+                      style={{ fontSize: 24, cursor: "pointer", color: "#666" }}
+                    />
                   </Link>
                 </Badge>
               </Flex>
@@ -243,19 +271,19 @@ function HeaderNav() {
       {/* Navigation Menu */}
       <nav className="category-nav py-2 border-top border-bottom">
         <div className="container-fluid px-4">
-          <Menu 
-            mode="horizontal" 
+          <Menu
+            mode="horizontal"
             className="border-0 d-flex justify-content-center"
-            style={{ backgroundColor: 'transparent' }}
+            style={{ backgroundColor: "transparent" }}
           >
-            {menuItems.map(item => (
-              <Menu.Item 
+            {menuItems.map((item) => (
+              <Menu.Item
                 key={item.key}
-                style={{ 
-                  borderBottom: 'none',
-                  margin: '0 15px',
-                  padding: '0 10px',
-                  fontSize: '14px'
+                style={{
+                  borderBottom: "none",
+                  margin: "0 15px",
+                  padding: "0 10px",
+                  fontSize: "14px",
                 }}
               >
                 <Link to={item.path}>{item.label}</Link>
@@ -269,7 +297,10 @@ function HeaderNav() {
       <div className="banner-section">
         <div className="container-fluid px-4">
           <Flex align="center" justify="center" className="py-2">
-            <span className="text-white" style={{ fontSize: 18, fontWeight: 500 }}>
+            <span
+              className="text-white"
+              style={{ fontSize: 18, fontWeight: 500 }}
+            >
               THEHANDS HUNTER THẾ HỆ MỚI
             </span>
           </Flex>
@@ -286,11 +317,7 @@ function HeaderNav() {
         <div className="mobile-menu">
           {/* Mobile Search */}
           <div className="mb-4">
-            <Input.Search
-              placeholder="Tìm kiếm..."
-              enterButton
-              size="large"
-            />
+            <Input.Search placeholder="Tìm kiếm..." enterButton size="large" />
           </div>
 
           {/* Mobile User Info */}
@@ -298,7 +325,9 @@ function HeaderNav() {
             <div className="user-info mb-4 d-flex align-items-center gap-2">
               <Image
                 preview={false}
-                src={user.avatar || "https://placehold.co/500x550?text=No+Image"}
+                src={
+                  user.avatar || "https://placehold.co/500x550?text=No+Image"
+                }
                 style={{ width: 40, height: 40, borderRadius: "50%" }}
               />
               <div>
@@ -310,16 +339,22 @@ function HeaderNav() {
 
           {/* Mobile Menu Items */}
           <Menu mode="vertical" className="border-0">
-            {menuItems.map(item => (
-              <Menu.Item key={item.key} onClick={() => {
-                navigate(item.path);
-                setDrawerVisible(false);
-              }}>
+            {menuItems.map((item) => (
+              <Menu.Item
+                key={item.key}
+                onClick={() => {
+                  navigate(item.path);
+                  setDrawerVisible(false);
+                }}
+              >
                 {item.label}
               </Menu.Item>
             ))}
-            {settingsOptions.map(item => (
-              <Menu.Item key={item.key} onClick={() => handleMenuClick(item.key)}>
+            {settingsOptions.map((item) => (
+              <Menu.Item
+                key={item.key}
+                onClick={() => handleMenuClick(item.key)}
+              >
                 {item.label}
               </Menu.Item>
             ))}
@@ -335,33 +370,33 @@ function HeaderNav() {
         footer={null}
         width={700}
       >
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: "20px" }}>
           <Input.TextArea
             rows={4}
             placeholder="Nhập câu hỏi của bạn..."
             value={aiQuestion}
             onChange={(e) => setAiQuestion(e.target.value)}
-            style={{ marginBottom: '10px' }}
+            style={{ marginBottom: "10px" }}
           />
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={handleAskAI}
-            style={{ 
-              backgroundColor: '#F37021',
-              borderColor: '#F37021' 
+            style={{
+              backgroundColor: "#F37021",
+              borderColor: "#F37021",
             }}
           >
             Gửi câu hỏi
           </Button>
         </div>
-        
+
         {aiResponse && (
-          <div 
-            style={{ 
-              padding: '15px',
-              backgroundColor: '#f5f5f5',
-              borderRadius: '8px',
-              marginTop: '10px' 
+          <div
+            style={{
+              padding: "15px",
+              backgroundColor: "#f5f5f5",
+              borderRadius: "8px",
+              marginTop: "10px",
             }}
           >
             <h4>Phản hồi từ AI:</h4>
