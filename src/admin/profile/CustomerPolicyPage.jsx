@@ -1,4 +1,3 @@
-// CustomerPolicyPage.jsx
 import React, { useState } from 'react';
 import styles from './CustomerPolicyPage.module.css';
 
@@ -33,7 +32,6 @@ const CustomerPolicyPage = () => {
 
   const submitFeedback = (e) => {
     e.preventDefault();
-    // Mô phỏng gửi phản hồi
     console.log('Feedback submitted:', feedbackForm);
     setFeedbackSubmitted(true);
     setFeedbackForm({
@@ -42,7 +40,6 @@ const CustomerPolicyPage = () => {
       message: ''
     });
     
-    // Reset sau 3 giây
     setTimeout(() => {
       setFeedbackSubmitted(false);
     }, 3000);
@@ -210,159 +207,153 @@ const CustomerPolicyPage = () => {
 
   return (
     <div className={styles.policyContainer}>
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <h1>Store<span>Name</span></h1>
-        </div>
-        <nav className={styles.mainNav}>
-          <ul>
-            <li><a href="#home">Trang chủ</a></li>
-            <li><a href="#products">Sản phẩm</a></li>
-            <li><a href="#about">Về chúng tôi</a></li>
-            <li><a href="#contact">Liên hệ</a></li>
-          </ul>
-        </nav>
-      </header>
-
-      <div className={styles.policyBanner}>
+      <div className={styles.policyHeader}>
         <h1>Chính Sách Khách Hàng</h1>
         <p>Chúng tôi luôn đặt khách hàng làm trọng tâm trong mọi hoạt động</p>
       </div>
 
-      <div className={styles.policyContent}>
-        <div className={styles.policyTabs}>
-          <ul>
+      <div className={styles.policyWrapper}>
+        <aside className={styles.policySidebar}>
+          <nav className={styles.policyNav}>
             {Object.keys(policies).map(policyKey => (
-              <li 
+              <button 
                 key={policyKey}
-                className={activeTab === policyKey ? styles.active : ''}
+                className={activeTab === policyKey ? styles.activeTab : ''}
                 onClick={() => handleTabClick(policyKey)}
               >
                 {policies[policyKey].title}
-              </li>
+              </button>
             ))}
-          </ul>
-        </div>
+          </nav>
+        </aside>
 
-        <div className={styles.policyDetails}>
-          <h2>{policies[activeTab].title}</h2>
-          <div className={styles.policyText}>
-            {policies[activeTab].content}
-          </div>
-        </div>
-      </div>
+        <main className={styles.policyMain}>
+          <section className={styles.policyContent}>
+            <h2>{policies[activeTab].title}</h2>
+            <div className={styles.policyText}>
+              {policies[activeTab].content}
+            </div>
+          </section>
 
-      <div className={styles.faqSection}>
-        <h2>Câu Hỏi Thường Gặp</h2>
-        <div className={styles.faqContainer}>
-          {faqs.map(faq => (
-            <div 
-              key={faq.id} 
-              className={`${styles.faqItem} ${expandedFaqs[faq.id] ? styles.expanded : ''}`}
-            >
-              <div 
-                className={styles.faqQuestion}
-                onClick={() => toggleFaq(faq.id)}
-              >
-                <h3>{faq.question}</h3>
-                <span className={styles.faqToggle}>
-                  {expandedFaqs[faq.id] ? '−' : '+'}
-                </span>
+          <section className={styles.faqSection}>
+            <h2>Câu Hỏi Thường Gặp</h2>
+            <div className={styles.faqList}>
+              {faqs.map(faq => (
+                <details 
+                  key={faq.id} 
+                  className={styles.faqItem}
+                  open={expandedFaqs[faq.id]}
+                  onClick={(e) => {
+                    if (e.target.tagName !== 'SUMMARY') return;
+                    e.preventDefault();
+                    toggleFaq(faq.id);
+                  }}
+                >
+                  <summary className={styles.faqQuestion}>
+                    {faq.question}
+                  </summary>
+                  <div className={styles.faqAnswer}>
+                    <p>{faq.answer}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.feedbackSection}>
+            <h2>Góp Ý Chính Sách</h2>
+            <p>Chúng tôi luôn lắng nghe ý kiến đóng góp từ khách hàng để cải thiện chính sách và dịch vụ.</p>
+            
+            {feedbackSubmitted ? (
+              <div className={styles.successMessage}>
+                <p>Cảm ơn quý khách đã gửi góp ý. Chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất!</p>
               </div>
-              {expandedFaqs[faq.id] && (
-                <div className={styles.faqAnswer}>
-                  <p>{faq.answer}</p>
+            ) : (
+              <form className={styles.feedbackForm} onSubmit={submitFeedback}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label htmlFor="name">Họ tên</label>
+                    <input 
+                      type="text" 
+                      id="name"
+                      name="name"
+                      value={feedbackForm.name}
+                      onChange={handleFeedbackChange}
+                      required 
+                      placeholder="Nhập họ tên của bạn"
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label htmlFor="email">Email</label>
+                    <input 
+                      type="email" 
+                      id="email"
+                      name="email"
+                      value={feedbackForm.email}
+                      onChange={handleFeedbackChange}
+                      required 
+                      placeholder="Nhập email của bạn"
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.feedbackSection}>
-        <h2>Góp Ý Chính Sách</h2>
-        <p>Chúng tôi luôn lắng nghe ý kiến đóng góp từ khách hàng để cải thiện chính sách và dịch vụ.</p>
-        
-        {feedbackSubmitted ? (
-          <div className={styles.successMessage}>
-            <p>Cảm ơn quý khách đã gửi góp ý. Chúng tôi sẽ xem xét và phản hồi trong thời gian sớm nhất!</p>
-          </div>
-        ) : (
-          <form className={styles.feedbackForm} onSubmit={submitFeedback}>
-            <div className={styles.formGroup}>
-              <label htmlFor="name">Họ tên:</label>
-              <input 
-                type="text" 
-                id="name"
-                name="name"
-                value={feedbackForm.name}
-                onChange={handleFeedbackChange}
-                required 
-              />
-            </div>
-            
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Email:</label>
-              <input 
-                type="email" 
-                id="email"
-                name="email"
-                value={feedbackForm.email}
-                onChange={handleFeedbackChange}
-                required 
-              />
-            </div>
-            
-            <div className={styles.formGroup}>
-              <label htmlFor="message">Nội dung góp ý:</label>
-              <textarea 
-                id="message"
-                name="message"
-                value={feedbackForm.message}
-                onChange={handleFeedbackChange}
-                rows="5"
-                required
-              ></textarea>
-            </div>
-            
-            <button type="submit" className={styles.submitBtn}>Gửi góp ý</button>
-          </form>
-        )}
+                
+                <div className={styles.formGroup}>
+                  <label htmlFor="message">Nội dung góp ý</label>
+                  <textarea 
+                    id="message"
+                    name="message"
+                    value={feedbackForm.message}
+                    onChange={handleFeedbackChange}
+                    rows="4"
+                    required
+                    placeholder="Nhập nội dung góp ý của bạn"
+                  ></textarea>
+                </div>
+                
+                <button type="submit" className={styles.submitBtn}>Gửi góp ý</button>
+              </form>
+            )}
+          </section>
+        </main>
       </div>
 
       <footer className={styles.footer}>
-        <div className={styles.footerColumns}>
-          <div className={styles.footerColumn}>
-            <h3>Về Chúng Tôi</h3>
-            <ul>
-              <li><a href="#about">Giới thiệu</a></li>
-              <li><a href="#blog">Blog</a></li>
-              <li><a href="#careers">Tuyển dụng</a></li>
-              <li><a href="#press">Báo chí</a></li>
-            </ul>
+        <div className={styles.footerContent}>
+          <div className={styles.footerInfo}>
+            <div className={styles.companyInfo}>
+              <h3>StoreName</h3>
+              <p>Địa chỉ: 123 Đường ABC, Quận XYZ</p>
+              <p>TP. Hồ Chí Minh, Việt Nam</p>
+              <p>Email: support@storename.com</p>
+              <p>Hotline: 1900 1234 567</p>
+            </div>
+            
+            <div className={styles.footerLinks}>
+              <div className={styles.linkGroup}>
+                <h4>Về Chúng Tôi</h4>
+                <ul>
+                  <li><a href="#about">Giới thiệu</a></li>
+                  <li><a href="#blog">Blog</a></li>
+                  <li><a href="#careers">Tuyển dụng</a></li>
+                </ul>
+              </div>
+              
+              <div className={styles.linkGroup}>
+                <h4>Hỗ Trợ</h4>
+                <ul>
+                  <li><a href="#contact">Liên hệ</a></li>
+                  <li><a href="#faq">FAQ</a></li>
+                  <li><a href="#returns">Đổi trả</a></li>
+                </ul>
+              </div>
+            </div>
           </div>
           
-          <div className={styles.footerColumn}>
-            <h3>Hỗ Trợ Khách Hàng</h3>
-            <ul>
-              <li><a href="#contact">Liên hệ</a></li>
-              <li><a href="#faq">FAQ</a></li>
-              <li><a href="#shipping">Vận chuyển</a></li>
-              <li><a href="#returns">Đổi trả</a></li>
-            </ul>
-          </div>
-          
-          <div className={styles.footerColumn}>
-            <h3>Thông Tin Liên Hệ</h3>
-            <p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
-            <p>Email: support@storename.com</p>
-            <p>Hotline: 1900 1234 567</p>
-          </div>
-          
-          <div className={styles.footerColumn}>
-            <h3>Đăng Ký Nhận Tin</h3>
+          <div className={styles.newsletter}>
+            <h4>Đăng Ký Nhận Tin</h4>
             <p>Nhận thông tin về sản phẩm mới và khuyến mãi</p>
-            <div className={styles.newsletterForm}>
+            <div className={styles.subscribeForm}>
               <input type="email" placeholder="Email của bạn" />
               <button>Đăng ký</button>
             </div>
