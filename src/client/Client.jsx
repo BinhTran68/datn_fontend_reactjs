@@ -29,7 +29,7 @@ const App = () => {
         </Content>
         <Content>
           <div className="">
-            {/*<Nav/>*/}
+            {/* <Nav/> */}
             <Outlet />
           </div>
         </Content>

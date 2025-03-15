@@ -1,5 +1,5 @@
 import { Button, Result, List, Typography, Card } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
@@ -24,7 +24,9 @@ function Success() {
   } catch (error) {
     console.error("Lỗi khi parse item:", error);
   }
-
+  useEffect(() => {
+    window.dispatchEvent(new Event("cartUpdated"));
+  }, []);
   return (
     <Card style={{ backgroundColor: "white", padding: 20 }}>
       <Result

@@ -89,7 +89,7 @@ export const calculateShippingFee = async ({
   try {
     const tokenGHN = import.meta.env.VITE_GHN_API_KEY;
     const response = await axios.post(
-      GHN_API_URL+"/v2/shipping-order/fee",
+      GHN_API_URL + "/v2/shipping-order/fee",
       {
         service_type_id: SERVICE_TYPE_ID,
         from_district_id: fromDistrictId,
