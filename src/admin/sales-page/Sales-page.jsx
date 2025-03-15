@@ -15,12 +15,9 @@ import axios from "axios";
 import moment from "moment/moment.js";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
 import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
-import {printBillService} from "../bill/services/printBillService.js";
 import {postChangeQuantityProduct} from "./billService.js";
 import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "./component/ProductDetailModal.jsx";
-import { ExclamationCircleFilled } from '@ant-design/icons';
-import ScanQrModalComponent from "./component/ScanQRModalComponent.jsx";
 import {value} from "lodash/seq.js";
 import {checkConfirmModal} from "../../helpers/CheckConfirmModal.jsx";
 const { confirm } = Modal;
@@ -124,7 +121,7 @@ const SalesPage = () => {
             const response = await fetchProducts(pagination);
             setProducts(response.data);
         } catch (error) {
-            message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+            toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
         } finally {
 
         }
@@ -266,6 +263,7 @@ const SalesPage = () => {
         };
         setItems([...items, newItem]);
         setCurrentBill(newKey);
+        setPdfUrl(null); // Clear the blob URL when creating a new bill
     };
 
     useEffect(() => {
@@ -293,12 +291,13 @@ const SalesPage = () => {
         }
         if (record.quantity <= 0) {
             toast.warning("Sản phẩm đã hết hàng");
-                return;
+            return;
         }
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const existingProduct = item.productList?.find(p => p.id === record.id);
+                    // Tìm sản phẩm với cùng id và price
+                    const existingProduct = item.productList?.find(p => p.id === record.id && p.price === record.price);
 
                     let updatedProductList;
                     if (existingProduct) {
@@ -309,7 +308,7 @@ const SalesPage = () => {
                         }
                         // Tăng số lượng nếu sản phẩm đã có
                         updatedProductList = item.productList.map(p =>
-                            p.id === record.id ? {...p, quantityInCart: p.quantityInCart + 1} : p
+                            p.id === record.id && p.price === record.price ? {...p, quantityInCart: p.quantityInCart + 1} : p
                         );
                     } else {
                         // Thêm sản phẩm mới
@@ -419,23 +418,23 @@ const SalesPage = () => {
             prevItems.map(item => {
                 if (item.key === currentBill) {
                     const updatedProductList = item.productList.map(p => {
-                            if (p.key === product.key) {
-                                if (value >= product.quantity) {
-                                    toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`)
-                                    return {...p, quantityInCart: product.quantity}
-                                }
-                                return {...p, quantityInCart: value}
+                        if (p.id === product.id && p.price === product.price) {
+                            if (value > product.quantity) {
+                                toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`);
+                                return { ...p, quantityInCart: product.quantity };
                             }
-                            return p
+                            return { ...p, quantityInCart: value };
                         }
-                    );
+                        return p;
+                    });
+                    const newAmount = calculateTotalAmount({ productList: updatedProductList });
                     return {
                         ...item,
                         productList: updatedProductList,
                         payInfo: {
                             ...item.payInfo,
-                            amount: calculateTotalAmount({productList: updatedProductList}), // Cập nhật tổng tiền
-                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({productList: updatedProductList})
+                            amount: newAmount,
+                            change: (item.payInfo.customerMoney || 0) - newAmount
                         }
                     };
                 }
@@ -630,8 +629,7 @@ const SalesPage = () => {
         );
     }
 
-
-
+    const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
 
     const handleOnPayment = async () => {
         const isConfirmed = await checkConfirmModal({
@@ -718,6 +716,9 @@ const SalesPage = () => {
                     })
                 );
                 toast.success("Tạo hóa đơn thành công!");
+
+                // Show modal with options
+                setIsPaymentModalVisible(true);
             } else {
                 toast.error("Tạo hóa đơn thất bại!");
             }
@@ -773,13 +774,15 @@ const SalesPage = () => {
 
     useEffect(() => {
         if (pdfUrl && isDocumentLoaded) {
-            // print();
+            print();
         }
     }, [pdfUrl, isDocumentLoaded]);
 
     const handleOnPrintBill = async () => {
+        console.log("item, currentBill", items, currentBill)
         try {
             const id = items.find((item) => item.key === currentBill)?.billCode;
+
             if (!id) {
                 toast.error("Không tìm thấy mã hóa đơn");
                 return;
@@ -1002,7 +1005,53 @@ const SalesPage = () => {
         }
     };
 
-
+    const resetCurrentBill = () => {
+        const newKey = moment().format("HHmmssSSS");
+        setItems(prevItems =>
+            prevItems.map(item =>
+                item.key === currentBill
+                    ? {
+                        ...item,
+                        key: newKey,
+                        itemName: ` Hóa đơn ${newKey}`,
+                        label: (
+                            <span>
+                                Hóa đơn {newKey} <Badge showZero={true} className={"mb-2"} count={0} offset={[5, -5]}/>
+                            </span>
+                        ),
+                        productList: [],
+                        isSuccess: false,
+                        canPayment: false,
+                        customerInfo: null,
+                        payInfo: {
+                            paymentMethods: "cash",
+                            discount: 0,
+                            amount: 0,
+                        },
+                        closable: true,
+                        billCode: null,
+                        isShipping: false,
+                        isNewShippingInfo: false,
+                        shippingInfo: null,
+                        customerAddresses: [],
+                        addressShipping: null,
+                        detailAddressShipping: {
+                            provinceId: null,
+                            districtId: null,
+                            wardId: null,
+                            specificAddress: '',
+                        },
+                        recipientName: '',
+                        recipientPhoneNumber: '',
+                        shippingFee: 0
+                    }
+                    : item
+            )
+        );
+        setCurrentBill(newKey);
+        setPdfUrl(null); // Clear the blob URL when creating a new bill
+        requestAnimationFrame(() => window.scrollTo(0, 0));
+    };
 
     return (
         <div className={"d-flex flex-column gap-3"}>
@@ -1016,7 +1065,7 @@ const SalesPage = () => {
 
                 <ProductDetailModal
                     handleOnAddProductToBill={handleOnAddProductToBill}
-                    eventProductDetailChange={eventProductDetailChange}
+
                     products={products}
                     setProducts={setProducts}
                 />
@@ -1030,8 +1079,11 @@ const SalesPage = () => {
                 </Button>
 
                 <Button
-                    onClick={handleOnCreateBill}>
-                    Làm mới
+                    onClick={() => {
+                        resetCurrentBill();
+                        setIsPaymentModalVisible(false);
+                    }}>
+                    Hóa đơn mới
                 </Button>
             </div>
 
@@ -1109,9 +1161,36 @@ const SalesPage = () => {
                 handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
                 currentBill={currentBill}
             />
-            {pdfUrl ? <Viewer fileUrl={pdfUrl} plugins={[printPluginInstance]}
-                              onDocumentLoad={() => setIsDocumentLoaded(true)} // Khi tài liệu load xong
-            /> : <p></p>}
+            {pdfUrl ?
+                <div >
+                    <Viewer fileUrl={pdfUrl} plugins={[printPluginInstance]}
+                            onDocumentLoad={() => setIsDocumentLoaded(true)} // Khi tài liệu load xong
+                    />
+                </div>
+                : <p></p>}
+
+            <Modal
+                visible={isPaymentModalVisible}
+                title="Thanh toán thành công"
+                footer={null}
+                closable={false}
+                maskClosable={false}
+                style={{ borderRadius: '8px', overflow: 'hidden' }}
+                bodyStyle={{ padding: '20px', textAlign: 'center' }}
+            >
+                <p style={{ fontSize: '16px', marginBottom: '20px' }}>Bạn muốn làm gì tiếp theo?</p>
+                <Button type="primary" style={{ marginRight: '10px' }} onClick={() => {
+                    handleOnPrintBill();
+                }}>
+                    In hóa đơn
+                </Button>
+                <Button onClick={() => {
+                      resetCurrentBill();
+                    setIsPaymentModalVisible(false);
+                }}>
+                    Hóa đơn mới
+                </Button>
+            </Modal>
         </div>
     );
 };

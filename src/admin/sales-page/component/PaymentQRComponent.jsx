@@ -7,6 +7,7 @@ import {formatVND} from "../../../helpers/Helpers.js";
 
 const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCustomerMoneyChange}) => {
     console.log("PaymentQrComponent:", amount, currentBill, transactionCode);
+    console.log("Dược render")
 
     const tokenSePay = import.meta.env.VITE_SE_PAY_API_KEY;
     const [qrUrl, setQrUrl] = useState("");
