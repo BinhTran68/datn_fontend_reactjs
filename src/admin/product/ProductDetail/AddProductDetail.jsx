@@ -1488,8 +1488,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
-              value={commonQuantity}
+              min={1}
+              maxLength={6}              value={commonQuantity}
               onChange={(value) => setCommonQuantity(value)}
               suffix={<span>Đôi</span>}
             />
@@ -1510,7 +1510,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
+              min={1}
+              maxLength={7}
               value={commonPrice}
               onChange={(value) => setCommonPrice(value)}
               suffix={<span>VNĐ</span>}
@@ -1536,7 +1537,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
+              min={1}
+              maxLength={2}
               value={commonWeight}
               onChange={(value) => setCommonWeight(value)}
               suffix={<span>Kg</span>}

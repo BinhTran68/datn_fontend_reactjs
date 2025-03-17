@@ -5,10 +5,22 @@ const token = localStorage.getItem("token");
 
 const api = axios.create({
   baseURL: "http://localhost:8080/api/admin",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
 });
+
+// Thêm interceptor để tự động thêm token vào header
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token"); // Lấy token từ localStorage
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 
 export const fetchSizes = async (pagination) => {
   const { current, pageSize } = pagination;
