@@ -9,7 +9,7 @@ import {convertBillStatusToString, convertLongTimestampToDate} from "../../../he
 import {CiBookmarkPlus} from "react-icons/ci";
 
 const StepProgress = ({steps, currentStep, billHistoryList}) => {
-    const defaultStep = 8;
+    const defaultStep = 6;
     
     const sizeIcon = 42;
     

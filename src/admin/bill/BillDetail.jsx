@@ -28,7 +28,6 @@ import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
 import {toast} from "react-toastify";
 import {ExclamationCircleFilled} from "@ant-design/icons";
 
-
 const {Step} = Steps;
 
 
@@ -172,25 +171,7 @@ const columnsBillProductDetailTable = [
         title: 'Đơn giá',
         dataIndex: 'price',
         key: 'price',
-    },
-
-    {
-        title: 'Hành động',
-        dataIndex: 'action',
-        key: 'action',
-        render: (_, record) => (
-            <Button
-                type="primary"
-                onClick={() => {
-                    console.log(record?.productName);
-                }}
-            >
-                Xóa
-            </Button>
-        ),
-
-    },
-
+    }
 ];
 
 const columnsBillHistory = [
@@ -327,15 +308,14 @@ const BillDetail = () => {
                 case "CHO_VAN_CHUYEN":
                     return "DANG_VAN_CHUYEN";
                 case "DANG_VAN_CHUYEN":
-                    return "DA_GIAO_HANG";
-                case "DA_GIAO_HANG":
-                    // Nếu đã thanh toán trước thì chuyển thẳng sang DA_HOAN_THANH
+                    // Nếu đã thanh toán trước, chuyển sang ĐÃ GIAO HÀNG
                     if (isAlreadyPaid) {
-                        return "DA_HOAN_THANH";
+                        return "DA_GIAO_HANG";
                     }
-                    return "CHO_THANH_TOAN";
-                case "CHO_THANH_TOAN":
+                    // Nếu chưa thanh toán, chuyển thẳng sang ĐÃ THANH TOÁN
                     return "DA_THANH_TOAN";
+                case "DA_GIAO_HANG":
+                    return "DA_HOAN_THANH";
                 case "DA_THANH_TOAN":
                     return "DA_HOAN_THANH";
                 default:
@@ -345,12 +325,19 @@ const BillDetail = () => {
 
 
         const handleRollBackStatusUpdate = () => {
-            switch(currentBill.status) {
+            // Kiểm tra xem đã thanh toán chưa
+            const isAlreadyPaid = billHistory.some(h => h.status === "DA_THANH_TOAN");
+
+            switch(currentBill?.status) {
                 case "DA_HOAN_THANH":
+                    // Nếu đã thanh toán trước, quay về ĐÃ GIAO HÀNG
+                    if (isAlreadyPaid) {
+                        return "DA_GIAO_HANG";
+                    }
                     return "DA_THANH_TOAN";
-                case "DA_THANH_TOAN":
-                    return "DA_GIAO_HANG";
                 case "DA_GIAO_HANG":
+                    return "DANG_VAN_CHUYEN";
+                case "DA_THANH_TOAN":
                     return "DANG_VAN_CHUYEN";
                 case "DANG_VAN_CHUYEN":
                     return "CHO_VAN_CHUYEN";
@@ -421,11 +408,13 @@ const BillDetail = () => {
             {id: 4, label: "Chờ vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_VAN_CHUYEN"},
             {id: 5, label: "Đang vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DANG_VAN_CHUYEN"},
             {id: 6, label: "Đã giao hàng", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_GIAO_HANG"},
-            {id: 7, label: "Hoàn thành", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_HOAN_THANH"},
+            {id: 7, label: "Đã thanh toán", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_THANH_TOAN"},
+            {id: 8, label: "Hoàn thành", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_HOAN_THANH"},
         ];
 
 
         const handleButtonConfirm = (step) => {
+            // Kiểm tra xem đã thanh toán chưa
             const isAlreadyPaid = billHistory.some(h => h.status === "DA_THANH_TOAN");
 
             switch(step) {
@@ -438,11 +427,9 @@ const BillDetail = () => {
                 case "CHO_VAN_CHUYEN":
                     return "Bắt đầu vận chuyển";
                 case "DANG_VAN_CHUYEN":
-                    return "Xác nhận đã giao";
+                    return isAlreadyPaid ? "Xác nhận đã giao hàng" : "Xác nhận giao hàng và thanh toán";
                 case "DA_GIAO_HANG":
-                    return isAlreadyPaid ? "Hoàn thành đơn" : "Chuyển chờ thanh toán";
-                case "CHO_THANH_TOAN":
-                    return "Xác nhận thanh toán";
+                    return "Hoàn thành đơn";
                 case "DA_THANH_TOAN":
                     return "Hoàn thành đơn";
                 default:
@@ -694,22 +681,13 @@ const BillDetail = () => {
                                     Quay lại
                                 </Button>
                             )}
-                            {!billHistory.some(h => h.status === "DA_THANH_TOAN") && 
-                             !["TAO_DON_HANG", "CHO_XAC_NHAN", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG"].includes(currentBill?.status) && (
-                                <Button onClick={handleConfirmPayment} type="primary">
-                                    Xác nhận thanh toán
-                                </Button>
-                            )}
+                        
                             {!["DA_HUY", "DA_HOAN_THANH", "TRA_HANG"].includes(currentBill?.status) && (
                                 <Button onClick={handleCancelBill} type="danger">
                                     Hủy đơn
                                 </Button>
                             )}
-                            {["DA_GIAO_HANG", "DA_THANH_TOAN", "DA_HOAN_THANH"].includes(currentBill?.status) && (
-                                <Button onClick={handleReturnRequest} type="warning">
-                                    Yêu cầu trả hàng
-                                </Button>
-                            )}
+                       
                         </div>
                         <Button type={"primary"} onClick={showModalBillHistory}>
                             Lịch sử hóa đơn
@@ -732,7 +710,7 @@ const BillDetail = () => {
                 <Card>
                     <div className={"d-flex justify-content-between"}>
                         <h3 className={"mb-4"}>Thông tin đơn hàng</h3>
-                        {currentBill?.status === "TAO_DON_HANG" && (
+                        {currentBill?.status === "CHO_XAC_NHAN" && (
                             <Button type={"primary"} onClick={showModalEditBillInfo}>
                                 Chỉnh sửa thông tin đơn hàng
                             </Button>
@@ -774,7 +752,7 @@ const BillDetail = () => {
                 <Card>
                     <div className={"d-flex justify-content-between mb-3"}>
                         <h3>Thông tin sản phẩm đã mua</h3>
-                        {currentBill?.status === "TAO_DON_HANG" && (
+                        {currentBill?.status === "CHO_XAC_NHAN" && (
                             <Button
                                 type={"primary"}
                                 onClick={handleOnShowProduct}

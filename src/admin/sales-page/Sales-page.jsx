@@ -1074,13 +1074,11 @@ const SalesPage = () => {
                 onOk={handleOk}
                 onCancel={handleCancel}
             >
-
                 <ProductDetailModal
                     handleOnAddProductToBill={handleOnAddProductToBill}
                     products={products}
                     setProducts={setProducts}
                 />
-
             </Modal>
             <div className={"d-flex justify-content-between"}>
                 <Button
