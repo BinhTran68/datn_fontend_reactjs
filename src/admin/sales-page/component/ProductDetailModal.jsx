@@ -35,7 +35,6 @@ import { LOG } from "@zxing/library/esm/core/datamatrix/encoder/constants.js";
 
 const ProductDetailModal = ({ 
                               handleOnAddProductToBill,
-                              eventProductDetailChange,
                               products = [],
                               setProducts = () => {} // Thêm default function
                             }) => {
@@ -162,7 +161,7 @@ const ProductDetailModal = ({
     stompClient.onConnect = () => {
       stompClient.subscribe("/topic/product-updates", (message) => {
         const updatedProduct = JSON.parse(message.body);
-        eventProductDetailChange(updatedProduct);
+
         setProducts(prevProducts => 
           prevProducts.map(product =>
             product.id === updatedProduct.id ? updatedProduct : product

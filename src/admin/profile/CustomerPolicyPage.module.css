@@ -1,545 +1,499 @@
-/* CustomerPolicyPage.module.css - Optimized and cleaned up */
+/* CustomerPolicyPage.module.css - Optimized and color-matched to The Handz logo */
 
 .policyContainer {
-    font-family: 'Roboto', sans-serif;
-    color: #333;
-    line-height: 1.6;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+  /* Updated color palette based on The Handz logo */
+  --primary-color: #f89e4f; /* Orange from logo */
+  --primary-hover: #e58a3a; /* Darker orange */
+  --secondary-color: #4290c9; /* Blue from shoe */
+  --secondary-hover: #3376ad; /* Darker blue */
+  --accent-color: #90d4c5; /* Light teal from bottom right */
+  --text-color: #333333;
+  --light-text: #666666;
+  --header-bg: #f9f9f9;
+  --border-color: #e5e7eb;
+  --light-bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition: all 0.3s ease;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-color);
+  line-height: 1.6;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header styles */
+.policyHeader {
+  background-color: var(--header-bg);
+  padding: 3rem 2rem;
+  text-align: center;
+  margin: 1.5rem 0 3rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  background-image: linear-gradient(135deg, rgba(248, 158, 79, 0.1), rgba(144, 212, 197, 0.15));
+}
+
+.policyHeader h1 {
+  font-size: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.policyHeader p {
+  font-size: 1.125rem;
+  color: var(--light-text);
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+/* Main content layout */
+.policyWrapper {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.policySidebar {
+  width: 25%;
+  min-width: 200px;
+}
+
+.policyNav {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: var(--card-bg);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.policyNav button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--light-text);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.policyNav button:hover {
+  background-color: var(--light-bg);
+  color: var(--secondary-color);
+}
+
+.policyNav button.activeTab {
+  background-color: rgba(248, 158, 79, 0.15);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.policyMain {
+  flex: 1;
+  max-width: 75%;
+}
+
+/* Policy content styles */
+.policyContent {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2.5rem;
+}
+
+.policyContent h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.policyText h3 {
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.policyText p {
+  margin-bottom: 1rem;
+  color: var(--light-text);
+}
+
+.policyText ul {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.policyText li {
+  margin-bottom: 0.5rem;
+  color: var(--light-text);
+}
+
+/* FAQ Section styles */
+.faqSection {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2.5rem;
+}
+
+.faqSection h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1.75rem;
+  text-align: center;
+  color: var(--primary-color);
+  font-weight: 700;
+  position: relative;
+}
+
+.faqSection h2::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 3px;
+  background-color: var(--primary-color);
+  margin: 0.75rem auto 0;
+  opacity: 0.6;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faqItem {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.faqItem:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.faqQuestion {
+  padding: 1.25rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  position: relative;
+  list-style: none;
+  color: var(--text-color);
+}
+
+.faqQuestion::after {
+  content: "+";
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  transition: var(--transition);
+}
+
+.faqItem[open] .faqQuestion::after {
+  content: "-";
+}
+
+.faqAnswer {
+  padding: 0 1.25rem 1.25rem;
+  color: var(--light-text);
+}
+
+/* Feedback Section styles */
+.feedbackSection {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.feedbackSection h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.feedbackSection > p {
+  margin-bottom: 1.5rem;
+  color: var(--light-text);
+}
+
+.feedbackForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.formGroup input,
+.formGroup textarea {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(66, 144, 201, 0.2);
+}
+
+.submitBtn {
+  align-self: flex-start;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.submitBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.successMessage {
+  background-color: rgba(144, 212, 197, 0.2);
+  border: 1px solid rgba(144, 212, 197, 0.5);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-sm);
+  margin: 1rem 0;
+  color: #2a7d6a;
+}
+
+/* Footer styles */
+.footer {
+  margin-top: 3rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 3rem;
+}
+
+.footerContent {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footerInfo {
+  display: flex;
+  flex: 2;
+  gap: 3rem;
+}
+
+.companyInfo {
+  flex: 1;
+}
+
+.companyInfo h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+
+.companyInfo p {
+  margin-bottom: 0.5rem;
+  color: var(--light-text);
+  font-size: 0.95rem;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 3rem;
+  flex: 1;
+}
+
+.linkGroup h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--secondary-color);
+}
+
+.linkGroup ul {
+  list-style: none;
+  padding: 0;
+}
+
+.linkGroup li {
+  margin-bottom: 0.75rem;
+}
+
+.linkGroup a {
+  color: var(--light-text);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.linkGroup a:hover {
+  color: var(--primary-color);
+}
+
+.newsletter {
+  flex: 1;
+}
+
+.newsletter h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--secondary-color);
+}
+
+.newsletter p {
+  color: var(--light-text);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.subscribeForm {
+  display: flex;
+}
+
+.subscribeForm input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  font-family: inherit;
+}
+
+.subscribeForm button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.subscribeForm button:hover {
+  background-color: var(--primary-hover);
+}
+
+.copyright {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--light-text);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+  .policyWrapper {
+    flex-direction: column;
   }
   
-  /* Header Styles */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .logo h1 {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-  }
-  
-  .logo span {
-    color: #f05123;
-  }
-  
-  .mainNav ul {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 30px;
-  }
-  
-  .mainNav a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    transition: color 0.3s ease;
-  }
-  
-  .mainNav a:hover {
-    color: #f05123;
-  }
-  
-  /* Banner Styles */
-  .policyBanner {
-    background-color: #f8f9fa;
-    padding: 60px 0;
-    text-align: center;
-    margin: 20px 0 50px;
-    border-radius: 12px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  }
-  
-  .policyBanner h1 {
-    font-size: 36px;
-    margin-bottom: 15px;
-    color: #222;
-  }
-  
-  .policyBanner p {
-    font-size: 18px;
-    color: #666;
-    max-width: 700px;
-    margin: 0 auto;
-  }
-  
-  /* Policy Content Styles */
-  .policyContent {
-    display: flex;
-    margin-bottom: 70px;
-    gap: 40px;
-  }
-  
-  .policyTabs {
-    width: 25%;
-    min-width: 200px;
-  }
-  
-  .policyTabs ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    position: sticky;
-    top: 20px;
-  }
-  
-  .policyTabs li {
-    padding: 16px 20px;
-    border-left: 3px solid transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 8px;
-    border-radius: 0 5px 5px 0;
-  }
-  
-  .policyTabs li:hover {
-    background-color: #f5f5f5;
-    border-left-color: #ddd;
-  }
-  
-  .policyTabs li.active {
-    background-color: #f5f5f5;
-    border-left-color: #f05123;
-    font-weight: 600;
-    color: #f05123;
-  }
-  
-  .policyDetails {
-    width: 75%;
-    padding: 0 20px;
-  }
-  
-  .policyDetails h2 {
-    font-size: 28px;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
-    color: #f05123;
-  }
-  
-  .policyText h3 {
-    font-size: 20px;
-    margin: 35px 0 15px;
-    color: #444;
-  }
-  
-  .policyText p {
-    margin-bottom: 20px;
-    line-height: 1.8;
-  }
-  
-  .policyText ul {
-    margin-bottom: 25px;
-    padding-left: 25px;
-  }
-  
-  .policyText li {
-    margin-bottom: 12px;
-  }
-  
-  /* FAQ Section Styles */
-  .faqSection {
-    margin-bottom: 70px;
-  }
-  
-  .faqSection h2 {
-    font-size: 28px;
-    margin-bottom: 35px;
-    text-align: center;
-    position: relative;
-  }
-  
-  .faqSection h2:after {
-    content: "";
-    display: block;
-    width: 60px;
-    height: 3px;
-    background-color: #f05123;
-    margin: 15px auto 0;
-  }
-  
-  .faqContainer {
-    max-width: 850px;
-    margin: 0 auto;
-  }
-  
-  .faqItem {
-    margin-bottom: 16px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-    transition: all 0.3s ease;
-  }
-  
-  .faqItem:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  }
-  
-  .faqQuestion {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 24px;
-    background-color: #f9f9f9;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .faqQuestion h3 {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 500;
-  }
-  
-  .faqToggle {
-    font-size: 22px;
-    color: #666;
-    transition: transform 0.3s ease;
-  }
-  
-  .faqItem.expanded .faqToggle {
-    transform: rotate(45deg);
-  }
-  
-  .faqAnswer {
-    padding: 5px 24px 20px;
-    border-top: 1px solid #eee;
-    background-color: #fff;
-  }
-  
-  .faqAnswer p {
-    margin: 15px 0 0;
-    line-height: 1.7;
-  }
-  
-  .faqItem.expanded .faqQuestion {
-    background-color: #f5f5f5;
-  }
-  
-  /* Feedback Section Styles */
-  .feedbackSection {
-    background-color: #f8f9fa;
-    padding: 50px 40px;
-    border-radius: 12px;
-    margin-bottom: 70px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  }
-  
-  .feedbackSection h2 {
-    font-size: 28px;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-  
-  .feedbackSection > p {
-    text-align: center;
-    margin-bottom: 40px;
-    color: #666;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .feedbackForm {
-    max-width: 650px;
-    margin: 0 auto;
-  }
-  
-  .formGroup {
-    margin-bottom: 25px;
-  }
-  
-  .formGroup label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 500;
-  }
-  
-  .formGroup input,
-  .formGroup textarea {
+  .policySidebar {
     width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: all 0.3s ease;
+    min-width: 100%;
   }
   
-  .formGroup textarea {
-    resize: vertical;
-    min-height: 140px;
-  }
-  
-  .formGroup input:focus,
-  .formGroup textarea:focus {
-    outline: none;
-    border-color: #f05123;
-    box-shadow: 0 0 0 3px rgba(240, 81, 35, 0.1);
-  }
-  
-  .submitBtn {
-    background-color: #f05123;
-    color: white;
-    border: none;
-    padding: 14px 30px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: block;
-    margin: 0 auto;
-  }
-  
-  .submitBtn:hover {
-    background-color: #d83e0c;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(240, 81, 35, 0.2);
-  }
-  
-  .successMessage {
-    background-color: #e7f7e7;
-    border: 1px solid #c3e6c3;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .successMessage p {
-    color: #2c752c;
-    margin: 0;
-    font-weight: 500;
-    font-size: 17px;
-  }
-  
-  /* Footer Styles */
-  .footer {
-    background-color: #f8f9fa;
-    padding: 70px 0 30px;
-    margin-top: 70px;
-    border-top: 1px solid #eee;
-  }
-  
-  .footerColumns {
-    display: flex;
+  .policyNav {
+    position: static;
+    flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
-    margin-bottom: 60px;
-    gap: 20px;
   }
   
-  .footerColumn {
+  .policyNav button {
     flex: 1;
-    min-width: 200px;
-    margin-bottom: 30px;
-  }
-  
-  .footerColumn h3 {
-    font-size: 18px;
-    margin-bottom: 22px;
-    color: #333;
-    position: relative;
-  }
-  
-  .footerColumn h3:after {
-    content: "";
-    display: block;
-    width: 30px;
-    height: 2px;
-    background-color: #f05123;
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-  }
-  
-  .footerColumn ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .footerColumn li {
-    margin-bottom: 12px;
-  }
-  
-  .footerColumn a {
-    text-decoration: none;
-    color: #666;
-    transition: color 0.3s ease;
-    display: inline-block;
-  }
-  
-  .footerColumn a:hover {
-    color: #f05123;
-    transform: translateX(3px);
-  }
-  
-  .footerColumn p {
-    color: #666;
-    margin-bottom: 12px;
-  }
-  
-  .newsletterForm {
-    display: flex;
-    margin-top: 18px;
-  }
-  
-  .newsletterForm input {
-    flex: 1;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px 0 0 6px;
-    font-size: 14px;
-  }
-  
-  .newsletterForm input:focus {
-    outline: none;
-    border-color: #f05123;
-  }
-  
-  .newsletterForm button {
-    background-color: #f05123;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 0 6px 6px 0;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-weight: 500;
-  }
-  
-  .newsletterForm button:hover {
-    background-color: #d83e0c;
-  }
-  
-  .copyright {
+    min-width: 150px;
     text-align: center;
-    padding-top: 30px;
-    border-top: 1px solid #eee;
   }
   
-  .copyright p {
-    color: #888;
-    font-size: 14px;
+  .policyMain {
+    max-width: 100%;
   }
   
-  /* Responsive Styles */
-  @media (max-width: 992px) {
-    .policyContent {
-      flex-direction: column;
-    }
-    
-    .policyTabs, 
-    .policyDetails {
-      width: 100%;
-    }
-    
-    .policyTabs {
-      margin-bottom: 40px;
-    }
-    
-    .policyTabs ul {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      position: static;
-    }
-    
-    .policyTabs li {
-      margin-right: 10px;
-      margin-bottom: 10px;
-      border-left: none;
-      border-bottom: 3px solid transparent;
-      border-radius: 6px;
-    }
-    
-    .policyTabs li.active {
-      border-left-color: transparent;
-      border-bottom-color: #f05123;
-    }
-    
-    .policyDetails {
-      padding: 0;
-    }
-    
-    .footerColumn {
-      flex-basis: 45%;
-    }
+  .formRow {
+    flex-direction: column;
   }
   
-  @media (max-width: 768px) {
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .mainNav {
-      margin-top: 20px;
-      width: 100%;
-    }
-    
-    .mainNav ul {
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    .policyBanner {
-      padding: 40px 20px;
-    }
-    
-    .policyBanner h1 {
-      font-size: 30px;
-    }
-    
-    .feedbackSection {
-      padding: 40px 30px;
-    }
-    
-    .footerColumn {
-      flex-basis: 100%;
-    }
+  .footerContent {
+    flex-direction: column;
   }
   
-  @media (max-width: 576px) {
-    .policyBanner {
-      padding: 30px 15px;
-      margin: 15px 0 40px;
-    }
-    
-    .policyBanner h1 {
-      font-size: 26px;
-    }
-    
-    .policyBanner p {
-      font-size: 16px;
-    }
-    
-    .policyDetails h2 {
-      font-size: 24px;
-    }
-    
-    .faqQuestion {
-      padding: 15px 20px;
-    }
-    
-    .faqQuestion h3 {
-      font-size: 16px;
-    }
-    
-    .feedbackSection {
-      padding: 30px 20px;
-    }
-    
-    .submitBtn {
-      width: 100%;
-    }
+  .footerInfo {
+    flex-direction: column;
+    gap: 2rem;
   }
+  
+  .footerLinks {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .policyHeader {
+    padding: 2rem 1rem;
+  }
+  
+  .policyHeader h1 {
+    font-size: 1.75rem;
+  }
+  
+  .policyContent,
+  .faqSection,
+  .feedbackSection {
+    padding: 1.5rem;
+  }
+  
+  .policyContent h2,
+  .faqSection h2,
+  .feedbackSection h2 {
+    font-size: 1.5rem;
+  }
+  
+  .footerLinks {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}

@@ -3,10 +3,10 @@ import {Image} from "antd";
 import {genQrUrl} from "../../../utils/payment.js";
 import axios from "axios";
 import {toast} from "react-toastify";
-import {formatVND} from "../../../helpers/Helpers.js";
 
 const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCustomerMoneyChange}) => {
     console.log("PaymentQrComponent:", amount, currentBill, transactionCode);
+    console.log("Dược render")
 
     const tokenSePay = import.meta.env.VITE_SE_PAY_API_KEY;
     const [qrUrl, setQrUrl] = useState("");
@@ -39,7 +39,7 @@ const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCus
             const intervalId = setInterval(() => {
                 console.log("Checking transactions...");
                 fetchTransactions();
-            }, 5000);
+            }, 6500);
 
             return () => clearInterval(intervalId); // Cleanup interval khi component unmount hoặc paymentSuccess thay đổi
         }
@@ -54,25 +54,23 @@ const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCus
             tomorrow.setDate(today.getDate() + 1);
             const formatDate = (date) => date.toISOString().split("T")[0];
 
-            console.log("Goọi api")
-            // const response = await axios.get("/userapi/transactions/list", {
-            //     params: {
-            //         transaction_date_min: formatDate(today),
-            //         transaction_date_max: formatDate(tomorrow),
-            //     },
-            //     headers: {
-            //         Authorization: `Bearer ${tokenSePay}`,
-            //     },
-            // });
 
+            const response = await axios.get("/userapi/transactions/list", {
+                params: {
+                    transaction_date_min: formatDate(today),
+                    transaction_date_max: formatDate(tomorrow),
+                },
+                headers: {
+                    Authorization: `Bearer ${tokenSePay}`,
+                },
+            });
 
+            const billTransaction = response.data.transactions.find(t => t.transaction_content.split(" ")[0] === currentBill);
 
-            // Kiểm tra xem giao dịch có khớp với `currentBill` không
-            const billTransaction = "oke"; // Cần thay bằng logic thực tế
             if (billTransaction) {
-                handleBankCustomerMoneyChange(35000, "transactionCode");
-                setPaymentSuccess(true); // Đánh dấu thanh toán thành công
-                toast.success(`Đơn hàng ${currentBill} thanh toán ${formatVND(35000)}.`);
+                handleBankCustomerMoneyChange(billTransaction.amount_in, billTransaction.reference_number);
+                setPaymentSuccess(true);
+                toast.success("Thanh toán thành công!");
             }
         } catch (err) {
             console.error("Lỗi khi lấy dữ liệu  giao dịch", err);
