@@ -260,15 +260,15 @@ const exits = async (productData) => {
     quantity: Yup.number()
       .required("Số lượng là bắt buộc")
       .min(0, "Số lượng phải lớn hơn hoặc bằng 0")
-      .max(100, "Số lượng không được vượt quá 100"), // Thay đổi giá trị tối đa theo nhu cầu
+      .max(999999, "Số lượng không được vượt quá 999999"), // Thay đổi giá trị tối đa theo nhu cầu
     price: Yup.number()
       .required("Giá bán là bắt buộc")
       .min(0, "Giá bán phải lớn hơn hoặc bằng 0")
-      .max(1000000, "Giá bán không được vượt quá 1,000,000 VNĐ"), // Thay đổi giá trị tối đa theo nhu cầu
+      .max(99999999, "Giá bán không được vượt quá 99.999.999 VNĐ"), // Thay đổi giá trị tối đa theo nhu cầu
     weight: Yup.number()
       .required("Cân nặng là bắt buộc")
       .min(0, "Cân nặng phải lớn hơn hoặc bằng 0")
-      .max(100, "Cân nặng không được vượt quá 100 kg"), // Thay đổi giá trị tối đa theo nhu cầu
+      .max(10000, "Cân nặng không được vượt quá 10000 gram"), // Thay đổi giá trị tối đa theo nhu cầu
     description: Yup.string().nullable(),
   });
   const getIdByName = (dataArray, keyName, targetValue) => {
@@ -677,7 +677,7 @@ const exits = async (productData) => {
                 placeholder="Cân nặng"
                 min={0}
                 style={{ width: "100%" }}
-                suffix={<span>Kg</span>}
+                suffix={<span>gram</span>}
               />
             )}
           />

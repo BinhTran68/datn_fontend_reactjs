@@ -30,7 +30,7 @@ function AddressSelectorGHN({
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
   //
-  
+
   async function getAddress() {
     const fullAddress = await generateAddressString(
       201,
@@ -40,8 +40,19 @@ function AddressSelectorGHN({
     );
     console.log("Địa chỉ đầy đủ:", fullAddress);
   }
+  useEffect(() => {
+    console.log("🔄 Cập nhật state từ props:", {
+      provinceId,
+      districtId,
+      wardId,
+      specificAddressDefault,
+    });
 
-  
+    setSelectedProvince(Number(provinceId) || null);
+    setSelectedDistrict(Number(districtId) || null);
+    setSelectedWard(String(wardId) || null);
+    setSpecificAddress(specificAddressDefault || "");
+  }, [provinceId, districtId, wardId, specificAddressDefault]);
 
   // Lấy danh sách tỉnh/thành phố
   useEffect(() => {
@@ -143,8 +154,7 @@ function AddressSelectorGHN({
     const value = e.target.value;
     setSpecificAddress(value);
     onAddressChange(selectedProvince, selectedDistrict, selectedWard, value);
-    console.log("dịa chỉ ",selectedProvince,selectedDistrict,selectedWard);
-    
+    console.log("dịa chỉ ", selectedProvince, selectedDistrict, selectedWard);
   };
 
   return (

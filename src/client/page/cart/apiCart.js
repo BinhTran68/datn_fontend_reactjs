@@ -85,3 +85,14 @@ export const apiSetQuantityCart = async (req) => {
     throw error;
   }
 };
+export const apiGetRealPrice = async (addCartList) => {
+  try {
+    const response = await api.post("/getrealprice", addCartList);
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi lấy giá thực.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
