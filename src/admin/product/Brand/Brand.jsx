@@ -110,15 +110,30 @@ const Category = () => {
     fetchBrandsData();
   }, [pagination]);
 
+  // const fetchBrandsData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data, total } = requestSearch.name?.trim()
+  //       ? await searchNameBrand(pagination, requestSearch)
+  //       : await fetchBrands(pagination);
+  //     setBrands(data);
+  //     setTotalBrands(total);
+  //     console.log(requestSearch.name + "đây là search");
+  //   } catch (error) {
+  //     message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const fetchBrandsData = async () => {
     setLoading(true);
     try {
       const { data, total } = requestSearch.name?.trim()
         ? await searchNameBrand(pagination, requestSearch)
         : await fetchBrands(pagination);
+
       setBrands(data);
       setTotalBrands(total);
-      console.log(requestSearch.name + "đây là search");
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -556,15 +571,10 @@ const Category = () => {
           showSizeChanger
           pageSizeOptions={["3", "5", "10", "20"]}
           onShowSizeChange={(current, pageSize) => {
-            setPagination({
-              current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
-              pageSize,
-            });
-            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            setPagination((prev) => ({ ...prev, current: 1, pageSize }));
           }}
           onChange={(page, pageSize) => {
-            setPagination({ current: page, pageSize });
-            fetchBrandsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            setPagination((prev) => ({ ...prev, current: page, pageSize }));
           }}
         />
       </div>

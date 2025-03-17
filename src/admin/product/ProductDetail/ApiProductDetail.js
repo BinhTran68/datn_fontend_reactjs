@@ -85,10 +85,36 @@ export const fetchDataSelectBrand = async () => {
     throw error;
   }
 };
+export const fetchDataSelectBrandHD = async () => {
+  try {
+    const response = await api.get("/brand/getallselecthd", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 
 export const fetchDataSelectColor = async () => {
   try {
     const response = await api.get("/color/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectColorHD = async () => {
+  try {
+    const response = await api.get("/color/getallselecthd", {});
 
     return response.data;
   } catch (error) {
@@ -112,9 +138,35 @@ export const fetchDataSelectGender = async () => {
     throw error;
   }
 };
+export const fetchDataSelectGenderHD = async () => {
+  try {
+    const response = await api.get("/gender/getallselecthd", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 export const fetchDataSelectMaterial = async () => {
   try {
     const response = await api.get("/material/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectMaterialhd = async () => {
+  try {
+    const response = await api.get("/material/getallselecthd", {});
 
     return response.data;
   } catch (error) {
@@ -138,9 +190,35 @@ export const fetchDataSelectProduct = async () => {
     throw error;
   }
 };
+export const fetchDataSelectProducthd = async () => {
+  try {
+    const response = await api.get("/product/getallselecthd", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 export const fetchDataSelectSize = async () => {
   try {
     const response = await api.get("/size/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectSizehd = async () => {
+  try {
+    const response = await api.get("/size/getallselecthd", {});
 
     return response.data;
   } catch (error) {
@@ -164,9 +242,35 @@ export const fetchDataSelectSole = async () => {
     throw error;
   }
 };
+export const fetchDataSelectSolehd = async () => {
+  try {
+    const response = await api.get("/sole/getallselecthd", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
 export const fetchDataSelectType = async () => {
   try {
     const response = await api.get("/type/getallselect", {});
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    message.error(error.response?.data?.message);
+    throw error;
+  }
+};
+export const fetchDataSelectTypehd = async () => {
+  try {
+    const response = await api.get("/type/getallselecthd", {});
 
     return response.data;
   } catch (error) {
