@@ -56,7 +56,9 @@ const SalePaymentInfo = ({
                              shippingFee,
                              handleOnChangeShippingFee,
                              currentBill,
-                             transactionCode
+                             transactionCode,
+                                isCOD,
+                             handleCheckIsCOD
                          }) => {
     console.log("shippingFee", selectedVouchers)
     const missingAmount = Math.max(0, amount - customerMoney);
@@ -267,14 +269,17 @@ const SalePaymentInfo = ({
                             />
                         </div>
                         <Form layout="vertical" onFinish={handleOnPayment}>
-                            <Form.Item label="Tạm tính">
-                                <Text strong>{formatVND((amount + discount))}</Text>
+                            <Form.Item label="Tổng tiền hàng">
+                                <Text strong>{formatVND((amount))}</Text>
                             </Form.Item>
                             <Form.Item label="Giảm giá">
                                 <Text strong>{formatVND(discount)}</Text>
                             </Form.Item>
-                            <Form.Item label="Tổng tiền">
-                                <Text strong style={{color: "red"}}>{formatVND(amount)}</Text>
+                            <Form.Item label="Phí vận chuyển">
+                                <Text strong>{formatVND(shippingFee || 0)}</Text>
+                            </Form.Item>
+                            <Form.Item label="Tổng tiền cần thanh toán">
+                                <Text strong style={{color: "red"}}>{formatVND(amount + shippingFee)}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
@@ -350,11 +355,20 @@ const SalePaymentInfo = ({
                             <Form.Item label="Tiền thừa">
                                 <Text strong>{change > 0 ? change.toLocaleString() : 0} đ</Text>
                             </Form.Item>
-                        
+
+                            {
+                                paymentMethods === "bank" &&
+                                <Form.Item hidden={isSuccess}>
+                                    <Checkbox checked={isCOD} value={isCOD} onChange={handleCheckIsCOD}>
+                                        Thanh toán khi giao hàng
+                                    </Checkbox>
+                                </Form.Item>
+                            }
+
                             <Form.Item hidden={isSuccess}>
                                 <Button onClick={handleOnPayment} type="primary" block
-                                        disabled={!canPayment}>
-                                    Thanh toán
+                                        disabled={isCOD ? false : !canPayment}>
+                                    Tạo hóa đơn
                                 </Button>
                             </Form.Item>
 

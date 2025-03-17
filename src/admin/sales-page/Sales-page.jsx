@@ -70,7 +70,8 @@ const SalesPage = () => {
             },
             recipientName: '',  // Số điện thoại người nhận hàng
             recipientPhoneNumber: '', // Tên ngươi nhận
-            shippingFee: 0
+            shippingFee: 0,
+            isCOD: false
         },
     ]);
 
@@ -361,7 +362,7 @@ const SalesPage = () => {
                 if (item.key === currentBill) {
                     const existingProduct = item.productList?.find(p => p.id === record.id && p.price === record.price);
                     let updatedProductList;
-                    
+
                     if (existingProduct) {
                         if (existingProduct.quantityInCart >= record.quantity) {
                             toast.warning(`Số lượng sản phẩm không đủ, tối đa ${record.quantity}`);
@@ -376,7 +377,7 @@ const SalesPage = () => {
 
                     // Tính tổng tiền mới
                     const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
-                    
+
                     // Tự động tìm và áp dụng voucher tốt nhất
                     const voucherResult = findBestVoucher(newTotalAmount);
                     const discountAmount = voucherResult?.currentDiscount || 0;
@@ -390,7 +391,7 @@ const SalesPage = () => {
 
                     // Cập nhật số lượng sản phẩm trong kho
                     setProducts(prevProducts => prevProducts.map(
-                        (product) => product.id === record.id 
+                        (product) => product.id === record.id
                             ? { ...product, quantity: product.quantity - 1 }
                             : product
                     ));
@@ -600,7 +601,7 @@ const SalesPage = () => {
     const handleOnSelectedVoucher = (voucher) => {
         const originalTotal = calculateTotalAmount(items.find(item => item.key === currentBill));
         const voucherResult = findBestVoucher(originalTotal);
-        
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -645,6 +646,22 @@ const SalesPage = () => {
     };
 
 
+    const handleCheckIsCOD = (e) => {
+        const isChecked = e.target.checked;
+        setItems(prevItems =>
+            prevItems.map(item => {
+                if (item.key === currentBill) {
+                    return {
+                        ...item,
+                        isCOD: isChecked,
+                        isShipping: true,
+                    };
+                }
+                return item;
+            })
+        );
+    }
+
     const handleCheckIsShipping = (e) => {
         const isChecked = e.target.checked;
         setItems(prevItems =>
@@ -659,8 +676,8 @@ const SalesPage = () => {
                 return item;
             })
         );
-
     }
+
 
     const handleChangePaymentMethod = (value) => {
         setItems(prevItems =>
@@ -688,8 +705,8 @@ const SalesPage = () => {
 
     const handleOnPayment = async () => {
         const isConfirmed = await checkConfirmModal({
-            title: "Xác nhận thanh toán",
-            content: "Bạn có chắc chắn muốn tiếp tục thanh toán?",
+            title: "Xác nhận tạo hóa đơn",
+            content: "Bạn có chắc chắn muốn tiếp tục ?",
             okText: "Đồng ý",
             cancelText: "Hủy",
         });
@@ -743,6 +760,7 @@ const SalesPage = () => {
                 recipientName: bill.recipientName || "",
                 recipientPhoneNumber: bill.recipientPhoneNumber || "",
                 shippingFee: bill.shippingFee || 0,
+                isCOD: bill.isCOD ?? false,
                 address: {
                     provinceId: bill.detailAddressShipping?.provinceId || null,
                     districtId: bill.detailAddressShipping?.districtId || null,
@@ -1169,6 +1187,8 @@ const SalesPage = () => {
                 handleOnChangerRecipientName={handleOnChangerRecipientName}
                 handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
                 currentBill={currentBill}
+                isCOD={currentBillData?.isCOD}
+                handleCheckIsCOD={handleCheckIsCOD}
             />
             {pdfUrl ?
                 <div >
