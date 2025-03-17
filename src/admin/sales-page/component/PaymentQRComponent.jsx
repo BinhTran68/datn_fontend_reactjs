@@ -3,7 +3,6 @@ import {Image} from "antd";
 import {genQrUrl} from "../../../utils/payment.js";
 import axios from "axios";
 import {toast} from "react-toastify";
-import {formatVND} from "../../../helpers/Helpers.js";
 
 const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCustomerMoneyChange}) => {
     console.log("PaymentQrComponent:", amount, currentBill, transactionCode);

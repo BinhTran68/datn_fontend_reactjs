@@ -25,7 +25,8 @@ import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
 import BillStatusComponent from "./componets/BillTypeComponent.jsx";
 import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
-
+import {toast} from "react-toastify";
+import {ExclamationCircleFilled} from "@ant-design/icons";
 
 
 const {Step} = Steps;
@@ -99,23 +100,47 @@ const columnsBillProductDetailTable = [
         render: (text, record, index) => index + 1,
     },
     {
-        title: 'Ảnh sản phẩm',
-        dataIndex: 'urlImage',
-        key: 'urlImage',
-        render: (url) => {
+        title: "Ảnh sản phẩm",
+        dataIndex: "urlImage",
+        key: "urlImage",
+        render: (images) => {
+            if (images) {
+                return (
+                    <Image
+                        src={images}
+                        alt="Sản phẩm"
+                        style={{
+                            width: '100px',
+                            height: '100px',
+                            objectFit: 'cover',
+                            borderRadius: '4px'
+                        }}
+                    />
+                );
+            }
             return (
                 <div
-                    className="d-flex justify-content-center"
-
+                    style={{
+                        width: '100px',
+                        height: '100px',
+                        backgroundColor: '#f5f5f5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '4px'
+                    }}
                 >
-                    <Image style={{
-                        objectFit: "contain"
-                    }} width={120}
-                           src={url ?? "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEg8SExASFRUVFRUWFRYQFRAVFRIVFRYXFhUVFRUYHiggHRolGxUXITEiJSkrLi4uFx8zODMsNygtLisBCgoKDQ0NDg0NDysZFRkrKy03Ky0rKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAOEA4QMBIgACEQEDEQH/xAAbAAEAAwEBAQEAAAAAAAAAAAAAAgMEAQUGB//EADkQAAIBAgQDBQUGBQUAAAAAAAABAgMRBCExURJBcQVhgZHwIqGxwdEGEzJSkuEjYnKC8RRCQ1NU/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwD9oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEasrJvZXM9HGqVla18tQNQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFGKxKgs9WXnz/a1a85d2S8AN8O0E2WrCJNTj+FtO35Xuu4+fw9W+XM+j7NrXpxIrSDi28jpUAAAAAAAAAAAAAAAAAAAAAAAADHi6ufCvHqXYitbJamC4F8JNcy6OJ3zMyJ8C1bSX8zsRWyNWL5+ZIwLhelSHg0aabaWem6zt4lRHGV+FO2vwPl8ZUPW7UxqSsj5uvVuyCX3v7dx9Z2PnHxufC1Kr0R+gdkUHCEU9eFX8gNSBXKefT/BKDKJAAAAAAAAAAAAAAAAAAAAABViKvDFta8k+bO158MWzLi4yl7Uc1stVvZcwKJzbOLkUwlfctSlyi27bOxFTnPhXe9F833Gb7y3tXTf5ptLPaN9Ds4Szvr0t6RRWwsZJKcU0mnnutHk1v7wPRp4q+Ukn3Ss+7Rl8KcP9vFH+mTt+l3R58ZdfXiWKoBpxHZlOpqot7xvB+66Z59b7Lxek6i6/dy+aNUa5bHGPcDP2d9nKdKSk05SWjqOKUXuorn1PWqTUV8zH/rCDm5O3qxUXU3z39L5miGhTEsUgqwHIvI6EAAAAAAAAAAAAAAAAADLj5vgkk7PRvZPn63Aqr1eO/C720tpJq6ZnhjkrRbs3ey6a/EqwsqdJcMXzvd8Tbe5bUlTk7tK/9y+AVFY5crlD7apptShNWepcoU75KLa75X8rlGPowtD2JXlJR9lNpXTd2+Sy1A0rtKnUi4xlK+ucdLd9yCfr/D7imlQUco5ev3LYz3ILEzvCiKJIDjpbMg6bRamSUgKDXQjZdfgRbXMcQF6kOMoUm8lqXpqHfLu5AaYqyS56vuJGSMub85P4LzNUXcqOgAAAAAAAAAAAAAAAhVqcKva/cuZgw90mpvibvfknfkW1ZqUprlp13t4nm1cBJO8ZXXLPPowq2eDj3ryIPApWvJ9UuXmQlSqbP6GWrVrxlle2WTV+WeTA2YnAwdpOz5ZXT6HKdNRVo/G/rUoUePglOMXKDco2v7Lacb+V0aY+vXgQSscaJI7YCKTWhZGRG19+e68vqd4fX13AkCN7HYpyySv8gK8RPKP9UfiW0qbeei3fyOVIwjr7Tyy5JohVqylvbZAaPv0soeLtdv8AYhFP+fxaj69dSqN+/wAZJevWpdThd2UU345dXyAtp3urJXe137zdCNlYroUFHve9lfp0LSoAAAAAAAAAAAAABRjKvDG+merLpSsZKkuJ5rwYGKXFLONRrwjJP5kJVKsVd2dtbfEtrYBawbg+7R9VoUxxMo5Ti+6cdPFBVMu0s7SpvrH6FvtScZcVocLXBKKUuK973vpZPIlDERk2uCSsk+LhkoSvpwt66Z20yNEEQUvD3z5+t38yFmsn69erG1I64pgZE1ldrPJX5vZE2n17v3OypuOnr1t/k7T0+oDhWwbOssUFHOWb5L6gVqldXlkve+hGpVytHJfE7Um3mytoCpo49rXfJLib9d/vNtLByevsq/PVrp9TdRoRgslytfm+rAxYXBPWXsr8qtfxa08DfCCSslZdxIFQAAAAAAAAAAAAMAQnUSK51tisDs5X193IjJ76Zu/T17g5HLkVyVytp7Eps5GQEHDfMRy9MtbIsCSOld7ElICVyuVO7y19a+vMsjG/1OSqWyXmAvw98t9iiTOtk6FBzzvaO61duSTWneBXCDk7Jed0vOxvoYWMc9Xu/oW04KKskktkSKgAAAAAAAAAAAAAAAAediMfHilB5JPXfr4m+pNRTk9Em/I+brviblvn5gerGvF6SXmh96t15o8WNtviXRktviRXpOtHdeGZFYhcrvp67zLGa2LFMC6VV8o+bsV/eP8AL5MjxhzAnHEJ65dfXxLLlHC5aRb9bk6dPh/FJW2Wq+QFyJKKWbfgUvEJfhVitzA0Tq3K3JLVkYJt2Su+75noYfDcObd37l0Arw+Gesstknr1+hsQBUAAAAAAAAAAAAAAAAAABGpC6a3TXmfLyg02s0+afLwPqjwPtHCeUoQu1zXPuYGRQ3fuJxpr868meGu2nF2qUpx77XXuLYduUHb+JFN6KTs/JkV7ihH/ALF5ErwX/I/BHlRxsHpOPg0SVaP5kB6f31NcpPqzv+sS/DBL3nkyxdNa1ILrJIzz7cw8bfxou7t7Ht273w3y7wPcnipPmV8Z4ke3qb/DGbzazVsuTXXwNeHxspW/hv3gepTTbSSz2N+HwDecslstf2MOGrV7WjT4V0sa4UsQ9WkUelTgoqySRLiW5kp4SX+6bZohRSCJ8R04kdAAAAAAAAAAAAAAAAAAAALAAVzw8HrFPqkZqnZNCWtGD/tRtAHlS+zmFeuHpfpRB/ZfB/8AmpfpR7AA8eP2Ywa0w1L9KL4dh4ZaUKf6UeiAM0Oz6S0pwX9qL400tEl0SJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/9k="}/>
-
+                    No image
                 </div>
-            )
-        }
+            );
+        },
+        onCell: () => ({
+            style: {
+                width: "80px",
+                height: "60px",
+                padding: "5px",
+            },
+        }),
     },
     {
         title: 'Thông tin sản phẩm',
@@ -144,9 +169,9 @@ const columnsBillProductDetailTable = [
         },
     },
     {
-        title: 'Tổng tiền',
-        dataIndex: 'totalPrice',
-        key: 'totalPrice',
+        title: 'Đơn giá',
+        dataIndex: 'price',
+        key: 'price',
     },
 
     {
@@ -155,14 +180,12 @@ const columnsBillProductDetailTable = [
         key: 'action',
         render: (_, record) => (
             <Button
-                type="danger"
-                icon={<MdDelete/>}
-                style={{borderRadius: '20px', color: "#FF0000", border: '1px solid red'}}
-
+                type="primary"
                 onClick={() => {
                     console.log(record?.productName);
                 }}
             >
+                Xóa
             </Button>
         ),
 
@@ -233,12 +256,13 @@ const BillDetail = () => {
         const [isQuantityModalVisible, setIsQuantityModalVisible] = useState(false);
         const [selectedProduct, setSelectedProduct] = useState(null);
         const [inputQuantity, setInputQuantity] = useState(1);
+        const [isRollbackAction, setIsRollbackAction] = useState(false);
 
 
         const handleOkModal = () => {
             if (modalType === modalBillHistoryType) {
                 setOpen(false);
-                return
+                return;
             }
             if (modalType === modalUpdateStatusBillType) {
                 handleUpdateStatusBill();
@@ -253,25 +277,35 @@ const BillDetail = () => {
 
 
         const handleUpdateStatusBill = async () => {
+            try {
+                // Xác định status mới dựa vào nguồn gọi hàm
+                const newStatus = isRollbackAction 
+                    ? handleRollBackStatusUpdate(currentBill.status)
+                    : handleNewStatusUpdate(currentBill.status);
 
-            const data = {
-                "status": handleNewStatusUpdate(currentBill.status),
-                "note": confirmNotes
-            }
+                const data = {
+                    status: newStatus,
+                    note: confirmNotes
+                };
 
-            await axiosInstance.put(`/api/admin/bill/${id}/update`, data).then(
-                (res) => {
-                    const result = res.data.data;
-                    setCurrentBill(result.bill)
-                    if (result.bill.status === "DANG_VAN_CHUYEN") {
-                        handlePrintBillPdf()
-                    }
-                    setBillHistory(result.billHistory)
+                const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
+                const result = response.data.data;
+                
+                setCurrentBill(result.bill);
+                setBillHistory(result.billHistory);
+
+                if (result.bill.status === "DANG_VAN_CHUYEN") {
+                    handlePrintBillPdf();
                 }
-            ).catch((e) => {
 
-            })
-        }
+                toast.success(isRollbackAction 
+                    ? "Đã quay lại trạng thái trước đó"
+                    : "Cập nhật trạng thái thành công"
+                );
+            } catch (error) {
+                toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
+            }
+        };
 
         const handlePrintBillPdf = async () => {
             const response = await axiosInstance.get(`/api/admin/bill/print-bill/${id}`);
@@ -280,28 +314,56 @@ const BillDetail = () => {
         }
 
         const handleNewStatusUpdate = () => {
-            if (currentBill.status === "CHO_XAC_NHAN") {
-                return "DA_XAC_NHAN"
-            }
-            if (currentBill.status === "DA_XAC_NHAN") {
-                return "CHO_VAN_CHUYEN"
-            }
-            if (currentBill.status === "CHO_VAN_CHUYEN") {
-                return "DANG_VAN_CHUYEN"
-            }
-            if (currentBill.status === "DANG_VAN_CHUYEN") {
-                const check = billHistory.find((el) => el.status === "DA_THANH_TOAN")
-                if (check) {
-                    return "DA_HOAN_THANH"
-                } else {
-                    return "DA_THANH_TOAN"
-                }
-            }
-            if (currentBill.status === "DA_THANH_TOAN") {
-                return "DA_HOAN_THANH"
-            }
+            // Kiểm tra xem đã thanh toán chưa
+            const isAlreadyPaid = billHistory.some(h => h.status === "DA_THANH_TOAN");
 
-        }
+            switch(currentBill.status) {
+                case "TAO_DON_HANG":
+                    return "CHO_XAC_NHAN";
+                case "CHO_XAC_NHAN":
+                    return "DA_XAC_NHAN";
+                case "DA_XAC_NHAN":
+                    return "CHO_VAN_CHUYEN";
+                case "CHO_VAN_CHUYEN":
+                    return "DANG_VAN_CHUYEN";
+                case "DANG_VAN_CHUYEN":
+                    return "DA_GIAO_HANG";
+                case "DA_GIAO_HANG":
+                    // Nếu đã thanh toán trước thì chuyển thẳng sang DA_HOAN_THANH
+                    if (isAlreadyPaid) {
+                        return "DA_HOAN_THANH";
+                    }
+                    return "CHO_THANH_TOAN";
+                case "CHO_THANH_TOAN":
+                    return "DA_THANH_TOAN";
+                case "DA_THANH_TOAN":
+                    return "DA_HOAN_THANH";
+                default:
+                    return currentBill.status;
+            }
+        };
+
+
+        const handleRollBackStatusUpdate = () => {
+            switch(currentBill.status) {
+                case "DA_HOAN_THANH":
+                    return "DA_THANH_TOAN";
+                case "DA_THANH_TOAN":
+                    return "DA_GIAO_HANG";
+                case "DA_GIAO_HANG":
+                    return "DANG_VAN_CHUYEN";
+                case "DANG_VAN_CHUYEN":
+                    return "CHO_VAN_CHUYEN";
+                case "CHO_VAN_CHUYEN":
+                    return "DA_XAC_NHAN";
+                case "DA_XAC_NHAN":
+                    return "CHO_XAC_NHAN";
+                case "CHO_XAC_NHAN":
+                    return "TAO_DON_HANG";
+                default:
+                    return null;
+            }
+        };
 
 
         const getPaymentsBill = async () => {
@@ -320,25 +382,28 @@ const BillDetail = () => {
             const response = await axiosInstance.get(`/api/admin/bill-product-detail/${id}`);
             const data = response.data.data;
             setBillProductDetails(data)
-            console.log(response);
-
         }
-
 
         const getCurrentBill = async () => {
             const response = await axiosInstance.get(`/api/admin/bill/detail/${id}`);
             const bill = response.data.data;
             setCurrentBill(bill);
             console.log(bill);
-            const address = await generateAddressString(
-                bill?.address?.provinceId,
-                bill?.address?.districtId,
-                bill?.address?.wardId,
-                bill?.address?.specificAddress
-            );
 
-            setAddressString(address);
-
+            if (bill?.address?.provinceId &&
+                bill?.address?.districtId &&
+                bill?.address?.wardId &&
+                bill?.address?.specificAddress) {
+                const address = await generateAddressString(
+                    bill?.address?.provinceId,
+                    bill?.address?.districtId,
+                    bill?.address?.wardId,
+                    bill?.address?.specificAddress
+                );
+                setAddressString(address);
+            } else {
+                setAddressString("Không có địa chỉ")
+            }
         }
 
         useEffect(() => {
@@ -350,39 +415,41 @@ const BillDetail = () => {
 
 
         const steps1 = [
-            {id: 1, label: "Chờ xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_XAC_NHAN"},
-            {id: 2, label: "Đã xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_XAC_NHAN"},
-            {id: 3, label: "Chờ vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_VAN_CHUYEN"},
-            {id: 4, label: "Đang vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DANG_VAN_CHUYEN"},
-            {id: 5, label: "Đã thanh toán", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_THANH_TOAN"},
+            {id: 1, label: "Tạo đơn hàng", time: "", icon: <FaFileCircleCheck size={34}/>, status: "TAO_DON_HANG"},
+            {id: 2, label: "Chờ xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_XAC_NHAN"},
+            {id: 3, label: "Đã xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_XAC_NHAN"},
+            {id: 4, label: "Chờ vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_VAN_CHUYEN"},
+            {id: 5, label: "Đang vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DANG_VAN_CHUYEN"},
+            {id: 6, label: "Đã giao hàng", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_GIAO_HANG"},
+            {id: 7, label: "Hoàn thành", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_HOAN_THANH"},
         ];
 
 
         const handleButtonConfirm = (step) => {
+            const isAlreadyPaid = billHistory.some(h => h.status === "DA_THANH_TOAN");
 
-            if (step === "CHO_XAC_NHAN") {
-                return "Xác nhận";
+            switch(step) {
+                case "TAO_DON_HANG":
+                    return "Tạo đơn hàng";
+                case "CHO_XAC_NHAN":
+                    return "Xác nhận";
+                case "DA_XAC_NHAN":
+                    return "Chuyển vận chuyển";
+                case "CHO_VAN_CHUYEN":
+                    return "Bắt đầu vận chuyển";
+                case "DANG_VAN_CHUYEN":
+                    return "Xác nhận đã giao";
+                case "DA_GIAO_HANG":
+                    return isAlreadyPaid ? "Hoàn thành đơn" : "Chuyển chờ thanh toán";
+                case "CHO_THANH_TOAN":
+                    return "Xác nhận thanh toán";
+                case "DA_THANH_TOAN":
+                    return "Hoàn thành đơn";
+                default:
+                    return "";
             }
-            if (step === "DA_XAC_NHAN") {
-                return "Vận chuyển";
-            }
-            if (step === "CHO_VAN_CHUYEN") {
-                return "Xác nhận Vận chuyển";
-            }
+        };
 
-            if (step === "DANG_VAN_CHUYEN") {
-                const check = billHistory.find((el) => el.status === "DA_THANH_TOAN")
-                if (check) {
-                    return "Xác nhận hoàn thành"
-                } else {
-                    return "Xác nhận thanh toán"
-                }
-
-            }
-            if (step === "DA_THANH_TOAN") {
-                return "Xác nhận hoàn thành";
-            }
-        }
 
         const modalBillHistoryTable = () => {
             return (
@@ -404,19 +471,14 @@ const BillDetail = () => {
         const handleOnChange = (e) => {
             setConfirmNotes(e.target.value)
         }
-
+        
         const modalConfirmUpdateStatusBill = () => {
             return (
                 <div>
                     <div className={"mb-4 w"}>
                         <h3>Xác nhận đơn hàng</h3>
                     </div>
-                    <TextArea
-                        value={confirmNotes}
-                        onChange={(e) => setConfirmNotes(e.target.value)}
-                        placeholder="Controlled autosize"
-                        autoSize={{minRows: 3, maxRows: 5}}
-                    />
+
                 </div>
 
             )
@@ -429,30 +491,13 @@ const BillDetail = () => {
             setWidthModal("75%")
         };
 
-        const showModalConfirm = (title, content) => {
-            Modal.confirm({
-                title: title,
-                content: content,
-                onCancel: () => {
-                    return false;
-                },
-                onOk: () => {
-                    return true;
-                },
-                footer: (_, {OkBtn, CancelBtn}) => (
-                    <>
-                        <CancelBtn/>
-                        <OkBtn/>
-                    </>
-                ),
-            });
-        }
 
         const handleOnConfirmUpdateValue = () => {
-            setOpen(true)
-            setWidthModal("40%")
-            setConfirmNotes('')
-            setModalType(modalUpdateStatusBillType)
+            setIsRollbackAction(false); // Đánh dấu là hành động tiến lên
+            setOpen(true);
+            setWidthModal("40%");
+            setConfirmNotes('');
+            setModalType(modalUpdateStatusBillType);
         };
 
         const handleOnShowProduct = () => {
@@ -515,30 +560,19 @@ const BillDetail = () => {
             },
 
         ];
-        const handleOnRollbackSatus = async () => {
-            // Kiểm tra nếu không có history hoặc đang ở trạng thái đầu
-            if (!billHistory.length || currentBill?.status === "CHO_XAC_NHAN") {
+        const { confirm } = Modal;
+
+        const handleOnRollbackStatus = () => {
+            if (!billHistory.length || currentBill?.status === "TAO_DON_HANG") {
                 toast.error("Không thể quay lại trạng thái trước đó");
                 return;
             }
-
-            try {
-                const data = {
-                    status: billHistory[billHistory.length - 2]?.status,
-                    note: "Quay lại trạng thái trước đó"
-                }
-
-                const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
-                const result = response.data.data;
-                
-                setCurrentBill(result.bill);
-                setBillHistory(result.billHistory);
-                
-                toast.success("Đã quay lại trạng thái trước đó");
-            } catch (error) {
-                toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
-            }
-        }
+            setIsRollbackAction(true); // Đánh dấu là hành động lùi lại
+            setOpen(true);
+            setWidthModal("40%");
+            setConfirmNotes('');
+            setModalType(modalUpdateStatusBillType);
+        };
 
         const handleOnAddProductToBill = (product) => {
             setSelectedProduct(product);
@@ -570,6 +604,43 @@ const BillDetail = () => {
                 }
             } catch (error) {
                 toast.error(error.response?.data?.message || "Lỗi khi thêm sản phẩm");
+            }
+        };
+
+        const handleConfirmPayment = () => {
+            setOpen(true);
+            setWidthModal("40%");
+            setConfirmNotes('');
+            setModalType(modalUpdateStatusBillType);
+            // Cập nhật trạng thái thành DA_THANH_TOAN
+            const data = {
+                status: "DA_THANH_TOAN",
+                note: "Xác nhận thanh toán"
+            };
+            handleUpdateStatusBill(data);
+        };
+
+        const handleCancelBill = async () => {
+            try {
+                const data = {
+                    status: "DA_HUY",
+                    note: "Đơn hàng đã bị hủy"
+                };
+                await handleUpdateStatusBill(data);
+            } catch (error) {
+                toast.error("Có lỗi xảy ra khi hủy đơn hàng");
+            }
+        };
+
+        const handleReturnRequest = async () => {
+            try {
+                const data = {
+                    status: "TRA_HANG",
+                    note: "Yêu cầu trả hàng"
+                };
+                await handleUpdateStatusBill(data);
+            } catch (error) {
+                toast.error("Có lỗi xảy ra khi yêu cầu trả hàng");
             }
         };
 
@@ -608,23 +679,37 @@ const BillDetail = () => {
                         <StepProgress steps={steps1}
                                       billHistoryList={billHistory}
                                       currentStep={billHistory.length}/>
+
+
                     </div>
                     <div className={"d-flex align-items-center justify-content-between"}>
-                        <div className={"d-flex align-items-cente gap-5"}>
-                            {
-                                currentBill?.status !== "DA_HOAN_THANH" ?
-                                    <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>
-                                        {
-                                            handleButtonConfirm(currentBill?.status)
-                                        }
-                                    </Button> : <div></div>
-                            }
-                            {
-                                currentBill?.status !== "DA_HOAN_THANH" ?
-                                    <Button onClick={handleOnRollbackSatus} color={"danger"} type={""}>
-                                        Quay lại
-                                    </Button> : <div></div>
-                            }
+                        <div className={"d-flex align-items-center gap-5"}>
+                            {!["DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                                <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>
+                                    {handleButtonConfirm(currentBill?.status)}
+                                </Button>
+                            )}
+                            {!["TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                                <Button onClick={handleOnRollbackStatus} color={"danger"} type={""}>
+                                    Quay lại
+                                </Button>
+                            )}
+                            {!billHistory.some(h => h.status === "DA_THANH_TOAN") && 
+                             !["TAO_DON_HANG", "CHO_XAC_NHAN", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG"].includes(currentBill?.status) && (
+                                <Button onClick={handleConfirmPayment} type="primary">
+                                    Xác nhận thanh toán
+                                </Button>
+                            )}
+                            {!["DA_HUY", "DA_HOAN_THANH", "TRA_HANG"].includes(currentBill?.status) && (
+                                <Button onClick={handleCancelBill} type="danger">
+                                    Hủy đơn
+                                </Button>
+                            )}
+                            {["DA_GIAO_HANG", "DA_THANH_TOAN", "DA_HOAN_THANH"].includes(currentBill?.status) && (
+                                <Button onClick={handleReturnRequest} type="warning">
+                                    Yêu cầu trả hàng
+                                </Button>
+                            )}
                         </div>
                         <Button type={"primary"} onClick={showModalBillHistory}>
                             Lịch sử hóa đơn
@@ -647,9 +732,11 @@ const BillDetail = () => {
                 <Card>
                     <div className={"d-flex justify-content-between"}>
                         <h3 className={"mb-4"}>Thông tin đơn hàng</h3>
-                        <Button type={"primary"} onClick={showModalEditBillInfo}>
-                            Chỉnh sửa thông tin đơn hàng
-                        </Button>
+                        {currentBill?.status === "TAO_DON_HANG" && (
+                            <Button type={"primary"} onClick={showModalEditBillInfo}>
+                                Chỉnh sửa thông tin đơn hàng
+                            </Button>
+                        )}
                     </div>
                     <Descriptions column={2}>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Mã đơn hàng  </span>} span={2}>
@@ -672,7 +759,8 @@ const BillDetail = () => {
                             </Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Số điện thoại  </span>}>
-                            <Tag style={{fontSize: 16}} color="blue">  {currentBill?.customerPhone ? currentBill.customerPhone : "Khách lẻ" }</Tag>
+                            <Tag style={{fontSize: 16}}
+                                 color="blue">  {currentBill?.customerPhone ? currentBill.customerPhone : "Khách lẻ"}</Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Địa chỉ  </span>} span={2}>
                             {addressString}
@@ -686,14 +774,16 @@ const BillDetail = () => {
                 <Card>
                     <div className={"d-flex justify-content-between mb-3"}>
                         <h3>Thông tin sản phẩm đã mua</h3>
-                        <Button
-                            type={"primary"}
-                            onClick={handleOnShowProduct}
-                            primary
-                            icon={<IoAdd/>}
-                        >
-                            Thêm sản phẩm
-                        </Button>
+                        {currentBill?.status === "TAO_DON_HANG" && (
+                            <Button
+                                type={"primary"}
+                                onClick={handleOnShowProduct}
+                                primary
+                                icon={<IoAdd/>}
+                            >
+                                Thêm sản phẩm
+                            </Button>
+                        )}
                     </div>
                     <Table
                         className={"w-100"}
@@ -722,10 +812,7 @@ const BillDetail = () => {
 
                         </div>
                     </div>
-
-
                 </Card>
-
                 <Modal
                     title="Nhập số lượng sản phẩm"
                     open={isQuantityModalVisible}
@@ -740,7 +827,7 @@ const BillDetail = () => {
                                 <p><strong>Tồn kho:</strong> {selectedProduct.quantity}</p>
                             </div>
                         )}
-                        
+
                         <div>
                             <label>Số lượng:</label>
                             <InputNumber
@@ -748,7 +835,7 @@ const BillDetail = () => {
                                 max={selectedProduct?.quantity || 1}
                                 value={inputQuantity}
                                 onChange={(value) => setInputQuantity(value)}
-                                style={{ width: '100%' }}
+                                style={{width: '100%'}}
                             />
                         </div>
 

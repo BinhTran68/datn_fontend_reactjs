@@ -14,7 +14,7 @@ import CustomerSelect from "./component/CustomerSelect.jsx";
 import axios from "axios";
 import moment from "moment/moment.js";
 import SalePaymentInfo from "./component/SalePaymentInfo.jsx";
-import {baseUrl, calculateShippingFee, generateAddressString} from "../../helpers/Helpers.js";
+import {baseUrl, calculateShippingFee, formatVND, generateAddressString} from "../../helpers/Helpers.js";
 import {postChangeQuantityProduct} from "./billService.js";
 import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "./component/ProductDetailModal.jsx";
@@ -28,7 +28,8 @@ import {printPlugin} from "@react-pdf-viewer/print";
 // Import styles
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/print/lib/styles/index.css';
-import 'pdfjs-dist/build/pdf.worker.entry';   // Cấu hình worker
+import 'pdfjs-dist/build/pdf.worker.entry';
+import ScanQrModalComponent from "./component/ScanQRModalComponent.jsx";   // Cấu hình worker
 
 
 const SalesPage = () => {
@@ -284,6 +285,68 @@ const SalesPage = () => {
         return () => clearTimeout(timeout);
     }, [products]); // Sửa lại dependency array
 
+    const findBestVoucher = (totalAmount) => {
+        if (!vouchers || vouchers?.length === 0) return null;
+
+        let bestVoucher = null;
+        let maxDiscount = 0;
+        let suggestions = [];
+
+        // Lọc các voucher có thể áp dụng với đơn hàng hiện tại
+        const applicableVouchers = vouchers.filter(voucher => 
+            voucher.quantity > 0 && // Thêm điều kiện kiểm tra số lượng
+            totalAmount >= (voucher.billMinValue || 0)
+        );
+
+        // Tìm voucher tốt nhất trong các voucher có thể áp dụng
+        applicableVouchers.forEach(voucher => {
+            const discount = voucher.discountType === "PERCENT"
+                ? Math.min((totalAmount * voucher.discountValue) / 100, voucher.discountMaxValue || Infinity)
+                : voucher.discountValue;
+
+            if (discount > maxDiscount) {
+                maxDiscount = discount;
+                bestVoucher = voucher;
+            }
+        });
+
+        // Tìm các voucher tiềm năng tốt hơn
+        vouchers.forEach(voucher => {
+            if (totalAmount < (voucher.billMinValue || 0)) {
+                const amountNeeded = voucher.billMinValue - totalAmount;
+                const potentialDiscount = voucher.discountType === "PERCENT"
+                    ? Math.min((voucher.billMinValue * voucher.discountValue) / 100, voucher.discountMaxValue || Infinity)
+                    : voucher.discountValue;
+
+                // Chỉ đề xuất nếu voucher này có thể mang lại lợi ích tốt hơn
+                if (potentialDiscount > maxDiscount) {
+                    suggestions.push({
+                        voucher: voucher,
+                        amountNeeded: amountNeeded,
+                        potentialDiscount: potentialDiscount,
+                        additionalBenefit: potentialDiscount - maxDiscount
+                    });
+                }
+            }
+        });
+
+        // Sắp xếp đề xuất theo lợi ích bổ sung (từ cao xuống thấp)
+        suggestions.sort((a, b) => b.additionalBenefit - a.additionalBenefit);
+
+        // Chỉ giữ lại 3 đề xuất tốt nhất
+        suggestions = suggestions.slice(0, 3);
+
+        return {
+            bestVoucher: bestVoucher,
+            currentDiscount: maxDiscount,
+            suggestions: suggestions.map(s => ({
+                voucherName: s.voucher.voucherName,
+                amountNeeded: s.amountNeeded,
+                additionalBenefit: s.additionalBenefit
+            }))
+        };
+    };
+
     const handleOnAddProductToBill = (record) => {
         if (!currentBill) {
             toast.warning("Vui lòng chọn hóa đơn trước khi thêm sản phẩm");
@@ -296,56 +359,40 @@ const SalesPage = () => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    // Tìm sản phẩm với cùng id và price
                     const existingProduct = item.productList?.find(p => p.id === record.id && p.price === record.price);
-
                     let updatedProductList;
+                    
                     if (existingProduct) {
-                        // Kiểm tra số lượng trước khi tăng
                         if (existingProduct.quantityInCart >= record.quantity) {
                             toast.warning(`Số lượng sản phẩm không đủ, tối đa ${record.quantity}`);
                             return item;
                         }
-                        // Tăng số lượng nếu sản phẩm đã có
                         updatedProductList = item.productList.map(p =>
                             p.id === record.id && p.price === record.price ? {...p, quantityInCart: p.quantityInCart + 1} : p
                         );
                     } else {
-                        // Thêm sản phẩm mới
                         updatedProductList = [...(item.productList || []), {...record, quantityInCart: 1}];
                     }
 
-                    // Tính tổng tiền mới sau khi thêm sản phẩm
+                    // Tính tổng tiền mới
                     const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
-
-                    // Tìm voucher tốt nhất
-                    const bestVoucher = findBestVoucher(newTotalAmount);
-
-                    // Áp dụng voucher nếu có
-                    const discountAmount = bestVoucher
-                        ? bestVoucher.discountType === "PERCENT"
-                            ? (newTotalAmount * bestVoucher.discountValue) / 100
-                            : bestVoucher.discountValue
-                        : 0;
-
+                    
+                    // Tự động tìm và áp dụng voucher tốt nhất
+                    const voucherResult = findBestVoucher(newTotalAmount);
+                    const discountAmount = voucherResult?.currentDiscount || 0;
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
 
+                    // Cập nhật selectedVouchers
                     setSelectedVouchers(prev => ({
                         ...prev,
-                        [currentBill]: bestVoucher
+                        [currentBill]: voucherResult
                     }));
 
                     // Cập nhật số lượng sản phẩm trong kho
                     setProducts(prevProducts => prevProducts.map(
-                        (product) => {
-                            if (product.id === record.id) {
-                                return {
-                                    ...product,
-                                    quantity: product.quantity - 1
-                                }
-                            }
-                            return product
-                        }
+                        (product) => product.id === record.id 
+                            ? { ...product, quantity: product.quantity - 1 }
+                            : product
                     ));
 
                     return {
@@ -475,7 +522,10 @@ const SalesPage = () => {
         // Trường hợp chọn khách hàng
         try {
             let customerAddresses = await Promise.all(
-                customer.addresses?.map(async (ca) => {
+                (customer.addresses?.length > 0
+                    ? [customer.addresses.find(addr => addr.isDefault) || customer.addresses[0]]
+                    : []
+                ).map(async (ca) => {
                     const addressString = await generateAddressString(
                         ca.provinceId,
                         ca.districtId,
@@ -485,9 +535,9 @@ const SalesPage = () => {
                     return {
                         value: ca.id,
                         label: addressString,
-                        details: ca // Lưu thông tin chi tiết của địa chỉ
+                        details: ca
                     };
-                }) || []
+                })
             );
 
             // Thêm option "Khác" vào cuối danh sách địa chỉ
@@ -548,23 +598,22 @@ const SalesPage = () => {
 
 
     const handleOnSelectedVoucher = (voucher) => {
+        const originalTotal = calculateTotalAmount(items.find(item => item.key === currentBill));
+        const voucherResult = findBestVoucher(originalTotal);
+        
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
                     // Kiểm tra xem voucher hiện tại có phải voucher đã chọn không
-                    if (selectedVouchers[currentBill]?.id === voucher.id) {
+                    if (selectedVouchers[currentBill]?.bestVoucher?.id === voucher.id) {
                         toast.warning("Voucher này đã được chọn!");
                         return item;
                     }
 
-                    // Tính lại tổng số tiền gốc của sản phẩm (chưa áp dụng voucher nào)
-                    const originalTotal = calculateTotalAmount(item);
-
                     // Tính giá trị giảm giá dựa trên tổng số tiền gốc
-                    const discountAmount =
-                        voucher.discountType === "PERCENT"
-                            ? (originalTotal * voucher.discountValue) / 100
-                            : voucher.discountValue;
+                    const discountAmount = voucher.discountType === "PERCENT"
+                        ? Math.min((originalTotal * voucher.discountValue) / 100, voucher.discountMaxValue || Infinity)
+                        : voucher.discountValue;
 
                     // Tính số tiền mới sau khi áp dụng voucher
                     const newTotal = Math.max(0, originalTotal - discountAmount);
@@ -582,10 +631,16 @@ const SalesPage = () => {
             })
         );
 
-        // Cập nhật voucher đã chọn cho hóa đơn hiện tại
+        // Cập nhật voucher đã chọn cho hóa đơn hiện tại với đầy đủ thông tin
         setSelectedVouchers(prev => ({
             ...prev,
-            [currentBill]: voucher
+            [currentBill]: {
+                bestVoucher: voucher,
+                currentDiscount: voucher.discountType === "PERCENT"
+                    ? Math.min((originalTotal * voucher.discountValue) / 100, voucher.discountMaxValue || Infinity)
+                    : voucher.discountValue,
+                suggestions: voucherResult.suggestions
+            }
         }));
     };
 
@@ -683,7 +738,7 @@ const SalesPage = () => {
                 typeBill: "OFFLINE",
                 notes: "",
                 status: "DA_HOAN_THANH",
-                voucherId: selectedVouchers[currentBill]?.id || null,
+                voucherId: selectedVouchers[currentBill]?.bestVoucher?.id || null,
                 isShipping: bill.isShipping || false,
                 recipientName: bill.recipientName || "",
                 recipientPhoneNumber: bill.recipientPhoneNumber || "",
@@ -726,47 +781,6 @@ const SalesPage = () => {
             toast.error("Có lỗi xảy ra khi tạo hóa đơn.");
         }
     };
-
-    const findBestVoucher = (totalAmount) => {
-        if (!vouchers || vouchers?.length === 0) return null;
-
-        let bestVoucher = null;
-        let maxDiscount = 0;
-
-        vouchers.forEach(voucher => {
-            const discount =
-                voucher.discountType === "PERCENT"
-                    ? (totalAmount * voucher.discountValue) / 100
-                    : voucher.discountValue;
-
-            if (discount > maxDiscount) {
-                maxDiscount = discount;
-                bestVoucher = voucher;
-            }
-        });
-
-        return bestVoucher;
-    };
-
-
-    //
-    // const handleOnPrintBill = async () => {
-    //     try {
-    //         const id = items.find((item) => item.key === currentBill)?.billCode;
-    //         if (!id) {
-    //             toast.error("Không tìm thấy mã hóa đơn");
-    //             return;
-    //         }
-    //
-    //         const result = await printBillService(id);
-    //         const pdfBlob = new Blob([result], { type: "application/pdf" });
-    //         const pdfUrl = URL.createObjectURL(pdfBlob); // Tạo URL cho Blob
-    //         window.open(pdfUrl, '_blank');
-    //     } catch (error) {
-    //         console.error('Lỗi tải PDF:', error);
-    //     }
-    // };
-
 
     const [pdfUrl, setPdfUrl] = useState(null);
     const printPluginInstance = printPlugin();
@@ -938,9 +952,7 @@ const SalesPage = () => {
                     // Tìm và áp dụng lại voucher nếu có
                     const bestVoucher = findBestVoucher(newTotalAmount);
                     const discountAmount = bestVoucher
-                        ? bestVoucher.discountType === "PERCENT"
-                            ? (newTotalAmount * bestVoucher.discountValue) / 100
-                            : bestVoucher.discountValue
+                        ? bestVoucher.currentDiscount
                         : 0;
     
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
@@ -1065,7 +1077,6 @@ const SalesPage = () => {
 
                 <ProductDetailModal
                     handleOnAddProductToBill={handleOnAddProductToBill}
-
                     products={products}
                     setProducts={setProducts}
                 />
@@ -1099,7 +1110,7 @@ const SalesPage = () => {
                         </Button>
 
                         <Button
-                            type={"primary"}
+                            type={"primary"} 
                             onClick={showModal}>
                             Thêm sản phẩm
                         </Button>
@@ -1191,6 +1202,12 @@ const SalesPage = () => {
                     Hóa đơn mới
                 </Button>
             </Modal>
+            <ScanQrModalComponent
+                isCameraOpen={isScanQr}
+                setIsCameraOpen={setIsScanQr}
+            />
+
+
         </div>
     );
 };
