@@ -10,7 +10,6 @@ import {SiCheckio} from "react-icons/si";
 import {COLORS} from "../../../constants/constants.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 import {  Radio } from 'antd';
-import {genQrUrl} from "../../../utils/payment.js";
 import PaymentQRComponent from "./PaymentQRComponent.jsx";
 
 const {Text} = Typography;
@@ -59,7 +58,7 @@ const SalePaymentInfo = ({
                              currentBill,
                              transactionCode
                          }) => {
-    console.log("shippingFee", shippingFee)
+    console.log("shippingFee", selectedVouchers)
     const missingAmount = Math.max(0, amount - customerMoney);
 
     return (
@@ -149,7 +148,7 @@ const SalePaymentInfo = ({
                                     ),
                                     children: (
                                         <>
-                                            {selectedVouchers && (
+                                            { selectedVouchers && (
                                                 <div 
                                                     style={{
                                                         padding: '10px',
@@ -158,23 +157,48 @@ const SalePaymentInfo = ({
                                                         border: '1px solid #b7eb8f',
                                                         borderRadius: '4px',
                                                         display: 'flex',
-                                                        alignItems: 'center',
+                                                        flexDirection: 'column',
                                                         gap: '8px'
                                                     }}
                                                 >
-                                                    <FaCheckCircle color={COLORS.success} />
-                                                    <div>
-                                                        <div style={{ fontWeight: 'bold' }}>
-                                                            Đã áp dụng voucher tốt nhất:
+                                                    {
+                                                        discount > 0 &&
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <FaCheckCircle color={COLORS.success}/>
+                                                            <div>
+                                                                <div style={{fontWeight: 'bold'}}>
+                                                                    Đã áp dụng voucher tốt nhất:
+                                                                </div>
+                                                                <div>
+                                                                    {selectedVouchers.voucherName} - Giảm {' '}
+                                                                    {formatVND(discount)}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            {selectedVouchers.voucherName} - Giảm {' '}
-                                                            {selectedVouchers.discountType === "MONEY" 
-                                                                ? formatVND(selectedVouchers.discountValue) 
-                                                                : `${selectedVouchers.discountValue}%`
-                                                            }
+                                                    }
+
+                                                    {selectedVouchers.suggestions && selectedVouchers.suggestions.length > 0 && (
+                                                        <div
+                                                            style={{
+                                                                marginTop: '8px',
+                                                                padding: '8px',
+                                                                backgroundColor: '#fff1f0',
+                                                                border: '1px solid #ffccc7',
+                                                                borderRadius: '4px'
+                                                            }}
+                                                        >
+                                                            <div style={{fontWeight: 'bold', marginBottom: '4px' }}>
+                                                                Gợi ý tối ưu voucher:
+                                                            </div>
+                                                            {selectedVouchers.suggestions.map((suggestion, index) => (
+                                                                <div key={index} style={{ fontSize: '13px', marginBottom: '4px' }}>
+                                                                    Mua thêm {formatVND(suggestion.amountNeeded)} để dùng voucher{' '}
+                                                                    <strong>{suggestion.voucherName}</strong> và tiết kiệm thêm{' '}
+                                                                    <strong style={{ color: '#ff4d4f' }}>{formatVND(suggestion.additionalBenefit)}</strong>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             )}
 
@@ -185,18 +209,15 @@ const SalePaymentInfo = ({
                                                     renderItem={(item, index) => (
                                                         <List.Item
                                                             actions={[
-                                                                (
-                                                                    selectedVouchers?.id === item.id ?
-                                                                        <FaCheckCircle size={25}
-                                                                                       color={`${COLORS.success}`}/> :
-                                                                        <Button
-                                                                            type={"primary"}
-                                                                            onClick={() => {
-                                                                                handleOnSelectedVoucher(item)
-                                                                            }}>Chọn</Button>
+                                                                (selectedVouchers?.bestVoucher?.id === item.id ? 
+                                                                    <FaCheckCircle size={25} color={`${COLORS.success}`}/> 
+                                                                    : 
+                                                                    <Button
+                                                                        type={"primary"}
+                                                                        onClick={() => handleOnSelectedVoucher(item)}>
+                                                                        Chọn
+                                                                    </Button>
                                                                 )
-
-
                                                             ]}
                                                         >
 
@@ -215,8 +236,22 @@ const SalePaymentInfo = ({
                                                                             Ngày hết hạn : {convertDate(item.endDate)}
                                                                         </div>
                                                                         <div>
-                                                                            Gía trị giảm
-                                                                            : {item?.discountValue && item.discountType === "MONEY" ? formatVND(item.discountValue) : (item.discountValue + "%")}
+                                                                            Giá trị giảm : {item?.discountType === "MONEY" 
+                                                                                ? formatVND(item.discountValue) 
+                                                                                : `${item.discountValue}% (tối đa ${formatVND(item.discountMaxValue)})`
+                                                                            }
+                                                                        </div>
+                                                                        <div>
+                                                                            Giá trị đơn hàng tối thiểu: {formatVND(item?.billMinValue || 0)}
+                                                                        </div>
+                                                                        <div>
+                                                                            Giảm tối đa: {item?.discountMaxValue && item.discountType === "PERCENT" 
+                                                                                ? formatVND(item.discountMaxValue) 
+                                                                                : 'Không giới hạn'
+                                                                            }
+                                                                        </div>
+                                                                        <div>
+                                                                            Loại voucher: {item?.voucherType === "PUBLIC" ? "Công khai" : "Riêng tư"}
                                                                         </div>
                                                                     </div>
                                                                 }

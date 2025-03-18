@@ -70,28 +70,41 @@ export const convertBillStatusToString = (status) => {
         return null;
     }
 
-    if (status === "CHO_XAC_NHAN") {
-        return "Chờ xác nhận";
+    switch (status) {
+        case "TAO_DON_HANG":
+            return "Tạo đơn hàng";
+        case "CHO_XAC_NHAN":
+            return "Chờ xác nhận";
+        case "DA_XAC_NHAN":
+            return "Đã xác nhận";
+        case "CHO_VAN_CHUYEN":
+            return "Chờ vận chuyển";
+        case "DANG_VAN_CHUYEN":
+            return "Đang vận chuyển";
+        case "DA_GIAO_HANG":
+            return "Đã giao hàng";
+        case "CHO_THANH_TOAN":
+            return "Chờ thanh toán";
+        case "DA_THANH_TOAN":
+            return "Đã thanh toán";
+        case "DA_HOAN_THANH":
+            return "Đã hoàn thành";
+        case "DA_HUY":
+            return "Đã hủy";
+        case "TRA_HANG":
+            return "Trả hàng";
+        case "HUY_YEU_CAU_TRA_HANG":
+            return "Hủy yêu cầu trả hàng";
+        case "TU_CHOI_TRA_HANG":
+            return "Từ chối trả hàng";
+        default:
+            return "Khác";
     }
-    if (status === "DA_XAC_NHAN") {
-        return "Đã xác nhận";
-    }
-    if (status === "CHO_VAN_CHUYEN") {
-        return "Chờ vận chuyển";
-    }
-
-    if (status === "DANG_VAN_CHUYEN") {
-        return "Đang vận chuyển";
-    }
-
-    if (status === "DA_THANH_TOAN") {
-        return "Đã thanh toán";
-    }
-    if (status === "DA_HOAN_THANH") {
-        return "Đã hoàn thành"
-    }
-    return "Khác";
 }
+
+
+
+
 
 export const paymentTypeConvert = {
     "THANH_TOAN_TRUOC": "Thanh toán trước",

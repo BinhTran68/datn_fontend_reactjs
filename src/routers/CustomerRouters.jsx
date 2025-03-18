@@ -15,6 +15,7 @@ import Client from "../client/Client.jsx";
 import CartPage from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
+import PurchaseOrder from "../admin/PurchaseOrder/PurchaseOrder.jsx";
 // import Product from "../admin/product/product.jsx";
 // import ProductManagement from "../admin/product/ProductManagement.jsx";
 // import Sole from "../admin/product/sole.jsx";
@@ -148,6 +149,10 @@ const CustomerRouters = {
     {
       path: "customerpolicypage",
       element: <RoleRedirect element={<CustomerPolicyPage />} />,
+    },
+    {
+      path: "purchaseorder",
+      element: <RoleRedirect element={<PurchaseOrder />} />,
     },
  
 

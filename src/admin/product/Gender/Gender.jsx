@@ -410,7 +410,7 @@ const Color = () => {
         </Row>
 
         <Row style={{ marginTop: 20 }}>
-          <Button
+          {/* <Button
             type="primary"
             onClick={() => {
               setOpenCreate(true);
@@ -418,7 +418,7 @@ const Color = () => {
             style={{}}
           >
             Thêm Giới Tính
-          </Button>
+          </Button> */}
           <Modal
             open={openCreate}
             title="Thêm Giới tính"
