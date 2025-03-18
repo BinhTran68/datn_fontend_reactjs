@@ -106,6 +106,7 @@ const PayMent = () => {
       productDetailId: item.productDetailId,
       quantity: item.quantityAddCart, // Đảm bảo đúng field
       price: item.price,
+      image: item.image,
     })),
   });
   useEffect(() => {
