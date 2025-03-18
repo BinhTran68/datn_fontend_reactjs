@@ -1223,6 +1223,7 @@ const SalesPage = () => {
             <ScanQrModalComponent
                 isCameraOpen={isScanQr}
                 setIsCameraOpen={setIsScanQr}
+                handleOnAddProductToBill={handleOnAddProductToBill}
             />
 
 

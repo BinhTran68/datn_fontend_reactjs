@@ -61,7 +61,7 @@ const SalePaymentInfo = ({
                              handleCheckIsCOD
                          }) => {
     console.log("shippingFee", selectedVouchers)
-    const missingAmount = Math.max(0, amount - customerMoney);
+    const missingAmount = Math.max(0, amount+shippingFee-discount - customerMoney);
 
     return (
         <>
@@ -279,7 +279,7 @@ const SalePaymentInfo = ({
                                 <Text strong>{formatVND(shippingFee || 0)}</Text>
                             </Form.Item>
                             <Form.Item label="Tổng tiền cần thanh toán">
-                                <Text strong style={{color: "red"}}>{formatVND(amount + shippingFee)}</Text>
+                                <Text strong style={{color: "red"}}>{formatVND(amount + shippingFee - discount)}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
