@@ -9,131 +9,324 @@ const PurchaseOrder = () => {
   const [dateFilter, setDateFilter] = useState('all');
   const [notifications, setNotifications] = useState({ show: false, message: '', type: '' });
 
+  // Define status mapping
+  const statusMapping = {
+    'CHO_XAC_NHAN': { id: 'pending_confirmation', label: 'Chờ xác nhận', actions: ['cancel'] },
+    'CHO_THANH_TOAN': { id: 'pending_payment', label: 'Chờ thanh toán', actions: ['pay', 'cancel'] },
+    'DANG_CHUAN_BI': { id: 'preparing', label: 'Đang chuẩn bị hàng', actions: ['contact_seller'] },
+    'DANG_GIAO': { id: 'to_receive', label: 'Đang giao hàng', actions: ['track'] },
+    'DA_GIAO': { id: 'completed', label: 'Đã giao', actions: ['rate', 'buy_again', 'contact_seller'] },
+    'DA_HUY': { id: 'cancelled', label: 'Đã hủy', actions: ['buy_again', 'delete'] },
+    'HOAN_TRA': { id: 'return_refund', label: 'Trả hàng/Hoàn tiền', actions: ['view_details'] }
+  };
+
   const tabs = [
     { id: 'all', label: 'Tất cả' },
+    { id: 'pending_confirmation', label: 'Chờ xác nhận' },
     { id: 'pending_payment', label: 'Chờ thanh toán' },
-    { id: 'to_ship', label: 'Vận chuyển' },
-    { id: 'to_receive', label: 'Chờ giao hàng' },
+    { id: 'preparing', label: 'Chuẩn bị hàng' },
+    { id: 'to_receive', label: 'Đang giao hàng' },
     { id: 'completed', label: 'Hoàn thành' },
     { id: 'cancelled', label: 'Đã hủy' },
     { id: 'return_refund', label: 'Trả hàng/Hoàn tiền' },
   ];
 
-  // Mô phỏng việc lấy dữ liệu đơn hàng từ API
+  // Fetch orders from API
   useEffect(() => {
     setLoading(true);
     
-    // Giả lập dữ liệu đơn hàng, trong thực tế sẽ được lấy từ API
-    const mockOrders = [
-      {
-        id: '123456789',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'pending_payment',
-        statusText: 'Chờ thanh toán',
-        date: '15/03/2025',
-        items: [
-          { image: 'https://tse3.mm.bing.net/th?id=OIP.H57ChPJ8v89UJhBnTvNHNwHaHa&pid=Api&P=0&h=180', name: 'Giày Nike Air Max 97', variation: 'size 42', price: 250000, quantity: 2 }
-        ],
-        totalPrice: 500000,
-        actions: ['pay', 'cancel']
-      },
-      {
-        id: '987654321',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'to_ship',
-        statusText: 'Đang chuẩn bị hàng',
-        date: '14/03/2025',
-        items: [
-          { image: 'https://tse2.mm.bing.net/th?id=OIP.cpk9_S8aTREQUUppvmIpDgHaHa&pid=Api&P=0&h=180', name: 'Giày Adidas Ultraboost 22', variation: 'size 41', price: 350000, quantity: 1 }
-        ],
-        totalPrice: 350000,
-        actions: ['contact_seller']
-      },
-      {
-        id: '456789123',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'to_receive',
-        statusText: 'Đang giao hàng',
-        date: '12/03/2025',
-        items: [
-          { image: 'https://tse4.mm.bing.net/th?id=OIP.8_TUH2z-6ZDSHlfei4xUYQHaHa&pid=Api&P=0&h=180', name: 'Giày Converse Chuck Taylor', variation: 'size 40', price: 280000, quantity: 1 },
-          { image: 'https://tse2.mm.bing.net/th?id=OIP.cpk9_S8aTREQUUppvmIpDgHaHa&pid=Api&P=0&h=180', name: 'Giày Vans Old Skool', variation: 'size 39', price: 175000, quantity: 1 }
-        ],
-        totalPrice: 455000,
-        actions: ['track']
-      },
-      {
-        id: '741852963',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'completed',
-        statusText: 'Đã giao',
-        date: '05/03/2025',
-        items: [
-          { image: 'https://tse3.mm.bing.net/th?id=OIP.-I3rfn3GZIbSQuA1vGiPTAHaHa&pid=Api&P=0&h=180', name: 'Giày Puma RS-X', variation: 'size 43', price: 220000, quantity: 1 }
-        ],
-        totalPrice: 220000,
-        actions: ['rate', 'buy_again', 'contact_seller']
-      },
-      {
-        id: '963258741',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'cancelled',
-        statusText: 'Đã hủy',
-        date: '01/03/2025',
-        items: [
-          { image: 'https://tse4.mm.bing.net/th?id=OIP.jEvfyxNB_g23etbhZ3oMOwHaHa&pid=Api&P=0&h=180', name: 'Giày New Balance 574', variation: 'size 38', price: 160000, quantity: 2 }
-        ],
-        totalPrice: 320000,
-        actions: ['buy_again', 'delete']
-      },
-      {
-        id: '369258147',
-        shop: { name: 'Shop TheHands', avatar: '/img/thehands.png' },
-        status: 'return_refund',
-        statusText: 'Đang xử lý hoàn tiền',
-        date: '28/02/2025',
-        items: [
-          { image: 'https://tse3.mm.bing.net/th?id=OIP.SZAUp6tVY6OuMjvHk03I9gHaHa&pid=Api&P=0&h=180', name: 'Giày Asics Gel-Kayano 28', variation: 'size 42', price: 180000, quantity: 1 }
-        ],
-        totalPrice: 180000,
-        actions: ['view_details']
-      }
-    ];
-    
+    // In real application, this would be an API call
+    const fetchOrders = async () => {
+      try {
+        // Mock API response based on the provided format
+        const mockApiResponse = [
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 75,
+              "billCode": "HD-71D2F28A",
+              "discountMoney": 2.5,
+              "shipMoney": 120000.0,
+              "totalMoney": 15.5,
+              "moneyAfter": 120015.5,
+              "shippingAddress": 43,
+              "customerName": "Nguyễn Văn A",
+              "numberPhone": "0912345678",
+              "email": "nguyenvana@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "CHO_THANH_TOAN",
+              "voucher": "VC006",
+              "payment": null,
+              "createDate": "15/03/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 108,
+                  "productName": "Giày Nike Air Max 97",
+                  "size": "42",
+                  "quantity": 1,
+                  "price": 250000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853661/5_2_wq2fqc.png"
+                },
+                {
+                  "productDetailId": 109,
+                  "productName": "Giày Adidas Ultraboost 22",
+                  "size": "41",
+                  "quantity": 2,
+                  "price": 350000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853647/1_2_tej4ju.png"
+                }
+              ]
+            }
+          },
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 76,
+              "billCode": "HD-82E3F39B",
+              "discountMoney": 0,
+              "shipMoney": 90000.0,
+              "totalMoney": 280000.0,
+              "moneyAfter": 370000.0,
+              "shippingAddress": 44,
+              "customerName": "Trần Thị B",
+              "numberPhone": "0987654321",
+              "email": "tranthib@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "DANG_CHUAN_BI",
+              "voucher": null,
+              "payment": null,
+              "createDate": "14/03/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 110,
+                  "productName": "Giày Converse Chuck Taylor",
+                  "size": "40",
+                  "quantity": 1,
+                  "price": 280000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853661/5_2_wq2fqc.png"
+                }
+              ]
+            }
+          },
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 77,
+              "billCode": "HD-93F4G40C",
+              "discountMoney": 5000.0,
+              "shipMoney": 85000.0,
+              "totalMoney": 455000.0,
+              "moneyAfter": 535000.0,
+              "shippingAddress": 45,
+              "customerName": "Lê Văn C",
+              "numberPhone": "0923456789",
+              "email": "levanc@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "DANG_GIAO",
+              "voucher": "VC008",
+              "payment": null,
+              "createDate": "12/03/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 111,
+                  "productName": "Giày Vans Old Skool",
+                  "size": "39",
+                  "quantity": 1,
+                  "price": 175000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853647/1_2_tej4ju.png"
+                },
+                {
+                  "productDetailId": 112,
+                  "productName": "Giày Puma RS-X",
+                  "size": "43",
+                  "quantity": 1,
+                  "price": 280000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853661/5_2_wq2fqc.png"
+                }
+              ]
+            }
+          },
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 78,
+              "billCode": "HD-04G5H51D",
+              "discountMoney": 0,
+              "shipMoney": 70000.0,
+              "totalMoney": 220000.0,
+              "moneyAfter": 290000.0,
+              "shippingAddress": 46,
+              "customerName": "Phạm Thị D",
+              "numberPhone": "0934567890",
+              "email": "phamthid@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "DA_GIAO",
+              "voucher": null,
+              "payment": null,
+              "createDate": "05/03/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 113,
+                  "productName": "Giày New Balance 574",
+                  "size": "38",
+                  "quantity": 1,
+                  "price": 220000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853647/1_2_tej4ju.png"
+                }
+              ]
+            }
+          },
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 79,
+              "billCode": "HD-15H6I62E",
+              "discountMoney": 10000.0,
+              "shipMoney": 75000.0,
+              "totalMoney": 320000.0,
+              "moneyAfter": 385000.0,
+              "shippingAddress": 47,
+              "customerName": "Hoàng Văn E",
+              "numberPhone": "0945678901",
+              "email": "hoangvane@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "DA_HUY",
+              "voucher": "VC010",
+              "payment": null,
+              "createDate": "01/03/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 114,
+                  "productName": "Giày Asics Gel-Kayano 28",
+                  "size": "42",
+                  "quantity": 2,
+                  "price": 160000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853661/5_2_wq2fqc.png"
+                }
+              ]
+            }
+          },
+          {
+            "code": 200,
+            "message": "lấy trạng thái hóa đơn",
+            "data": {
+              "id": 80,
+              "billCode": "HD-26I7J73F",
+              "discountMoney": 0,
+              "shipMoney": 65000.0,
+              "totalMoney": 180000.0,
+              "moneyAfter": 245000.0,
+              "shippingAddress": 48,
+              "customerName": "Ngô Thị F",
+              "numberPhone": "0956789012",
+              "email": "ngothif@example.com",
+              "typeBill": "ONLINE",
+              "notes": "",
+              "status": "HOAN_TRA",
+              "voucher": null,
+              "payment": null,
+              "createDate": "28/02/2025",
+              "billDetailResponse": [
+                {
+                  "productDetailId": 115,
+                  "productName": "Giày Brooks Ghost 14",
+                  "size": "42",
+                  "quantity": 1,
+                  "price": 180000.0,
+                  "image": "https://res.cloudinary.com/dieyhvcou/image/upload/v1741853647/1_2_tej4ju.png"
+                }
+              ]
+            }
+          }
+        ];
 
-    // Lọc đơn hàng theo tab đang active
-    setTimeout(() => {
-      let filteredOrders = mockOrders;
-      
-      if (activeTab !== 'all') {
-        filteredOrders = mockOrders.filter(order => order.status === activeTab);
-      }
-      
-      // Lọc theo từ khóa tìm kiếm
-      if (searchText) {
-        filteredOrders = filteredOrders.filter(order => 
-          order.id.includes(searchText) || 
-          order.items.some(item => item.name.toLowerCase().includes(searchText.toLowerCase()))
-        );
-      }
-      
-      // Lọc theo ngày
-      if (dateFilter !== 'all') {
-        const today = new Date();
-        const monthAgo = new Date();
-        monthAgo.setMonth(today.getMonth() - 1);
+        // Transform API response to our order format
+        const transformedOrders = mockApiResponse.map(response => {
+          const orderData = response.data;
+          const statusInfo = statusMapping[orderData.status] || { 
+            id: 'unknown', 
+            label: 'Không xác định', 
+            actions: ['view_details'] 
+          };
+          
+          return {
+            id: orderData.id,
+            billCode: orderData.billCode,
+            status: statusInfo.id,
+            statusText: statusInfo.label,
+            date: orderData.createDate || 'N/A',
+            customerName: orderData.customerName,
+            email: orderData.email,
+            phone: orderData.numberPhone,
+            discountMoney: orderData.discountMoney || 0,
+            shipMoney: orderData.shipMoney || 0,
+            totalMoney: orderData.totalMoney || 0,
+            moneyAfter: orderData.moneyAfter || 0,
+            voucher: orderData.voucher,
+            items: orderData.billDetailResponse.map(item => ({
+              id: item.productDetailId,
+              image: item.image,
+              name: item.productName,
+              variation: `size ${item.size}`,
+              price: item.price,
+              quantity: item.quantity
+            })),
+            actions: statusInfo.actions
+          };
+        });
+
+        // Filter orders based on active tab
+        let filteredOrders = transformedOrders;
         
-        if (dateFilter === 'recent') {
-          filteredOrders = filteredOrders.filter(order => {
-            const orderDate = new Date(order.date.split('/').reverse().join('-'));
-            return orderDate >= monthAgo;
-          });
+        if (activeTab !== 'all') {
+          filteredOrders = transformedOrders.filter(order => order.status === activeTab);
         }
+        
+        // Filter by search text
+        if (searchText) {
+          filteredOrders = filteredOrders.filter(order => 
+            order.billCode.toLowerCase().includes(searchText.toLowerCase()) || 
+            order.items.some(item => item.name.toLowerCase().includes(searchText.toLowerCase()))
+          );
+        }
+        
+        // Filter by date
+        if (dateFilter !== 'all') {
+          const today = new Date();
+          const monthAgo = new Date();
+          monthAgo.setMonth(today.getMonth() - 1);
+          
+          if (dateFilter === 'recent') {
+            filteredOrders = filteredOrders.filter(order => {
+              const orderDate = new Date(order.date.split('/').reverse().join('-'));
+              return orderDate >= monthAgo;
+            });
+          }
+        }
+        
+        setOrders(filteredOrders);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        showNotification('Đã xảy ra lỗi khi tải dữ liệu đơn hàng', 'error');
+        setLoading(false);
       }
-      
-      setOrders(filteredOrders);
-      setLoading(false);
-    }, 500); // Mô phỏng thời gian load
+    };
+
+    // Simulate API call delay
+    setTimeout(() => {
+      fetchOrders();
+    }, 500);
   }, [activeTab, searchText, dateFilter]);
 
   const handleTabChange = (tabId) => {
@@ -148,7 +341,7 @@ const PurchaseOrder = () => {
     setDateFilter(e.target.value);
   };
 
-  // Hiển thị thông báo
+  // Show notification
   const showNotification = (message, type = 'success') => {
     setNotifications({
       show: true,
@@ -156,27 +349,26 @@ const PurchaseOrder = () => {
       type
     });
     
-    // Tự động ẩn thông báo sau 3 giây
+    // Auto hide notification after 3 seconds
     setTimeout(() => {
       setNotifications({ show: false, message: '', type: '' });
     }, 3000);
   };
 
-  // Xử lý thanh toán đơn hàng
-  const handlePayment = (orderId) => {
-    // Mô phỏng chuyển đến trang thanh toán
-    showNotification(`Đang chuyển đến trang thanh toán cho đơn hàng #${orderId}`);
+  // Handle payment
+  const handlePayment = (orderId, billCode) => {
+    showNotification(`Đang chuyển đến trang thanh toán cho đơn hàng #${billCode}`);
     
-    // Trong thực tế, sẽ chuyển đến trang thanh toán hoặc hiển thị modal thanh toán
-    console.log(`Thanh toán đơn hàng: ${orderId}`);
+    // In real application, would redirect to payment page or show payment modal
+    console.log(`Thanh toán đơn hàng: ${billCode}`);
     
-    // Cập nhật trạng thái đơn hàng sau khi thanh toán (trong thực tế sẽ được thực hiện sau khi thanh toán thành công)
+    // Update order status after payment (in real app, this would happen after successful payment)
     setTimeout(() => {
       const updatedOrders = orders.map(order => {
         if (order.id === orderId) {
           return {
             ...order,
-            status: 'to_ship',
+            status: 'preparing',
             statusText: 'Đang chuẩn bị hàng',
             actions: ['contact_seller']
           };
@@ -189,13 +381,12 @@ const PurchaseOrder = () => {
     }, 2000);
   };
 
-  // Xử lý hủy đơn hàng
-  const handleCancelOrder = (orderId) => {
-    // Hiển thị xác nhận trước khi hủy
+  // Handle cancel order
+  const handleCancelOrder = (orderId, billCode) => {
     if (window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
-      // Trong thực tế, sẽ gọi API để hủy đơn hàng
+      // In real app, would call API to cancel order
       
-      // Cập nhật trạng thái đơn hàng trong danh sách
+      // Update order status in list
       const updatedOrders = orders.map(order => {
         if (order.id === orderId) {
           return {
@@ -209,47 +400,47 @@ const PurchaseOrder = () => {
       });
       
       setOrders(updatedOrders);
-      showNotification('Đơn hàng đã được hủy thành công');
+      showNotification(`Đơn hàng ${billCode} đã được hủy thành công`);
     }
   };
 
-  // Xử lý theo dõi đơn hàng
-  const handleTrackOrder = (orderId) => {
-    showNotification(`Đang mở trang theo dõi đơn hàng #${orderId}`);
+  // Handle track order
+  const handleTrackOrder = (orderId, billCode) => {
+    showNotification(`Đang mở trang theo dõi đơn hàng #${billCode}`);
     
-    // Trong thực tế, sẽ chuyển đến trang theo dõi hoặc hiển thị modal theo dõi
-    console.log(`Theo dõi đơn hàng: ${orderId}`);
+    // In real app, would redirect to tracking page or show tracking modal
+    console.log(`Theo dõi đơn hàng: ${billCode}`);
     
-    // Mô phỏng hiển thị popup thông tin theo dõi
-    alert(`Thông tin vận chuyển đơn hàng #${orderId}:\n- Đơn hàng đang được vận chuyển\n- Dự kiến giao hàng: 1-2 ngày tới\n- Đơn vị vận chuyển: Giao Hàng Nhanh\n- Mã vận đơn: VN${Math.floor(Math.random() * 10000000)}`);
+    // Simulate showing tracking information
+    alert(`Thông tin vận chuyển đơn hàng #${billCode}:\n- Đơn hàng đang được vận chuyển\n- Dự kiến giao hàng: 1-2 ngày tới\n- Đơn vị vận chuyển: Giao Hàng Nhanh\n- Mã vận đơn: VN${Math.floor(Math.random() * 10000000)}`);
   };
 
-  // Xử lý liên hệ với người bán
-  const handleContactSeller = (orderId, shopName) => {
-    showNotification(`Đang mở chat với ${shopName}`);
+  // Handle contact seller
+  const handleContactSeller = (orderId, billCode) => {
+    showNotification(`Đang mở chat với người bán về đơn hàng ${billCode}`);
     
-    // Trong thực tế, sẽ mở cửa sổ chat hoặc chuyển đến trang chat
-    console.log(`Liên hệ với người bán: ${shopName}, Đơn hàng: ${orderId}`);
+    // In real app, would open chat window or redirect to chat page
+    console.log(`Liên hệ với người bán về đơn hàng: ${billCode}`);
     
-    // Mô phỏng hiển thị cửa sổ chat
-    alert(`Đang kết nối với ${shopName}...\nVui lòng chờ trong giây lát.`);
+    // Simulate showing chat window
+    alert(`Đang kết nối với nhân viên hỗ trợ...\nVui lòng chờ trong giây lát.`);
   };
 
-  // Xử lý đánh giá sản phẩm
-  const handleRateProduct = (orderId) => {
-    showNotification(`Đang mở form đánh giá cho đơn hàng #${orderId}`);
+  // Handle rate product
+  const handleRateProduct = (orderId, billCode) => {
+    showNotification(`Đang mở form đánh giá cho đơn hàng #${billCode}`);
     
-    // Trong thực tế, sẽ hiển thị form đánh giá
-    console.log(`Đánh giá sản phẩm cho đơn hàng: ${orderId}`);
+    // In real app, would show rating form
+    console.log(`Đánh giá sản phẩm cho đơn hàng: ${billCode}`);
     
-    // Mô phỏng hiển thị form đánh giá
+    // Simulate showing rating form
     const rating = prompt('Đánh giá sản phẩm (1-5 sao):', '5');
     const comment = prompt('Nhận xét của bạn:', 'Sản phẩm rất tốt!');
     
     if (rating && comment) {
       showNotification('Cảm ơn bạn đã đánh giá sản phẩm!');
       
-      // Cập nhật trạng thái đã đánh giá trong danh sách đơn hàng
+      // Update order status in list
       const updatedOrders = orders.map(order => {
         if (order.id === orderId) {
           return {
@@ -264,97 +455,104 @@ const PurchaseOrder = () => {
     }
   };
 
-  // Xử lý mua lại sản phẩm
-  const handleBuyAgain = (orderId) => {
-    // Tìm thông tin đơn hàng
+  // Handle buy again
+  const handleBuyAgain = (orderId, billCode) => {
+    // Find order info
     const order = orders.find(o => o.id === orderId);
     
     if (order) {
       showNotification(`Đã thêm ${order.items.length} sản phẩm vào giỏ hàng`);
       
-      // Trong thực tế, sẽ thêm sản phẩm vào giỏ hàng và chuyển đến trang giỏ hàng
-      console.log(`Mua lại sản phẩm từ đơn hàng: ${orderId}`);
+      // In real app, would add products to cart and redirect to cart page
+      console.log(`Mua lại sản phẩm từ đơn hàng: ${billCode}`);
       
-      // Mô phỏng thông báo thêm vào giỏ hàng
+      // Simulate adding to cart notification
       const itemNames = order.items.map(item => item.name).join(', ');
       alert(`Đã thêm vào giỏ hàng:\n${itemNames}`);
     }
   };
 
-  // Xử lý xóa đơn hàng
-  const handleDeleteOrder = (orderId) => {
+  // Handle delete order
+  const handleDeleteOrder = (orderId, billCode) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này không?')) {
-      // Trong thực tế, sẽ gọi API để xóa đơn hàng
+      // In real app, would call API to delete order
       
-      // Xóa đơn hàng khỏi danh sách
+      // Remove order from list
       const updatedOrders = orders.filter(order => order.id !== orderId);
       setOrders(updatedOrders);
       
-      showNotification('Đơn hàng đã được xóa thành công');
+      showNotification(`Đơn hàng ${billCode} đã được xóa thành công`);
     }
   };
 
-  // Xử lý xem chi tiết đơn hàng
-  const handleViewDetails = (orderId) => {
-    showNotification(`Đang mở trang chi tiết đơn hàng #${orderId}`);
+  // Handle view order details
+  const handleViewDetails = (orderId, billCode) => {
+    showNotification(`Đang mở trang chi tiết đơn hàng #${billCode}`);
     
-    // Trong thực tế, sẽ chuyển đến trang chi tiết hoặc hiển thị modal chi tiết
-    console.log(`Xem chi tiết đơn hàng: ${orderId}`);
+    // In real app, would redirect to details page or show details modal
+    console.log(`Xem chi tiết đơn hàng: ${billCode}`);
     
-    // Mô phỏng hiển thị thông tin chi tiết
+    // Simulate showing details
     const order = orders.find(o => o.id === orderId);
     if (order) {
-      let details = `Chi tiết đơn hàng #${orderId}:\n`;
+      let details = `Chi tiết đơn hàng #${billCode}:\n`;
       details += `Ngày đặt hàng: ${order.date}\n`;
       details += `Trạng thái: ${order.statusText}\n`;
-      details += `Cửa hàng: ${order.shop.name}\n\n`;
+      details += `Khách hàng: ${order.customerName}\n`;
+      details += `Số điện thoại: ${order.phone}\n`;
+      details += `Email: ${order.email}\n\n`;
       details += `Sản phẩm:\n`;
       
       order.items.forEach((item, index) => {
         details += `${index + 1}. ${item.name} - ${item.variation} x${item.quantity} - ${formatPrice(item.price)}\n`;
       });
       
-      details += `\nTổng tiền: ${formatPrice(order.totalPrice)}`;
+      details += `\nTiền hàng: ${formatPrice(order.totalMoney)}`;
+      details += `\nPhí vận chuyển: ${formatPrice(order.shipMoney)}`;
+      details += `\nGiảm giá: ${formatPrice(order.discountMoney)}`;
+      details += `\nTổng tiền: ${formatPrice(order.moneyAfter)}`;
       
       alert(details);
     }
   };
 
-  // Xử lý các hành động từ các button
+  // Handle action button clicks
   const handleActionClick = (action, orderId) => {
-    // Tìm thông tin đơn hàng
+    // Find order info
     const order = orders.find(o => o.id === orderId);
+    const billCode = order ? order.billCode : '';
     
     switch (action) {
       case 'pay':
-        handlePayment(orderId);
+        handlePayment(orderId, billCode);
         break;
       case 'cancel':
-        handleCancelOrder(orderId);
+        handleCancelOrder(orderId, billCode);
         break;
       case 'track':
-        handleTrackOrder(orderId);
+        handleTrackOrder(orderId, billCode);
         break;
       case 'contact_seller':
-        handleContactSeller(orderId, order ? order.shop.name : '');
+        handleContactSeller(orderId, billCode);
         break;
       case 'rate':
-        handleRateProduct(orderId);
+        handleRateProduct(orderId, billCode);
         break;
       case 'buy_again':
-        handleBuyAgain(orderId);
+        handleBuyAgain(orderId, billCode);
         break;
       case 'delete':
-        handleDeleteOrder(orderId);
+        handleDeleteOrder(orderId, billCode);
         break;
       case 'view_details':
-        handleViewDetails(orderId);
+        handleViewDetails(orderId, billCode);
         break;
       default:
         console.log(`Hành động không được hỗ trợ: ${action}`);
     }
   };
 
+  // Return appropriate button based on action type
   const getActionButton = (action, orderId) => {
     switch (action) {
       case 'pay':
@@ -378,6 +576,7 @@ const PurchaseOrder = () => {
     }
   };
 
+  // Format price with Vietnamese currency
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -387,7 +586,7 @@ const PurchaseOrder = () => {
 
   return (
     <div className={styles.container}>
-      {/* Hiển thị thông báo */}
+      {/* Show notification */}
       {notifications.show && (
         <div className={`${styles.notification} ${styles[notifications.type]}`}>
           {notifications.message}
@@ -414,7 +613,7 @@ const PurchaseOrder = () => {
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Tìm kiếm theo ID đơn hàng hoặc tên sản phẩm"
+            placeholder="Tìm kiếm theo mã đơn hàng hoặc tên sản phẩm"
             className={styles.searchInput}
             value={searchText}
             onChange={handleSearch}
@@ -447,8 +646,7 @@ const PurchaseOrder = () => {
             <div key={order.id} className={styles.orderCard}>
               <div className={styles.orderHeader}>
                 <div className={styles.shopInfo}>
-                  <img src={order.shop.avatar} alt={order.shop.name} className={styles.shopAvatar} />
-                  <span className={styles.shopName}>{order.shop.name}</span>
+                  <span className={styles.shopName}>Shop TheHands</span>
                 </div>
                 <div className={styles.orderStatus}>
                   <span className={styles.orderStatusText}>{order.statusText}</span>
@@ -476,11 +674,11 @@ const PurchaseOrder = () => {
               <div className={styles.orderFooter}>
                 <div className={styles.orderMeta}>
                   <span className={styles.orderDate}>Ngày đặt hàng: {order.date}</span>
-                  <span className={styles.orderId}>Mã đơn hàng: {order.id}</span>
+                  <span className={styles.orderId}>Mã đơn hàng: {order.billCode}</span>
                 </div>
                 <div className={styles.orderTotal}>
                   <span className={styles.totalLabel}>Tổng số tiền:</span>
-                  <span className={styles.totalPrice}>{formatPrice(order.totalPrice)}</span>
+                  <span className={styles.totalPrice}>{formatPrice(order.moneyAfter)}</span>
                 </div>
                 <div className={styles.orderActions}>
                   {order.actions.map((action, index) => (

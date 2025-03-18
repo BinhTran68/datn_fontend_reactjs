@@ -63,6 +63,7 @@ const CartPage = () => {
   useEffect(() => {
     vouchersValid();
     voucherBest();
+    // fetchCart();
   }, [selectedRowKeys, products]);
   useEffect(() => {
     const handleCartUpdate = () => {
@@ -172,13 +173,15 @@ const CartPage = () => {
     setSelectedRowKeys(updatedSelectedKeys);
   };
 
-  const handleQuantityChange = async (index, value) => {
+  const handleQuantityChange = async (index, value, quantity) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
+    if (value>quantity) {
+      toast.warn("số lượng mua ko được quá số lượng của của hàng")
+      return;
+    }
     if (user) {
       try {
         try {
-          console.log("ddddddddddddđ", products);
-
           const res = await apiSetQuantityCart({
             cartDetailid: products[index]?.cartDetailId,
             quantity: value,
@@ -379,32 +382,45 @@ const CartPage = () => {
       title: "SỐ LƯỢNG",
       dataIndex: "quantity",
       key: "quantity",
-      render: (_, record, index) => (
-        <Flex gap={0.8}>
-          <Button
-            icon={<MinusOutlined />}
-            onClick={() =>
-              handleQuantityChange(
-                index,
-                Math.max(1, record.quantityAddCart - 1)
-              )
-            }
-          />
-          <InputNumber
-            min={1}
-            max={100}
-            value={record.quantityAddCart}
-            onChange={(value) => handleQuantityChange(index, value)}
-            style={{ width: "50px" }}
-          />
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() =>
-              handleQuantityChange(index, record.quantityAddCart + 1)
-            }
-          />
-        </Flex>
-      ),
+      render: (_, record, index) => {
+          // Tìm giá thực tế
+          const realPriceItem = productsRealPrice.find(
+            (item) => item.productDetailId === record.productDetailId
+          );
+  
+        return(
+        
+          <Row>
+            <Flex gap={0.8}>
+            <Button
+              icon={<MinusOutlined />}
+              onClick={() =>
+                handleQuantityChange(
+                  index,
+                  Math.max(1, record.quantityAddCart - 1),realPriceItem.quantity
+                )
+              }
+            />
+            <InputNumber
+              min={1}
+              max={100}
+              value={Math.min(record.quantityAddCart,realPriceItem?.quantity)}
+              onChange={(value) => handleQuantityChange(index, value,realPriceItem.quantity)}
+              style={{ width: "50px" }}
+            />
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() =>
+                handleQuantityChange(index, record.quantityAddCart + 1,realPriceItem.quantity)
+              }
+            />
+            
+          </Flex>
+          <Col span={24}>Số lượng còn: {realPriceItem?.quantity}</Col>
+          </Row>
+          
+        )
+      }
     },
 
     {
@@ -497,8 +513,8 @@ const CartPage = () => {
   ];
 
   return (
-    <div>
-      <Content style={{ backgroundColor: "white" }}>
+    <div >
+      <Content style={{ backgroundColor: "white", minHeight:800 }}>
         <Row gutter={[16, 16]} style={{ padding: "20px" }}>
           <Col span={16}>
             <Content>
@@ -613,7 +629,7 @@ const CartPage = () => {
                     {" "}
                     <Select
                       showSearch
-                      style={{ width: "100%", minWidth: 300 }} // Mở rộng ô chọn
+                      style={{ width: "100%", minWidth: 200 }} // Mở rộng ô chọn
                       placeholder="Chọn voucher"
                       optionLabelProp="label"
                       value={discountCode}

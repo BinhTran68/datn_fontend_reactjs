@@ -84,7 +84,7 @@ function HeaderNav() {
   };
 
   const menuItems = [
-    { key: "home", label: "TRANG CHỦ", path: "/home" },
+    { key: "home", label: "TRANG CHỦ", path: "/" },
     { key: "products", label: "SẢN PHẨM", path: "/products" },
     { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/test" },
     { key: "contact", label: "LIÊN HỆ", path: "/contact" },
@@ -95,7 +95,7 @@ function HeaderNav() {
   const settingsOptions = user
     ? [
         { key: "profile", label: "Hồ sơ" },
-        { key: "orders", label: "Đơn hàng của tôi" },
+        { key: "purchaseorder", label: "Đơn hàng của tôi" },
         { key: "change-password", label: "Đổi mật khẩu" },
         { key: "logout", label: "Đăng xuất" },
       ]
