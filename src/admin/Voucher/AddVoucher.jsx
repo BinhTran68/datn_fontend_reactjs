@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { color } from 'framer-motion';
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
+import dayjs from 'dayjs';
 
 
 
@@ -17,7 +18,7 @@ const columnsCustomers = [
         title: 'STT',
         dataIndex: 'stt',
         key: 'stt',
-        render: (_, __, index) => index + 1,
+        render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, // ✅ Tính STT theo trang hiện tại
     },
     {
         title: 'Họ và tên',
@@ -57,6 +58,7 @@ const AddVoucher = () => {
     const [loading, setLoading] = useState(false);
     const [selectedCustomers, setSelectedCustomers] = useState([]);
     const navigate = useNavigate(); // Khởi tạo navigate
+    
     const showConfirm = () => {
         Modal.confirm({
             title: "Xác nhận thêm phiếu giảm giá",
@@ -157,6 +159,9 @@ const AddVoucher = () => {
 
             const requestData = {
                 ...values,
+                startDate: values.startDate ? dayjs(values.startDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
+                endDate: values.endDate ? dayjs(values.endDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
+                
                 voucherType: value, // Truyền loại voucher (1: công khai, 2: riêng tư)
                 gmailkh: selectedEmails, // Gửi danh sách email thay vì ID khách hàng
             };
@@ -229,9 +234,10 @@ const AddVoucher = () => {
                                         }),
                                     ]}
                                 >
+                                    
                                     <InputNumber placeholder="Nhập giá trị giảm" style={{ width: '70%' }}
                                         formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                        parser={value => value.replace(/\D/g, '')} // Chỉ cho nhập số
                                     />
                                 </Form.Item>
 
@@ -324,7 +330,12 @@ const AddVoucher = () => {
                                 }),
                             ]}
                         >
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                            <DatePicker
+                                showTime={{ format: 'HH:mm:ss' }}
+                                format="DD/MM/YYYY HH:mm:ss"
+                                style={{ width: '100%' }}
+                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })} 
+                                />
                         </Form.Item>
 
                         <Form.Item
@@ -342,7 +353,12 @@ const AddVoucher = () => {
                                 }),
                             ]}
                         >
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                            <DatePicker
+                                showTime={{ format: 'HH:mm:ss' }}
+                                format="DD/MM/YYYY HH:mm:ss"
+                                style={{ width: '100%' }}
+                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })} 
+                                />
                         </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Radio.Group onChange={onChange} value={value}>
@@ -352,13 +368,13 @@ const AddVoucher = () => {
                         </Form.Item>
                     </Form>
                     {/* <Link to={"/admin/vouchelist"} > */}
-                    <Button type="primary"
+
+                    <Button
                         onClick={showConfirm}
-                        style={{
-                            marginBottom: '20px',
-                            border: 'none',
-                            backgroundColor: '#ff974d'
-                        }}>
+                        type="primary"
+                        size="middle "
+                        style={{ width: "60%", margin: "0 auto", display: "block" }}
+                    >
                         Thêm mới
                     </Button>
                     {/* </Link> */}

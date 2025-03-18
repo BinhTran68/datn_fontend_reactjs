@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message } from 'antd';
+import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message,InputNumber } from 'antd';
 import axios from 'axios';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -17,13 +17,9 @@ const columnsCustomers = [
         title: 'STT',
         dataIndex: 'stt',
         key: 'stt',
-        render: (_, __, index) => index + 1,
+        render: (_, __, index) => index + 1, // ✅ Tính STT theo trang hiện tại
     },
-    // {
-    //     title: 'ID',
-    //     dataIndex: 'id',
-    //     key: 'id',
-    // },
+
     {
         title: 'Họ và tên',
         dataIndex: 'fullName',
@@ -57,7 +53,6 @@ const DetailVoucher = () => {
     const [value, setValue] = useState("PUBLIC");
     const [customers, setCustomers] = useState([]);
     const [voucher, setVoucher] = useState([]);
-
     const [error, setError] = useState(null);
     const [showTable, setShowTable] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -232,19 +227,18 @@ const DetailVoucher = () => {
                         <Form.Item name="voucherName" label="Tên phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Input placeholder="Nhập tên phiếu giảm giá" />
                         </Form.Item>
-                        <Form.Item name="quantity" label="Số lượng" rules={[
-                            { required: true, message: 'Không được bỏ trống' },
+                        <Form.Item name="quantity" label="Số lượng" disabled rules={[
+                            { required: true, message: 'Vui lòng nhập số lượng' },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
                                     if (!value || (Number(value) >= 1 && Number.isInteger(Number(value)))) {
                                         return Promise.resolve();
                                     }
-                                    return Promise.reject(new Error('Số lượng phải là số nguyên lớn hơn hoặc bằng 1'));
+                                    return Promise.reject(new Error('Số lượng phải là số nguyên dương lớn hơn hoặc bằng 1'));
                                 },
                             }),
-                            
                         ]}>
-                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled={true} />
+                            <Input type="number" placeholder="Nhập số lượng" min={1} disabled />
                         </Form.Item>
 
                         <Form.Item label="Giá trị giảm" required>
@@ -261,8 +255,8 @@ const DetailVoucher = () => {
 
                                                 if (!value) return Promise.reject(new Error('Không được bỏ trống'));
 
-                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 80)) {
-                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 80'));
+                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 100)) {
+                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 100'));
                                                 }
 
                                                 if (num < 1) {
@@ -274,10 +268,14 @@ const DetailVoucher = () => {
                                         }),
                                     ]}
                                 >
-                                    <Input type="number" placeholder="Nhập giá trị giảm" style={{ width: '70%' }} />
+                                    
+                                    <InputNumber placeholder="Nhập giá trị giảm" style={{ width: '70%' }}
+                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        parser={value => value.replace(/\D/g, '')} // Chỉ cho nhập số
+                                    />
                                 </Form.Item>
 
-                                <Form.Item name="discountType" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
+                                <Form.Item name="discountType" initialValue="PERCENT" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                                     <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
                                         <Option value="PERCENT">%</Option>
                                         <Option value="MONEY">đ</Option>
@@ -290,48 +288,67 @@ const DetailVoucher = () => {
 
                         <Form.Item
                             name="billMinValue"
-                            label="Giá trị tối thiểu"
+                            label="Giá trị đơn hàng tối thiểu"
                             rules={[
-                                { required: true, message: 'Không được bỏ trống' },
+                                { required: true, message: 'Vui lòng nhập giá trị đơn hàng tối thiểu' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        const maxValue = getFieldValue("discountMaxValue");
                                         if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
-                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
-                                        }
-                                        if (maxValue !== undefined && maxValue !== null && Number(value) >= Number(maxValue)) {
-                                            return Promise.reject(new Error('Giá trị tối thiểu phải nhỏ hơn giá trị tối đa!'));
+                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương'));
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối thiểu" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị đơn hàng tối thiểu"
+                                style={{ width: '100%' }}
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                            />
                         </Form.Item>
+
 
                         <Form.Item
                             name="discountMaxValue"
-                            label="Giá trị tối đa"
-                            dependencies={["billMinValue"]}
+                            label="Giá trị phiếu giảm giá tối đa"
+                            dependencies={["billMinValue", "discountType", "discountValue"]}
                             rules={[
-                                { required: true, message: 'Không được bỏ trống' },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
+                                        const discountType = getFieldValue("discountType");
+                                        const discountValue = getFieldValue("discountValue");
                                         const minValue = getFieldValue("billMinValue");
-                                        if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
-                                            return Promise.reject(new Error('Giá trị phải là số nguyên dương!'));
-                                        }
-                                        if (minValue !== undefined && minValue !== null && Number(value) <= Number(minValue)) {
-                                            return Promise.reject(new Error('Giá trị tối đa phải lớn hơn giá trị tối thiểu!'));
+
+                                        if (discountType === "MONEY") {
+                                            if (value !== discountValue) {
+                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa phải bằng giá trị giảm khi giảm giá bằng tiền'));
+                                            }
+                                        } else if (discountType === "PERCENT") {
+                                            if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
+                                                return Promise.reject(new Error('Giá trị phải là số nguyên dương'));
+                                            }
+                                            if (minValue !== undefined && minValue !== null && Number(value) > Number(minValue)) {
+                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa không được lớn hơn giá trị đơn hàng tối thiểu'));
+                                            }
                                         }
                                         return Promise.resolve();
                                     },
                                 }),
                             ]}
                         >
-                            <Input type="number" placeholder="Nhập giá trị tối đa" suffix="đ" />
+                            <InputNumber
+                                placeholder="Nhập giá trị phiếu giảm giá tối đa"
+                                style={{ width: '100%' }}
+                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                suffix="đ"
+                                disabled
+                            />
                         </Form.Item>
+
 
                         <Form.Item
                             name="startDate"
@@ -348,8 +365,12 @@ const DetailVoucher = () => {
                                 }),
                             ]}
                         >
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                        </Form.Item>
+                            <DatePicker
+                                showTime={{ format: 'HH:mm:ss' }}
+                                format="DD/MM/YYYY HH:mm:ss"
+                                style={{ width: '100%' }}
+                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })}
+                            />                        </Form.Item>
 
                         <Form.Item
                             name="endDate"
@@ -366,8 +387,12 @@ const DetailVoucher = () => {
                                 }),
                             ]}
                         >
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                        </Form.Item>
+                            <DatePicker
+                                showTime={{ format: 'HH:mm:ss' }}
+                                format="DD/MM/YYYY HH:mm:ss"
+                                style={{ width: '100%' }}
+                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })}
+                            />                        </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Radio.Group onChange={onChange} value={value} disabled>
                                 <Radio checked={true} value={"PUBLIC"}>Công khai</Radio>
@@ -375,18 +400,6 @@ const DetailVoucher = () => {
                             </Radio.Group>
                         </Form.Item>
                     </Form>
-                    {/* <Link to={"/admin/vouchelist"} > */}
-                    {/* <Button type="primary"
-                        onClick={showConfirm}
-                        style={{
-                            marginBottom: '20px',
-                            border: 'none',
-                            backgroundColor: '#ff974d'
-                        }}>
-                        Chỉnh sửa
-                    </Button> */}
-                    {/* </Link> */}
-                    {/* </Modal> */}
 
                 </Card>
             </Col>
