@@ -2,15 +2,14 @@ import {
     Modal, Table, Input, Button, Row, Col, Typography, Card, Checkbox, message, InputNumber, Form, DatePicker, Select
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState  } from "react";
 import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useParams} from "react-router-dom";
 import dayjs from "dayjs";
 
 
-
-const AddPromotion = () => {
+const DetailPromotion = () => {
     const [form] = Form.useForm();
     const { Title } = Typography;
     const [loading, setLoading] = useState(false); // Trạng thái loading
@@ -24,8 +23,57 @@ const AddPromotion = () => {
     const [productDetails, setProductDetails] = useState([]);
     const [selectedProductDetails, setSelectedProductDetails] = useState([]);
     const navigate = useNavigate();
+    
 
+    const { id } = useParams(); // 🟢 Lấy ID từ URL
 
+    useEffect(() => {
+        if (!id) return; // Nếu không có ID thì không gọi API
+
+        const fetchPromotionDetails = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/admin/promotion/detail/${id}`);
+                const promoData = response.data.data;
+
+                if (promoData) {
+                    form.setFieldsValue({
+                        ...promoData,
+                        startDate: promoData.startDate ? dayjs(promoData.startDate) : null,
+                        endDate: promoData.endDate ? dayjs(promoData.endDate) : null,
+                    });
+
+                    const selectedProductIds = promoData.productIds || [];
+                    const selectedProductDetailIds = promoData.productDetailIds || [];
+
+                    const productResponse = await axios.get("http://localhost:8080/api/admin/product/hien");
+                    const filteredProducts = productResponse.data.data.filter(product => product.totalQuantity > 0);
+
+                    const selectedProductsData = filteredProducts.filter(product => selectedProductIds.includes(product.id));
+
+                    let allProductDetails = [];
+                    for (let product of selectedProductsData) {
+                        try {
+                            const detailResponse = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${product.id}`);
+                            allProductDetails = [...allProductDetails, ...detailResponse.data.data];
+                        } catch (error) {
+                            console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+                        }
+                    }
+
+                    const selectedProductDetailsData = allProductDetails.filter(detail => selectedProductDetailIds.includes(detail.id));
+
+                    setProducts(filteredProducts);
+                    setSelectedProducts(selectedProductsData);
+                    setProductDetails(allProductDetails);
+                    setSelectedProductDetails(selectedProductDetailsData);
+                }
+            } catch (error) {
+                message.error("Có lỗi xảy ra khi tải dữ liệu chương trình khuyến mãi.");
+            }
+        };
+
+        fetchPromotionDetails();
+    }, [id]); // 🟢 Gọi lại khi ID thay đổi
     //xử lí nút add
     const handleAddPromotion = async () => {
         try {
@@ -37,9 +85,6 @@ const AddPromotion = () => {
             const requestData = {
                 ...values,
                 discountType: "PERCENT",
-                startDate: values.startDate ? dayjs(values.startDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
-                endDate: values.endDate ? dayjs(values.endDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
-
                 productIds: selectedProducts.map(item => item.id), // ✅ Đúng với BE
                 productDetailIds: selectedProductDetails.map(item => item.id), // ✅ Đúng với BE
             };
@@ -48,7 +93,7 @@ const AddPromotion = () => {
             // ✅ In ra console để kiểm tra dữ liệu trước khi gửi
             console.log("Dữ liệu gửi lên backend:", requestData);
 
-            const response = await axios.post("http://localhost:8080/api/admin/promotion/add", requestData);
+            const response = await axios.put(`http://localhost:8080/api/admin/promotion/update/${id}`, requestData);
 
             // ✅ In ra phản hồi từ backend để kiểm tra
             console.log("Phản hồi từ backend:", response.data.data);
@@ -186,9 +231,9 @@ const AddPromotion = () => {
             }
         }
     };
-    useEffect(() => {
-        fetchProductsData();
-    }, []);
+
+
+
 
     const columns = [
         {
@@ -196,10 +241,12 @@ const AddPromotion = () => {
                 <Checkbox
                     checked={selectedProducts.length === products.length && products.length > 0}
                     indeterminate={selectedProducts.length > 0 && selectedProducts.length < products.length}
+                    disabled={true}
                     onChange={(e) => {
                         if (e.target.checked) {
                             setSelectedProducts(products);
                             setProductDetails([]); // Reset chi tiết sản phẩm
+                            
                             products.forEach(async (record) => {
                                 try {
                                     const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
@@ -225,6 +272,7 @@ const AddPromotion = () => {
                 <Checkbox
                     checked={selectedProducts.some(p => p.id === record.id)}
                     onChange={(e) => handleCheckboxChange(e, record)}
+                    disabled={true}
                 />
             ),
         },
@@ -254,6 +302,7 @@ const AddPromotion = () => {
                 <Checkbox
                     checked={selectedProductDetails.length === productDetails.length && productDetails.length > 0}
                     indeterminate={selectedProductDetails.length > 0 && selectedProductDetails.length < productDetails.length}
+                    disabled={true}
                     onChange={(e) => {
                         if (e.target.checked) {
                             setSelectedProductDetails(productDetails);
@@ -269,6 +318,7 @@ const AddPromotion = () => {
             render: (_, record) => (
                 <Checkbox
                     checked={selectedProductDetails.some(p => p.id === record.id)}
+                    disabled={true}
                     onChange={(e) => handleDetailCheckboxChange(e, record)}
                 />
             ),
@@ -291,29 +341,36 @@ const AddPromotion = () => {
 
             <Col span={8}>
                 <Card>
-                    <Form form={form} layout="vertical">
+                    <Form form={form} layout="vertical" disabled> {/* Chỉnh label lên trên */}
                         <Form.Item
                             name="promotionName"
                             label="Tên đợt giảm giá"
                             style={{ marginBottom: "12px" }}
-                            rules={[{ required: true, message: "Không được bỏ trống" }]}
                         >
                             <Input placeholder="Nhập tên đợt giảm giá" style={{ width: "100%" }} />
                         </Form.Item>
+
+
 
                         <Form.Item
                             name="discountValue"
                             label="Giá trị giảm"
                             style={{ marginBottom: "12px" }}
                             rules={[
-
+                                {
+                                    required: true,
+                                    message: 'Không được bỏ trống',
+                                },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
                                         const num = Number(value);
-                                        if (!value) return Promise.reject(new Error("Không được bỏ trống"));
+
+                                        if (!value) return Promise.reject(new Error('Không được bỏ trống'));
+
                                         if (!Number.isInteger(num) || num < 1 || num > 100) {
-                                            return Promise.reject(new Error("Giá trị giảm (%) phải từ 1 đến 100"));
+                                            return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 100'));
                                         }
+
                                         return Promise.resolve();
                                     },
                                 }),
@@ -321,74 +378,30 @@ const AddPromotion = () => {
                         >
                             <InputNumber
                                 placeholder="Nhập giá trị giảm"
-                                style={{ width: "100%" }}
+                                style={{ width: '100%' }}
                                 min={1}
                                 max={100}
-                                formatter={(value) => `${value}%`}
-                                parser={(value) => value.replace(/\D/g, "")}
+                                formatter={value => `${value}%`}
+                                parser={value => value.replace(/\D/g, '')} // Chỉ cho nhập số
                                 addonAfter="%"
                             />
                         </Form.Item>
 
+                        {/* Trường hidden để lưu discountType */}
                         <Form.Item name="discountType" initialValue="PERCENT" hidden>
                             <Input />
                         </Form.Item>
 
 
-                        <Form.Item
-                            name="startDate"
-                            label="Ngày bắt đầu"
-                            rules={[
-                                { required: true, message: 'Vui lòng chọn ngày bắt đầu' },
-                                ({ getFieldValue }) => ({
-                                    validator(_, value) {
-                                        if (!value || !getFieldValue('endDate') || value.isBefore(getFieldValue('endDate'))) {
-                                            return Promise.resolve();
-                                        }
-                                        return Promise.reject(new Error('Ngày bắt đầu phải trước ngày kết thúc'));
-                                    },
-                                }),
-                            ]}
-                        >
-                            <DatePicker
-                                showTime={{ format: 'HH:mm:ss' }}
-                                format="DD/MM/YYYY HH:mm:ss"
-                                style={{ width: '100%' }}
-                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })}
-                            />
+
+                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}>
+                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
 
-                        <Form.Item
-                            name="endDate"
-                            label="Ngày kết thúc"
-                            rules={[
-                                { required: true, message: 'Không được bỏ trống' },
-                                ({ getFieldValue }) => ({
-                                    validator(_, value) {
-                                        if (!value || !getFieldValue('startDate') || value.isAfter(getFieldValue('startDate'))) {
-                                            return Promise.resolve();
-                                        }
-                                        return Promise.reject(new Error('Ngày kết thúc phải lớn hơn ngày bắt đầu!'));
-                                    },
-                                }),
-                            ]}
-                        >
-                            <DatePicker
-                                showTime={{ format: 'HH:mm:ss' }}
-                                format="DD/MM/YYYY HH:mm:ss"
-                                style={{ width: '100%' }}
-                                getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })}
-                            />
+                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc!' }]}>
+                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
-
-                        <Button
-                            type="primary"
-                            size="middle "
-                            style={{ width: "60%", margin: "0 auto", display: "block" }}
-                            onClick={handleConfirmAddPromotion} // ✅ Gọi Modal xác nhận trước khi thêm
-                        >
-                            Thêm mới
-                        </Button>
+                      
 
                     </Form>
                 </Card>
@@ -400,7 +413,7 @@ const AddPromotion = () => {
 
                     <Row gutter={[16, 16]}>
                         <Col span={20}>
-                            <Input
+                            <Input disabled
                                 placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
                                 prefix={<SearchOutlined />}
                                 allowClear
@@ -410,7 +423,7 @@ const AddPromotion = () => {
 
                     </Row>
 
-                    <Table
+                    <Table disabled
                         columns={columns}
                         dataSource={products}
                         rowKey="id"
@@ -429,7 +442,7 @@ const AddPromotion = () => {
 
                 <Row gutter={[16, 16]}>
                     <Col span={20}>
-                        <Input
+                        <Input disabled
                             placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
                             prefix={<SearchOutlined />}
                             allowClear
@@ -439,7 +452,7 @@ const AddPromotion = () => {
 
                 </Row>
 
-                <Table
+                <Table disabled
                     columns={columnsDetail}
                     dataSource={productDetails}  // ✅ Hiển thị danh sách chi tiết thay vì `products`
                     rowKey="id"
@@ -458,4 +471,4 @@ const AddPromotion = () => {
     );
 };
 
-export default AddPromotion;
+export default DetailPromotion;

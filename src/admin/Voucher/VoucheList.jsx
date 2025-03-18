@@ -2,130 +2,16 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Col, Row, theme, Tag, Radio, Spin, List, Switch, Tooltip } from 'antd';
 import axios from 'axios';
 import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
-import useUrlBuilders from './hooks/useURLS.jsx';
-import moment from 'moment';
-import { DownOutlined } from '@ant-design/icons';
+
 import "./StatusSelector.css";
 import { render } from 'react-dom';
 import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaEye } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
-
-
-
+import dayjs from 'dayjs';
 
 const { Option } = Select;
-
-//table
-
-
-const AdvancedSearchForm = ({ onSearch }) => {
-    const { token } = theme.useToken();
-    const [form] = Form.useForm();
-    const [expand, setExpand] = useState(false);
-
-
-    const formStyle = {
-        maxWidth: 'none',
-        background: token.colorFillAlter,
-        borderRadius: token.borderRadiusLG,
-        padding: 24,
-
-    };
-    const getFields = () => {
-
-        return (
-            <>
-                <Col span={8}>
-                    <Form.Item name="voucherCode" label="Mã phiếu giảm giá">
-                        <Input placeholder="Nhập mã phiếu giảm giá" />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="voucherType" label="Tên phiếu giảm giá">
-                        <Input placeholder="Nhập Tên phiếu giảm giá" />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="discountValue" label="Giá trị giảm giá (VNĐ)">
-                        <Input placeholder="Nhập giá trị giảm" />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="startDate" label="Ngày bắt đầu">
-                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="endDate" label="Ngày kết thúc">
-                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="statusVoucher" label="Trạng thái">
-                        <Select placeholder="Chọn trạng thái">
-                            <Option value="dang_kich_hoat">Đang kích hoạt</Option>
-                            <Option value="ngung_kich_hoat">Ngừng kích hoạt</Option>
-                            <Option value="chua_kich_hoat">Chưa kích hoạt</Option>
-
-                        </Select>
-                    </Form.Item>
-                </Col>
-            </>
-        );
-    };
-
-    const onFinish = (values) => {
-        onSearch(values);
-    };
-    const handleSubmit = async () => {
-        try {
-            await form.validateFields(); // Kiểm tra toàn bộ form
-            handleOk(); // Nếu hợp lệ, tiếp tục xử lý
-        } catch (error) {
-            console.log("Có lỗi trong form:", error);
-        }
-    };
-    return (
-        <Card >
-            <Form form={form} name="advanced_search" style={{ formStyle }}
-                onFinish={onFinish} layout="vertical">
-                <Row gutter={24}>{getFields()}</Row>
-                <div style={{ textAlign: 'right' }}>
-                    <Space size="small">
-                        {/* <Button type="primary" htmlType="submit" style={{
-
-                            border: 'none',
-                        }}>
-                            Lọc
-                        </Button> */}
-                        <Button
-                            icon={<RedoOutlined />}
-                            onClick={() => {
-                                form.resetFields();
-                            }}
-                            style={{ color: 'white', borderRadius: '20px', backgroundColor: '#ff974d', borderColor: '#ff974d' }}
-
-
-                        >
-
-                        </Button>
-                        <a
-                            style={{ fontSize: 12 }}
-                            onClick={() => {
-                                setExpand(!expand);
-                            }}
-                        >
-                            <DownOutlined rotate={expand ? 180 : 0} /> {expand ? 'Thu gọn' : 'Mở rộng'}
-                        </a>
-                    </Space>
-                </div>
-            </Form>
-        </Card>
-    );
-};
-
 const VoucherList = () => {
     const [value, setValue] = useState(1);
     const [customers, setCustomers] = useState([]);
@@ -136,6 +22,13 @@ const VoucherList = () => {
         size: 5,
         total: 7
     });
+
+    const convertToVietnamTime = (utcDate) => {
+        if (!utcDate) return ""; // Kiểm tra nếu không có giá trị tránh lỗi
+        return new Date(utcDate).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+      };
+      
+    
     const columns = (handleEdit, handleDelete, handleDetail) => [
         {
             title: 'STT',
@@ -218,7 +111,7 @@ const VoucherList = () => {
             render: (text) => text ? <span>{text.toLocaleString()} đ</span> : <span>0 đ</span>,
         },
         {
-            title: 'Giá trị tối đa',
+            title: 'Giá trị tối đa',    
 
             dataIndex: 'discountMaxValue',
             key: 'discountMaxValue',
@@ -231,17 +124,16 @@ const VoucherList = () => {
             dataIndex: 'startDate',
             key: 'startDate',
             align: 'center',
-
-            render: (text) => new Date(text).toLocaleDateString(),
+            render: (text) => (text ? convertToVietnamTime(text) : "Không có dữ liệu"),
         },
         {
             title: 'Ngày kết thúc',
             dataIndex: 'endDate',
             key: 'endDate',
             align: 'center',
-
-            render: (text) => new Date(text).toLocaleDateString(),
+            render: (text) => (text ? convertToVietnamTime(text) : "Không có dữ liệu"),
         },
+        
         {
             title: 'Trạng thái',
             dataIndex: 'statusVoucher',
@@ -357,7 +249,7 @@ const VoucherList = () => {
     const [editingVoucher, setEditingVoucher] = useState(null);
     const navigate = useNavigate();
 
-    // Hàm gọi API
+    // Hàm switch
     const switchVoucherStatus = async (id, statusO) => {
         const { status } = statusO
         console.log("toi ham nay");
@@ -444,18 +336,6 @@ const VoucherList = () => {
     const [isDetail, setIsDeatil] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
 
-
-
-
-    // setIsDeatil(true)
-    // setIsEdit(false)
-    // setEditingVoucher(record);
-    // setIsModalOpen(true);
-    // form.setFieldsValue({
-    //     ...record,
-    //     startDate: moment(record.startDate),  // Use moment for startDate
-    //     endDate: moment(record.endDate)       // Use moment for endDate
-    // });
     const handleOk = async () => {
         if (isDetail) {
             setIsModalOpen(false);
@@ -508,9 +388,6 @@ const VoucherList = () => {
     return (
         <>
             <h4>Bộ lọc </h4>
-
-            {/* MÃ THÊM: Thêm AdvancedSearchForm */}
-            <AdvancedSearchForm onSearch={handleSearch} />
             <h4 style={{ paddingTop: '15px' }}>Danh sách phiếu giảm giá</h4>
 
             <Card>
