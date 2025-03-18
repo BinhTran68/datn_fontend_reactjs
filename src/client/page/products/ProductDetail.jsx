@@ -40,6 +40,7 @@ import {
 import { addToCart, clearCart, getCart } from "../cart/cart.js";
 import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
 import { addToBill } from "../cart/bill.js";
+import { toast } from "react-toastify";
 
 function ProductDetail() {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL

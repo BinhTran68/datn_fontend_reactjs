@@ -706,7 +706,11 @@ const Product = () => {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
                         message.success("Cập nhật trạng thái thành công!");
-                        fetchProductsData();
+                        if (filterActice) {
+                          fetchfilterData(pagination, requestFilter);
+                        } else {
+                          fetchProductsData();
+                        }
                       } catch (error) {
                         message.error("Cập nhật trạng thái thất bại!");
                       }

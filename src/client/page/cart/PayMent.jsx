@@ -38,7 +38,8 @@ import { clearVoucher, getVoucher } from "./voucher";
 import { COLORS } from "../../../constants/constants";
 import { removeBillFromCart } from "./cart";
 import { FaLocationDot } from "react-icons/fa6";
-  
+import { apiGetAddressDefaut } from "./apiPayment";
+
 const { Option } = Select;
 
 // Schema validation
@@ -55,7 +56,7 @@ const schema = yup.object().shape({
     .required("Vui lòng nhập email."),
   // city: yup.string().required("Vui lòng chọn tỉnh/thành phố."),
   // district: yup.string().required("Vui lòng chọn quận/huyện."),
-  notes: yup.string().required("Vui lòng nhập địa chỉ."),
+  // notes: yup.string()("Vui lòng nhập lưu ý khi giao hàng."),
 });
 
 // Hàm chuyển đổi giá từ string thành số
@@ -77,6 +78,7 @@ const PayMent = () => {
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
   const [voucher, setVoucher] = useState(getVoucher()); // 1 mảng các sản phẩm
   const [selectedAddress, setSelectedAddress] = useState(null);
+
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
     customerId: null,
@@ -106,11 +108,17 @@ const PayMent = () => {
       price: item.price,
     })),
   });
+  useEffect(() => {
+    console.log("🏠 Địa chỉ đã chọn:", selectedAddress);
+  }, [selectedAddress]);
+
   const {
     control,
     handleSubmit,
-    formState: { errors },getValues,
-    reset,watch
+    formState: { errors },
+    getValues,
+    reset,
+    watch,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -128,10 +136,7 @@ const PayMent = () => {
     console.log("🛒 Đây là bill hiện tại:", getBill());
     console.log("🛒 vocher:", getVoucher());
 
-    console.log(
-      "🛒 Đây là user hiện tại:",
-      JSON.parse(localStorage.getItem(`user`)) || []
-    );
+    console.log("🛒 Đây là user hiện tại:", user || []);
 
     return () => {
       clearBill();
@@ -140,11 +145,60 @@ const PayMent = () => {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      getAddressDf(user?.id);
+    }
+  }, [user]);
+
+  useEffect(() => {
     setbill((prev) => ({
       ...prev,
-      totalMoney: totalAmount,
+      totalMoney: totalAmountNoship,
+      moneyAfter: totalAmount,
     }));
   }, [bill?.shipMoney]);
+  const getAddressDf = async (id) => {
+    try {
+      console.log("🔍 Gọi API lấy địa chỉ mặc định với ID:", id);
+      const res = await apiGetAddressDefaut({ customerId: id });
+      console.log("✅ Dữ liệu địa chỉ mặc định:", res);
+
+      if (!res.data) {
+        message.warning("Không tìm thấy địa chỉ mặc định!");
+        return;
+      }
+      const newAddress = {
+        provinceId: res.data?.provinceId || "",
+        districtId: res.data?.districtId || "",
+        wardId: res.data?.wardId || "",
+        specificAddress: res.data?.specificAddress || "",
+      };
+
+      setSelectedAddress(newAddress);
+      const totalFee = await calculateShippingFee({
+        toWardCode: String(newAddress?.wardId),
+        toDistrictId: Number(newAddress?.districtId),
+      });
+      setbill((prevbill) => ({
+        ...prevbill,
+        detailAddressShipping: newAddress,
+        shipMoney: totalFee,
+      }));
+      generateAddressString(
+        newAddress.provinceId,
+        newAddress.districtId,
+        newAddress.wardId,
+        newAddress.specificAddress ?? ""
+      ).then((address) => {
+        setFullAddress(address);
+      });
+
+      console.log("📌 Địa chỉ mặc định sau khi cập nhật:", newAddress);
+    } catch (error) {
+      console.error("❌ Lỗi khi lấy địa chỉ mặc định:", error);
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
+  };
 
   const onAddressChange = async (
     selectedProvince,
@@ -174,12 +228,16 @@ const PayMent = () => {
       detailAddressShipping: newAddress,
       shipMoney: totalFee,
     }));
-    generateAddressString(selectedProvince, selectedDistrict, selectedWard,specificAddress??"").then(address => {
+    generateAddressString(
+      selectedProvince,
+      selectedDistrict,
+      selectedWard,
+      specificAddress ?? ""
+    ).then((address) => {
       setFullAddress(address);
     });
-    
   };
-  
+
   const handlePaymentMethodChange = (e) => {
     const selectedMethod = e.target.value;
     setPaymentMethod(selectedMethod);
@@ -217,7 +275,17 @@ const PayMent = () => {
       parseFloat(voucher[0]?.discountValue || 0);
     return sum;
   }, [productData, bill?.shipMoney]);
+  const totalAmountNoship = useMemo(() => {
+    if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
 
+    let sum = productData.reduce(
+      (sum, item) =>
+        sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
+      0
+    );
+    sum = sum - parseFloat(voucher[0]?.discountValue || 0);
+    return sum;
+  }, [productData, bill?.shipMoney]);
   const columns = [
     {
       title: "SẢN PHẨM",
@@ -275,7 +343,7 @@ const PayMent = () => {
       customerId: user?.id || null,
       voucherId: voucher[0]?.voucherId,
       discountMoney: voucher[0]?.discountValue,
-      moneyAfter: voucher[0]?.totalAfterDiscount,
+      // discountMoney: voucher[0]?.totalAfterDiscount,
     }));
 
     setIsSubmitting(true); // Đánh dấu đang submit
@@ -326,7 +394,7 @@ const PayMent = () => {
     console.log("đơn hàng đặt", bill);
 
     navigate(
-      `/success?status=1&&amount=${bill.totalMoney}&&apptransid=ShipCod`
+      `/success?status=1&&amount=${bill.moneyAfter}&&apptransid=ShipCod`
     );
 
     reset(); // Reset form sau khi gửi
@@ -385,7 +453,16 @@ const PayMent = () => {
             </Form.Item>
           </Form>
           <h5>Chọn địa chỉ nhận hàng</h5>
-          <AddressSelectorGHN onAddressChange={onAddressChange} />
+          {/* <AddressSelectorGHN onAddressChange={onAddressChange} /> */}
+
+          <AddressSelectorGHN
+            onAddressChange={onAddressChange}
+            provinceId={selectedAddress?.provinceId || ""}
+            districtId={selectedAddress?.districtId || ""}
+            wardId={selectedAddress?.wardId || ""}
+            specificAddressDefault={selectedAddress?.specificAddress || ""}
+          />
+
           <Form.Item
             label="Lưu ý khi vận chuyển"
             validateStatus={errors.notes ? "error" : ""}
@@ -395,7 +472,12 @@ const PayMent = () => {
               name="notes"
               control={control}
               render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Nhập lưu ý khi giao hàng" maxLength={200} minLength={0} />
+                <Input.TextArea
+                  {...field}
+                  placeholder="Nhập lưu ý khi giao hàng"
+                  maxLength={200}
+                  minLength={0}
+                />
               )}
             />
           </Form.Item>
@@ -404,9 +486,14 @@ const PayMent = () => {
         {/* Thông tin đơn hàng */}
         <Col span={12} style={{ padding: "1rem", border: "1px solid #ddd" }}>
           <Title level={5}>ĐƠN HÀNG CỦA BẠN</Title>
-          <p><FcAbout size={25} />  Anh/Chị: {watch("fullName")} , sdt: {watch("phone")}</p>
-          <p><FaLocationDot size={25} style={{color:"#bd1727"}} />
-          Địa chỉ nhận hàng:  {fullAddress} </p>
+          <p>
+            <FcAbout size={25} /> Anh/Chị: {watch("fullName")} , sdt:{" "}
+            {watch("phone")}
+          </p>
+          <p>
+            <FaLocationDot size={25} style={{ color: "#bd1727" }} />
+            Địa chỉ nhận hàng: {fullAddress}{" "}
+          </p>
           <Table
             columns={columns}
             dataSource={productData}
