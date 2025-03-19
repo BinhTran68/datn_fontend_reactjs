@@ -18,7 +18,7 @@ const columnsCustomers = [
         title: 'STT',
         dataIndex: 'stt',
         key: 'stt',
-        render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, // ✅ Tính STT theo trang hiện tại
+        render: (_, __, index) =>  index + 1, // ✅ Tính STT theo trang hiện tại
     },
     {
         title: 'Họ và tên',

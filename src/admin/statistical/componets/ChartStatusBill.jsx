@@ -154,7 +154,7 @@ const ChartStatusBill = () => {
 
   const columns = [
     //thiếu ảnh 
-    { title: "Ảnh", dataIndex: "imageUrl", key: "imageUrl", align: "center", render: (url) => <img src={url} alt="Product" style={{ width: 50 }} /> },
+    { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://res.cloudinary.com/dieyhvcou/image/upload/v1742293066/5f47e7da60955df9310650bde6001777_bqij6b.webp"}  style={{ width: 50 }} /> },
 
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName", align: "center" },
     { title: "Loại giày", dataIndex: "typeName", key: "typeName", align: "center" },
