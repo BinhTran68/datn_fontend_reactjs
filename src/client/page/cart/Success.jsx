@@ -13,6 +13,8 @@ function Success() {
   const apptransid = searchParams.get("apptransid") || "Không xác định";
   const status = searchParams.get("status") || "0";
   const itemData = searchParams.get("item"); // Lấy dữ liệu sản phẩm (JSON string)
+  const billCode = searchParams.get("billcode"); // Lấy dữ liệu sản phẩm (JSON string)
+
 
   // Kiểm tra trạng thái thanh toán
   const isSuccess = status === "1";
@@ -28,13 +30,14 @@ function Success() {
     window.dispatchEvent(new Event("cartUpdated"));
   }, []);
   return (
-    <Card style={{ backgroundColor: "white", padding: 20 }}>
+    <Card style={{ backgroundColor: "white", padding: 20 ,minHeight:600}}>
+      <div>Mã đơn hàng:  {billCode}</div>
       <Result
         status={isSuccess ? "success" : "error"}
         title={isSuccess ? "Cảm ơn bạn đã mua hàng!" : "Thanh toán thất bại!"}
         subTitle={
           isSuccess
-            ? `Đơn hàng của bạn (Mã giao dịch: ${apptransid}) đã được thanh toán thành công với số tiền ${amount} VND.`
+            ? `Đơn hàng của bạn (Mã đơn hàng:  ${billCode}) đã được thanh toán thành công với số tiền ${amount} VND.`
             : "Có lỗi xảy ra trong quá trình thanh toán, vui lòng thử lại!"
         }
         extra={[

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import styles from "./searchbill.module.css";
+import React, { useEffect, useState } from "react";
+import styles from "./Veritify.module.css";
 import {
   FaSearch,
   FaShoppingBag,
@@ -17,23 +17,29 @@ import {
   FaMoneyBillWave,
   FaExchangeAlt,
 } from "react-icons/fa";
-import { apiSearchBill } from "./apiSearchBill";
+import { apiSearchBill, apiVeritify } from "./veritify";
 import { message } from "antd"; // Make sure this is properly imported
-import { generateAddressString } from "../../client/componetC/apiGHN";
-import { COLORS } from "../../constants/constants";
-import { useSearchParams } from "react-router-dom";
+import { generateAddressString } from "../../componetC/apiGHN";
+import { COLORS } from "../../../constants/constants";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const SearchBill = () => {
+const veritify = () => {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL
   const billCode = searchParams.get("billcode");
-  
+  const paymentMethod = searchParams.get("paymentmethod");
+
   const [billId, setBillId] = useState(billCode);
   const [billData, setBillData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [address, setFullAddress] = useState();
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    searchBill(billId);
+  }, [billCode]);
   const searchBill = async (billCode) => {
     try {
       setIsLoading(true);
@@ -57,12 +63,32 @@ const SearchBill = () => {
       setIsLoading(false);
     }
   };
+  const veritify = async (billCode) => {
+    try {
+      setIsLoading(true);
+      const res = await apiVeritify({ billCode: billCode });
+      console.log("veritify", res.data);
+      toast.success("xác minh danh tính thành công")
+      if (paymentMethod === "ZALO_PAY") {
+        window.location.href = res.data; // Chuyển hướng người dùng ngay lập tức
+      }else if(paymentMethod === "COD"){
+        navigate(
+          `/success?status=1&amount=${billData.moneyAfter.toLocaleString()}&apptransid=ShipCod&billcode=${billCode}`
+        );
+      }
+    } catch (error) {
+      // message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      setSearchPerformed(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    searchBill(billId);
+    veritify(billId);
   };
 
   // Updated function to handle new status codes
@@ -209,7 +235,7 @@ const SearchBill = () => {
       <div className={styles.searchForm}>
         <form onSubmit={handleSearch}>
           <div className={styles.inputGroup}>
-            <div className={styles.inputWrapper}>
+            {/* <div className={styles.inputWrapper}>
               <FaSearch className={styles.searchIcon} />
               <input
                 type="text"
@@ -218,22 +244,22 @@ const SearchBill = () => {
                 onChange={(e) => setBillId(e.target.value)}
                 className={styles.searchInput}
               />
-            </div>
+            </div> */}
             <button
               type="submit"
               className={styles.searchButton}
               style={{ backgroundColor: `${COLORS.primary}` }}
             >
-              Tìm kiếm
+              Xác Minh đơn Hàng
             </button>
           </div>
         </form>
-        <div className={styles.searchTips}>
+        {/* <div className={styles.searchTips}>
           <p>
             Gợi ý: Nhập mã hóa đơn HD-71D2F28A, HD-82E3G39B được gửi về mail khi
             đặt hàng
           </p>
-        </div>
+        </div> */}
       </div>
 
       {isLoading && (
@@ -478,4 +504,4 @@ const SearchBill = () => {
   );
 };
 
-export default SearchBill;
+export default veritify;
