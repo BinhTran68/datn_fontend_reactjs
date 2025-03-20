@@ -171,7 +171,7 @@ const SalesPage = () => {
                             ...item.payInfo,
                             cashCustomerMoney: value,
                             customerMoney: value + (item.payInfo?.bankCustomerMoney || 0),
-                            change: (value + (item.payInfo?.bankCustomerMoney || 0)) - (item.payInfo?.amount || 0)
+                            change: (value + (item.payInfo?.bankCustomerMoney || 0)) - (item.payInfo?.amount || 0) - (item.shippingFee || 0)
                         }
                     }
                     : item
@@ -191,7 +191,7 @@ const SalesPage = () => {
                             bankCustomerMoney: value,
                             transactionCode: transactionCode ?? null,
                             customerMoney: value + (item.payInfo?.cashCustomerMoney || 0),
-                            change: (value + (item.payInfo?.cashCustomerMoney || 0)) - (item.payInfo?.amount || 0)
+                            change: (value + (item.payInfo?.cashCustomerMoney || 0)) - (item.payInfo?.amount || 0) + (item.payInfo?.discount || 0)
                         }
                     }
                     : item
@@ -737,14 +737,15 @@ const SalesPage = () => {
         try {
             const payload = {
                 customerId: bill.customerInfo?.id || null,
-                customerMoney: bill.payInfo?.customerMoney || 0,
-                cashCustomerMoney: bill.payInfo?.cashCustomerMoney || 0,
-                bankCustomerMoney: bill.payInfo?.bankCustomerMoney || 0,
+                customerMoney: bill.payInfo?.customerMoney || 0,  // Tền khách đưa
+                cashCustomerMoney: bill.payInfo?.cashCustomerMoney || 0, // Tiền mặt khách đưa
+                bankCustomerMoney: bill.payInfo?.bankCustomerMoney || 0, // Tiền khách chuyển khoản
                 isCashAndBank: !!(bill.payInfo?.cashCustomerMoney && bill.payInfo?.bankCustomerMoney),
-                discountMoney: bill.payInfo?.discount || 0,
+                discountMoney: bill.payInfo?.discount || 0, // Số tiền được giảm
                 shipMoney: bill.isShipping ? bill.shippingFee || 0 : 0,
-                totalMoney: bill.payInfo?.amount || 0,
+                totalMoney: bill.payInfo?.amount || 0, // Tiền
                 moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
+                moneyBeforeDiscount: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0), // Tiền trước giảm giá
                 completeDate: null,
                 confirmDate: new Date().toISOString(),
                 desiredDateOfReceipt: null,

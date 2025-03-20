@@ -155,7 +155,6 @@ const ChartStatusBill = () => {
   const columns = [
     //thiếu ảnh 
     { title: "Ảnh", dataIndex: "imageUrl", key: "imageUrl", align: "center", render: (url) => <img src={url} alt="Product" style={{ width: 50 }} /> },
-
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName", align: "center" },
     { title: "Loại giày", dataIndex: "typeName", key: "typeName", align: "center" },
     { title: "Màu sắc", dataIndex: "colorName", key: "colorName", align: "center" },

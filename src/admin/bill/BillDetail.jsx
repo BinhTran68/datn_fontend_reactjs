@@ -27,6 +27,13 @@ import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
 import {toast} from "react-toastify";
 import {ExclamationCircleFilled} from "@ant-design/icons";
+import {Viewer} from "@react-pdf-viewer/core";
+
+// Import styles
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/print/lib/styles/index.css';
+import 'pdfjs-dist/build/pdf.worker.entry';
+import {PrintIcon, printPlugin} from "@react-pdf-viewer/print";
 
 const {Step} = Steps;
 
@@ -520,7 +527,7 @@ const BillDetail = () => {
                     <div style={{
                         color: "blue"
                     }}>
-                        {formatVND(currentBill?.totalMoney)}
+                        {formatVND(currentBill?.totalMoney + currentBill?.discountMoney)}
                     </div>
                 ),
 
@@ -542,7 +549,7 @@ const BillDetail = () => {
                 children: <div style={{
                     color: "blue"
                 }}>
-                    {formatVND(currentBill?.totalMoney)}
+                    {formatVND(currentBill?.totalMoney  + (currentBill?.shipMoney ?? 0))}
                 </div>,
             },
 
@@ -631,8 +638,50 @@ const BillDetail = () => {
             }
         };
 
+    const [pdfUrl, setPdfUrl] = useState(null);
+    const [isShowPdfOk, setIsShowPdfOk] = useState(true)
+    const  [isDocumentLoaded, setIsDocumentLoaded] = useState(false)
+    const printPluginInstance = printPlugin();
+    const { print } = printPluginInstance;
+
+
+
+    useEffect(() => {
+        if (pdfUrl && isDocumentLoaded) {
+            print()
+            setIsShowPdfOk(true)
+        }
+    }, [pdfUrl, isDocumentLoaded]);
+
+    const handleOnPrintBill = async () => {
+        setIsShowPdfOk(false)
+        try {
+            // Lấy dữ liệu PDF từ API với responseType là 'blob'
+            const response = await axios.get(`http://localhost:8080/api/admin/bill/print-bill/${id}`, {
+                responseType: 'blob'
+            });
+
+            // Tạo URL cho blob
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+            setPdfUrl(blobUrl)
+            setIsDocumentLoaded(false)
+        } catch (error) {
+            console.error("Lỗi tải PDF:", error);
+        }
+    };
+
         return (
             <div className={"flex-column d-flex gap-3"}>
+
+
+                {pdfUrl ?
+                    <div hidden={isShowPdfOk}>
+                        <Viewer fileUrl={pdfUrl} plugins={[printPluginInstance]}
+                                onDocumentLoad={() => setIsDocumentLoaded(true)} // Khi tài liệu load xong
+                        />
+                    </div>
+                    : <p></p>}
 
                 <Modal
                     width={widthModal}
@@ -689,9 +738,26 @@ const BillDetail = () => {
                             )}
                        
                         </div>
-                        <Button type={"primary"} onClick={showModalBillHistory}>
-                            Lịch sử hóa đơn
-                        </Button>
+
+
+                        <div className={"d-flex gap-2"}>
+                            {currentBill?.status !== "CHO_XAC_NHAN" && (
+                                <Button
+                                    type={"primary"}
+                                    onClick={handleOnPrintBill}
+                                    primary
+                                    icon={<PrintIcon/>}
+                                >
+                                    In hóa đơn
+                                </Button>
+                            )}
+
+                            <Button type={"primary"} onClick={showModalBillHistory}>
+                                Lịch sử hóa đơn
+                            </Button>
+                        </div>
+
+
 
                     </div>
 
@@ -822,6 +888,7 @@ const BillDetail = () => {
                         </div>
                     </div>
                 </Modal>
+
 
             </div>
 

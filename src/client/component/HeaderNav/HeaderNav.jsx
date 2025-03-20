@@ -38,9 +38,38 @@ function HeaderNav() {
   const [open, setOpen] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isAIModalVisible, setIsAIModalVisible] = useState(false);
+
+  const navigate = useNavigate();
+
+
   const [aiQuestion, setAiQuestion] = useState("");
   const [aiResponse, setAiResponse] = useState("");
-  const navigate = useNavigate();
+  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL; // Giả sử bạn có biến môi trường cho API Key
+
+  const handleAskAI = async () => {
+    if (!aiQuestion.trim()) return;
+
+    try {
+      const res = await axios.post(
+          vitegeminiurl,
+          {
+            contents: [{
+              parts: [{"text": aiQuestion}]
+            }]
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+      );
+
+      setAiResponse(res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.");
+    } catch (error) {
+      console.error("Lỗi khi gọi Gemini API:", error);
+      setAiResponse("Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!");
+    }
+  };
 
   // Fetch giỏ hàng
   const fetchCart = async () => {
@@ -128,16 +157,7 @@ function HeaderNav() {
     />
   );
 
-  // Hàm xử lý gửi câu hỏi tới AI
-  const handleAskAI = async () => {
-    try {
-      // Tạm thời để mock response
-      setAiResponse("Đây là câu trả lời từ AI...");
-      // TODO: Tích hợp API AI thực tế ở đây
-    } catch (error) {
-      console.error("Lỗi khi hỏi AI:", error);
-    }
-  };
+
 
   return (
     <div className="header-container">
@@ -364,44 +384,44 @@ function HeaderNav() {
 
       {/* Modal AI Chat */}
       <Modal
-        title="Hỏi đáp với AI"
-        open={isAIModalVisible}
-        onCancel={() => setIsAIModalVisible(false)}
-        footer={null}
-        width={700}
+          title="Hỏi đáp với AI"
+          open={isAIModalVisible}
+
+          footer={null}
+          width={700}
       >
         <div style={{ marginBottom: "20px" }}>
           <Input.TextArea
-            rows={4}
-            placeholder="Nhập câu hỏi của bạn..."
-            value={aiQuestion}
-            onChange={(e) => setAiQuestion(e.target.value)}
-            style={{ marginBottom: "10px" }}
+              rows={4}
+              placeholder="Nhập câu hỏi của bạn..."
+              value={aiQuestion}
+              onChange={(e) => setAiQuestion(e.target.value)}
+              style={{ marginBottom: "10px" }}
           />
           <Button
-            type="primary"
-            onClick={handleAskAI}
-            style={{
-              backgroundColor: "#F37021",
-              borderColor: "#F37021",
-            }}
+              type="primary"
+              onClick={handleAskAI}
+              style={{
+                backgroundColor: "#F37021",
+                borderColor: "#F37021",
+              }}
           >
             Gửi câu hỏi
           </Button>
         </div>
 
         {aiResponse && (
-          <div
-            style={{
-              padding: "15px",
-              backgroundColor: "#f5f5f5",
-              borderRadius: "8px",
-              marginTop: "10px",
-            }}
-          >
-            <h4>Phản hồi từ AI:</h4>
-            <p>{aiResponse}</p>
-          </div>
+            <div
+                style={{
+                  padding: "15px",
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: "8px",
+                  marginTop: "10px",
+                }}
+            >
+              <h4>Phản hồi từ AI:</h4>
+              <p>{aiResponse}</p>
+            </div>
         )}
       </Modal>
     </div>
