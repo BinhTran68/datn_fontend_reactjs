@@ -106,6 +106,7 @@ const PayMent = () => {
       productDetailId: item.productDetailId,
       quantity: item.quantityAddCart, // Đảm bảo đúng field
       price: item.price,
+      image: item.image,
     })),
   });
   useEffect(() => {
@@ -361,10 +362,14 @@ const PayMent = () => {
 
             try {
               const data = await createBillClient();
-              if (data) {
-                window.location.href = data; // Chuyển hướng người dùng ngay lập tức
+              if (user) {
+                if (data) {
+                  window.location.href = data; // Chuyển hướng người dùng ngay lập tức
+                } else {
+                  alert("Lỗi khi tạo đơn hàng!");
+                }
               } else {
-                alert("Lỗi khi tạo đơn hàng!");
+                navigate("/warn-veritify");
               }
             } catch (error) {
               console.error("Lỗi khi tạo đơn hàng:", error);
@@ -375,11 +380,17 @@ const PayMent = () => {
 
           default:
             console.log("✅ Bill sau khi cập nhật:", bill);
-            onSubmit(bill);
             setIsSubmitting(false);
             removeBillFromCart(productData);
-            message.success("Đặt hàng thành công!");
             createBillClient();
+            if (user) {
+              message.success("Đặt hàng thành công!");
+              navigate(
+                `/success?status=1&&amount=${bill.moneyAfter}&&apptransid=ShipCod`
+              );
+            } else {
+              navigate("/warn-veritify");
+            }
         }
       } else if (productData.length <= 0 && isSubmitting) {
         message.warning("Không có sản phẩm!");

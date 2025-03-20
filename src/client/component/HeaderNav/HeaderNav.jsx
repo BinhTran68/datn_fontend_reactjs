@@ -113,18 +113,18 @@ function HeaderNav() {
   };
 
   const menuItems = [
-    { key: "home", label: "TRANG CHỦ", path: "/home" },
+    { key: "home", label: "TRANG CHỦ", path: "/" },
     { key: "products", label: "SẢN PHẨM", path: "/products" },
     { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/test" },
     { key: "contact", label: "LIÊN HỆ", path: "/contact" },
     { key: "support", label: "HỖ TRỢ", path: "/contact" },
-    { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/contact" },
+    { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/searchbill" },
   ];
 
   const settingsOptions = user
     ? [
         { key: "profile", label: "Hồ sơ" },
-        { key: "orders", label: "Đơn hàng của tôi" },
+        { key: "purchaseorder", label: "Đơn hàng của tôi" },
         { key: "change-password", label: "Đổi mật khẩu" },
         { key: "logout", label: "Đăng xuất" },
       ]
@@ -162,7 +162,7 @@ function HeaderNav() {
   return (
     <div className="header-container">
       {/* Top bar */}
-      <div className="top-bar py-2" style={{ backgroundColor: "#F37021" }}>
+      <div className="top-bar " style={{ backgroundColor: "#F37021" }}>
         <div className="container-fluid px-4 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-3">
             <Link
@@ -193,7 +193,7 @@ function HeaderNav() {
                 <img
                   src="/img/thehands.png"
                   alt="TheHands"
-                  style={{ height: "120px", objectFit: "contain" }}
+                  style={{ height: "80px", objectFit: "contain" }}
                 />
               </Link>
             </Col>
@@ -314,18 +314,18 @@ function HeaderNav() {
       </nav>
 
       {/* Banner Section */}
-      <div className="banner-section">
+      {/* <div className="banner-section">
         <div className="container-fluid px-4">
           <Flex align="center" justify="center" className="py-2">
             <span
-              className="text-white"
+              // className="text-white"
               style={{ fontSize: 18, fontWeight: 500 }}
             >
               THEHANDS HUNTER THẾ HỆ MỚI
             </span>
           </Flex>
         </div>
-      </div>
+      </div> */}
 
       {/* Mobile Drawer */}
       <Drawer

@@ -16,6 +16,7 @@ import CartPage from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
 import PurchaseOrder from "../admin/PurchaseOrder/PurchaseOrder.jsx";
+import SearchBill from "../admin/searchbill/SearchBill.jsx";
 // import Product from "../admin/product/product.jsx";
 // import ProductManagement from "../admin/product/ProductManagement.jsx";
 // import Sole from "../admin/product/sole.jsx";
@@ -23,7 +24,7 @@ import PurchaseOrder from "../admin/PurchaseOrder/PurchaseOrder.jsx";
 // import Material from "../admin/product/Material.jsx";
 // import Color from "../admin/product/Color.jsx";
 // import Category from "../admin/product/Brand/Brand.jsx";
-
+import PhoneAuth from "../client/test/SendOtp.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
@@ -41,6 +42,8 @@ import { i } from "framer-motion/client";
 import ProductDetail from "../client/page/products/ProductDetail.jsx";
 import { ProductProvider } from "../store/ProductContext.jsx";
 import Success from "../client/page/cart/Success.jsx";
+import Veritify from "../client/page/verityfy/Veritify.jsx";
+import WarningVeritify from "../client/page/verityfy/WarnningVeritify.jsx";
 
 // const getRole = () => {
 //   const storedUserInfo = localStorage.getItem("userInfo");
@@ -154,6 +157,23 @@ const CustomerRouters = {
       path: "purchaseorder",
       element: <RoleRedirect element={<PurchaseOrder />} />,
     },
+    {
+      path: "searchbill",
+      element: <RoleRedirect element={<SearchBill />} />,
+    },
+    {
+      path: "veritify",
+      element: <RoleRedirect element={<Veritify />} />,
+    },
+    {
+      path: "warn-veritify",
+      element: <RoleRedirect element={<WarningVeritify />} />,
+    },
+    {
+      path: "otp",
+      element: <RoleRedirect element={<PhoneAuth />} />,
+    },
+ 
  
 
     // {

@@ -28,7 +28,7 @@ const App = () => {
           <HeaderNav />
         </Content>
         <Content>
-          <div className="">
+          <div className="container">
             {/* <Nav/> */}
             <Outlet />
           </div>
