@@ -15,7 +15,7 @@ import Client from "../client/Client.jsx";
 import CartPage from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
-import PurchaseOrder from "../admin/PurchaseOrder/PurchaseOrder.jsx";
+import PurchaseOrder from "../client/PurchaseOrder/PurchaseOrder.jsx";
 import SearchBill from "../admin/searchbill/SearchBill.jsx";
 // import Product from "../admin/product/product.jsx";
 // import ProductManagement from "../admin/product/ProductManagement.jsx";

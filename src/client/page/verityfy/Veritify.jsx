@@ -245,13 +245,17 @@ const veritify = () => {
                 className={styles.searchInput}
               />
             </div> */}
-            <button
+            {billData?.status==="DANG_XAC_MINH"&&(
+              <button
               type="submit"
               className={styles.searchButton}
               style={{ backgroundColor: `${COLORS.primary}` }}
             >
               Xác Minh đơn Hàng
             </button>
+
+            )}
+            
           </div>
         </form>
         {/* <div className={styles.searchTips}>

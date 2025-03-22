@@ -864,6 +864,19 @@ const ProductDetailDrawer = () => {
               onRemove={(file) => handleRemove(file, record.color)} // Xử lý khi ảnh bị xóa
               onPreview={onPreview} // Hàm xem trước ảnh khi nhấp
               multiple={true}
+              // beforeUpload={(file) => {
+              //   const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+                
+              //   console.log("File type:", file.type); // Debug kiểm tra loại file
+            
+              //   if (!isJpgOrPng) {
+              //     message.error("Chỉ được chọn file JPG hoặc PNG!");
+              //     return Upload.LIST_IGNORE; // Ngăn không cho upload file không hợp lệ
+              //   }
+              //   return true; // Cho phép tải lên nếu đúng định dạng
+              // }}
+              accept="image/jpeg, image/png" // Chỉ cho phép chọn JPG hoặc PNG
+
             >
               {/* Hiển thị nút upload nếu số lượng ảnh ít hơn 6 */}
               {imageList.length < 6 && (
@@ -1133,14 +1146,14 @@ const ProductDetailDrawer = () => {
                     }))}
                   />
                 </Col>
-                <Col>
+                {/* <Col>
                   <Button
                     style={{ padding: 0, backgroundColor: `${COLORS.primary}` }}
                     onClick={() => setAddGenderModalVisible(true)}
                   >
                     <MdAdd size={25} color="white" />
                   </Button>
-                </Col>
+                </Col> */}
               </Row>
             </Col>
             <Col span={8}>

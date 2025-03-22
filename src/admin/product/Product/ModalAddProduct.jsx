@@ -56,7 +56,7 @@ const ModalAddProduct = ({ open, onCreate, onCancel, loading }) => {
                 if (!value || !value.trim()) {
                   return Promise.reject(new Error("Không được để trống hoặc chỉ có khoảng trắng"));
                 }
-                if (!/^[\p{L}\p{N}]+$/u.test(value.trim())) {
+                if (!/^[\p{L}\p{N} ]+$/u.test(value.trim())) {
                   return Promise.reject(new Error(`Tên sản phẩm chỉ chứa chữ và số, không có ký tự đặc biệt`));
                 }
                 if (value.trim().length > 20) {
