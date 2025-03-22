@@ -4,6 +4,8 @@ import Dashboard from "../admin/dashboard/Dashboard.jsx";
 
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
+import DetailPromotion from "../admin/Voucher/DetailPromotion.jsx";
+import UpdatePromotion from "../admin/Voucher/UpdatePromotion.jsx";
 import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 import AddVoucher from "../admin/Voucher/AddVoucher.jsx";
 import UpdateVoucher from "../admin/Voucher/UpdateVoucher.jsx";
@@ -168,6 +170,14 @@ const AdminRouters = {
         {
             path: "promotion/add",
             element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "promotion/update/:id",
+            element: <PrivateRoute element={<UpdatePromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "promotion/detail/:id",
+            element: <PrivateRoute element={<DetailPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
             path: "voucher/add",

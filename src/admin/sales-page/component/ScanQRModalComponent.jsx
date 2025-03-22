@@ -88,6 +88,7 @@ const ScanQrModalComponent = ({
                 if (videoInputDevices.length > 0) {
                     codeReader.decodeFromInputVideoDevice(videoInputDevices[0].deviceId, videoRef.current)
                         .then(result => {
+                            console.log(result)
                             if (result?.text && Number(result?.text)) {
                                 console.log(result?.text)
                                 setIdProduct(result.text)

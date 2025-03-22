@@ -5,12 +5,11 @@ import { SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 
 
-
-const AddPromotion = () => {
+const UpdatePromotion = () => {
     const [form] = Form.useForm();
     const { Title } = Typography;
     const [loading, setLoading] = useState(false); // Trạng thái loading
@@ -26,8 +25,57 @@ const AddPromotion = () => {
     const navigate = useNavigate();
 
 
-    //xử lí nút add
-    const handleAddPromotion = async () => {
+    const { id } = useParams(); // 🟢 Lấy ID từ URL
+
+    useEffect(() => {
+        if (!id) return; // Nếu không có ID thì không gọi API
+
+        const fetchPromotionDetails = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/admin/promotion/detail/${id}`);
+                const promoData = response.data.data;
+
+                if (promoData) {
+                    form.setFieldsValue({
+                        ...promoData,
+                        startDate: promoData.startDate ? dayjs(promoData.startDate) : null,
+                        endDate: promoData.endDate ? dayjs(promoData.endDate) : null,
+                    });
+
+                    const selectedProductIds = promoData.productIds || [];
+                    const selectedProductDetailIds = promoData.productDetailIds || [];
+
+                    const productResponse = await axios.get("http://localhost:8080/api/admin/product/hien");
+                    const filteredProducts = productResponse.data.data.filter(product => product.totalQuantity > 0);
+
+                    const selectedProductsData = filteredProducts.filter(product => selectedProductIds.includes(product.id));
+
+                    let allProductDetails = [];
+                    for (let product of selectedProductsData) {
+                        try {
+                            const detailResponse = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${product.id}`);
+                            allProductDetails = [...allProductDetails, ...detailResponse.data.data];
+                        } catch (error) {
+                            console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+                        }
+                    }
+
+                    const selectedProductDetailsData = allProductDetails.filter(detail => selectedProductDetailIds.includes(detail.id));
+
+                    setProducts(filteredProducts);
+                    setSelectedProducts(selectedProductsData);
+                    setProductDetails(allProductDetails);
+                    setSelectedProductDetails(selectedProductDetailsData);
+                }
+            } catch (error) {
+                message.error("Có lỗi xảy ra khi tải dữ liệu chương trình khuyến mãi.");
+            }
+        };
+
+        fetchPromotionDetails();
+    }, [id]); // 🟢 Gọi lại khi ID thay đổi
+    //xử lí nút update
+    const handleupdatePromotion = async () => {
         try {
             await form.validateFields();
             const values = form.getFieldsValue();
@@ -39,7 +87,6 @@ const AddPromotion = () => {
                 discountType: "PERCENT",
                 startDate: values.startDate ? dayjs(values.startDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
                 endDate: values.endDate ? dayjs(values.endDate).format("YYYY-MM-DDTHH:mm:ss[Z]") : null,
-
                 productIds: selectedProducts.map(item => item.id), // ✅ Đúng với BE
                 productDetailIds: selectedProductDetails.map(item => item.id), // ✅ Đúng với BE
             };
@@ -48,12 +95,12 @@ const AddPromotion = () => {
             // ✅ In ra console để kiểm tra dữ liệu trước khi gửi
             console.log("Dữ liệu gửi lên backend:", requestData);
 
-            const response = await axios.post("http://localhost:8080/api/admin/promotion/add", requestData);
+            const response = await axios.put(`http://localhost:8080/api/admin/promotion/update/${id}`, requestData);
 
             // ✅ In ra phản hồi từ backend để kiểm tra
             console.log("Phản hồi từ backend:", response.data.data);
 
-            message.success("Thêm chương trình khuyến mãi thành công!");
+            message.success("sửa chương trình khuyến mãi thành công!");
 
             form.resetFields();
             setSelectedProducts([]);
@@ -64,18 +111,18 @@ const AddPromotion = () => {
 
 
         } catch (error) {
-            message.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm chương trình khuyến mãi!");
+            message.error(error.response?.data?.message || "Có lỗi xảy ra khi sửa chương trình khuyến mãi!");
             console.error("Lỗi:", error.response?.data || error.message);
         }
     };
 
-    const handleConfirmAddPromotion = () => {
+    const handleConfirmUpdatePromotion = () => {
         Modal.confirm({
-            title: "Xác nhận thêm chương trình khuyến mãi",
-            content: "Bạn có chắc chắn muốn thêm chương trình khuyến mãi này không?",
-            onOk: handleAddPromotion, // Nếu OK, thì gọi hàm xử lý add
+            title: "Xác nhận sửa chương trình khuyến mãi",
+            content: "Bạn có chắc chắn muốn sửa chương trình khuyến mãi này không?",
+            onOk: handleupdatePromotion, // Nếu OK, thì gọi hàm xử lý update
             onCancel() {
-                message.info("Hủy thêm chương trình khuyến mãi.");
+                message.info("Hủy sửa chương trình khuyến mãi.");
             },
         });
     };
@@ -186,9 +233,9 @@ const AddPromotion = () => {
             }
         }
     };
-    useEffect(() => {
-        fetchProductsData();
-    }, []);
+
+
+
 
     const columns = [
         {
@@ -380,14 +427,13 @@ const AddPromotion = () => {
                                 getValueProps={(value) => ({ value: value ? dayjs(value).utcOffset(7) : null })}
                             />
                         </Form.Item>
-
                         <Button
                             type="primary"
                             size="middle "
                             style={{ width: "60%", margin: "0 auto", display: "block" }}
-                            onClick={handleConfirmAddPromotion} // ✅ Gọi Modal xác nhận trước khi thêm
+                            onClick={handleConfirmUpdatePromotion} // ✅ Gọi Modal xác nhận trước khi sửa
                         >
-                            Thêm mới
+                            Chỉnh sửa
                         </Button>
 
                     </Form>
@@ -458,4 +504,4 @@ const AddPromotion = () => {
     );
 };
 
-export default AddPromotion;
+export default UpdatePromotion;

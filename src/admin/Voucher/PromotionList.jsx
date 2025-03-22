@@ -1,86 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Row, Col, theme } from 'antd';
+import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Row, Col, theme,Tooltip,Switch } from 'antd';
 import axios from 'axios';
-import { baseUrl } from '../../helpers/Helpers.js';
-import moment from 'moment';
-import { Link } from 'react-router-dom';
+import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
+import { Link, useNavigate } from 'react-router-dom';
 const { Search } = Input;
 const { Option } = Select;
+import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
+import { FaEye,FaTrash } from "react-icons/fa6";
+import { FaEdit } from "react-icons/fa";
 
-const columns = (handleEdit, handleDelete) => [
-    {
-        title: 'STT',
-        dataIndex: 'stt',
-        key: 'stt',
-        render: (text, record, index) => index + 1,
-    },
-    {
-        title: 'Mã đợt giảm giá',
-        dataIndex: 'promotionCode',
-        key: 'promotionCode',
-    },
-    {
-        title: 'Tên đợt giảm giá',
-        dataIndex: 'promotionName',
-        key: 'promotionName',
-    },
-    {
-        title: 'Loại đợt giảm giá',
-        dataIndex: 'promotionType',
-        key: 'promotionType',
-    },
-    {
-        title: 'Giá trị giảm(%)',
-        dataIndex: 'discountValue',
-        key: 'discountValue',
-    },
-    {
-        title: 'Số lượng',
-        dataIndex: 'quantity',
-        key: 'quantity',
-    },
-    {
-        title: 'Ngày bắt đầu',
-        dataIndex: 'startDate',
-        render: (text) => new Date(text).toLocaleDateString(),
-        key: 'startDate',
 
-    },
-    {
-        title: 'Ngày kết thúc',
-        dataIndex: 'endDate',
-        render: (text) => new Date(text).toLocaleDateString(),
-        key: 'endDate',
-
-    },
-    {
-        title: 'Trạng thái',
-        dataIndex: 'status',
-        key: 'status',
-    },
-    {
-        title: 'Thao tác',
-        key: 'action',
-        render: (_, record) => (
-            <Space size="middle">
-                <Button style={{
-
-                    border: 'none',
-                }} onClick={() => handleEdit(record)}>Chỉnh sửa</Button>
-                <Button style={{
-
-                    border: 'none',
-                }} danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-            </Space>
-        ),
-    },
-];
 
 // MÃ THÊM: Advanced Search Form
 const AdvancedSearchForm = ({ onSearch }) => {
     const { token } = theme.useToken();
     const [form] = Form.useForm();
-    const [expand, setExpand] = useState(false);
 
     const formStyle = {
         maxWidth: 'none',
@@ -104,13 +38,13 @@ const AdvancedSearchForm = ({ onSearch }) => {
                         <Input placeholder="Nhập tên đợt giảm giá" />
                     </Form.Item>
                 </Col>
-              
+
                 <Col span={8}>
                     <Form.Item name="discountValue" label="Giá trị giảm">
                         <Input placeholder="Nhập giá trị giảm" />
                     </Form.Item>
                 </Col>
-               
+
                 <Col span={8}>
                     <Form.Item name="startDate" label="Ngày bắt đầu">
                         <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
@@ -170,11 +104,162 @@ const AdvancedSearchForm = ({ onSearch }) => {
 
 
 const PromotionList = () => {
-    const [promotionData, setPromotionData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [form] = Form.useForm();
-    const [editingPromotion, setEditingPromotion] = useState(null);
+    const convertToVietnamTime = (utcDate) => {
+        if (!utcDate) return ""; // Kiểm tra nếu không có giá trị tránh lỗi
+        return new Date(utcDate).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+      };
+      
+    const columns = (handleEdit, handleDelete,handleDetail,switchPromotionStatus) => [
+        {
+            title: 'STT',
+            dataIndex: 'stt',
+            key: 'stt',
+            render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, // ✅ Tính STT theo trang hiện tại
+        },
+        {
+            title: 'Mã đợt giảm giá',
+            dataIndex: 'promotionCode',
+            key: 'promotionCode',
+        },
+        {
+            title: 'Tên đợt giảm giá',
+            dataIndex: 'promotionName',
+            key: 'promotionName',
+        },
+    
+        {
+            title: 'Giá trị giảm',
+            dataIndex: 'discountValue',
+            key: 'discountValue',
+            render: (text, record) => {
+                return record.discountType === 'PERCENT' ? `${text}%` : `${text} %`;
+            },
+        },
+    
+    
+    
+        {
+            title: 'Ngày bắt đầu',
+            dataIndex: 'startDate',
+            render: (text) => (text ? convertToVietnamTime(text) : "Không có dữ liệu"),
+            key: 'startDate',
+    
+        },
+        {
+            title: 'Ngày kết thúc',
+            dataIndex: 'endDate',
+            render: (text) => (text ? convertToVietnamTime(text) : "Không có dữ liệu"),
+            key: 'endDate',
+    
+        },
+        {
+            title: 'Trạng thái',
+            dataIndex: 'statusPromotion',
+            key: 'statusPromotion',
+            align: 'center',
+    
+            render: (_, record) => {
+                let displayStatus = convertStatusVoucher(record.statusPromotion);
+                let color =
+                    record.statusPromotion === 'dang_kich_hoat' ? '#389e0d' :
+                        record.statusPromotion === 'chua_kich_hoat' ? 'orange' :
+                            'red';
+    
+                let backgroundColor =
+                    record.statusPromotion === 'dang_kich_hoat' ? '#f6ffed' :
+                        record.statusPromotion === 'chua_kich_hoat' ? '#fff4e6' :
+                            '#fff1f0';
+    
+                return (
+                    <div
+                        style={{
+                            cursor: 'pointer',
+                            color: color,
+                            border: `1px solid ${color}`,
+                            borderRadius: '8px',
+                            textAlign: 'center',
+                            padding: '5px 10px',
+                            display: 'inline-block',
+                            backgroundColor: backgroundColor,
+                            fontSize: '12px',
+                        }}
+                    >
+                        {displayStatus}
+                    </div>
+                );
+            },
+        },
+        {
+            title: 'Thao tác',
+            key: 'action',
+            render: (_, record) => (
+                           <Space size="middle">
+                               {record.statusVoucher !== 'ngung_kich_hoat' && (
+                                             <Tooltip title="Chỉnh sửa">
+                                                 <FaEdit
+                                                     style={{ color: "#ff974d", fontSize: "1.2rem", cursor: "pointer" }}
+                                                     onClick={() => handleEdit(record)}
+                                                 />
+                                             </Tooltip>
+                                         )}
+           
+                               {/* Nút bật/tắt trạng thái */}
+           
+                               <Tooltip title="Thay đổi trạng thái">
+                       <Switch
+                           disabled={record.statusPromotion === "ngung_kich_hoat"}
+                           checked={record.statusPromotion === "dang_kich_hoat"}
+                           checkedChildren="Bật"
+                           unCheckedChildren="Tắt"
+                           size='small'
+                           onChange={(checked) => {
+                               Modal.confirm({
+                                   title: "Xác nhận thay đổi trạng thái",
+                                   content: `Bạn có chắc chắn muốn ${checked ? "bật" : "tắt"} promotion này không?`,
+                                   okText: "Xác nhận",
+                                   cancelText: "Hủy",
+                                   onOk: async () => {
+                                       try {
+                                           const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";
+                                           console.log("Trạng thái mới:", newStatus);
+           
+                                           await switchPromotionStatus(record.id, { status: newStatus });
+                                           getPagePromotion();
+                                           message.success("Cập nhật trạng thái thành công");
+                                       } catch (error) {
+                                           message.error("Cập nhật trạng thái không thành công");
+                                       }
+                                   }
+                               });
+                           }}
+                       />
+                   </Tooltip>
+           
+           
+           
+                              <Tooltip title="Xem chi tiết">
+                                             <FaEye
+                                                 style={{ color: "#1890ff", fontSize: "1.2rem", cursor: "pointer" }}
+                                                 onClick={() => handleDetail(record)}
+                                             />
+                                         </Tooltip>
+                             
+                                         <Tooltip title="Xóa">
+                                             <FaTrash
+                                                 style={{ color: "#ff4d4f", fontSize: "1.2rem", cursor: "pointer" }}
+                                                 onClick={() => handleDelete(record.id)}
+                                             />
+                                         </Tooltip>
+                           </Space>
+                       ),
+                   },
+    ];
+    const navigate = useNavigate();
+    const [currentPage, setCurrentPage] = useState(1); // State lưu trang hiện tại
+    const pageSize = 5; // Số lượng sản phẩm mỗi trang
 
+    const [promotionData, setPromotionData] = useState([]);
+    const [form] = Form.useForm();
     const [pagination, setPagination] = useState({
         page: 0,
         size: 5,
@@ -189,57 +274,41 @@ const PromotionList = () => {
             size: paginationTable.pageSize, // Số mục mỗi trang
         });
     }
+    const switchPromotionStatus = async (id, statusO) => {
+        const { status } = statusO
+        console.log("toi ham nay");
 
-    // Hàm khi ấn nút "Thêm"
-    // const handleAdd = () => {
-    //     setEditingPromotion(null);
-    //     setIsModalOpen(true);
-    // };
+        try {
+            const response = await axios.get("http://localhost:8080/api/admin/promotion/switchStatus", {
+                params: { id, status }
+            });
+            console.log(response);
 
-    // Hàm khi ấn nút "Chỉnh sửa"
-    const handleEdit = (record) => {
-        setEditingPromotion(record);
-        setIsModalOpen(true);
-        form.setFieldsValue({
-            ...record,
-            startDate: moment(record.startDate), // Sử dụng moment cho startDate
-            endDate: moment(record.endDate) // Sử dụng moment cho endDate
-        });
+        } catch (error) {
+            console.log(error);
+
+            throw error;
+        }
     };
 
+    const handleEdit = (record) => {
+        navigate(`/admin/promotion/update/${record.id}`);
+
+    };
+    const handleDetail = (record) => {
+        navigate(`/admin/promotion/detail/${record.id}`);
+    };
     // Hàm khi ấn nút "Xóa"
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${baseUrl}/api/admin/promotion/delete/${id}`);
             message.success('Xóa đợt giảm giá thành công!');
+            getPagePromotion(); // Gọi lại API để cập nhật danh sách
         } catch (error) {
             message.error('Lỗi khi xóa đợt giảm giá!');
         }
     };
-
-    // Hàm khi ấn nút "OK" trong Modal
-    const handleOk = async () => {
-        try {
-            const values = form.getFieldsValue();
-            if (editingPromotion) {
-                // Cập nhật dữ liệu
-                await axios.put(`${baseUrl}/api/admin/promotion/update/${editingPromotion.id}`, values);
-                message.success('Cập nhật đợt giảm giá thành công!');
-            } 
-            getPagePromotion();
-            setIsModalOpen(false);
-            form.resetFields();
-        } catch (error) {
-            message.error('Lỗi khi lưu trữ liệu!');
-        }
-    };
-
-    // Hàm khi ấn nút "Hủy" trong Modal
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        form.resetFields();
-    };
-
+    
     // Hàm lấy dữ liệu phân trang
     useEffect(() => {
         getPagePromotion();
@@ -262,8 +331,6 @@ const PromotionList = () => {
             size: data.size,
             total: data.totalElements
         };
-
-        console.log("new ", newPagination);
 
         // Kiểm tra xem pagination có thay đổi hay không trước khi set lại
         if (
@@ -293,14 +360,14 @@ const PromotionList = () => {
             <Card>
                 <Link to={"/admin/promotion/add"} >
                     <Button type="primary"
-                     >
+                    >
                         Thêm mới
                     </Button>
                 </Link>
 
 
 
-                <Table columns={columns(handleEdit, handleDelete)} dataSource={promotionData} rowKey="id"
+                <Table columns={columns(handleEdit, handleDelete,handleDetail,switchPromotionStatus)} dataSource={promotionData} rowKey="id"
                     pagination={{
                         current: pagination.page + 1,
                         pageSize: pagination.size,
@@ -308,63 +375,6 @@ const PromotionList = () => {
                     }}
                     onChange={handleOnChangeTable}
                 />
-                <Modal
-                    title={editingPromotion ? 'Chỉnh sửa đợt giảm giá' : 'Thêm mới đợt giảm giá'}
-                    visible={isModalOpen}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                    okText="Xác nhận"
-                    cancelText="Hủy"
-                    okButtonProps={{
-                        style: {
- 
-                            border: 'none',
-                            // fontFamily: 'Poppins',
-                        },
-                    }}
-                    cancelButtonProps={{
-                        style: {
-
-                            border: 'none',
-                            // fontFamily: 'Poppins',
-                        },
-                    }}
-                //màu label={<span style={{ color: '#1A3353', fontFamily: 'Poppins' }}>Mã phiếu giảm giá</span>}
-
-                >
-                    <Form form={form} layout="vertical"  >
-                        <Form.Item name="promotionCode" label="Mã đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="promotionName" label="Tên đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="promotionType" label="Loại đợt giảm giá" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="discountValue" label="Giá trị giảm" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="startDate" label="Ngày bắt đầu" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY"  style={{ width: '100%' }}/>
-                        </Form.Item>
-                        <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true }]}>
-                            <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                        </Form.Item>
-                        <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
-                            <Select>
-                                <Option value="HOAT_DONG">Hoạt động</Option>
-                                <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
-                            </Select>
-                        </Form.Item>
-                    </Form>
-                </Modal>
-
-
-
             </Card>
         </>
     );
