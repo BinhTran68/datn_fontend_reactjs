@@ -29,6 +29,7 @@ import {
 } from "@ant-design/icons";
 import { getCart } from "../../page/cart/cart";
 import axios from "axios";
+import {FaXmark} from "react-icons/fa6";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -46,8 +47,12 @@ function HeaderNav() {
   const [aiResponse, setAiResponse] = useState("");
   const vitegeminiurl = import.meta.env.VITE_GEMINI_URL; // Giả sử bạn có biến môi trường cho API Key
 
+  const [chatHistory, setChatHistory] = useState([]);
+
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
+
+    setChatHistory((prev) => [...prev, { sender: 'user', text: aiQuestion }]);
 
     try {
       const res = await axios.post(
@@ -64,10 +69,15 @@ function HeaderNav() {
           }
       );
 
-      setAiResponse(res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.");
+      const aiText = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
+      setAiResponse(aiText);
+
+      setChatHistory((prev) => [...prev, { sender: 'ai', text: aiText }]);
     } catch (error) {
       console.error("Lỗi khi gọi Gemini API:", error);
-      setAiResponse("Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!");
+      const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
+      setAiResponse(errorMessage);
+      setChatHistory((prev) => [...prev, { sender: 'ai', text: errorMessage }]);
     }
   };
 
@@ -157,6 +167,11 @@ function HeaderNav() {
     />
   );
 
+
+  const  handleOnCloseAskAI = () => {
+    console.log("dfsadas")
+    setIsAIModalVisible(false)
+  }
 
 
   return (
@@ -382,48 +397,52 @@ function HeaderNav() {
         </div>
       </Drawer>
 
-      {/* Modal AI Chat */}
-      <Modal
-          title="Hỏi đáp với AI"
+      <Drawer
+          closeIcon={<span style={{ fontSize: 20, position: "absolute", right: 25, top: 20 }}>
+                    <FaXmark />
+              </span>}
+          placement="bottom"
+          onClose={handleOnCloseAskAI}
           open={isAIModalVisible}
-
-          footer={null}
-          width={700}
+          mask={false}
+          height={380}
+          contentWrapperStyle={{
+              width: 320,
+              position: "fixed",
+              right: 20,
+              bottom: 0,
+              left: "auto",
+          }}
       >
-        <div style={{ marginBottom: "20px" }}>
-          <Input.TextArea
-              rows={4}
-              placeholder="Nhập câu hỏi của bạn..."
-              value={aiQuestion}
-              onChange={(e) => setAiQuestion(e.target.value)}
-              style={{ marginBottom: "10px" }}
-          />
-          <Button
-              type="primary"
-              onClick={handleAskAI}
-              style={{
-                backgroundColor: "#F37021",
-                borderColor: "#F37021",
-              }}
-          >
-            Gửi câu hỏi
-          </Button>
-        </div>
+          <div style={{ marginBottom: "20px", display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              <div style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
+                  {chatHistory.map((msg, index) => (
+                      <div key={index} style={{ padding: "10px", backgroundColor: msg.sender === 'user' ? "#d1e7dd" : "#f5f5f5", borderRadius: "8px", marginBottom: "10px" }}>
+                          <strong>{msg.sender === 'user' ? 'Bạn:' : 'AI:'}</strong>
+                          <p>{msg.text}</p>
+                      </div>
+                  ))}
+              </div>
+              <Input.TextArea
+                  rows={2}
+                  placeholder="Nhập câu hỏi của bạn..."
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  style={{ marginBottom: "10px" }}
+              />
+              <Button
+                  type="primary"
+                  onClick={handleAskAI}
+                  style={{
+                      backgroundColor: "#F37021",
+                      borderColor: "#F37021",
+                  }}
+              >
+                  Gửi câu hỏi
+              </Button>
+          </div>
+      </Drawer>
 
-        {aiResponse && (
-            <div
-                style={{
-                  padding: "15px",
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: "8px",
-                  marginTop: "10px",
-                }}
-            >
-              <h4>Phản hồi từ AI:</h4>
-              <p>{aiResponse}</p>
-            </div>
-        )}
-      </Modal>
     </div>
   );
 }
