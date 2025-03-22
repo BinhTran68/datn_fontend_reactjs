@@ -181,7 +181,7 @@ const ProductDetailDrawer = () => {
     formData.append("upload_preset", "uploaddatn"); // Thay bằng preset của bạn
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
+      `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`, 
       { method: "POST", body: formData }
     );
     const data = await res.json();
