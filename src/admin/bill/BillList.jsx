@@ -14,6 +14,9 @@ const layout = {
 };
 
 const BillList = () => {
+    //em tú code thêm
+    const [billCounts, setBillCounts] = useState({}); // Lưu số lượng hóa đơn theo trạng thái
+// em tú hết code
     const defaultURL = `${baseUrl}/api/admin/bill/index`;
     const [activeTab, setActiveTab] = useState('all');
     const [billsData, setBillsData] = useState([]);
@@ -33,7 +36,33 @@ const BillList = () => {
 
     // Sử dụng custom hook để tạo URL
     const url = useUrlBuilder(defaultURL, activeTab, pagination, searchParams);
+//em tú
+useEffect(() => {
+    const fetchCounts = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/admin/bill/hien`);
+            console.log("Dữ liệu API:", response.data.data);
 
+            // Xử lý dữ liệu đúng định dạng
+            const countsObj = {};
+            response.data.data.forEach(item => {
+                if (Array.isArray(item) && item.length === 2) {
+                    countsObj[item[0]] = item[1];
+                }
+            });
+
+            console.log("Dữ liệu đã chuyển đổi:", countsObj);
+            setBillCounts(countsObj);
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu bill counts:", error);
+        }
+    };
+
+    fetchCounts();
+}, []);
+
+
+//em tú hết
     useEffect(() => {
         getBill();
     }, [url]);
@@ -141,7 +170,7 @@ const BillList = () => {
             <Card>
                 <h4>Danh sách hóa đơn</h4>
                 <hr />
-                <Tabs defaultActiveKey="all" items={itemsTabsBillList()} onChange={onChangeTab} />
+                <Tabs defaultActiveKey="all" items={itemsTabsBillList(billCounts)} onChange={onChangeTab} />
                 <div className="d-flex justify-content-center">
                     <Table
                         className="w-100"
