@@ -1,106 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Row, Col, theme,Tooltip,Switch } from 'antd';
+import React, { useEffect, useState,useCallback } from 'react';
+import { Space, Table, Input, DatePicker, Select, Card, Button, Modal, Form, message, Row, Col, theme,Tooltip,Switch,InputNumber } from 'antd';
 import axios from 'axios';
 import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
 import { Link, useNavigate } from 'react-router-dom';
 const { Search } = Input;
 const { Option } = Select;
-import { EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
+import {SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined, RedoOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaEye,FaTrash } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
-
-
-
-// MÃ THÊM: Advanced Search Form
-const AdvancedSearchForm = ({ onSearch }) => {
-    const { token } = theme.useToken();
-    const [form] = Form.useForm();
-
-    const formStyle = {
-        maxWidth: 'none',
-        background: token.colorFillAlter,
-        borderRadius: token.borderRadiusLG,
-        padding: 24,
-
-    };
-
-    const getFields = () => {
-
-        return (
-            <>
-                <Col span={8}>
-                    <Form.Item name="promotionCode" label="Mã đợt giảm giá">
-                        <Input placeholder="Nhập mã đợt giảm giá" />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="promotionName" label="Tên đợt giảm giá">
-                        <Input placeholder="Nhập tên đợt giảm giá" />
-                    </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                    <Form.Item name="discountValue" label="Giá trị giảm">
-                        <Input placeholder="Nhập giá trị giảm" />
-                    </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                    <Form.Item name="startDate" label="Ngày bắt đầu">
-                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="endDate" label="Ngày kết thúc">
-                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-                    </Form.Item>
-                </Col>
-                <Col span={8}>
-                    <Form.Item name="status" label="Trạng thái">
-                        <Select placeholder="Chọn trạng thái">
-                            <Option value="HOAT_DONG">Hoạt động</Option>
-                            <Option value="NGUNG_HOAT_DONG">Tạm ngưng</Option>
-                        </Select>
-                    </Form.Item>
-                </Col>
-            </>
-        );
-    };
-
-    const onFinish = (values) => {
-        onSearch(values);
-    };
-    return (
-        <Card >
-            <Form form={form} name="advanced_search" style={{ formStyle }}
-                onFinish={onFinish} layout="vertical">
-                <Row gutter={24}>{getFields()}</Row>
-                <div style={{ textAlign: 'right' }}>
-                    <Space size="small">
-                        <Button type="primary" htmlType="submit" style={{
-
-                            border: 'none',
-                        }}>
-                            Lọc
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                form.resetFields();
-                            }}
-                            style={{
-
-                                border: 'none',
-                            }}
-                        >
-                            Xóa
-                        </Button>
-                    </Space>
-                </div>
-            </Form>
-        </Card>
-    );
-};
-
+import { debounce } from "lodash"; // Thêm debounce để tránh gọi API liên tục
 
 
 const PromotionList = () => {
@@ -181,7 +89,7 @@ const PromotionList = () => {
                             padding: '5px 10px',
                             display: 'inline-block',
                             backgroundColor: backgroundColor,
-                            fontSize: '12px',
+                            fontSize: '10px',
                         }}
                     >
                         {displayStatus}
@@ -194,7 +102,7 @@ const PromotionList = () => {
             key: 'action',
             render: (_, record) => (
                            <Space size="middle">
-                               {record.statusVoucher !== 'ngung_kich_hoat' && (
+                               {record.statusPromotion !== 'ngung_kich_hoat' && (
                                              <Tooltip title="Chỉnh sửa">
                                                  <FaEdit
                                                      style={{ color: "#ff974d", fontSize: "1.2rem", cursor: "pointer" }}
@@ -239,17 +147,17 @@ const PromotionList = () => {
            
                               <Tooltip title="Xem chi tiết">
                                              <FaEye
-                                                 style={{ color: "#1890ff", fontSize: "1.2rem", cursor: "pointer" }}
+                                                 style={{ color: "#ff974d", fontSize: "1.2rem", cursor: "pointer" }}
                                                  onClick={() => handleDetail(record)}
                                              />
                                          </Tooltip>
                              
-                                         <Tooltip title="Xóa">
+                                         {/* <Tooltip title="Xóa">
                                              <FaTrash
                                                  style={{ color: "#ff4d4f", fontSize: "1.2rem", cursor: "pointer" }}
                                                  onClick={() => handleDelete(record.id)}
                                              />
-                                         </Tooltip>
+                                         </Tooltip> */}
                            </Space>
                        ),
                    },
@@ -342,25 +250,87 @@ const PromotionList = () => {
         }
     };
 
+    const [voucherData, setVoucherData] = useState([]);
 
-    // MÃ THÊM: Xử lý tìm kiếm
-    const handleSearch = (values) => {
+    const { RangePicker } = DatePicker;
+    const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm
+    const [loading, setLoading] = useState(false);
+const [searchValue, setSearchValue] = useState(""); // Giữ giá trị nhập
 
-        console.log('Search Values:', values);
-    }
+    const searchPromtion = async (promotionName) => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${baseUrl}/api/admin/promotion/search/byName`, {
+                params: { promotionName } // Sử dụng params để tránh lỗi encode URL
+            });
+
+            if (response.data?.data) {
+                setPromotionData(response.data.data); // Cập nhật danh sách promotion
+            } else {
+                setPromotionData([]); // Trả về mảng rỗng nếu không có dữ liệu
+            }
+        } catch (error) {
+            console.error("Lỗi khi tìm kiếm phiếu giảm giá:", error);
+            message.error("Có lỗi xảy ra khi tìm kiếm.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    const debouncedSearch = useCallback(
+        debounce((value) => {
+            if (value.trim()) { // Tránh tìm kiếm chuỗi rỗng
+                searchPromtion(value);
+            } else {
+                getPagePromotion(); // Nếu rỗng, tải lại danh sách promotion mặc định
+            }
+        }, 1000),
+        []
+    );
+
+    useEffect(() => {
+        console.log("Danh sách promotion sau khi cập nhật:", promotionData);
+    }, [promotionData]);
+
+
+
+    const AdvancedSearchForm = () => {
+        return (
+            <Card>
+                <Form layout="vertical">
+                    <Row gutter={24}>
+                        <Col span={24}>
+                            <Form.Item label="Tên đợt giảm giá">
+                                <Input
+                                    placeholder="Nhập tên đợt giảm giá"
+                                    prefix={<SearchOutlined />}
+                                    allowClear
+                                    onChange={(e) => debouncedSearch(e.target.value)    
+                                    }
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
+            </Card>
+        );
+    };
+
     return (
 
         <>
-            <h4>Bộ lọc </h4>
-
-            {/* MÃ THÊM: Thêm AdvancedSearchForm */}
-            <AdvancedSearchForm onSearch={handleSearch} />
+          <h4>Bộ lọc</h4>
+            <AdvancedSearchForm onFilterChange={(newFilters) => {
+            }} />
             <h4 style={{ paddingTop: '15px' }}>Danh sách đợt giảm giá</h4>
 
             <Card>
                 <Link to={"/admin/promotion/add"} >
-                    <Button type="primary"
-                    >
+                     <Button type="primary" icon={<PlusOutlined />}
+                        style={{
+                            marginBottom: '20px',
+                            border: 'none',
+                            backgroundColor: '#ff974d'
+                        }}>
                         Thêm mới
                     </Button>
                 </Link>
