@@ -100,7 +100,7 @@ const VoucherList = () => {
         ,
 
         {
-            title: 'Giá trị tối thiểu',
+            title: ' Giá trị đơn tối thiểu để áp dụng phiếu giảm giá',
             dataIndex: 'billMinValue',
             key: 'billMinValue',
             align: 'center',
