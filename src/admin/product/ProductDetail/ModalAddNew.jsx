@@ -19,7 +19,7 @@ const ModalAddNew = ({ open, onCreate, onCancel, loading, title, req }) => {
   };
   
   useEffect(() => {
-    console.warn("dax chayj vaof ddaya-------------------", title);
+    // console.warn("dax chayj vaof ddaya-------------------", title);
   });
   return (
     <Modal

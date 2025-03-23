@@ -285,7 +285,7 @@ function HeaderNav() {
                       />
                     </Badge>
                     <Popover content={content} trigger="click">
-                      <div className="user-info d-flex align-items-center gap-2 px-2 py-1">
+                      <div className="user-info d-flex align-items-center gap-2 px-2 py-1" style={{cursor:"pointer"}}>
                         <Avatar
                           src={
                             user.avatar ||

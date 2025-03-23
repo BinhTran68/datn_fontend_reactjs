@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const GHN_API_URL = "https://online-gateway.ghn.vn/shiip/public-api";
-const SERVICE_TYPE_ID = 5; // Giao hàng tiêu chuẩn
+const SERVICE_TYPE_ID = 2; 
 const TOKEN = import.meta.env.VITE_GHN_API_KEY;
 const SHOP_ID = 5638683;
 
@@ -73,13 +73,13 @@ export async function generateAddressString(
 }
 
 export const calculateShippingFee = async ({
-  shopId = 5638683,
+  shopId = SHOP_ID,
   fromDistrictId,
   fromWardCode,
   toDistrictId,
   toWardCode,
-  length = 30,
-  width = 40,
+  length = 10,
+  width = 10,
   height = 20,
   weight = 1,
   insuranceValue = 0,
@@ -87,7 +87,7 @@ export const calculateShippingFee = async ({
   items = [],
 }) => {
   try {
-    const tokenGHN = import.meta.env.VITE_GHN_API_KEY;
+    const tokenGHN = TOKEN;
     const response = await axios.post(
       GHN_API_URL + "/v2/shipping-order/fee",
       {

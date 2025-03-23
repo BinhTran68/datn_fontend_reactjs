@@ -441,11 +441,12 @@ function ProductDetail() {
                       defaultValue={1}
                       value={quantityAddCart}
                       min={1}
-                      max={50}
+                      max={100}
                       onChange={(value) => {
                         setQuantityAddCart(value); // Cập nhật state khi thay đổi số lượng
                       }}
                     />
+                    <div>Số lượng còn: {getProductDetail.quantity}</div>
                   </Col>
                 </Row>
               </Col>
@@ -506,7 +507,7 @@ function ProductDetail() {
                       //   showProgress: true,
                       //   description: `Thêm vào giỏ hàng thành công!`,
                       // });
-                      message.success("Thêm vào giỏ hàng thành công!");
+                      toast.success("Thêm vào giỏ hàng thành công!");
                       console.log(getCart());
                     }}
                   >
