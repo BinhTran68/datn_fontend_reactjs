@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import styles from "./PurchaseOrder.module.css";
-import { apiCancelBill, apiGetAllBillOfCustomerId } from "./apiPurchaseOrder";
+import {
+  apiBuyBack,
+  apiCancelBill,
+  apiGetAllBillOfCustomerId,
+} from "./apiPurchaseOrder";
 import { Modal, Radio, Input, Button, Space, message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { addToCart, getCart } from "../page/cart/cart";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 
 const PurchaseOrder = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+   const [user, setUser] = useState(() =>
+      JSON.parse(localStorage.getItem("user"))
+    );
   const [activeTab, setActiveTab] = useState("all");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +41,7 @@ const PurchaseOrder = () => {
     "Tìm thấy giá tốt hơn ở nơi khác",
     "Đặt nhầm sản phẩm",
     "Thay đổi ý định mua hàng",
-    "Khác (Nhập lý do)"
+    "Khác (Nhập lý do)",
   ];
 
   // Define status mapping
@@ -51,7 +60,6 @@ const PurchaseOrder = () => {
       id: "waiting_delivery",
       label: "Chờ vận chuyển",
       actions: ["track"],
-
     },
     DANG_VAN_CHUYEN: {
       id: "Shiping",
@@ -109,9 +117,7 @@ const PurchaseOrder = () => {
     { id: "return_refund", label: "Trả hàng/Hoàn tiền" },
   ];
 
-  const [user, setUser] = useState(() =>
-    JSON.parse(localStorage.getItem("user"))
-  );
+
 
   // Fetch orders from API
   useEffect(() => {
@@ -119,7 +125,7 @@ const PurchaseOrder = () => {
 
     fetchOrders();
   }, [activeTab, searchText, dateFilter]);
-  
+
   const fetchOrders = async () => {
     try {
       const pagination = {
@@ -284,7 +290,7 @@ const PurchaseOrder = () => {
     } else {
       message.success(msg);
     }
-    
+
     // Keep the original notification state for backward compatibility
     setNotifications({
       show: true,
@@ -298,7 +304,7 @@ const PurchaseOrder = () => {
   };
 
   // Action Button handler
-  const getActionButton = (action, orderId,billCode) => {
+  const getActionButton = (action, orderId, billCode) => {
     switch (action) {
       case "pay":
         return (
@@ -407,12 +413,12 @@ const PurchaseOrder = () => {
   // Handle cancel confirmation
   const handleConfirmCancel = async () => {
     const finalReason = showCustomReasonInput ? customReason : cancelReason;
-    
+
     if (!finalReason) {
       showNotification("Vui lòng chọn lý do hủy đơn hàng", "error");
       return;
     }
-    
+
     await cancelBill(cancelOrderId, finalReason);
     setShowCancelModal(false);
     showNotification("Đơn hàng đã được hủy thành công");
@@ -426,7 +432,7 @@ const PurchaseOrder = () => {
   const handleTrackOrder = (orderId) => {
     console.log("Tracking order:", orderId);
     // Implement tracking logic here
-    navigate("/searchbill?billcode="+orderId)
+    navigate("/searchbill?billcode=" + orderId);
     // showNotification("Đang theo dõi đơn hàng...");
   };
 
@@ -436,10 +442,11 @@ const PurchaseOrder = () => {
     showNotification("Đánh giá đã được gửi thành công");
   };
 
-  const handleBuyAgain = (orderId) => {
-    console.log("Buy again from order:", orderId);
-    // Implement buy again logic here
-    showNotification("Đã thêm sản phẩm vào giỏ hàng");
+  const handleBuyAgain = async (billId) => {
+    await buyBack(billId);
+    toast.success("Đã thêm sản phẩm vào giỏ hàng");
+    window.dispatchEvent(new Event("cartUpdated"));
+
   };
 
   const handleContactSeller = (orderId) => {
@@ -469,7 +476,7 @@ const PurchaseOrder = () => {
       .format(price)
       .replace("₫", "đ");
   };
-  
+
   // api cancel
   const cancelBill = async (billId, description) => {
     try {
@@ -484,7 +491,20 @@ const PurchaseOrder = () => {
       setLoading(false);
     }
   };
-  
+  const buyBack = async (billId) => {
+    try {
+      setLoading(true);
+      const res = await apiBuyBack(billId,user?.id );
+      console.log("Cancel response:", res?.data);
+      fetchOrders();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      showNotification("Đã xảy ra lỗi khi mua lại đơn hàng", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* Show notification (keeping for backward compatibility) */}
@@ -510,24 +530,28 @@ const PurchaseOrder = () => {
         width={500}
       >
         <p>Vui lòng chọn lý do hủy đơn hàng:</p>
-        <Radio.Group onChange={handleReasonChange} value={cancelReason} style={{ width: '100%' }}>
-          <Space direction="vertical" style={{ width: '100%' }}>
+        <Radio.Group
+          onChange={handleReasonChange}
+          value={cancelReason}
+          style={{ width: "100%" }}
+        >
+          <Space direction="vertical" style={{ width: "100%" }}>
             {cancelReasons.map((reason, index) => (
-              <Radio key={index} value={reason} style={{ marginBottom: '8px' }}>
+              <Radio key={index} value={reason} style={{ marginBottom: "8px" }}>
                 {reason}
               </Radio>
             ))}
           </Space>
         </Radio.Group>
-        
+
         {showCustomReasonInput && (
-          <div style={{ marginTop: '16px' }}>
+          <div style={{ marginTop: "16px" }}>
             <TextArea
               placeholder="Nhập lý do của bạn"
               value={customReason}
               onChange={handleCustomReasonChange}
               rows={3}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             />
           </div>
         )}
@@ -653,7 +677,7 @@ const PurchaseOrder = () => {
                 <div className={styles.orderActions}>
                   {order.actions.map((action, index) => (
                     <span key={index} className={styles.actionButton}>
-                      {getActionButton(action, order.id,order.billCode)}
+                      {getActionButton(action, order.id, order.billCode)}
                     </span>
                   ))}
                 </div>

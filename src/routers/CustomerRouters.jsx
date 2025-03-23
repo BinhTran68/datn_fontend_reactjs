@@ -25,6 +25,7 @@ import SearchBill from "../admin/searchbill/SearchBill.jsx";
 // import Color from "../admin/product/Color.jsx";
 // import Category from "../admin/product/Brand/Brand.jsx";
 import PhoneAuth from "../client/test/SendOtp.jsx";
+import Chat from "../client/test/websocket/Chat.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
 import PromotionList from "../admin/Voucher/PromotionList.jsx";
@@ -173,6 +174,11 @@ const CustomerRouters = {
       path: "otp",
       element: <RoleRedirect element={<PhoneAuth />} />,
     },
+    {
+      path: "chat",
+      element: <RoleRedirect element={<Chat />} />,
+    },
+ 
  
  
 

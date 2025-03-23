@@ -55,3 +55,19 @@ export const apiCancelBill = async (billId,description) => {
     throw error;
   }
 };
+
+export const apiBuyBack = async (billId,customerId) => {
+  
+  try {
+    const response = await api.get("/buyback", {
+      params: { billId,customerId},
+    });
+
+    return response.data
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};

@@ -507,7 +507,7 @@ function ProductDetail() {
                       //   showProgress: true,
                       //   description: `Thêm vào giỏ hàng thành công!`,
                       // });
-                      message.success("Thêm vào giỏ hàng thành công!");
+                      toast.success("Thêm vào giỏ hàng thành công!");
                       console.log(getCart());
                     }}
                   >

@@ -29,7 +29,7 @@ import ProductDetail from "../admin/product/ProductDetail/ProductDetail.jsx";
 import Product from "../admin/product/Product/Product.jsx";
 import Gender from "../admin/product/Gender/Gender.jsx";
 import GetProductDetail from "../admin/product/Product/GetProductDetail.jsx";
-
+import AddComponet from "../admin/product/ProductDetail/AddComponent.jsx";
 import Detail from "../admin/product/ProductDetail/Detail.jsx";
 
 import AddCustomer from "../customer/AddCustomer.jsx";
@@ -129,7 +129,7 @@ const AdminRouters = {
         },
         {
             path: "product/add",
-            element: <PrivateRoute element={<AddProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddComponet/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
 
