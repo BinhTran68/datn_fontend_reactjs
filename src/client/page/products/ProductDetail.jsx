@@ -40,6 +40,7 @@ import {
 import { addToCart, clearCart, getCart } from "../cart/cart.js";
 import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
 import { addToBill } from "../cart/bill.js";
+import { toast } from "react-toastify";
 
 function ProductDetail() {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL
@@ -470,6 +471,10 @@ function ProductDetail() {
                     onClick={async () => {
                       // clearCart()
                       const user = JSON.parse(localStorage.getItem(`user`));
+                      if (quantityAddCart > getProductDetail.quantity) {
+                        toast.warn("số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có")
+                        return
+                      }
                       if (user) {
                         await addProductToCart({
                           customerId: user.id,
@@ -518,6 +523,10 @@ function ProductDetail() {
                       padding: "25px",
                     }}
                     onClick={() => {
+                      if (quantityAddCart > getProductDetail.quantity) {
+                        toast.warn("số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có")
+                        return
+                      }
                       addToBill({
                         productDetailId: getProductDetail.id,
                         quantityAddCart: quantityAddCart,

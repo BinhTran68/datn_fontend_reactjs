@@ -3,10 +3,11 @@ import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Footer from "./component/Footer";
 import HeaderNav from "./component/HeaderNav/HeaderNav.jsx";
-import { Layout } from "antd";
+import {Card, Drawer, Layout, Modal} from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Nav from "./component/Nav/Nav.jsx";
 import { ProductProvider } from "../store/ProductContext";
+import {FaAnchorCircleXmark, FaXmark} from "react-icons/fa6";
 // import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {
@@ -19,7 +20,10 @@ const App = () => {
 
   return (
     <div className="">
+
+
       <Layout>
+
         <Content
           style={{
             backgroundColor: "white",
@@ -28,14 +32,15 @@ const App = () => {
           <HeaderNav />
         </Content>
         <Content>
-          <div className="">
+
+          <div className="container">
             {/* <Nav/> */}
-            <Outlet />
+            <Outlet/>
           </div>
         </Content>
         <Content
-          style={{
-            backgroundColor: "white",
+            style={{
+              backgroundColor: "white",
           }}
         >
           <Footer />

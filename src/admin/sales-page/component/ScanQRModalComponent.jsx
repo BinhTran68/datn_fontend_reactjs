@@ -1,22 +1,25 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {message, Modal} from "antd";
 import {toast} from "react-toastify";
 import * as ZXing from "@zxing/library";
 import {BrowserMultiFormatReader} from "@zxing/library";
+import axiosInstance from "../../../utils/axiosInstance.js";
 
 const ScanQrModalComponent = ({
                                   isCameraOpen = false,
-                                    setIsCameraOpen
+                                  setIsCameraOpen,
+                                  handleOnAddProductToBill
                               }) => {
 
     const videoRef = useRef(null);
     const codeReader = new BrowserMultiFormatReader();
     const [stream, setStream] = useState(null);
+    const [idProduct, setIdProduct] = useState(null);
 
     useEffect(() => {
-        if(isCameraOpen) {
+        if (isCameraOpen) {
             handleOpenCamera()
-        }else {
+        } else {
             stopCamera()
         }
 
@@ -26,7 +29,7 @@ const ScanQrModalComponent = ({
         checkCameraPermission().then(async (hasPermission) => {
             if (hasPermission) {
                 try {
-                    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    const mediaStream = await navigator.mediaDevices.getUserMedia({video: true});
                     setStream(mediaStream); // Lưu stream vào state
                     if (videoRef.current) {
                         videoRef.current.srcObject = mediaStream;
@@ -53,7 +56,7 @@ const ScanQrModalComponent = ({
     // Hàm kiểm tra quyền truy cập camera
     const checkCameraPermission = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const stream = await navigator.mediaDevices.getUserMedia({video: true});
             stream.getTracks().forEach(track => track.stop());
             return true;
         } catch (error) {
@@ -61,6 +64,21 @@ const ScanQrModalComponent = ({
             return false;
         }
     };
+
+    useEffect(() => {
+        if(idProduct ) {
+            getProductDetail()
+        }
+    }, [idProduct]);
+
+    const getProductDetail = async () => {
+        try {
+            const response = await axiosInstance.get(`/api/admin/productdetail/${idProduct}`)
+            handleOnAddProductToBill(response.data.data)
+        }catch (e) {
+            console.log(e)
+        }
+    }
 
     // Xử lý QR code
     useEffect(() => {
@@ -70,9 +88,10 @@ const ScanQrModalComponent = ({
                 if (videoInputDevices.length > 0) {
                     codeReader.decodeFromInputVideoDevice(videoInputDevices[0].deviceId, videoRef.current)
                         .then(result => {
+                            console.log(result)
                             if (result?.text && Number(result?.text)) {
-                                console.log("QR Code:", result.text);
-                                // gọi hàm lấy product detail =>
+                                console.log(result?.text)
+                                setIdProduct(result.text)
                                 handleStopCamera()
                             }
                         })
@@ -87,7 +106,6 @@ const ScanQrModalComponent = ({
                 console.error('QR Scan Error:', err);
                 stopCamera();
             });
-
             return () => {
                 codeReader.reset();
             };
@@ -98,8 +116,6 @@ const ScanQrModalComponent = ({
         setIsCameraOpen(false)
         stopCamera(stream)
     }
-
-
 
     return (
         <div>

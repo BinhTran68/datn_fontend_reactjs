@@ -31,6 +31,7 @@ const BillList = () => {
         startDate: null,
         endDate: null,
     });
+    const [loading, setLoading] = useState(false);
 
     const [form] = Form.useForm();
 
@@ -68,14 +69,20 @@ useEffect(() => {
     }, [url]);
 
     const getBill = async () => {
-        const response = await axios.get(url);
-        setBillsData(response.data.data);
-
-        setPagination({
-            ...pagination,
-            page: response.data.currentPage,
-            total: response.data.totalElements,
-        });
+        setLoading(true);
+        try {
+            const response = await axios.get(url);
+            setBillsData(response.data.data);
+            setPagination({
+                ...pagination,
+                page: response.data.currentPage,
+                total: response.data.totalElements,
+            });
+        } catch (error) {
+            console.error("Error fetching bills:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleOnChangeTable = (paginationTable) => {
@@ -138,8 +145,8 @@ useEffect(() => {
                             <Form.Item name="typeBill" label="Loại đơn">
                                 <Select placeholder="Select an option" allowClear>
                                     <Select.Option value="null">Tất cả</Select.Option>
-                                    <Select.Option value="TAI_QUAY">Online</Select.Option>
-                                    <Select.Option value="DAT_HANG">Tại quầy</Select.Option>
+                                    <Select.Option value="ONLINE">Online</Select.Option>
+                                    <Select.Option value="OFFLINE">Tại quầy</Select.Option>
                                 </Select>
                             </Form.Item>
                         </Col>
@@ -182,6 +189,7 @@ useEffect(() => {
                         }}
                         columns={columnsBillList()}
                         dataSource={billsData}
+                        loading={loading}
                     />
                 </div>
             </Card>

@@ -593,11 +593,9 @@ const Material = () => {
               current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
               pageSize,
             });
-            fetchMaterialsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchMaterialsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
       </div>

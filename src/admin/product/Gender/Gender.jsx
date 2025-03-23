@@ -410,7 +410,7 @@ const Color = () => {
         </Row>
 
         <Row style={{ marginTop: 20 }}>
-          <Button
+          {/* <Button
             type="primary"
             onClick={() => {
               setOpenCreate(true);
@@ -418,7 +418,7 @@ const Color = () => {
             style={{}}
           >
             Thêm Giới Tính
-          </Button>
+          </Button> */}
           <Modal
             open={openCreate}
             title="Thêm Giới tính"
@@ -583,11 +583,11 @@ const Color = () => {
               current: 1, // Quay lại trang 1 khi thay đổi số lượng phần tử mỗi trang
               pageSize,
             });
-            fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            // fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
+            // fetchColorsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
       </div>

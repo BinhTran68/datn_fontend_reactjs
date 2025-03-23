@@ -21,13 +21,21 @@ import "react-quill/dist/quill.snow.css";
 import {
   createProductDetailList,
   fetchDataSelectBrand,
+  fetchDataSelectBrandHD,
   fetchDataSelectColor,
+  fetchDataSelectColorHD,
   fetchDataSelectGender,
+  fetchDataSelectGenderHD,
   fetchDataSelectMaterial,
+  fetchDataSelectMaterialhd,
   fetchDataSelectProduct,
+  fetchDataSelectProducthd,
   fetchDataSelectSize,
+  fetchDataSelectSizehd,
   fetchDataSelectSole,
+  fetchDataSelectSolehd,
   fetchDataSelectType,
+  fetchDataSelectTypehd,
 } from "./ApiProductDetail";
 import { PlusOutlined } from "@ant-design/icons";
 import { IoAddCircleOutline, IoAddCircleSharp } from "react-icons/io5";
@@ -576,7 +584,7 @@ const ProductDetailDrawer = () => {
   const fetchDataBrand = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectBrand();
+      const response = await fetchDataSelectBrandHD();
       console.log("Response from API brand:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectBrand(response.data);
     } catch (error) {
@@ -588,7 +596,7 @@ const ProductDetailDrawer = () => {
   const fetchDataColor = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectColor();
+      const response = await fetchDataSelectColorHD();
       console.log("Response from API color:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectColor(response.data);
     } catch (error) {
@@ -600,7 +608,7 @@ const ProductDetailDrawer = () => {
   const fetchDataGender = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectGender();
+      const response = await fetchDataSelectGenderHD();
       console.log("Response from API gender:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectGender(response.data);
     } catch (error) {
@@ -613,7 +621,7 @@ const ProductDetailDrawer = () => {
   const fetchDataProduct = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectProduct();
+      const response = await fetchDataSelectProducthd();
       console.log("Response from API product:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectProduct(response.data);
     } catch (error) {
@@ -625,7 +633,7 @@ const ProductDetailDrawer = () => {
   const fetchDataMaterial = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectMaterial();
+      const response = await fetchDataSelectMaterialhd();
       console.log("Response from API material:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectMaterial(response.data);
     } catch (error) {
@@ -638,7 +646,7 @@ const ProductDetailDrawer = () => {
   const fetchDataSize = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectSize();
+      const response = await fetchDataSelectSizehd();
       console.log("Response from API size:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSize(response.data);
     } catch (error) {
@@ -651,7 +659,7 @@ const ProductDetailDrawer = () => {
   const fetchDataSole = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectSole();
+      const response = await fetchDataSelectSolehd();
       console.log("Response from API Sole:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSole(response.data);
     } catch (error) {
@@ -664,7 +672,7 @@ const ProductDetailDrawer = () => {
   const fetchDataType = async () => {
     setLoading(true);
     try {
-      const response = await fetchDataSelectType();
+      const response = await fetchDataSelectTypehd();
       console.log("Response from API type:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectType(response.data);
     } catch (error) {
@@ -773,15 +781,12 @@ const ProductDetailDrawer = () => {
       title: "Số lượng",
       dataIndex: "quantity",
       render: (text, record) => (
-        <Input
-          type="number"
-          min={0}
+        <InputNumber
+          min={1}
+          max={999999} // Giới hạn tối đa 6 chữ số
           value={record.quantity}
-          defaultValue={text}
-          onChange={(e) =>
-            handleInputChange(record.key, "quantity", e.target.value)
-          }
-          suffix={<span>Đôi</span>}
+          onChange={(value) => handleInputChange(record.key, "quantity", value)}
+          addonAfter="Đôi"
         />
       ),
     },
@@ -789,16 +794,13 @@ const ProductDetailDrawer = () => {
       title: "Giá",
       dataIndex: "price",
       render: (text, record) => (
-        <Input
-          type="number"
-          min={0}
-          defaultValue={text}
+        <InputNumber
+          min={1}
+          max={9999999} // Giới hạn tối đa 7 chữ số
+          step={10000} // Nhập bước nhảy 1,000 VNĐ
           value={record.price}
-          step={1000} // Bước nhảy 1,000 VNĐ
-          onChange={(e) =>
-            handleInputChange(record.key, "price", e.target.value)
-          }
-          suffix={<span>VNĐ</span>}
+          onChange={(value) => handleInputChange(record.key, "price", value)}
+          addonAfter="VNĐ"
         />
       ),
     },
@@ -806,15 +808,12 @@ const ProductDetailDrawer = () => {
       title: "Cân nặng",
       dataIndex: "weight",
       render: (text, record) => (
-        <Input
-          type="number"
-          min={0}
-          defaultValue={text}
+        <InputNumber
+          min={1}
+          max={9999} // Giới hạn tối đa 2 chữ số
           value={record.weight}
-          onChange={(e) =>
-            handleInputChange(record.key, "weight", e.target.value)
-          }
-          suffix={<span>Kg</span>}
+          onChange={(value) => handleInputChange(record.key, "weight", value)}
+          addonAfter="gram"
         />
       ),
     },
@@ -918,9 +917,9 @@ const ProductDetailDrawer = () => {
           sizeId: size,
           productId: product, //selectedProduct.id,
           productName: `${productItem.productName} [ ${sizeItem.sizeName}-${colorItem.colorName} ]`,
-          quantity: 0,
-          price: 0,
-          weight: 0,
+          quantity: 1,
+          price: 1,
+          weight: 500,
           image: [],
           status: 1,
           color: color, // Thêm trường color để nhóm các dòng cùng màu
@@ -1488,8 +1487,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
-              value={commonQuantity}
+              min={1}
+              maxLength={6}              value={commonQuantity}
               onChange={(value) => setCommonQuantity(value)}
               suffix={<span>Đôi</span>}
             />
@@ -1510,7 +1509,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
+              min={1}
+              maxLength={7}
               value={commonPrice}
               onChange={(value) => setCommonPrice(value)}
               suffix={<span>VNĐ</span>}
@@ -1536,7 +1536,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               type="number"
-              min={0}
+              min={1}
+              maxLength={2}
               value={commonWeight}
               onChange={(value) => setCommonWeight(value)}
               suffix={<span>Kg</span>}

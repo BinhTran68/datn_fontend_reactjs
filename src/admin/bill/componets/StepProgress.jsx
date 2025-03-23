@@ -9,38 +9,31 @@ import {convertBillStatusToString, convertLongTimestampToDate} from "../../../he
 import {CiBookmarkPlus} from "react-icons/ci";
 
 const StepProgress = ({steps, currentStep, billHistoryList}) => {
-
-    // const billHistoryListUniqueByStatus = Array.from(
-    //     billHistoryList?.reduce((map, item) => {
-    //         map.set(item.status, item);
-    //         return map;
-    //     }, new Map()).values()
-    // );
-
-    const defaultStep = 5;
+    const defaultStep = 6;
     
     const sizeIcon = 42;
     
     const genIconStepBySatatus = (step) => {
-
-        if (step === "CHO_XAC_NHAN") {
-            return <LuClipboardPenLine  size={sizeIcon} />;
+        switch(step) {
+            case "TAO_DON_HANG":
+                return <CiBookmarkPlus size={sizeIcon} />;
+            case "CHO_XAC_NHAN":
+                return <LuClipboardPenLine size={sizeIcon} />;
+            case "DA_XAC_NHAN":
+                return <LuClipboardCheck size={sizeIcon} />;
+            case "CHO_VAN_CHUYEN":
+                return <FaTruckArrowRight size={sizeIcon} />;
+            case "DANG_VAN_CHUYEN":
+                return <FaTruckFast size={sizeIcon} />;
+            case "DA_GIAO_HANG":
+                return <LuClipboardCheck size={sizeIcon} />;
+            case "DA_THANH_TOAN":
+                return <LiaAmazonPay size={sizeIcon} />;
+            case "DA_HOAN_THANH":
+                return <LuClipboardCheck size={sizeIcon} />;
+            default:
+                return <CiBookmarkPlus size={sizeIcon} />;
         }
-        if (step === "DA_XAC_NHAN") {
-            return <LuClipboardCheck size={sizeIcon} />;;
-        }
-        if (step === "CHO_VAN_CHUYEN") {
-            return <FaTruckArrowRight  size={sizeIcon} />;
-        }
-
-        if (step === "DANG_VAN_CHUYEN") {
-            return <FaTruckFast  size={sizeIcon} />;
-        }
-
-        if (step === "DA_THANH_TOAN") {
-            return <LiaAmazonPay  size={sizeIcon} />;
-        }
-        return <CiBookmarkPlus  size={sizeIcon} />;
     }
 
     const fullBillHistoryList = [...billHistoryList];
@@ -48,18 +41,21 @@ const StepProgress = ({steps, currentStep, billHistoryList}) => {
         fullBillHistoryList.push({
             id: `placeholder-${fullBillHistoryList.length}`,
             status: null,
-            createdAt: null,
+            createdAt: null,    
         });
     }
 
     return (
-        <div className="d-flex align-items-center justify-content-between">
-
+        <div className="d-flex align-items-center" style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
             {fullBillHistoryList.map((step, index) => (
                 <div
                     key={step.id}
-                    className="text-center position-relative flex-fill"
-                    style={{color: index + 1 <= currentStep ? "#0d6efd" : "#adb5bd"}}
+                    className="text-center position-relative"
+                    style={{
+                        color: index + 1 <= currentStep ? "#0d6efd" : "#adb5bd",
+                        minWidth: '220px',
+                        display: 'inline-block'
+                    }}
                 >
                     {/* Biểu tượng và tiêu đề */}
                     <div
@@ -73,11 +69,10 @@ const StepProgress = ({steps, currentStep, billHistoryList}) => {
                             fontSize: "24px",
                         }}
                     >
-                       <div style={{zIndex: 10}}>
-                           {genIconStepBySatatus(step.status)}
-                       </div>
+                        <div style={{zIndex: 10}}>
+                            {genIconStepBySatatus(step.status)}
+                        </div>
                     </div>
-
 
                     <div className="arrow-container">
                         <div
@@ -120,10 +115,7 @@ const StepProgress = ({steps, currentStep, billHistoryList}) => {
 
                     </div>
 
-
                 </div>
-
-
             ))}
         </div>
     );

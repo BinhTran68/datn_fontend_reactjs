@@ -680,7 +680,7 @@ const GetProductDetail = () => {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
                         message.success("Cập nhật trạng thái thành công!");
-                        fetchProductsData();
+                        fetchfilterData();
                       } catch (error) {
                         message.error("Cập nhật trạng thái thất bại!");
                       }
@@ -1110,7 +1110,6 @@ const GetProductDetail = () => {
           }}
           onChange={(page, pageSize) => {
             setPagination({ current: page, pageSize });
-            // fetchProductsData(); // Gọi lại API để cập nhật dữ liệu phù hợp
           }}
         />
       </div>

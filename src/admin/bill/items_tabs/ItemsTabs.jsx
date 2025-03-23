@@ -1,213 +1,47 @@
 import {Badge} from "antd";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../../../utils/axiosInstance";
 
-export
-    const itemsTabsBillList = (billCounts) =>  {
+export const itemsTabsBillList = () => {
+    const [counts, setCounts] = useState({});
 
-        return [
-            {
-                key: "all",
-                label: (
-                    <Badge count={billCounts?.TONG_CONG || 0} 
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                       
-                       
-                       >
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const response = await axiosInstance.get("/api/admin/bill/count-by-status");
+                const data = response.data;
+                const countsMap = data.reduce((acc, item) => {
+                    acc[item.name] = item.value;
+                    return acc;
+                }, {});
+                setCounts(countsMap);
+            } catch (error) {
+                console.error("Error fetching counts:", error);
+            }
+        };
 
-                        <span style={{ fontSize: "14px" }}>Tất cả</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "CHO_XAC_NHAN",
-                label: (
-                    <Badge count={billCounts?.CHO_XAC_NHAN || 0} 
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    
-                    >
-                        <span style={{ fontSize: "14px"}}>Chờ xác nhận</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "DA_XAC_NHAN",
-                label: (
-                    <Badge count={billCounts?.DA_XAC_NHAN || 0} 
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    >
-                        <span style={{ fontSize: "14px" }}>Đã xác nhận</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "CHO_VAN_CHUYEN",
-                label: (
-                    <Badge count={billCounts?.CHO_VAN_CHUYEN || 0}
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    
-                    >
-                        <span style={{ fontSize: "14px" }}>Chờ vận chuyển</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "DANG_VAN_CHUYEN",
-                label: (
-                    <Badge count={billCounts?.DANG_VAN_CHUYEN || 0} 
-                    
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    
-                    >
-                        <span style={{ fontSize: "14px"}}>Đang vận chuyển</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "DA_THANH_TOAN",
-                label: (
-                    <Badge count={billCounts?.DA_THANH_TOAN || 0} 
-                    
-                    
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    >
-                        <span style={{ fontSize: "14px" }}>Đã thanh toán</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "DA_HOAN_THANH",
-                label: (
-                    <Badge count={billCounts?.DA_HOAN_THANH || 0} 
-                    
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    
-                    >
-                        <span style={{ fontSize: "14px"}}>Đã hoàn thành</span>
-                    </Badge>
-                ),
-            },
-            {
-                key: "DA_HUY",
-                label: (
-                    <Badge count={billCounts?.DA_HUY || 0}
-                    
-                    offset={[12, -5]}     
-                    style={{ 
-                        backgroundColor: "#f5222d", 
-                        fontSize: "12px",  // Kích thước chữ bên trong
-                        height: "20px",     // Chiều cao ô màu đỏ
-                        width: "20px",      // Chiều rộng ô màu đỏ
-                        minWidth: "10px",   // Đảm bảo badge không bị thu nhỏ quá mức
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%", // Bo tròn hoàn toàn
-                        padding: "4px"   ,    // Khoảng cách giữa chữ và viền badge
-                        background:"orange",
-                        border:"1px solid white"
-                    }}                        
-                    >
-                        <span style={{ fontSize: "14px"}}>Đã hủy</span>
-                    </Badge>
-                ),
-            },
-        ];
-    };
-    
+        fetchCounts();
+    }, []);
+
+    const tabs = [
+        { key: 'all', label: "Tất cả" },
+        { key: 'CHO_XAC_NHAN', label: "Chờ xác nhận" },
+        { key: 'DA_XAC_NHAN', label: "Đã xác nhận" },
+        { key: 'CHO_VAN_CHUYEN', label: "Chờ vận chuyển" },
+        { key: 'DANG_VAN_CHUYEN', label: "Đang vận chuyển" },
+        { key: 'DA_THANH_TOAN', label: "Đã thanh toán" },
+        { key: 'DA_HOAN_THANH', label: "Đã hoàn thành" },
+        { key: 'DA_HUY', label: "Đã hủy" }
+    ];
+    console.log(counts["CHO_XAC_NHAN"]);
+    return tabs.map(tab => ({
+        key: tab.key,
+        label: (
+            <>
+                {tab.label} <Badge
+                showZero={true}
+                count={counts[tab.key] !== undefined ? counts[tab.key] : 0} className={"mb-3 ms-1"} />
+            </>
+        )
+    }));
+}

@@ -2,838 +2,1261 @@ import React, { useState, useEffect } from 'react';
 import styles from './CustomerProfile.module.css';
 
 const CustomerProfile = () => {
-  const [profile, setProfile] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    country: '',
-    avatar: '',
-    birthDate: '',
-    gender: '',
-    password: '',
-    confirmPassword: '',
-    // Thêm dữ liệu mới
-    nickname: '',
-    occupation: '',
-    favoriteCategories: [],
-    memberSince: '',
-    loyaltyPoints: 0,
-    shippingAddresses: [],
-    orderHistory: [],
-    preferredLanguage: 'Tiếng Việt',
-    newsletter: true,
-    verifiedAccount: false
+  // State for customer information
+  const [customerInfo, setCustomerInfo] = useState({
+    personalInfo: {
+      fullName: 'Nguyễn Văn A',
+      dateOfBirth: '1990-01-01',
+      gender: 'Nam',
+      idNumber: '123456789012',
+      address: 'Số 123, Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh',
+      phone: '0901234567',
+      email: 'nguyenvana@example.com',
+    },
+    financialInfo: {
+      income: '15000000',
+      spendingAverage: '2000000',
+      paymentMethods: ['Tiền mặt', 'Thẻ tín dụng', 'Chuyển khoản'],
+      bankAccounts: [
+        { bank: 'VietcomBank', accountNumber: '1234567890' },
+        { bank: 'BIDV', accountNumber: '0987654321' },
+      ],
+    },
+    purchaseHistory: [
+      {
+        id: 'DH001',
+        date: '2025-01-15',
+        products: [
+          { name: 'Nike Air Force 1', size: '42', color: 'Trắng', price: 2500000 },
+          { name: 'Adidas Stan Smith', size: '41', color: 'Xanh', price: 1800000 },
+        ],
+        totalAmount: 4300000,
+        status: 'Đã giao hàng',
+      },
+      {
+        id: 'DH002',
+        date: '2025-02-20',
+        products: [
+          { name: 'Puma Suede', size: '42', color: 'Đen', price: 1500000 },
+        ],
+        totalAmount: 1500000,
+        status: 'Đã giao hàng',
+      },
+      {
+        id: 'DH003',
+        date: '2025-03-05',
+        products: [
+          { name: 'Converse Chuck Taylor', size: '42', color: 'Đỏ', price: 1200000 },
+          { name: 'Vans Old Skool', size: '41', color: 'Đen', price: 1600000 },
+        ],
+        totalAmount: 2800000,
+        status: 'Đang giao hàng',
+      },
+    ],
+    feedback: [
+      { date: '2025-01-20', product: 'Nike Air Force 1', rating: 5, comment: 'Sản phẩm chất lượng, rất hài lòng' },
+      { date: '2025-02-25', product: 'Puma Suede', rating: 4, comment: 'Đẹp, nhưng hơi chật' },
+    ],
+    marketingInfo: {
+      source: 'Facebook Ads',
+      campaigns: ['Giảm giá mùa hè', 'Khuyến mãi tháng 3'],
+      preferences: ['Giày thể thao', 'Giày da'],
+    },
+    contactInfo: {
+      lastContact: '2025-03-10',
+      contactMethod: 'Email',
+      notes: 'Khách hàng quan tâm đến bộ sưu tập mới',
+    },
+    preferences: {
+      brands: ['Nike', 'Adidas', 'Converse'],
+      sizes: ['41', '42'],
+      colors: ['Trắng', 'Đen', 'Xanh'],
+      styles: ['Thể thao', 'Casual'],
+      priceRange: '1000000-3000000',
+    },
+    customerSegment: {
+      type: 'Khách hàng thân thiết',
+      loyaltyPoints: 500,
+      memberSince: '2024-01-01',
+      tier: 'Vàng',
+    },
   });
-  
-  const [editing, setEditing] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+
+  // State for active tab
   const [activeTab, setActiveTab] = useState('personal');
-  const [addingAddress, setAddingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    addressLine: '',
-    city: '',
-    district: '',
-    postalCode: '',
-    isDefault: false
-  });
-  
-  // Danh sách các danh mục sản phẩm
-  const categories = [
-    'Thời trang nam', 'Thời trang nữ', 'Điện thoại', 'Máy tính',
-    'Đồ gia dụng', 'Mỹ phẩm', 'Sách', 'Thực phẩm', 'Thể thao'
-  ];
-  
-  // Giả lập lấy dữ liệu từ API
+
+  // State for edit mode
+  const [editMode, setEditMode] = useState(false);
+
+  // State for form data in edit mode
+  const [formData, setFormData] = useState({});
+
+  // Initialize form data when entering edit mode
   useEffect(() => {
-    // Trong thực tế, bạn sẽ gọi API để lấy thông tin người dùng
-    setTimeout(() => {
-      setProfile({
-        fullName: 'Nguyễn Văn A',
-        email: 'nguyenvana@example.com',
-        phone: '0987654321',
-        address: '123 Đường Lê Lợi',
-        city: 'Hồ Chí Minh',
-        country: 'Việt Nam',
-        avatar: 'https://cdn.vntrip.vn/cam-nang/wp-content/uploads/2020/10/meme-la-gi.jpg',
-        birthDate: '1990-01-01',
-        gender: 'Nam',
-        password: '',
-        confirmPassword: '',
-        // Thêm dữ liệu mới
-        nickname: 'Alex',
-        occupation: 'Kỹ sư phần mềm',
-        favoriteCategories: ['Điện thoại', 'Máy tính', 'Sách'],
-        memberSince: '2023-01-15',
-        loyaltyPoints: 2450,
-        shippingAddresses: [
-          {
-            id: 1,
-            addressLine: '123 Đường Lê Lợi, Phường Bến Nghé',
-            city: 'Hồ Chí Minh',
-            district: 'Quận 1',
-            postalCode: '700000',
-            isDefault: true
-          },
-          {
-            id: 2,
-            addressLine: '45 Đường Nguyễn Huệ, Phường Bến Nghé',
-            city: 'Hồ Chí Minh',
-            district: 'Quận 1',
-            postalCode: '700000',
-            isDefault: false
-          }
-        ],
-        orderHistory: [
-          {
-            id: 'ORD123456',
-            date: '2024-09-15',
-            total: 2500000,
-            status: 'Đã giao hàng',
-            items: 3
-          },
-          {
-            id: 'ORD123123',
-            date: '2024-08-20',
-            total: 1200000,
-            status: 'Đã giao hàng',
-            items: 2
-          },
-          {
-            id: 'ORD122456',
-            date: '2024-07-05',
-            total: 3600000,
-            status: 'Đã giao hàng',
-            items: 5
-          }
-        ],
-        preferredLanguage: 'Tiếng Việt',
-        newsletter: true,
-        verifiedAccount: true
-      });
-    }, 500);
-  }, []);
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (editMode) {
+      setFormData(customerInfo);
+    }
+  }, [editMode, customerInfo]);
+
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setEditMode(false);
   };
-  
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setProfile(prev => ({
-      ...prev,
-      [name]: checked
-    }));
+
+  // Handle edit button click
+  const handleEditClick = () => {
+    setEditMode(true);
   };
-  
-  const handleCategoryChange = (category) => {
-    setProfile(prev => {
-      const updatedCategories = [...prev.favoriteCategories];
-      if (updatedCategories.includes(category)) {
-        return {
-          ...prev,
-          favoriteCategories: updatedCategories.filter(cat => cat !== category)
-        };
-      } else {
-        return {
-          ...prev,
-          favoriteCategories: [...updatedCategories, category]
-        };
-      }
+
+  // Handle save button click
+  const handleSaveClick = () => {
+    setCustomerInfo(formData);
+    setEditMode(false);
+  };
+
+  // Handle form input change
+  const handleInputChange = (section, field, value) => {
+    setFormData({
+      ...formData,
+      [section]: {
+        ...formData[section],
+        [field]: value,
+      },
     });
   };
-  
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Trong dự án thực tế, bạn sẽ tải lên file và lấy URL trả về
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile(prev => ({
-          ...prev,
-          avatar: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  const handleNewAddressChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewAddress(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-  
-  const addShippingAddress = () => {
-    if (!newAddress.addressLine || !newAddress.city) {
-      setErrorMessage('Vui lòng nhập địa chỉ và thành phố');
-      return;
-    }
-    
-    const newId = profile.shippingAddresses.length > 0 
-      ? Math.max(...profile.shippingAddresses.map(addr => addr.id)) + 1 
-      : 1;
-    
-    const addressToAdd = {
-      ...newAddress,
-      id: newId
+
+  // Handle nested form input change
+  const handleNestedInputChange = (section, index, field, value) => {
+    const updatedData = [...formData[section]];
+    updatedData[index] = {
+      ...updatedData[index],
+      [field]: value,
     };
     
-    // Nếu địa chỉ mới là mặc định, cập nhật tất cả các địa chỉ khác
-    let updatedAddresses = [...profile.shippingAddresses];
-    if (newAddress.isDefault) {
-      updatedAddresses = updatedAddresses.map(addr => ({
-        ...addr,
-        isDefault: false
-      }));
-    }
-    
-    setProfile(prev => ({
-      ...prev,
-      shippingAddresses: [...updatedAddresses, addressToAdd]
-    }));
-    
-    // Reset form
-    setNewAddress({
-      addressLine: '',
-      city: '',
-      district: '',
-      postalCode: '',
-      isDefault: false
+    setFormData({
+      ...formData,
+      [section]: updatedData,
     });
-    setAddingAddress(false);
-    setSuccessMessage('Đã thêm địa chỉ mới thành công!');
-    
-    // Ẩn thông báo sau 3 giây
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 3000);
   };
-  
-  const removeAddress = (id) => {
-    setProfile(prev => ({
-      ...prev,
-      shippingAddresses: prev.shippingAddresses.filter(addr => addr.id !== id)
-    }));
+
+  // Handle add new purchase
+  const handleAddPurchase = () => {
+    const newPurchase = {
+      id: `DH${String(formData.purchaseHistory.length + 1).padStart(3, '0')}`,
+      date: new Date().toISOString().split('T')[0],
+      products: [{ name: '', size: '', color: '', price: 0 }],
+      totalAmount: 0,
+      status: 'Đang xử lý',
+    };
     
-    setSuccessMessage('Đã xóa địa chỉ thành công!');
-    
-    // Ẩn thông báo sau 3 giây
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 3000);
+    setFormData({
+      ...formData,
+      purchaseHistory: [...formData.purchaseHistory, newPurchase],
+    });
   };
-  
-  const setDefaultAddress = (id) => {
-    setProfile(prev => ({
-      ...prev,
-      shippingAddresses: prev.shippingAddresses.map(addr => ({
-        ...addr,
-        isDefault: addr.id === id
-      }))
-    }));
+
+  // Handle add new feedback
+  const handleAddFeedback = () => {
+    const newFeedback = {
+      date: new Date().toISOString().split('T')[0],
+      product: '',
+      rating: 5,
+      comment: '',
+    };
     
-    setSuccessMessage('Đã cập nhật địa chỉ mặc định!');
-    
-    // Ẩn thông báo sau 3 giây
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 3000);
+    setFormData({
+      ...formData,
+      feedback: [...formData.feedback, newFeedback],
+    });
   };
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
+
+  // Handle add new payment method
+  const handleAddPaymentMethod = () => {
+    setFormData({
+      ...formData,
+      financialInfo: {
+        ...formData.financialInfo,
+        paymentMethods: [...formData.financialInfo.paymentMethods, ''],
+      },
+    });
+  };
+
+  // Handle add new bank account
+  const handleAddBankAccount = () => {
+    const newBankAccount = {
+      bank: '',
+      accountNumber: '',
+    };
     
-    // Kiểm tra mật khẩu nếu đang cập nhật
-    if (profile.password && profile.password !== profile.confirmPassword) {
-      setErrorMessage('Mật khẩu xác nhận không khớp!');
-      return;
+    setFormData({
+      ...formData,
+      financialInfo: {
+        ...formData.financialInfo,
+        bankAccounts: [...formData.financialInfo.bankAccounts, newBankAccount],
+      },
+    });
+  };
+
+  // Handle payment method input change
+  const handlePaymentMethodChange = (index, value) => {
+    const updatedPaymentMethods = [...formData.financialInfo.paymentMethods];
+    updatedPaymentMethods[index] = value;
+    
+    setFormData({
+      ...formData,
+      financialInfo: {
+        ...formData.financialInfo,
+        paymentMethods: updatedPaymentMethods,
+      },
+    });
+  };
+
+  // Handle bank account input change
+  const handleBankAccountChange = (index, field, value) => {
+    const updatedBankAccounts = [...formData.financialInfo.bankAccounts];
+    updatedBankAccounts[index] = {
+      ...updatedBankAccounts[index],
+      [field]: value,
+    };
+    
+    setFormData({
+      ...formData,
+      financialInfo: {
+        ...formData.financialInfo,
+        bankAccounts: updatedBankAccounts,
+      },
+    });
+  };
+
+  // Handle product input change
+  const handleProductChange = (purchaseIndex, productIndex, field, value) => {
+    const updatedPurchases = [...formData.purchaseHistory];
+    updatedPurchases[purchaseIndex].products[productIndex] = {
+      ...updatedPurchases[purchaseIndex].products[productIndex],
+      [field]: value,
+    };
+    
+    // Recalculate total amount
+    if (field === 'price') {
+      const totalAmount = updatedPurchases[purchaseIndex].products.reduce(
+        (sum, product) => sum + Number(product.price || 0),
+        0
+      );
+      updatedPurchases[purchaseIndex].totalAmount = totalAmount;
     }
     
-    // Giả lập lưu dữ liệu
-    setTimeout(() => {
-      setSuccessMessage('Thông tin hồ sơ đã được cập nhật thành công!');
-      setErrorMessage('');
-      setEditing(false);
-      
-      // Ẩn thông báo sau 3 giây
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
-    }, 1000);
+    setFormData({
+      ...formData,
+      purchaseHistory: updatedPurchases,
+    });
   };
-  
-  // Format tiền tệ VNĐ
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-  
-  // Format ngày tháng
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(dateString).toLocaleDateString('vi-VN', options);
-  };
-  
-  // Tính toán độ dài thành viên
-  const calculateMembershipDuration = () => {
-    const memberDate = new Date(profile.memberSince);
-    const today = new Date();
-    const diffTime = Math.abs(today - memberDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Handle add new product to purchase
+  const handleAddProduct = (purchaseIndex) => {
+    const updatedPurchases = [...formData.purchaseHistory];
+    updatedPurchases[purchaseIndex].products.push({
+      name: '',
+      size: '',
+      color: '',
+      price: 0,
+    });
     
-    if (diffDays < 30) return `${diffDays} ngày`;
-    if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30);
-      return `${months} tháng`;
-    }
-    
-    const years = Math.floor(diffDays / 365);
-    const remainingMonths = Math.floor((diffDays % 365) / 30);
-    
-    if (remainingMonths === 0) return `${years} năm`;
-    return `${years} năm ${remainingMonths} tháng`;
+    setFormData({
+      ...formData,
+      purchaseHistory: updatedPurchases,
+    });
   };
-  
-  return (
-    <div className={styles.profileContainer}>
-      <div className={styles.profileHeader}>
-        <h1>Hồ Sơ Khách Hàng</h1>
-        <p>Quản lý thông tin cá nhân để bảo mật tài khoản</p>
-      </div>
-      
-      {successMessage && (
-        <div className={styles.successMessage}>
-          {successMessage}
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div className={styles.errorMessage}>
-          {errorMessage}
-        </div>
-      )}
-      
-      <div className={styles.profileContent}>
-        <div className={styles.avatarSection}>
-          <div className={styles.avatarContainer}>
-            <img
-              src={profile.avatar || 'https://via.placeholder.com/150'}
-              alt="Ảnh đại diện"
-              className={styles.avatar}
-            />
-            {editing && (
-              <div className={styles.avatarUpload}>
-                <label htmlFor="avatar-upload" className={styles.uploadButton}>
-                  <i className="fas fa-camera"></i>
-                </label>
+
+  // Handle preference input change
+  const handlePreferenceChange = (field, value) => {
+    setFormData({
+      ...formData,
+      preferences: {
+        ...formData.preferences,
+        [field]: value,
+      },
+    });
+  };
+
+  // Handle preference array input change
+  const handlePreferenceArrayChange = (field, index, value) => {
+    const updatedPreferences = [...formData.preferences[field]];
+    updatedPreferences[index] = value;
+    
+    setFormData({
+      ...formData,
+      preferences: {
+        ...formData.preferences,
+        [field]: updatedPreferences,
+      },
+    });
+  };
+
+  // Handle add new preference item
+  const handleAddPreferenceItem = (field) => {
+    setFormData({
+      ...formData,
+      preferences: {
+        ...formData.preferences,
+        [field]: [...formData.preferences[field], ''],
+      },
+    });
+  };
+
+  // Render personal information
+  const renderPersonalInfo = () => {
+    const { personalInfo } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Thông tin cá nhân</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Họ và tên:</label>
                 <input
-                  type="file"
-                  id="avatar-upload"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className={styles.fileInput}
+                  type="text"
+                  value={personalInfo.fullName}
+                  onChange={(e) => handleInputChange('personalInfo', 'fullName', e.target.value)}
                 />
               </div>
-            )}
-          </div>
-          <div className={styles.userInfo}>
-            <h2>{profile.fullName}</h2>
-            <p>{profile.email}</p>
-            
-            <div className={styles.userMeta}>
-              <div className={styles.userMetaItem}>
-                <span className={styles.metaLabel}>Thành viên:</span>
-                <span className={styles.metaValue}>{calculateMembershipDuration()}</span>
+              <div className={styles.formGroup}>
+                <label>Ngày sinh:</label>
+                <input
+                  type="date"
+                  value={personalInfo.dateOfBirth}
+                  onChange={(e) => handleInputChange('personalInfo', 'dateOfBirth', e.target.value)}
+                />
               </div>
-              <div className={styles.userMetaItem}>
-                <span className={styles.metaLabel}>Điểm tích lũy:</span>
-                <span className={styles.metaValue}>{profile.loyaltyPoints} điểm</span>
+              <div className={styles.formGroup}>
+                <label>Giới tính:</label>
+                <select
+                  value={personalInfo.gender}
+                  onChange={(e) => handleInputChange('personalInfo', 'gender', e.target.value)}
+                >
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </select>
               </div>
-              {profile.verifiedAccount && (
-                <div className={styles.verifiedBadge}>
-                  <i className="fas fa-check-circle"></i> Đã xác thực
-                </div>
-              )}
+              <div className={styles.formGroup}>
+                <label>Số CMND/CCCD:</label>
+                <input
+                  type="text"
+                  value={personalInfo.idNumber}
+                  onChange={(e) => handleInputChange('personalInfo', 'idNumber', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Địa chỉ:</label>
+                <textarea
+                  value={personalInfo.address}
+                  onChange={(e) => handleInputChange('personalInfo', 'address', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Số điện thoại:</label>
+                <input
+                  type="tel"
+                  value={personalInfo.phone}
+                  onChange={(e) => handleInputChange('personalInfo', 'phone', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  value={personalInfo.email}
+                  onChange={(e) => handleInputChange('personalInfo', 'email', e.target.value)}
+                />
+              </div>
             </div>
-            
-            {!editing && (
-              <button
-                className={styles.editButton}
-                onClick={() => setEditing(true)}
-              >
-                Chỉnh sửa hồ sơ
-              </button>
-            )}
-          </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Họ và tên:</span>
+                <span className={styles.infoValue}>{personalInfo.fullName}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Ngày sinh:</span>
+                <span className={styles.infoValue}>{personalInfo.dateOfBirth}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Giới tính:</span>
+                <span className={styles.infoValue}>{personalInfo.gender}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Số CMND/CCCD:</span>
+                <span className={styles.infoValue}>{personalInfo.idNumber}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Địa chỉ:</span>
+                <span className={styles.infoValue}>{personalInfo.address}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Số điện thoại:</span>
+                <span className={styles.infoValue}>{personalInfo.phone}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Email:</span>
+                <span className={styles.infoValue}>{personalInfo.email}</span>
+              </div>
+            </div>
+          )}
         </div>
-        
-        <div className={styles.tabContainer}>
-          <div className={styles.tabButtons}>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'personal' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('personal')}
-            >
-              <i className="fas fa-user"></i> Thông tin cá nhân
-            </button>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'address' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('address')}
-            >
-              <i className="fas fa-map-marker-alt"></i> Địa chỉ
-            </button>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'orders' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('orders')}
-            >
-              <i className="fas fa-shopping-bag"></i> Lịch sử đơn hàng
-            </button>
-            <button 
-              className={`${styles.tabButton} ${activeTab === 'preferences' ? styles.activeTab : ''}`}
-              onClick={() => setActiveTab('preferences')}
-            >
-              <i className="fas fa-sliders-h"></i> Tùy chọn
-            </button>
-          </div>
-          
-          <form className={styles.profileForm} onSubmit={handleSubmit}>
-            {/* Tab Thông tin cá nhân */}
-            {activeTab === 'personal' && (
-              <div className={styles.tabContent}>
-                <div className={styles.formSection}>
-                  <h3>Thông tin cá nhân</h3>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Họ và tên</label>
+      </div>
+    );
+  };
+
+  // Render financial information
+  const renderFinancialInfo = () => {
+    const { financialInfo } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Thông tin tài chính</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Thu nhập hàng tháng (VND):</label>
+                <input
+                  type="number"
+                  value={financialInfo.income}
+                  onChange={(e) => handleInputChange('financialInfo', 'income', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Chi tiêu trung bình (VND):</label>
+                <input
+                  type="number"
+                  value={financialInfo.spendingAverage}
+                  onChange={(e) => handleInputChange('financialInfo', 'spendingAverage', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Phương thức thanh toán:</label>
+                <div className={styles.arrayInputs}>
+                  {financialInfo.paymentMethods.map((method, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
                       <input
                         type="text"
-                        name="fullName"
-                        value={profile.fullName}
-                        onChange={handleChange}
-                        disabled={!editing}
-                        required
+                        value={method}
+                        onChange={(e) => handlePaymentMethodChange(index, e.target.value)}
                       />
                     </div>
-                    <div className={styles.formGroup}>
-                      <label>Biệt danh</label>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={handleAddPaymentMethod}
+                  >
+                    + Thêm phương thức
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Tài khoản ngân hàng:</label>
+                <div className={styles.arrayInputs}>
+                  {financialInfo.bankAccounts.map((account, index) => (
+                    <div key={index} className={styles.bankAccountItem}>
                       <input
                         type="text"
-                        name="nickname"
-                        value={profile.nickname}
-                        onChange={handleChange}
-                        disabled={!editing}
+                        placeholder="Tên ngân hàng"
+                        value={account.bank}
+                        onChange={(e) => handleBankAccountChange(index, 'bank', e.target.value)}
                       />
-                    </div>
-                  </div>
-                  
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Email</label>
                       <input
-                        type="email"
-                        name="email"
-                        value={profile.email}
-                        onChange={handleChange}
-                        disabled={!editing}
-                        required
+                        type="text"
+                        placeholder="Số tài khoản"
+                        value={account.accountNumber}
+                        onChange={(e) => handleBankAccountChange(index, 'accountNumber', e.target.value)}
                       />
                     </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={handleAddBankAccount}
+                  >
+                    + Thêm tài khoản
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Thu nhập hàng tháng:</span>
+                <span className={styles.infoValue}>
+                  {Number(financialInfo.income).toLocaleString('vi-VN')} VND
+                </span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Chi tiêu trung bình:</span>
+                <span className={styles.infoValue}>
+                  {Number(financialInfo.spendingAverage).toLocaleString('vi-VN')} VND
+                </span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Phương thức thanh toán:</span>
+                <span className={styles.infoValue}>
+                  {financialInfo.paymentMethods.join(', ')}
+                </span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Tài khoản ngân hàng:</span>
+                <div className={styles.bankAccountList}>
+                  {financialInfo.bankAccounts.map((account, index) => (
+                    <div key={index} className={styles.bankAccountInfo}>
+                      {account.bank}: {account.accountNumber}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render purchase history
+  const renderPurchaseHistory = () => {
+    const { purchaseHistory } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Lịch sử mua hàng</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.purchaseHistoryEdit}>
+              {purchaseHistory.map((purchase, pIndex) => (
+                <div key={pIndex} className={styles.purchaseItem}>
+                  <div className={styles.purchaseHeader}>
                     <div className={styles.formGroup}>
-                      <label>Số điện thoại</label>
+                      <label>Mã đơn hàng:</label>
                       <input
-                        type="tel"
-                        name="phone"
-                        value={profile.phone}
-                        onChange={handleChange}
-                        disabled={!editing}
-                        required
+                        type="text"
+                        value={purchase.id}
+                        onChange={(e) => handleNestedInputChange('purchaseHistory', pIndex, 'id', e.target.value)}
                       />
                     </div>
-                  </div>
-                  
-                  <div className={styles.formRow}>
                     <div className={styles.formGroup}>
-                      <label>Ngày sinh</label>
+                      <label>Ngày đặt hàng:</label>
                       <input
                         type="date"
-                        name="birthDate"
-                        value={profile.birthDate}
-                        onChange={handleChange}
-                        disabled={!editing}
+                        value={purchase.date}
+                        onChange={(e) => handleNestedInputChange('purchaseHistory', pIndex, 'date', e.target.value)}
                       />
                     </div>
                     <div className={styles.formGroup}>
-                      <label>Giới tính</label>
+                      <label>Trạng thái:</label>
                       <select
-                        name="gender"
-                        value={profile.gender}
-                        onChange={handleChange}
-                        disabled={!editing}
+                        value={purchase.status}
+                        onChange={(e) => handleNestedInputChange('purchaseHistory', pIndex, 'status', e.target.value)}
                       >
-                        <option value="">Chọn giới tính</option>
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                        <option value="Khác">Khác</option>
+                        <option value="Đang xử lý">Đang xử lý</option>
+                        <option value="Đang giao hàng">Đang giao hàng</option>
+                        <option value="Đã giao hàng">Đã giao hàng</option>
+                        <option value="Đã hủy">Đã hủy</option>
                       </select>
                     </div>
                   </div>
                   
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Nghề nghiệp</label>
-                      <input
-                        type="text"
-                        name="occupation"
-                        value={profile.occupation}
-                        onChange={handleChange}
-                        disabled={!editing}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={styles.formSection}>
-                  <h3>Địa chỉ chính</h3>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Địa chỉ</label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={profile.address}
-                        onChange={handleChange}
-                        disabled={!editing}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Thành phố</label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={profile.city}
-                        onChange={handleChange}
-                        disabled={!editing}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>Quốc gia</label>
-                      <input
-                        type="text"
-                        name="country"
-                        value={profile.country}
-                        onChange={handleChange}
-                        disabled={!editing}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {editing && (
-                  <div className={styles.formSection}>
-                    <h3>Bảo mật</h3>
-                    <div className={styles.formRow}>
-                      <div className={styles.formGroup}>
-                        <label>Mật khẩu mới</label>
-                        <input
-                          type="password"
-                          name="password"
-                          value={profile.password}
-                          onChange={handleChange}
-                          placeholder="Nhập mật khẩu mới nếu muốn thay đổi"
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label>Xác nhận mật khẩu</label>
-                        <input
-                          type="password"
-                          name="confirmPassword"
-                          value={profile.confirmPassword}
-                          onChange={handleChange}
-                          placeholder="Xác nhận mật khẩu mới"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Tab Địa chỉ */}
-            {activeTab === 'address' && (
-              <div className={styles.tabContent}>
-                <div className={styles.formSection}>
-                  <div className={styles.sectionHeader}>
-                    <h3>Danh sách địa chỉ giao hàng</h3>
-                    {editing && (
-                      <button 
-                        type="button" 
-                        className={styles.addButton}
-                        onClick={() => setAddingAddress(true)}
-                      >
-                        <i className="fas fa-plus"></i> Thêm địa chỉ mới
-                      </button>
-                    )}
-                  </div>
-                  
-                  {/* Form thêm địa chỉ mới */}
-                  {editing && addingAddress && (
-                    <div className={styles.newAddressForm}>
-                      <h4>Thêm địa chỉ mới</h4>
-                      <div className={styles.formRow}>
+                  <div className={styles.productsContainer}>
+                    <h4>Danh sách sản phẩm</h4>
+                    {purchase.products.map((product, prodIndex) => (
+                      <div key={prodIndex} className={styles.productItem}>
                         <div className={styles.formGroup}>
-                          <label>Địa chỉ chi tiết</label>
+                          <label>Tên sản phẩm:</label>
                           <input
                             type="text"
-                            name="addressLine"
-                            value={newAddress.addressLine}
-                            onChange={handleNewAddressChange}
-                            required
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                          <label>Thành phố</label>
-                          <input
-                            type="text"
-                            name="city"
-                            value={newAddress.city}
-                            onChange={handleNewAddressChange}
-                            required
+                            value={product.name}
+                            onChange={(e) => handleProductChange(pIndex, prodIndex, 'name', e.target.value)}
                           />
                         </div>
                         <div className={styles.formGroup}>
-                          <label>Quận/Huyện</label>
+                          <label>Size:</label>
                           <input
                             type="text"
-                            name="district"
-                            value={newAddress.district}
-                            onChange={handleNewAddressChange}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                          <label>Mã bưu điện</label>
-                          <input
-                            type="text"
-                            name="postalCode"
-                            value={newAddress.postalCode}
-                            onChange={handleNewAddressChange}
+                            value={product.size}
+                            onChange={(e) => handleProductChange(pIndex, prodIndex, 'size', e.target.value)}
                           />
                         </div>
                         <div className={styles.formGroup}>
-                          <div className={styles.checkboxGroup}>
-                            <input
-                              type="checkbox"
-                              id="isDefault"
-                              name="isDefault"
-                              checked={newAddress.isDefault}
-                              onChange={handleNewAddressChange}
-                            />
-                            <label htmlFor="isDefault">Đặt làm địa chỉ mặc định</label>
-                          </div>
+                          <label>Màu sắc:</label>
+                          <input
+                            type="text"
+                            value={product.color}
+                            onChange={(e) => handleProductChange(pIndex, prodIndex, 'color', e.target.value)}
+                          />
                         </div>
-                      </div>
-                      
-                      <div className={styles.addressFormButtons}>
-                        <button 
-                          type="button" 
-                          className={styles.cancelButton}
-                          onClick={() => setAddingAddress(false)}
-                        >
-                          Hủy
-                        </button>
-                        <button 
-                          type="button" 
-                          className={styles.saveButton}
-                          onClick={addShippingAddress}
-                        >
-                          Thêm địa chỉ
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Danh sách địa chỉ */}
-                  <div className={styles.addressList}>
-                    {profile.shippingAddresses.length === 0 ? (
-                      <p className={styles.emptyMessage}>Bạn chưa có địa chỉ giao hàng nào.</p>
-                    ) : (
-                      profile.shippingAddresses.map(address => (
-                        <div key={address.id} className={styles.addressCard}>
-                          <div className={styles.addressInfo}>
-                            <p className={styles.addressLine}>{address.addressLine}</p>
-                            <p className={styles.addressDetail}>
-                              {address.district}, {address.city} {address.postalCode && `- ${address.postalCode}`}
-                            </p>
-                            {address.isDefault && (
-                              <span className={styles.defaultBadge}>Mặc định</span>
-                            )}
-                          </div>
-                          
-                          {editing && (
-                            <div className={styles.addressActions}>
-                              {!address.isDefault && (
-                                <button 
-                                  type="button" 
-                                  className={styles.setDefaultButton}
-                                  onClick={() => setDefaultAddress(address.id)}
-                                >
-                                  Đặt mặc định
-                                </button>
-                              )}
-                              <button 
-                                type="button" 
-                                className={styles.removeButton}
-                                onClick={() => removeAddress(address.id)}
-                              >
-                                <i className="fas fa-trash-alt"></i>
-                              </button>
-                            </div>
-                          )}
+                        <div className={styles.formGroup}>
+                          <label>Giá (VND):</label>
+                          <input
+                            type="number"
+                            value={product.price}
+                            onChange={(e) => handleProductChange(pIndex, prodIndex, 'price', e.target.value)}
+                          />
                         </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Tab Lịch sử đơn hàng */}
-            {activeTab === 'orders' && (
-              <div className={styles.tabContent}>
-                <div className={styles.formSection}>
-                  <h3>Lịch sử đơn hàng</h3>
-                  
-                  {profile.orderHistory.length === 0 ? (
-                    <p className={styles.emptyMessage}>Bạn chưa có đơn hàng nào.</p>
-                  ) : (
-                    <div className={styles.orderTable}>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Mã đơn hàng</th>
-                            <th>Ngày đặt</th>
-                            <th>Số sản phẩm</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {profile.orderHistory.map(order => (
-                            <tr key={order.id}>
-                              <td>{order.id}</td>
-                              <td>{formatDate(order.date)}</td>
-                              <td>{order.items}</td>
-                              <td>{formatCurrency(order.total)}</td>
-                              <td>
-                                <span className={`${styles.orderStatus} ${styles[`status${order.status.replace(/\s+/g, '')}`]}`}>
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td>
-                                <button 
-                                  type="button" 
-                                  className={styles.viewOrderButton}
-                                >
-                                  Xem chi tiết
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Tab Tùy chọn */}
-            {activeTab === 'preferences' && (
-              <div className={styles.tabContent}>
-                <div className={styles.formSection}>
-                  <h3>Danh mục yêu thích</h3>
-                  <div className={styles.categoryList}>
-                    {categories.map(category => (
-                      <div key={category} className={styles.categoryItem}>
-                        <input
-                          type="checkbox"
-                          id={`cat-${category}`}
-                          checked={profile.favoriteCategories.includes(category)}
-                          onChange={() => handleCategoryChange(category)}
-                          disabled={!editing}
-                        />
-                        <label htmlFor={`cat-${category}`}>{category}</label>
                       </div>
                     ))}
-                  </div>
-                </div>
-                
-                <div className={styles.formSection}>
-                  <h3>Tùy chọn khác</h3>
-                  <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>Ngôn ngữ ưa thích</label>
-                      <select
-                        name="preferredLanguage"
-                        value={profile.preferredLanguage}
-                        onChange={handleChange}
-                        disabled={!editing}
-                      >
-                        <option value="Tiếng Việt">Tiếng Việt</option>
-                        <option value="English">English</option>
-                      </select>
-                    </div>
+                    <button 
+                      type="button" 
+                      className={styles.addButton} 
+                      onClick={() => handleAddProduct(pIndex)}
+                    >
+                      + Thêm sản phẩm
+                    </button>
                   </div>
                   
-                  <div className={styles.checkboxGroup}>
-                    <input
-                      type="checkbox"
-                      id="newsletter"
-                      name="newsletter"
-                      checked={profile.newsletter}
-                      onChange={handleCheckboxChange}
-                      disabled={!editing}
-                    />
-                    <label htmlFor="newsletter">Đăng ký nhận thông tin khuyến mãi qua email</label>
+                  <div className={styles.purchaseFooter}>
+                    <div className={styles.formGroup}>
+                      <label>Tổng tiền:</label>
+                      <input
+                        type="number"
+                        value={purchase.totalAmount}
+                        onChange={(e) => handleNestedInputChange('purchaseHistory', pIndex, 'totalAmount', e.target.value)}
+                        disabled
+                      />
+                    </div>
                   </div>
                 </div>
+              ))}
+              <button 
+                type="button" 
+                className={styles.addButton} 
+                onClick={handleAddPurchase}
+              >
+                + Thêm đơn hàng
+              </button>
+            </div>
+          ) : (
+            <div className={styles.purchaseHistoryView}>
+              {purchaseHistory.map((purchase, index) => (
+                <div key={index} className={styles.purchaseCard}>
+                  <div className={styles.purchaseCardHeader}>
+                    <div className={styles.purchaseId}>Mã ĐH: {purchase.id}</div>
+                    <div className={`${styles.purchaseStatus} ${styles[purchase.status.replace(/\s+/g, '').toLowerCase()]}`}>
+                      {purchase.status}
+                    </div>
+                  </div>
+                  <div className={styles.purchaseCardBody}>
+                    <div className={styles.purchaseDate}>
+                      <i className="far fa-calendar"></i> {purchase.date}
+                    </div>
+                    <div className={styles.purchaseProducts}>
+                      {purchase.products.map((product, prodIndex) => (
+                        <div key={prodIndex} className={styles.productLine}>
+                          <span className={styles.productName}>{product.name}</span>
+                          <span className={styles.productDetails}>
+                            Size: {product.size} | Màu: {product.color}
+                          </span>
+                          <span className={styles.productPrice}>
+                            {Number(product.price).toLocaleString('vi-VN')} VND
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.purchaseCardFooter}>
+                    <div className={styles.purchaseTotal}>
+                      Tổng tiền: <span>{Number(purchase.totalAmount).toLocaleString('vi-VN')} VND</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render feedback
+  const renderFeedback = () => {
+    const { feedback } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Đánh giá và phản hồi</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.feedbackEdit}>
+              {feedback.map((item, index) => (
+                <div key={index} className={styles.feedbackItem}>
+                  <div className={styles.formGroup}>
+                    <label>Ngày đánh giá:</label>
+                    <input
+                      type="date"
+                      value={item.date}
+                      onChange={(e) => handleNestedInputChange('feedback', index, 'date', e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Sản phẩm:</label>
+                    <input
+                      type="text"
+                      value={item.product}
+                      onChange={(e) => handleNestedInputChange('feedback', index, 'product', e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Đánh giá (1-5):</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      value={item.rating}
+                      onChange={(e) => handleNestedInputChange('feedback', index, 'rating', e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Nhận xét:</label>
+                    <textarea
+                      value={item.comment}
+                      onChange={(e) => handleNestedInputChange('feedback', index, 'comment', e.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+              <button 
+                type="button" 
+                className={styles.addButton} 
+                onClick={handleAddFeedback}
+              >
+                + Thêm đánh giá
+              </button>
+            </div>
+          ) : (
+            <div className={styles.feedbackView}>
+              {feedback.map((item, index) => (
+                <div key={index} className={styles.feedbackCard}>
+                  <div className={styles.feedbackHeader}>
+                    <div className={styles.feedbackProduct}>{item.product}</div>
+                    <div className={styles.feedbackDate}>{item.date}</div>
+                  </div>
+                  <div className={styles.feedbackBody}>
+                    <div className={styles.feedbackRating}>
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={i < item.rating ? styles.starFilled : styles.starEmpty}>★</span>
+                      ))}
+                    </div>
+                    <div className={styles.feedbackComment}>{item.comment}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render marketing information
+  const renderMarketingInfo = () => {
+    const { marketingInfo } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Thông tin tiếp thị</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Nguồn tiếp cận:</label>
+                <input
+                  type="text"
+                  value={marketingInfo.source}
+                  onChange={(e) => handleInputChange('marketingInfo', 'source', e.target.value)}
+                />
               </div>
-            )}
-            
-            {editing && (
-              <div className={styles.formActions}>
-                <button
-                  type="button"
-                  className={styles.cancelButton}
-                  onClick={() => setEditing(false)}
+              <div className={styles.formGroup}>
+                <label>Chiến dịch:</label>
+                <div className={styles.arrayInputs}>
+                  {marketingInfo.campaigns.map((campaign, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={campaign}
+                        onChange={(e) => {
+                          const updatedCampaigns = [...marketingInfo.campaigns];
+                          updatedCampaigns[index] = e.target.value;
+                          handleInputChange('marketingInfo', 'campaigns', updatedCampaigns);
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => {
+                      handleInputChange('marketingInfo', 'campaigns', [...marketingInfo.campaigns, '']);
+                    }}
+                  >
+                    + Thêm chiến dịch
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Sở thích:</label>
+                <div className={styles.arrayInputs}>
+                  {marketingInfo.preferences.map((preference, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={preference}
+                        onChange={(e) => {
+                          const updatedPreferences = [...marketingInfo.preferences];
+                          updatedPreferences[index] = e.target.value;
+                          handleInputChange('marketingInfo', 'preferences', updatedPreferences);
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => {
+                      handleInputChange('marketingInfo', 'preferences', [...marketingInfo.preferences, '']);
+                    }}
+                  >
+                    + Thêm sở thích
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Nguồn tiếp cận:</span>
+                <span className={styles.infoValue}>{marketingInfo.source}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Chiến dịch:</span>
+                <div className={styles.tagList}>
+                  {marketingInfo.campaigns.map((campaign, index) => (
+                    <span key={index} className={styles.tag}>{campaign}</span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Sở thích:</span>
+                <div className={styles.tagList}>
+                  {marketingInfo.preferences.map((preference, index) => (
+                    <span key={index} className={styles.tag}>{preference}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render contact information
+  const renderContactInfo = () => {
+    const { contactInfo } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Thông tin liên hệ</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Liên hệ gần nhất:</label>
+                <input
+                  type="date"
+                  value={contactInfo.lastContact}
+                  onChange={(e) => handleInputChange('contactInfo', 'lastContact', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Phương thức liên hệ:</label>
+                <select
+                  value={contactInfo.contactMethod}
+                  onChange={(e) => handleInputChange('contactInfo', 'contactMethod', e.target.value)}
                 >
-                  Hủy
-                </button>
-                <button type="submit" className={styles.saveButton}>
-                  Lưu thay đổi
-                </button>
+                  <option value="Email">Email</option>
+                  <option value="Điện thoại">Điện thoại</option>
+                  <option value="Tin nhắn">Tin nhắn</option>
+                  <option value="Trực tiếp">Trực tiếp</option>
+                </select>
               </div>
-            )}
-          </form>
+              <div className={styles.formGroup}>
+                <label>Ghi chú:</label>
+                <textarea
+                  value={contactInfo.notes}
+                  onChange={(e) => handleInputChange('contactInfo', 'notes', e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Liên hệ gần nhất:</span>
+                <span className={styles.infoValue}>{contactInfo.lastContact}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Phương thức liên hệ:</span>
+                <span className={styles.infoValue}>{contactInfo.contactMethod}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Ghi chú:</span>
+                <span className={styles.infoValue}>{contactInfo.notes}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render preferences
+  const renderPreferences = () => {
+    const { preferences } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Sở thích và nhu cầu</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Thương hiệu yêu thích:</label>
+                <div className={styles.arrayInputs}>
+                  {preferences.brands.map((brand, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={brand}
+                        onChange={(e) => handlePreferenceArrayChange('brands', index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => handleAddPreferenceItem('brands')}
+                  >
+                    + Thêm thương hiệu
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Size:</label>
+                <div className={styles.arrayInputs}>
+                  {preferences.sizes.map((size, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={size}
+                        onChange={(e) => handlePreferenceArrayChange('sizes', index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => handleAddPreferenceItem('sizes')}
+                  >
+                    + Thêm size
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Màu sắc yêu thích:</label>
+                <div className={styles.arrayInputs}>
+                  {preferences.colors.map((color, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={color}
+                        onChange={(e) => handlePreferenceArrayChange('colors', index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => handleAddPreferenceItem('colors')}
+                  >
+                    + Thêm màu sắc
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Phong cách:</label>
+                <div className={styles.arrayInputs}>
+                  {preferences.styles.map((style, index) => (
+                    <div key={index} className={styles.arrayInputItem}>
+                      <input
+                        type="text"
+                        value={style}
+                        onChange={(e) => handlePreferenceArrayChange('styles', index, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    className={styles.addButton} 
+                    onClick={() => handleAddPreferenceItem('styles')}
+                  >
+                    + Thêm phong cách
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Khoảng giá (VND):</label>
+                <input
+                  type="text"
+                  value={preferences.priceRange}
+                  onChange={(e) => handlePreferenceChange('priceRange', e.target.value)}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Thương hiệu yêu thích:</span>
+                <div className={styles.tagList}>
+                  {preferences.brands.map((brand, index) => (
+                    <span key={index} className={styles.tag}>{brand}</span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Size:</span>
+                <div className={styles.tagList}>
+                  {preferences.sizes.map((size, index) => (
+                    <span key={index} className={styles.tag}>{size}</span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Màu sắc yêu thích:</span>
+                <div className={styles.tagList}>
+                  {preferences.colors.map((color, index) => (
+                    <span key={index} className={`${styles.tag} ${styles.colorTag}`} style={{backgroundColor: color.toLowerCase()}}>{color}</span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Phong cách:</span>
+                <div className={styles.tagList}>
+                  {preferences.styles.map((style, index) => (
+                    <span key={index} className={styles.tag}>{style}</span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Khoảng giá:</span>
+                <span className={styles.infoValue}>{preferences.priceRange} VND</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render customer segment
+  const renderCustomerSegment = () => {
+    const { customerSegment } = editMode ? formData : customerInfo;
+    
+    return (
+      <div className={styles.sectionContainer}>
+        <h3 className={styles.sectionTitle}>Phân loại khách hàng</h3>
+        <div className={styles.sectionContent}>
+          {editMode ? (
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Loại khách hàng:</label>
+                <select
+                  value={customerSegment.type}
+                  onChange={(e) => handleInputChange('customerSegment', 'type', e.target.value)}
+                >
+                  <option value="Khách hàng mới">Khách hàng mới</option>
+                  <option value="Khách hàng thân thiết">Khách hàng thân thiết</option>
+                  <option value="Khách hàng VIP">Khách hàng VIP</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Điểm tích lũy:</label>
+                <input
+                  type="number"
+                  value={customerSegment.loyaltyPoints}
+                  onChange={(e) => handleInputChange('customerSegment', 'loyaltyPoints', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Khách hàng từ:</label>
+                <input
+                  type="date"
+                  value={customerSegment.memberSince}
+                  onChange={(e) => handleInputChange('customerSegment', 'memberSince', e.target.value)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Hạng thành viên:</label>
+                <select
+                  value={customerSegment.tier}
+                  onChange={(e) => handleInputChange('customerSegment', 'tier', e.target.value)}
+                >
+                  <option value="Đồng">Đồng</option>
+                  <option value="Bạc">Bạc</option>
+                  <option value="Vàng">Vàng</option>
+                  <option value="Kim cương">Kim cương</option>
+                </select>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Loại khách hàng:</span>
+                <span className={styles.infoValue}>{customerSegment.type}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Điểm tích lũy:</span>
+                <span className={styles.infoValue}>{customerSegment.loyaltyPoints} điểm</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Khách hàng từ:</span>
+                <span className={styles.infoValue}>{customerSegment.memberSince}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Hạng thành viên:</span>
+                <span className={`${styles.infoValue} ${styles.memberTier} ${styles[customerSegment.tier.toLowerCase()]}`}>
+                  {customerSegment.tier}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render the active tab content
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'personal':
+        return renderPersonalInfo();
+      case 'financial':
+        return renderFinancialInfo();
+      case 'purchase':
+        return renderPurchaseHistory();
+      case 'feedback':
+        return renderFeedback();
+      case 'marketing':
+        return renderMarketingInfo();
+      case 'contact':
+        return renderContactInfo();
+      case 'preferences':
+        return renderPreferences();
+      case 'segment':
+        return renderCustomerSegment();
+      default:
+        return renderPersonalInfo();
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Hồ Sơ Khách Hàng</h1>
+        <div className={styles.actions}>
+          {editMode ? (
+            <button className={styles.saveButton} onClick={handleSaveClick}>
+              <i className="fas fa-save"></i> Lưu
+            </button>
+          ) : (
+            <button className={styles.editButton} onClick={handleEditClick}>
+              <i className="fas fa-edit"></i> Chỉnh sửa
+            </button>
+          )}
+        </div>
+      </div>
+      
+      <div className={styles.content}>
+        <div className={styles.sidebar}>
+          <div className={styles.customerSummary}>
+            <div className={styles.customerAvatar}>
+              <div className={styles.avatarPlaceholder}>
+                {customerInfo.personalInfo.fullName.split(' ').map(name => name[0]).join('')}
+              </div>
+            </div>
+            <div className={styles.customerName}>{customerInfo.personalInfo.fullName}</div>
+            <div className={styles.customerDetails}>
+              <div className={styles.customerPhone}>{customerInfo.personalInfo.phone}</div>
+              <div className={styles.customerEmail}>{customerInfo.personalInfo.email}</div>
+              <div className={`${styles.customerTier} ${styles[customerInfo.customerSegment.tier.toLowerCase()]}`}>
+                {customerInfo.customerSegment.tier}
+              </div>
+            </div>
+          </div>
+          
+          <nav className={styles.nav}>
+            <ul className={styles.navList}>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'personal' ? styles.active : ''}`}
+                onClick={() => handleTabChange('personal')}
+              >
+                <i className="fas fa-user"></i> Thông tin cá nhân
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'financial' ? styles.active : ''}`}
+                onClick={() => handleTabChange('financial')}
+              >
+                <i className="fas fa-wallet"></i> Thông tin tài chính
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'purchase' ? styles.active : ''}`}
+                onClick={() => handleTabChange('purchase')}
+              >
+                <i className="fas fa-shopping-bag"></i> Lịch sử mua hàng
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'feedback' ? styles.active : ''}`}
+                onClick={() => handleTabChange('feedback')}
+              >
+                <i className="fas fa-comment"></i> Đánh giá & Phản hồi
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'marketing' ? styles.active : ''}`}
+                onClick={() => handleTabChange('marketing')}
+              >
+                <i className="fas fa-bullhorn"></i> Thông tin tiếp thị
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'contact' ? styles.active : ''}`}
+                onClick={() => handleTabChange('contact')}
+              >
+                <i className="fas fa-address-book"></i> Thông tin liên hệ
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'preferences' ? styles.active : ''}`}
+                onClick={() => handleTabChange('preferences')}
+              >
+                <i className="fas fa-heart"></i> Sở thích & Nhu cầu
+              </li>
+              <li 
+                className={`${styles.navItem} ${activeTab === 'segment' ? styles.active : ''}`}
+                onClick={() => handleTabChange('segment')}
+              >
+                <i className="fas fa-users"></i> Phân loại khách hàng
+              </li>
+            </ul>
+          </nav>
+        </div>
+        
+        <div className={styles.mainContent}>
+          {renderActiveTab()}
         </div>
       </div>
     </div>

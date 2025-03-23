@@ -17,7 +17,7 @@ const VoucherList = () => {
     const [pagination, setPagination] = useState({
         page: 0,
         size: 5,
-        total: 7
+        total: 0
     });
 
     const convertToVietnamTime = (utcDate) => {
@@ -241,11 +241,16 @@ const VoucherList = () => {
     const [form] = Form.useForm();
     const [editingVoucher, setEditingVoucher] = useState(null);
     const navigate = useNavigate();
-    const [voucherType, setVoucherType] = useState(0); // Mặc định là Công khai
+    const [voucherType, setVoucherType] = useState(null); // State for voucher type
     const { RangePicker } = DatePicker;
     const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm
     const [loading, setLoading] = useState(false);
     const [searchValue, setSearchValue] = useState(""); // Giữ giá trị nhập
+    const [statusVoucher, setStatusVoucher] = useState(null);
+    const [search, setSearch] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [discountType, setDiscountType] = useState(null); // State for discount type
 
     // Hàm switch
     const switchVoucherStatus = async (id, statusO) => {
@@ -276,26 +281,33 @@ const VoucherList = () => {
     // Fetching voucher data (you may want to keep this if it's not commented out)
     useEffect(() => {
         getPageVoucher();
-    }, [pagination]);
+    }, [pagination, statusVoucher, search, startDate, endDate, voucherType, discountType]);
 
     const getPageVoucher = async () => {
-        const response = await axios.get(`${baseUrl}/api/admin/voucher/page?page=${pagination.page}&size=${pagination.size}`);
-        const data = response.data.data;
-        console.warn(data);
-
-        const items = data.content.map((el) => {
-            el.startDate = new Date(el.startDate);
-            el.endDate = new Date(el.endDate);
-            return el;
+        const response = await axios.get(`${baseUrl}/api/admin/voucher/index`, {
+            params: {
+                size: pagination.size,
+                page: pagination.page,
+                statusVoucher,
+                search,
+                startDate,
+                endDate,
+                voucherType,
+                discountType
+            }
         });
+        
+        const data = response.data; // Get the entire response
+        const items = data.data; // Access the vouchers array
+
+        // Update the voucher data
         setVoucherData(items);
-        console.log(items);
 
-
+        // Update pagination state
         const newPagination = {
-            page: data.number,
-            size: data.size,
-            total: data.totalElements
+            page: data.currentPage, // Update to currentPage from response
+            size: pagination.size,
+            total: data.totalElements // Update total from response
         };
 
         // Update pagination only if there's a change
@@ -348,11 +360,14 @@ const VoucherList = () => {
         endDate: null
     });
     const handleSearchChange = (field, value) => {
-    setSearchParams((prev) => ({
-        ...prev,
-        [field]: value
-    }));
-};
+        setSearchParams((prev) => ({
+            ...prev,
+            [field]: value
+        }));
+        if (field === 'voucherName') {
+            setSearch(value); // Update search term
+        }
+    };
 
     
     const searchPromtion = async (voucherName) => {
@@ -395,35 +410,79 @@ const VoucherList = () => {
 
 
 
-    const AdvancedSearchForm = () => {
-        return (
-            <Card>
-                <Form layout="vertical">
-                    <Row gutter={24}>
-                        <Col span={24}>
-                            <Form.Item label="Tên phiếu giảm giá">
-                                <Input
-                                name='voucherName'
-                                    placeholder="Nhập tên phiếu giảm giá"
-                                    prefix={<SearchOutlined />}
-                                    allowClear
-                                    onChange={(e) => debouncedSearch(e.target.value)
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                       
-                    </Row>
-                </Form>
-            </Card>
-        );
-    };
+
 
     return (
         <>
             <h4>Bộ lọc</h4>
-            <AdvancedSearchForm onFilterChange={(newFilters) => {
-            }} />
+            <Card>
+                <Form layout="vertical">
+                    <Row gutter={24}>
+                        <Col span={8}>
+                            <Form.Item label="Tên phiếu giảm giá">
+                                <Input
+                                    name='voucherName'
+                                    placeholder="Nhập tên phiếu giảm giá"
+                                    prefix={<SearchOutlined />}
+                                    allowClear
+                                    onChange={(e) => handleSearchChange('voucherName', e.target.value)}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item label="Loại phiếu giảm giá">
+                                <Select
+                                    placeholder="Chọn loại phiếu giảm giá"
+                                    onChange={(value) => setVoucherType(value)}
+                                    allowClear
+                                >
+                                    <Option value="PUBLIC">Công khai</Option>
+                                    <Option value="PRIVATE">Riêng tư</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item label="Loại giảm giá">
+                                <Select
+                                    placeholder="Chọn loại giảm giá"
+                                    onChange={(value) => setDiscountType(value)}
+                                    allowClear
+                                >
+                                    <Option value="PERCENT">Phần trăm</Option>
+                                    <Option value="MONEY">Số tiền</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item label="Ngày bắt đầu">
+                                <DatePicker
+                                    format="DD/MM/YYYY"
+                                    onChange={(date, dateString) => setStartDate(dateString)}
+                                    style={{ width: '100%' }}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item label="Ngày kết thúc">
+                                <DatePicker
+                                    format="DD/MM/YYYY"
+                                    onChange={(date, dateString) => setEndDate(dateString)}
+                                    style={{ width: '100%' }}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Button type="primary" onClick={getPageVoucher}>Tìm kiếm</Button>
+                    <Button style={{ marginLeft: '8px' }} onClick={() => {
+                        setSearch("");
+                        setStartDate(null);
+                        setEndDate(null);
+                        setVoucherType(null);
+                        setDiscountType(null);
+                        getPageVoucher(); // Reset filters
+                    }}>Làm mới</Button>
+                </Form>
+            </Card>
             <h4 style={{ paddingTop: '15px' }}>Danh sách phiếu giảm giá</h4>
 
             <Card>
@@ -447,13 +506,9 @@ const VoucherList = () => {
                         total: pagination.total
                     }}
                     onChange={handleOnChangeTable}
-
-
-
                 />
             </Card>
         </>
-
     );
 };
 

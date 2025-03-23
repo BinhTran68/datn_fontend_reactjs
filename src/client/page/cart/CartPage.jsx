@@ -29,6 +29,7 @@ import { set, size } from "lodash";
 import axios from "axios";
 import {
   apiFindVoucherValid,
+  apiGetRealPrice,
   apiSetQuantityCart,
   apiVoucherBest,
 } from "./apiCart";
@@ -50,6 +51,8 @@ const CartPage = () => {
   const [discountType, setDiscountType] = useState(0);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [products, setProducts] = useState(getCart());
+  const [productsRealPrice, setProductsRealPrice] = useState([]);
+
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("user"))
   ); // Lấy user từ localStorage
@@ -60,21 +63,20 @@ const CartPage = () => {
   useEffect(() => {
     vouchersValid();
     voucherBest();
-  }, [selectedRowKeys]);
+    // fetchCart();
+  }, [selectedRowKeys, products]);
   useEffect(() => {
     const handleCartUpdate = () => {
       fetchCart();
     };
 
     // Đăng ký sự kiện khi localStorage thay đổi hoặc giỏ hàng cập nhật
-    window.addEventListener("storage", handleCartUpdate);
     window.addEventListener("cartUpdated", handleCartUpdate);
 
     // Fetch ngay khi component mount
     fetchCart();
 
     return () => {
-      window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdated", handleCartUpdate);
 
       console.log("Thêm vào bill khi unmount", getBill());
@@ -97,12 +99,14 @@ const CartPage = () => {
         );
 
         setProducts(response.data?.data || []); // Nếu không có data, trả về mảng rỗng
+        await getRealPrice(response.data?.data || []);
       } catch (error) {
         console.error("Lỗi khi lấy giỏ hàng:", error);
         setProducts([]); // Đảm bảo không bị crash giao diện
       }
     } else {
       setProducts(getCart()); // Lấy từ localStorage nếu chưa đăng nhập
+      getRealPrice(getCart());
     }
   };
   const vouchersValid = async () => {
@@ -124,6 +128,15 @@ const CartPage = () => {
       setDiscount(0);
       setAppliedDiscount("");
       console.log("vocher", res.data?.voucher?.id);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
+  };
+  const getRealPrice = async (listcart) => {
+    try {
+      const res = await apiGetRealPrice(listcart);
+      setProductsRealPrice(res.data);
+      console.log("real price", res.data?.voucher?.id);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
@@ -160,13 +173,15 @@ const CartPage = () => {
     setSelectedRowKeys(updatedSelectedKeys);
   };
 
-  const handleQuantityChange = async (index, value) => {
+  const handleQuantityChange = async (index, value, quantity) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
+    if (value>quantity) {
+      toast.warn("số lượng mua ko được quá số lượng của của hàng")
+      return;
+    }
     if (user) {
       try {
         try {
-          console.log("ddddddddddddđ", products);
-
           const res = await apiSetQuantityCart({
             cartDetailid: products[index]?.cartDetailId,
             quantity: value,
@@ -232,12 +247,35 @@ const CartPage = () => {
     message.success("Mã giảm giá đã được áp dụng!");
   };
 
-  const totalSelectedPrice = selectedRowKeys.reduce(
-    (acc, index) =>
-      acc + products[index]?.quantityAddCart * products[index]?.price,
-    0
-  );
+  const totalSelectedPrice = selectedRowKeys.reduce((acc, index) => {
+    const record = products[index];
 
+    // Kiểm tra record hợp lệ
+    if (!record || !record.productDetailId || !record.quantityAddCart) {
+      return acc; // Bỏ qua nếu record không hợp lệ
+    }
+
+    // Tìm giá thực tế từ productsRealPrice
+    const realPriceItem = productsRealPrice.find(
+      (item) => item.productDetailId === record.productDetailId
+    );
+
+    // Đảm bảo giá gốc và giá thực tế là số
+    const originalPrice = Number(record.price) || 0;
+    const displayPrice = realPriceItem?.price
+      ? Number(realPriceItem.price)
+      : originalPrice;
+
+    // Tính tổng dựa trên giá thực tế
+    const itemTotal = displayPrice * record.quantityAddCart;
+
+    // Debug để kiểm tra
+    console.log(
+      `Product: ${record.productName}, Display Price: ${displayPrice}, Quantity: ${record.quantityAddCart}, Item Total: ${itemTotal}`
+    );
+
+    return acc + itemTotal;
+  }, 0);
   const calculateDiscountedTotal = () => totalSelectedPrice - discount;
   const discountedTotal = calculateDiscountedTotal();
 
@@ -289,51 +327,153 @@ const CartPage = () => {
       title: "GIÁ",
       dataIndex: "price",
       key: "price",
-      render: (_, record) => (
-        <Text strong>{record.price.toLocaleString()} đ</Text>
-      ),
+      render: (_, record) => {
+        // Kiểm tra record hợp lệ
+        if (!record || !record.productDetailId) {
+          return <Text strong>0 đ</Text>;
+        }
+
+        // Tìm giá thực tế
+        const realPriceItem = productsRealPrice.find(
+          (item) => item.productDetailId === record.productDetailId
+        );
+
+        // Đảm bảo giá gốc và giá thực tế là số
+        const originalPrice = Number(record.price) || 0; // Chuyển đổi thành số, mặc định là 0 nếu không hợp lệ
+        const displayPrice = realPriceItem?.price
+          ? Number(realPriceItem.price)
+          : originalPrice; // Sử dụng realPrice nếu có, nếu không thì dùng originalPrice
+
+        // Kiểm tra nếu có sự thay đổi giá
+        const hasPriceChanged =
+          realPriceItem && Number(realPriceItem.price) !== originalPrice;
+
+        // Debug để kiểm tra giá trị
+        console.log(
+          `Product: ${record.productName}, Original Price: ${originalPrice}, Real Price: ${realPriceItem?.price}, Has Changed: ${hasPriceChanged}`
+        );
+
+        return (
+          <Space direction="vertical">
+            <Text strong>
+              {typeof displayPrice === "number"
+                ? displayPrice.toLocaleString()
+                : 0}{" "}
+              đ
+            </Text>
+            {hasPriceChanged && (
+              <>
+                <Text delete type="secondary">
+                  {typeof originalPrice === "number"
+                    ? originalPrice.toLocaleString()
+                    : 0}{" "}
+                  đ
+                </Text>
+                <Text type="success" style={{ fontSize: 12 }}>
+                  Giá đã thay đổi
+                </Text>
+              </>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: "SỐ LƯỢNG",
       dataIndex: "quantity",
       key: "quantity",
-      render: (_, record, index) => (
-        <Flex gap={0.8}>
-          <Button
-            icon={<MinusOutlined />}
-            onClick={() =>
-              handleQuantityChange(
-                index,
-                Math.max(1, record.quantityAddCart - 1)
-              )
-            }
-          />
-          <InputNumber
-            min={1}
-            max={100}
-            value={record.quantityAddCart}
-            onChange={(value) => handleQuantityChange(index, value)}
-            style={{ width: "50px" }}
-          />
-          <Button
-            icon={<PlusOutlined />}
-            onClick={() =>
-              handleQuantityChange(index, record.quantityAddCart + 1)
-            }
-          />
-        </Flex>
-      ),
+      render: (_, record, index) => {
+          // Tìm giá thực tế
+          const realPriceItem = productsRealPrice.find(
+            (item) => item.productDetailId === record.productDetailId
+          );
+  
+        return(
+        
+          <Row>
+            <Flex gap={0.8}>
+            <Button
+              icon={<MinusOutlined />}
+              onClick={() =>
+                handleQuantityChange(
+                  index,
+                  Math.max(1, record.quantityAddCart - 1),realPriceItem.quantity
+                )
+              }
+            />
+            <InputNumber
+              min={1}
+              max={100}
+              value={Math.min(record.quantityAddCart,realPriceItem?.quantity)}
+              onChange={(value) => handleQuantityChange(index, value,realPriceItem.quantity)}
+              style={{ width: "50px" }}
+            />
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() =>
+                handleQuantityChange(index, record.quantityAddCart + 1,realPriceItem.quantity)
+              }
+            />
+            
+          </Flex>
+          <Col span={24}>Số lượng còn: {realPriceItem?.quantity}</Col>
+          </Row>
+          
+        )
+      }
     },
 
     {
       title: "TẠM TÍNH",
       dataIndex: "total",
       key: "total",
-      render: (_, record, index) => (
-        <Text strong>
-          {(record.price * record.quantityAddCart).toLocaleString()} đ
-        </Text>
-      ),
+      render: (_, record, index) => {
+        // Kiểm tra record hợp lệ
+        if (!record || !record.productDetailId || !record.quantityAddCart) {
+          return <Text strong>0 đ</Text>;
+        }
+
+        // Tìm giá thực tế
+        const realPriceItem = productsRealPrice.find(
+          (item) => item.productDetailId === record.productDetailId
+        );
+
+        // Đảm bảo giá gốc và giá thực tế là số
+        const originalPrice = Number(record.price) || 0;
+        const displayPrice = realPriceItem?.price
+          ? Number(realPriceItem.price)
+          : originalPrice;
+
+        // Tạm tính dựa trên giá thực tế
+        const subTotal = displayPrice * record.quantityAddCart;
+
+        // Kiểm tra nếu có sự thay đổi giá
+        const hasPriceChanged =
+          realPriceItem && Number(realPriceItem.price) !== originalPrice;
+
+        // Debug để kiểm tra giá trị
+        console.log(
+          `Product: ${record.productName}, Original Price: ${originalPrice}, Real Price: ${realPriceItem?.price}, SubTotal: ${subTotal}, Has Changed: ${hasPriceChanged}`
+        );
+
+        return (
+          <Space direction="vertical">
+            <Text strong>
+              {typeof subTotal === "number" ? subTotal.toLocaleString() : 0} đ
+            </Text>
+            {hasPriceChanged && (
+              <>
+                <Text delete type="secondary">
+                  {(originalPrice * record.quantityAddCart).toLocaleString()} đ
+                </Text>
+                <Text type="success" style={{ fontSize: 12 }}>
+                  Giá đã thay đổi
+                </Text>
+              </>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: "#",
@@ -373,19 +513,19 @@ const CartPage = () => {
   ];
 
   return (
-    <div>
-      <Content style={{ backgroundColor: "white" }}>
+    <div >
+      <Content style={{ backgroundColor: "white", minHeight:800 }}>
         <Row gutter={[16, 16]} style={{ padding: "20px" }}>
           <Col span={16}>
             <Content>
-              <Text style={{fontWeight:"bold"}}>Giỏ hàng</Text>
+              <Text style={{ fontWeight: "bold" }}>Giỏ hàng</Text>
               <Table
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={products.map((product, index) => ({
                   ...product,
                   key: index,
-                }))}  
+                }))}
                 pagination={false}
               />
             </Content>
@@ -413,6 +553,21 @@ const CartPage = () => {
                   onClick={() => {
                     // handleButtonClick("Mua ngay thành công!");
                     if (selectedRitem.length > 0) {
+                      const updatedSelectedRitem = selectedRitem.map((item) => {
+                        const realPriceItem = productsRealPrice.find(
+                          (priceItem) =>
+                            priceItem.productDetailId === item.productDetailId
+                        );
+                        const realPrice = realPriceItem?.price
+                          ? Number(realPriceItem.price)
+                          : Number(item.price) || 0;
+
+                        return {
+                          ...item,
+                          price: realPrice, // Thêm realPrice vào object
+                        };
+                      });
+
                       const vocher = {
                         voucherId: discountCode || null, // ID của voucher nếu có
                         totalAfterDiscount: discountedTotal, // Tổng tiền sau giảm giá
@@ -421,7 +576,7 @@ const CartPage = () => {
                       };
 
                       updateProducts(selectedRitem);
-                      addToBill(selectedRitem);
+                      addToBill(updatedSelectedRitem);
                       addToVoucher(vocher);
                       navigate("/payment");
                       toast.success("xác nhận mua hàng");
@@ -474,7 +629,7 @@ const CartPage = () => {
                     {" "}
                     <Select
                       showSearch
-                      style={{ width: "100%", minWidth: 300 }} // Mở rộng ô chọn
+                      style={{ width: "100%", minWidth: 200 }} // Mở rộng ô chọn
                       placeholder="Chọn voucher"
                       optionLabelProp="label"
                       value={discountCode}
@@ -495,7 +650,7 @@ const CartPage = () => {
                               display: "flex",
                               alignItems: "center",
                               gap: 10,
-                              height: "120px",
+                              height: "90px",
                             }}
                           >
                             {/* Ảnh thương hiệu */}
@@ -513,20 +668,24 @@ const CartPage = () => {
                             {/* Thông tin voucher */}
                             <div>
                               <strong>{item.voucherCode}</strong>
-                              <p
+                              <span
                                 style={{
                                   margin: 0,
                                   fontSize: 12,
                                   color: "#888",
                                 }}
                               >
-                                Giảm {item.discountValue} {item.discountType} -{" "}
-                                <br />
-                                Tối đa {item.discountMaxValue}đ
+                                - Giảm {item.discountValue}{" "}
+                                {item.discountType === "MONEY" ? "đ" : `%`}
+                                {item.discountType === "MONEY"
+                                  ? ""
+                                  : `Tối đa ${item.discountMaxValue}đ`}
+                              </span>
+                              <p>
+                                <Text type="success">
+                                  Đơn tối thiểu {item.billMinValue} đ
+                                </Text>
                               </p>
-                              <Text type="success">
-                                Đơn tối thiểu {item.billMinValue} đ
-                              </Text>
                               <p>
                                 <Text type="warning">
                                   Số lượng {item.quantity}

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { AiOutlineGlobal } from "react-icons/ai";
 import { BsCart2 } from "react-icons/bs";
 import { COLORS } from "../../../constants/constants.js";
+import { FaChalkboardUser } from "react-icons/fa6";
 import {
   Badge,
   Button,
@@ -29,6 +30,8 @@ import {
 } from "@ant-design/icons";
 import { getCart } from "../../page/cart/cart";
 import axios from "axios";
+import {FaXmark} from "react-icons/fa6";
+import {FaUserAstronaut} from "react-icons/fa";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -38,9 +41,59 @@ function HeaderNav() {
   const [open, setOpen] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isAIModalVisible, setIsAIModalVisible] = useState(false);
+
+  const navigate = useNavigate();
+
+
   const [aiQuestion, setAiQuestion] = useState("");
   const [aiResponse, setAiResponse] = useState("");
-  const navigate = useNavigate();
+  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL; // Giả sử bạn có biến môi trường cho API Key
+
+  const [chatHistory, setChatHistory] = useState([
+    { sender: 'ai', text: "Xin chào quý khách. Chúng tôi có thể hỗ trợ gì cho bạn" }
+  ]);
+
+  const messagesEndRef = useRef(null);
+
+  const handleAskAI = async () => {
+    if (!aiQuestion.trim()) return;
+
+    setChatHistory((prev) => [...prev, { sender: 'user', text: aiQuestion }]);
+
+    const aiQuestionPrev = aiQuestion;
+
+    setAiQuestion("")
+    try {
+      const res = await axios.post(
+          vitegeminiurl,
+          {
+            contents: [{
+              parts: [{"text": aiQuestionPrev}]
+            }]
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+      );
+
+
+      const aiText = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
+      setAiResponse(aiText);
+
+      setChatHistory((prev) => [...prev, { sender: 'ai', text: aiText }]);
+    } catch (error) {
+      console.error("Lỗi khi gọi Gemini API:", error);
+      const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
+      setAiResponse(errorMessage);
+      setChatHistory((prev) => [...prev, { sender: 'ai', text: errorMessage }]);
+    } finally {
+        setAiQuestion("");
+    }
+
+
+  };
 
   // Fetch giỏ hàng
   const fetchCart = async () => {
@@ -76,6 +129,10 @@ function HeaderNav() {
     };
   }, []);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
@@ -84,18 +141,18 @@ function HeaderNav() {
   };
 
   const menuItems = [
-    { key: "home", label: "TRANG CHỦ", path: "/home" },
+    { key: "home", label: "TRANG CHỦ", path: "/" },
     { key: "products", label: "SẢN PHẨM", path: "/products" },
     { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/test" },
     { key: "contact", label: "LIÊN HỆ", path: "/contact" },
     { key: "support", label: "HỖ TRỢ", path: "/contact" },
-    { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/contact" },
+    { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/searchbill" },
   ];
 
   const settingsOptions = user
     ? [
         { key: "profile", label: "Hồ sơ" },
-        { key: "orders", label: "Đơn hàng của tôi" },
+        { key: "purchaseorder", label: "Đơn hàng của tôi" },
         { key: "change-password", label: "Đổi mật khẩu" },
         { key: "logout", label: "Đăng xuất" },
       ]
@@ -128,21 +185,17 @@ function HeaderNav() {
     />
   );
 
-  // Hàm xử lý gửi câu hỏi tới AI
-  const handleAskAI = async () => {
-    try {
-      // Tạm thời để mock response
-      setAiResponse("Đây là câu trả lời từ AI...");
-      // TODO: Tích hợp API AI thực tế ở đây
-    } catch (error) {
-      console.error("Lỗi khi hỏi AI:", error);
-    }
-  };
+
+  const  handleOnCloseAskAI = () => {
+    console.log("dfsadas")
+    setIsAIModalVisible(false)
+  }
+
 
   return (
     <div className="header-container">
       {/* Top bar */}
-      <div className="top-bar py-2" style={{ backgroundColor: "#F37021" }}>
+      <div className="top-bar " style={{ backgroundColor: "#F37021" }}>
         <div className="container-fluid px-4 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-3">
             <Link
@@ -173,7 +226,7 @@ function HeaderNav() {
                 <img
                   src="/img/thehands.png"
                   alt="TheHands"
-                  style={{ height: "120px", objectFit: "contain" }}
+                  style={{ height: "80px", objectFit: "contain" }}
                 />
               </Link>
             </Col>
@@ -213,7 +266,7 @@ function HeaderNav() {
               <Flex justify="flex-end" align="center" gap="middle">
                 <Button
                   type="primary"
-                  icon={<RobotOutlined />}
+                  icon={<FaUserAstronaut size={22} />}
                   onClick={() => setIsAIModalVisible(true)}
                   style={{
                     backgroundColor: "#F37021",
@@ -221,7 +274,7 @@ function HeaderNav() {
                     marginRight: "10px",
                   }}
                 >
-                  Hỏi AI
+                  Trợ lý ảo TheHands
                 </Button>
                 {user ? (
                   <>
@@ -294,18 +347,18 @@ function HeaderNav() {
       </nav>
 
       {/* Banner Section */}
-      <div className="banner-section">
+      {/* <div className="banner-section">
         <div className="container-fluid px-4">
           <Flex align="center" justify="center" className="py-2">
             <span
-              className="text-white"
+              // className="text-white"
               style={{ fontSize: 18, fontWeight: 500 }}
             >
               THEHANDS HUNTER THẾ HỆ MỚI
             </span>
           </Flex>
         </div>
-      </div>
+      </div> */}
 
       {/* Mobile Drawer */}
       <Drawer
@@ -362,48 +415,80 @@ function HeaderNav() {
         </div>
       </Drawer>
 
-      {/* Modal AI Chat */}
-      <Modal
-        title="Hỏi đáp với AI"
-        open={isAIModalVisible}
-        onCancel={() => setIsAIModalVisible(false)}
-        footer={null}
-        width={700}
+      <Drawer
+          // closeIcon={<span style={{ fontSize: 20, position: "absolute", right: 25, top: 20 }}>
+          //           <FaXmark />
+          //     </span>}
+          closable={false}
+          placement="bottom"
+          title={
+              <div className={"d-flex gap-2 align-items-center"}>
+                  <div>
+                      <FaUserAstronaut color={"#F37021"} size={26}/>
+                  </div>
+                  <div>
+                      Trợ lý ảo TheHands
+                  </div>
+              </div>
+          }
+          onClose={handleOnCloseAskAI}
+          open={isAIModalVisible}
+          mask={false}
+          height={430}
+           extra={
+          <Space>
+            <Button onClick={handleOnCloseAskAI}>
+              <FaXmark size={18}/>
+            </Button>
+          </Space>
+        }
+          contentWrapperStyle={{
+              width: 360,
+              position: "fixed",
+              right: 20,
+              bottom: 12,
+              left: "auto",
+          }}
       >
-        <div style={{ marginBottom: "20px" }}>
-          <Input.TextArea
-            rows={4}
-            placeholder="Nhập câu hỏi của bạn..."
-            value={aiQuestion}
-            onChange={(e) => setAiQuestion(e.target.value)}
-            style={{ marginBottom: "10px" }}
-          />
-          <Button
-            type="primary"
-            onClick={handleAskAI}
-            style={{
-              backgroundColor: "#F37021",
-              borderColor: "#F37021",
-            }}
-          >
-            Gửi câu hỏi
-          </Button>
-        </div>
-
-        {aiResponse && (
-          <div
-            style={{
-              padding: "15px",
-              backgroundColor: "#f5f5f5",
-              borderRadius: "8px",
-              marginTop: "10px",
-            }}
-          >
-            <h4>Phản hồi từ AI:</h4>
-            <p>{aiResponse}</p>
+          <div style={{  display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              <div style={{ flex: 1, padding: '2px', overflowY: 'auto' }}>
+                  {chatHistory.map((msg, index) => (
+                      <div key={index} className={"d-flex w-100 gap-2"}>
+                          <strong>{msg.sender === 'user' ? <FaChalkboardUser size={26} color={"#F37021"}/> :
+                              <FaUserAstronaut color={"#F37021"} size={26}/>}</strong>
+                          <div style={{
+                              padding: "10px",
+                              backgroundColor: msg.sender === 'user' ? "#d1e7dd" : "#f5f5f5",
+                              borderRadius: "8px",
+                              marginBottom: "10px"
+                          }}>
+                              <p>{msg.text}</p>
+                          </div>
+                      </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+              </div>
+              <Input.TextArea
+                  rows={2}
+                  placeholder="Nhập câu hỏi của bạn..."
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  onPressEnter={handleAskAI}
+                  style={{marginBottom: "10px"}}
+              />
+              <Button
+                  type="primary"
+                  onClick={handleAskAI}
+                  style={{
+                      backgroundColor: "#F37021",
+                      borderColor: "#F37021",
+                  }}
+              >
+                  Gửi câu hỏi
+              </Button>
           </div>
-        )}
-      </Modal>
+      </Drawer>
+
     </div>
   );
 }
