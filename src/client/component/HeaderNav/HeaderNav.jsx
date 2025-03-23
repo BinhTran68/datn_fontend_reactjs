@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { AiOutlineGlobal } from "react-icons/ai";
 import { BsCart2 } from "react-icons/bs";
 import { COLORS } from "../../../constants/constants.js";
+import { FaChalkboardUser } from "react-icons/fa6";
 import {
   Badge,
   Button,
@@ -30,6 +31,7 @@ import {
 import { getCart } from "../../page/cart/cart";
 import axios from "axios";
 import {FaXmark} from "react-icons/fa6";
+import {FaUserAstronaut} from "react-icons/fa";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -47,19 +49,26 @@ function HeaderNav() {
   const [aiResponse, setAiResponse] = useState("");
   const vitegeminiurl = import.meta.env.VITE_GEMINI_URL; // Giả sử bạn có biến môi trường cho API Key
 
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState([
+    { sender: 'ai', text: "Xin chào quý khách. Chúng tôi có thể hỗ trợ gì cho bạn" }
+  ]);
+
+  const messagesEndRef = useRef(null);
 
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
 
     setChatHistory((prev) => [...prev, { sender: 'user', text: aiQuestion }]);
 
+    const aiQuestionPrev = aiQuestion;
+
+    setAiQuestion("")
     try {
       const res = await axios.post(
           vitegeminiurl,
           {
             contents: [{
-              parts: [{"text": aiQuestion}]
+              parts: [{"text": aiQuestionPrev}]
             }]
           },
           {
@@ -68,6 +77,7 @@ function HeaderNav() {
             },
           }
       );
+
 
       const aiText = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
       setAiResponse(aiText);
@@ -78,7 +88,11 @@ function HeaderNav() {
       const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
       setAiResponse(errorMessage);
       setChatHistory((prev) => [...prev, { sender: 'ai', text: errorMessage }]);
+    } finally {
+        setAiQuestion("");
     }
+
+
   };
 
   // Fetch giỏ hàng
@@ -114,6 +128,10 @@ function HeaderNav() {
       window.removeEventListener("cartUpdated", handleCartChange);
     };
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -248,7 +266,7 @@ function HeaderNav() {
               <Flex justify="flex-end" align="center" gap="middle">
                 <Button
                   type="primary"
-                  icon={<RobotOutlined />}
+                  icon={<FaUserAstronaut size={22} />}
                   onClick={() => setIsAIModalVisible(true)}
                   style={{
                     backgroundColor: "#F37021",
@@ -256,7 +274,7 @@ function HeaderNav() {
                     marginRight: "10px",
                   }}
                 >
-                  Hỏi AI
+                  Trợ lý ảo TheHands
                 </Button>
                 {user ? (
                   <>
@@ -398,37 +416,65 @@ function HeaderNav() {
       </Drawer>
 
       <Drawer
-          closeIcon={<span style={{ fontSize: 20, position: "absolute", right: 25, top: 20 }}>
-                    <FaXmark />
-              </span>}
+          // closeIcon={<span style={{ fontSize: 20, position: "absolute", right: 25, top: 20 }}>
+          //           <FaXmark />
+          //     </span>}
+          closable={false}
           placement="bottom"
+          title={
+              <div className={"d-flex gap-2 align-items-center"}>
+                  <div>
+                      <FaUserAstronaut color={"#F37021"} size={26}/>
+                  </div>
+                  <div>
+                      Trợ lý ảo TheHands
+                  </div>
+              </div>
+          }
           onClose={handleOnCloseAskAI}
           open={isAIModalVisible}
           mask={false}
-          height={380}
+          height={430}
+           extra={
+          <Space>
+            <Button onClick={handleOnCloseAskAI}>
+              <FaXmark size={18}/>
+            </Button>
+          </Space>
+        }
           contentWrapperStyle={{
-              width: 320,
+              width: 360,
               position: "fixed",
               right: 20,
-              bottom: 0,
+              bottom: 12,
               left: "auto",
           }}
       >
-          <div style={{ marginBottom: "20px", display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
-              <div style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
+          <div style={{  display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              <div style={{ flex: 1, padding: '2px', overflowY: 'auto' }}>
                   {chatHistory.map((msg, index) => (
-                      <div key={index} style={{ padding: "10px", backgroundColor: msg.sender === 'user' ? "#d1e7dd" : "#f5f5f5", borderRadius: "8px", marginBottom: "10px" }}>
-                          <strong>{msg.sender === 'user' ? 'Bạn:' : 'AI:'}</strong>
-                          <p>{msg.text}</p>
+                      <div key={index} className={"d-flex w-100 gap-2"}>
+                          <strong>{msg.sender === 'user' ? <FaChalkboardUser size={26} color={"#F37021"}/> :
+                              <FaUserAstronaut color={"#F37021"} size={26}/>}</strong>
+                          <div style={{
+                              padding: "10px",
+                              backgroundColor: msg.sender === 'user' ? "#d1e7dd" : "#f5f5f5",
+                              borderRadius: "8px",
+                              marginBottom: "10px"
+                          }}>
+                              <p>{msg.text}</p>
+                          </div>
                       </div>
                   ))}
+                  <div ref={messagesEndRef} />
               </div>
               <Input.TextArea
                   rows={2}
                   placeholder="Nhập câu hỏi của bạn..."
                   value={aiQuestion}
                   onChange={(e) => setAiQuestion(e.target.value)}
-                  style={{ marginBottom: "10px" }}
+                  onPressEnter={handleAskAI}
+                  style={{marginBottom: "10px"}}
               />
               <Button
                   type="primary"
