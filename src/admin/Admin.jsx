@@ -9,6 +9,7 @@ import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
 import img from "./../../public/img/thehands.png";
 import { COLORS } from "../constants/constants.js";
+import ChatWidget from "../client/component/Chat/ChatWidget.jsx";
 
 const { Header, Sider } = Layout;
 
@@ -142,6 +143,8 @@ function Admin() {
         <Content>
           <div style={{ padding: "20px" }}>
             <Outlet />
+            <ChatWidget  staffId={user?.id} senderType={"STAFF"}/>
+
           </div>
         </Content>
       </Layout>

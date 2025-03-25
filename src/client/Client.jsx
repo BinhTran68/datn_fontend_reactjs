@@ -5,11 +5,13 @@ import HeaderNav from "./component/HeaderNav/HeaderNav.jsx";
 import { Layout } from "antd";
 import { Content } from "antd/es/layout/layout";
 import { Client } from "@stomp/stompjs";
+import ChatWidget from "./component/Chat/ChatWidget.jsx";
 
 const App = () => {
   const [stompClient, setStompClient] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
 
   const connectWebSocket = () => {
     console.log("🔍 WebSocket Debug: Đang kết nối...");
@@ -81,6 +83,7 @@ const App = () => {
       <Content>
         <div className="container">
           <Outlet />
+          <ChatWidget customerId={user?.id}  senderType={"CUSTOMER"}/>
         </div>
       </Content>
       <Content style={{ backgroundColor: "white" }}>

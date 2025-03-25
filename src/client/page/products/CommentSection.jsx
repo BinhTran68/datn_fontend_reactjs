@@ -123,7 +123,8 @@ const CommentSection = ({ id }) => {
                   title={
                     <Row>
                       {" "}
-                      <Col span={1}
+                      <Col
+                        span={1}
                         style={{
                           paddingRight: "10px",
                         }}
@@ -140,9 +141,10 @@ const CommentSection = ({ id }) => {
                           })}
                           )
                         </span>
-                        <Col span={24} className="pt-2">{item.comment}</Col>
+                        <Col span={24} className="pt-2">
+                          {item.comment}
+                        </Col>
                       </Col>
-                      
                     </Row>
                   }
                 />
@@ -155,6 +157,7 @@ const CommentSection = ({ id }) => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Nội dung"
+                maxLength={500}
                 onPressEnter={sendComment}
                 style={{
                   minWidth: "400px",
