@@ -718,7 +718,7 @@ function ProductDetail() {
           </Col>
         </Row>
       </Content>
-            
+
       <Content
         style={{ backgroundColor: "white", padding: "20px", marginTop: "1rem" }}
       >
@@ -733,7 +733,7 @@ function ProductDetail() {
           >
             SẢN PHẨM NỔI BẬT
           </Col>
-          <Col>
+          <Col span={24}>
             <Row gutter={[5, 5]}>
               {productHadviewsDescs?.map((product, index) => (
                 <Col

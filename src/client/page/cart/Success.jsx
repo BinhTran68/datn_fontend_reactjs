@@ -1,6 +1,7 @@
 import { Button, Result, List, Typography, Card, Row, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { apiStartCheck, apiStopCheck } from "./sussess";
 
 const { Title, Text } = Typography;
 
@@ -29,6 +30,10 @@ function Success() {
   }
   useEffect(() => {
     window.dispatchEvent(new Event("cartUpdated"));
+    apiStartCheck()
+    return ()=>{
+      apiStopCheck()
+    }
   }, []);
   return (
     <Card style={{ backgroundColor: "white", padding: 20, minHeight: 600 }}>
