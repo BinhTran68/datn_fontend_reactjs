@@ -1,47 +1,92 @@
 import React, { useEffect, useState } from "react";
-
 import { Outlet } from "react-router-dom";
 import Footer from "./component/Footer";
 import HeaderNav from "./component/HeaderNav/HeaderNav.jsx";
 import { Layout } from "antd";
-import { Content, Header } from "antd/es/layout/layout";
-import Nav from "./component/Nav/Nav.jsx";
-import { ProductProvider } from "../store/ProductContext";
-// import "bootstrap/dist/css/bootstrap.min.css";
+import { Content } from "antd/es/layout/layout";
+import { Client } from "@stomp/stompjs";
 
 const App = () => {
-  const [searchValue, setSearchValue] = useState("");
+  const [stompClient, setStompClient] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  const connectWebSocket = () => {
+    console.log("🔍 WebSocket Debug: Đang kết nối...");
+
+    const socket = new WebSocket("ws://localhost:8080/ws"); // Không dùng SockJS
+    const client = new Client({
+      webSocketFactory: () => socket, // Dùng WebSocket API thay vì SockJS
+      reconnectDelay: 5000, // Tự động thử kết nối lại sau 5s
+
+      onConnect: (frame) => {
+        console.log("✅ WebSocket Connected:", frame);
+
+        // Đăng ký lắng nghe thông báo
+        client.subscribe("/topic/global-notifications", (message) => {
+          console.log("📩 Nhận thông báo:", message.body);
+          setNotifications((prev) => [...prev, message.body]);
+          setNotificationCount((prev) => prev + 1);
+        });
+      },
+
+      onStompError: (frame) => {
+        console.error("❌ STOMP Error:", frame.headers["message"]);
+      },
+
+      onWebSocketClose: (event) => {
+        console.warn("⚠️ WebSocket Closed:", event);
+      },
+
+      debug: (str) => {
+        console.log("🛠 WebSocket Debug:", str);
+      }
+    });
+
+    try {
+      client.activate();
+      setStompClient(client);
+      console.log("🚀 WebSocket Client đang chạy...");
+    } catch (error) {
+      console.error("❌ WebSocket Activation Error:", error);
+    }
+  };
+
+  // 📌 Gửi thông báo từ client
+  const sendGlobalNotification = (message) => {
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: "/app/global-notification",
+        body: message,
+      });
+    } else {
+      console.warn("⚠️ WebSocket chưa kết nối, không thể gửi tin nhắn.");
+    }
+  };
 
   // useEffect(() => {
-  //     // Gọi hàm clearGuestCart khi component được render
-  //     clearGuestCart();
-  // }, [clearGuestCart]); // Chỉ gọi lại nếu clearGuestCart thay đổi
+  //   connectWebSocket();
+  //   return () => stompClient?.deactivate();
+  // }, []);
 
   return (
-    <div className="">
-      <Layout>
-        <Content
-          style={{
-            backgroundColor: "white",
-          }}
-        >
-          <HeaderNav />
-        </Content>
-        <Content>
-          <div className="container">
-            {/* <Nav/> */}
-            <Outlet />
-          </div>
-        </Content>
-        <Content
-          style={{
-            backgroundColor: "white",
-          }}
-        >
-          <Footer />
-        </Content>
-      </Layout>
-    </div>
+    <Layout>
+      <Content style={{ backgroundColor: "white" }}>
+        <HeaderNav 
+          notifications={notifications}
+          notificationCount={notificationCount}
+          onSendGlobalNotification={sendGlobalNotification}
+        />
+      </Content>
+      <Content>
+        <div className="container">
+          <Outlet />
+        </div>
+      </Content>
+      <Content style={{ backgroundColor: "white" }}>
+        <Footer />
+      </Content>
+    </Layout>
   );
 };
 
