@@ -8,60 +8,101 @@ import {
   Card,
   Space,
   Modal,
-  Row,
-  Col,
   Avatar,
   Typography,
   Flex,
+  Badge,
 } from "antd";
 import { MessageOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { COLORS } from "../../../constants/constants";
+import { apiRead } from "./apiChat";
 
 const { Text } = Typography;
 
-const ChatWidget = ({ customerId, staffId, senderType }) => {
-  const [isChatOpen, setIsChatOpen] = useState(false); // Trạng thái mở/đóng Modal
-  const [showMessages, setShowMessages] = useState(false); // Trạng thái hiển thị tin nhắn hay danh sách
-  const [messages, setMessages] = useState([]); // Danh sách tin nhắn
-  const [newMessage, setNewMessage] = useState(""); // Tin nhắn mới
-  const [conversationId, setConversationId] = useState(null); // ID của cuộc trò chuyện hiện tại
-  const [conversations, setConversations] = useState([]); // Danh sách cuộc trò chuyện (cho STAFF)
-  const [staffList, setStaffList] = useState([]); // Danh sách staff (cho CUSTOMER)
+const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [conversationId, setConversationId] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({}); // Count riêng cho từng cuộc trò chuyện hoặc nhân viên
+  const [totalUnread, setTotalUnread] = useState(0); // Count tổng
+
   const stompClient = useRef(null);
   const messagesRef = useRef(null);
 
-  // Lấy danh sách cuộc trò chuyện (cho STAFF) hoặc danh sách staff (cho CUSTOMER) khi mở Modal
+  // Lấy danh sách cuộc trò chuyện hoặc staff và khởi tạo unread counts
   useEffect(() => {
-    if (!isChatOpen) return;
-
-    const fetchData = async () => {
-      try {
-        if (senderType === "STAFF") {
-          // Lấy danh sách tất cả cuộc trò chuyện của staff
-          const response = await axios.get(
-            `http://localhost:8080/api/conversations/staff/${staffId}`
-          );
-          setConversations(response.data);
-          console.log("Danh sách cuộc trò chuyện của staff:", response.data);
-        } else {
-          // Lấy danh sách staff cho customer
-          const response = await axios.get("http://localhost:8080/api/conversations/staff");
-          setStaffList(response.data);
-          console.log("Danh sách staff:", response.data);
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-      }
-    };
-
+    if (conversationId != null && showMessages) return;
     fetchData();
-  }, [isChatOpen, customerId, staffId, senderType]);
+  }, [isChatOpen, customerId, staffId, senderType, anou]);
+  const fetchData = async () => {
+    try {
+      if (senderType === "STAFF") {
+        const response = await axios.get(
+          `http://localhost:8080/api/conversations/staff/${staffId}`
+        );
+        const convs = response.data;
+        setConversations(convs);
+        // Khởi tạo unread counts từ backend hoặc tính từ tin nhắn SENT
+        const counts = {};
+        let total = 0;
+        for (const conv of convs) {
+          const msgResponse = await axios.get(
+            `http://localhost:8080/api/messages/${conv.id}`
+          );
+          const sentCount = msgResponse.data.filter(
+            (msg) => msg.status === "SENT" && msg.senderType !== senderType
+          ).length;
+          counts[conv.id] = sentCount;
+          total += sentCount;
+        }
+        setUnreadCounts(counts);
+        setTotalUnread(total);
+        console.log("Danh sách cuộc trò chuyện của staff:", convs);
+      } else {
+        const response = await axios.get(
+          "http://localhost:8080/api/conversations/staff"
+        );
+        const staff = response.data;
+        setStaffList(staff);
+        // Khởi tạo unread counts cho từng staff
+        const counts = {};
+        let total = 0;
+        for (const s of staff) {
+          const convResponse = await axios.post(
+            "http://localhost:8080/api/conversations",
+            { customerId, staffId: s.id }
+          );
+          const convId = convResponse.data.id;
+          const msgResponse = await axios.get(
+            `http://localhost:8080/api/messages/${convId}`
+          );
+          const sentCount = msgResponse.data.filter(
+            (msg) => msg.status === "SENT" && msg.senderType !== senderType
+          ).length;
+          console.log("ádsdsadsadadad", msgResponse + "ấdsa" + sentCount);
 
-  // Kết nối WebSocket và lấy lịch sử tin nhắn khi chọn cuộc trò chuyện
+          counts[s.id] = sentCount;
+          total += sentCount;
+        }
+        setUnreadCounts(counts);
+        setTotalUnread(total);
+        console.log("Danh sách staff:", staff);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu:", error);
+    }
+  };
+  // Kết nối WebSocket và xử lý tin nhắn
   useEffect(() => {
     if (!conversationId) return;
-
+    if (showMessages && conversationId != null) {
+      apiRead(conversationId);
+    }
     // Lấy lịch sử tin nhắn
     axios
       .get(`http://localhost:8080/api/messages/${conversationId}`)
@@ -71,7 +112,31 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
       .catch((error) => console.error("Lỗi khi lấy tin nhắn:", error));
 
     // Kết nối WebSocket
-    const socket = new WebSocket("http://localhost:8080/ws");
+    connectWS();
+
+    return () => {
+      if (stompClient.current) {
+        stompClient.current.deactivate();
+      }
+    };
+  }, [
+    conversationId,
+    isChatOpen,
+    showMessages,
+    customerId,
+    staffId,
+    senderType,
+  ]);
+
+  // Cuộn xuống tin nhắn mới nhất
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [messages]);
+  // connec
+  const connectWS = () => {
+    const socket = new WebSocket("ws://localhost:8080/ws");
     stompClient.current = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
@@ -82,6 +147,29 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
           (message) => {
             const newMsg = JSON.parse(message.body);
             setMessages((prevMessages) => [...prevMessages, newMsg]);
+            // xem nếu ko phải ng gửi
+            console.log("sdfsdfdsfsdfds", newMsg);
+            // khi ở trong hộp thoại nawhsn tin thì xem luôn
+            if (newMsg.senderType != senderType) {
+              apiRead(newMsg.conversation.id);
+            }
+            // Cập nhật unread counts nếu tin nhắn từ người khác và status là SENT
+            const currentUserId =
+              senderType === "CUSTOMER" ? customerId : staffId;
+            if (
+              newMsg.senderId !== currentUserId &&
+              newMsg.status === "SENT" &&
+              (!isChatOpen ||
+                (showMessages && conversationId !== newMsg.conversationId))
+            ) {
+              setUnreadCounts((prev) => {
+                const newCounts = { ...prev };
+                newCounts[conversationId] =
+                  (newCounts[conversationId] || 0) + 1;
+                return newCounts;
+              });
+              setTotalUnread((prev) => prev + 1);
+            }
           }
         );
       },
@@ -92,21 +180,7 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
     });
 
     stompClient.current.activate();
-
-    return () => {
-      if (stompClient.current) {
-        stompClient.current.deactivate();
-      }
-    };
-  }, [conversationId]);
-
-  // Cuộn xuống tin nhắn mới nhất
-  useEffect(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    }
-  }, [messages]);
-
+  };
   // Gửi tin nhắn
   const sendMessage = () => {
     if (
@@ -129,14 +203,12 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
     }
   };
 
-  // Chọn cuộc trò chuyện (cho STAFF) hoặc tạo/lấy cuộc trò chuyện (cho CUSTOMER)
+  // Chọn cuộc trò chuyện
   const selectConversation = async (id) => {
     try {
       if (senderType === "STAFF") {
-        // Nếu là STAFF, id là conversationId
         setConversationId(id);
       } else {
-        // Nếu là CUSTOMER, id là staffId, kiểm tra hoặc tạo cuộc trò chuyện
         const response = await axios.post(
           "http://localhost:8080/api/conversations",
           {
@@ -147,7 +219,14 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
         setConversationId(response.data.id);
       }
       setShowMessages(true);
-      setMessages([]); // Xóa tin nhắn cũ khi chuyển cuộc trò chuyện
+      setMessages([]);
+      // Reset count cho cuộc trò chuyện/nhân viên được chọn
+      setUnreadCounts((prev) => {
+        const newCounts = { ...prev };
+        newCounts[id] = 0; // Reset count riêng
+        return newCounts;
+      });
+      setTotalUnread((prev) => Math.max(0, prev - (unreadCounts[id] || 0))); // Cập nhật total
     } catch (error) {
       console.error("Lỗi khi chọn/tạo cuộc trò chuyện:", error);
     }
@@ -162,7 +241,7 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
 
   return (
     <>
-      {/* Hình tròn ở góc phải bên dưới */}
+      {/* Hình tròn ở góc phải bên dưới với total unread */}
       <div
         style={{
           position: "fixed",
@@ -181,7 +260,9 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
         }}
         onClick={() => setIsChatOpen(true)}
       >
-        <MessageOutlined style={{ color: "white", fontSize: "24px" }} />
+        <Badge count={totalUnread}>
+          <MessageOutlined style={{ color: "white", fontSize: "24px" }} />
+        </Badge>
       </div>
 
       {/* Modal */}
@@ -225,14 +306,16 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
         <div
           style={{ display: "flex", flexDirection: "column", height: "100%" }}
         >
-          {/* Hiển thị danh sách cuộc trò chuyện (cho STAFF) hoặc danh sách staff (cho CUSTOMER) */}
+          {/* Hiển thị danh sách cuộc trò chuyện hoặc staff với count riêng */}
           {!showMessages && (
             <List
               dataSource={senderType === "STAFF" ? conversations : staffList}
               renderItem={(item) => (
                 <List.Item
                   onClick={() =>
-                    selectConversation(senderType === "STAFF" ? item.id : item.id)
+                    selectConversation(
+                      senderType === "STAFF" ? item.id : item.id
+                    )
                   }
                   style={{
                     cursor: "pointer",
@@ -255,10 +338,17 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
                       <br />
                       {senderType === "STAFF" && (
                         <Text type="secondary" style={{ fontSize: "12px" }}>
-                          {item?.lastMessage || "Chưa có tin nhắn"}
+                          {item?.lastMessage.senderType === senderType ? "tôi:  " : ""}
+                          {item?.lastMessage.lastMesage || "Chưa có tin nhắn"}
                         </Text>
                       )}
                     </div>
+                    {(unreadCounts[item.id] || 0) > 0 && (
+                      <Badge
+                        count={unreadCounts[item.id]}
+                        style={{ marginLeft: "10px" }}
+                      />
+                    )}
                   </Space>
                 </List.Item>
               )}
@@ -311,12 +401,12 @@ const ChatWidget = ({ customerId, staffId, senderType }) => {
 
               {/* Ô nhập tin nhắn */}
               <Flex gap={10} style={{ marginTop: "10px", width: "100%" }}>
-                <Input 
+                <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Nhập tin nhắn của bạn"
                   onPressEnter={sendMessage}
-                  style={{width:"100%"}}
+                  style={{ width: "100%" }}
                 />
                 <Button type="primary" onClick={sendMessage}>
                   Gửi
