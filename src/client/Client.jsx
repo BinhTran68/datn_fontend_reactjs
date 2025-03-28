@@ -7,6 +7,9 @@ import { Content } from "antd/es/layout/layout";
 import { Client } from "@stomp/stompjs";
 import ChatWidget from "./component/Chat/ChatWidget.jsx";
 import { useWebSocket } from "./componetC/Socket.js";
+import Nav from "./component/Nav/Nav.jsx";
+import { ProductProvider } from "../store/ProductContext";
+// import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {
   const [user, setUser] = useState(() =>

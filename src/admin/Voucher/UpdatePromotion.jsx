@@ -82,6 +82,15 @@ const UpdatePromotion = () => {
             console.log("Form values:", values);
             console.log("Selected products:", selectedProducts);
             console.log("Selected product details:", selectedProductDetails);
+            // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
+            if (selectedProducts.length === 0) {
+                message.error("Vui lòng chọn ít nhất một sản phẩm!");
+                return;
+            }
+            if (selectedProductDetails.length === 0) {
+                message.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
+                return;
+            }
             const requestData = {
                 ...values,
                 discountType: "PERCENT",

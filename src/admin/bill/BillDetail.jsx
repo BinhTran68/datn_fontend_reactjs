@@ -34,6 +34,7 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/print/lib/styles/index.css';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import {PrintIcon, printPlugin} from "@react-pdf-viewer/print";
+import {COLORS} from "../../constants/constants.js";
 
 const {Step} = Steps;
 
@@ -245,6 +246,7 @@ const BillDetail = () => {
         const [selectedProduct, setSelectedProduct] = useState(null);
         const [inputQuantity, setInputQuantity] = useState(1);
         const [isRollbackAction, setIsRollbackAction] = useState(false);
+        const [isCancelBill, setIsCancelBill] = useState(false);
 
 
         const handleOkModal = () => {
@@ -266,14 +268,21 @@ const BillDetail = () => {
 
         const handleUpdateStatusBill = async () => {
             try {
-                // Xác định status mới dựa vào nguồn gọi hàm
-                const newStatus = isRollbackAction 
-                    ? handleRollBackStatusUpdate(currentBill.status)
-                    : handleNewStatusUpdate(currentBill.status);
+                let newStatus;
+
+                console.log(modalType, "modalType")
+                if (isCancelBill) {
+                    newStatus = "DA_HUY"; // Trạng thái hủy đơn
+                } else {
+                    // Xác định status mới dựa vào nguồn gọi hàm
+                    newStatus = isRollbackAction 
+                        ? handleRollBackStatusUpdate(currentBill.status)
+                        : handleNewStatusUpdate(currentBill.status);
+                }
 
                 const data = {
                     status: newStatus,
-                    note: confirmNotes
+                    note: confirmNotes // Ghi chú từ modal
                 };
 
                 const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
@@ -282,16 +291,17 @@ const BillDetail = () => {
                 setCurrentBill(result.bill);
                 setBillHistory(result.billHistory);
 
-                if (result.bill.status === "DANG_VAN_CHUYEN") {
-                    handlePrintBillPdf();
-                }
-
-                toast.success(isRollbackAction 
-                    ? "Đã quay lại trạng thái trước đó"
-                    : "Cập nhật trạng thái thành công"
+                toast.success(modalType === "modalConfirmCancelBill" 
+                    ? "Đơn hàng đã bị hủy thành công"
+                    : (isRollbackAction 
+                        ? "Đã quay lại trạng thái trước đó"
+                        : "Cập nhật trạng thái thành công")
                 );
             } catch (error) {
                 toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
+            }
+            finally {
+                setIsCancelBill(false)
             }
         };
 
@@ -409,7 +419,7 @@ const BillDetail = () => {
 
 
         const steps1 = [
-            {id: 1, label: "Tạo đơn hàng", time: "", icon: <FaFileCircleCheck size={34}/>, status: "TAO_DON_HANG"},
+            {id: 9  , label: "Đang xác minh", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DANG_XAC_MINH"},
             {id: 2, label: "Chờ xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_XAC_NHAN"},
             {id: 3, label: "Đã xác nhận", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_XAC_NHAN"},
             {id: 4, label: "Chờ vận chuyển", time: "", icon: <FaFileCircleCheck size={34}/>, status: "CHO_VAN_CHUYEN"},
@@ -417,16 +427,16 @@ const BillDetail = () => {
             {id: 6, label: "Đã giao hàng", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_GIAO_HANG"},
             {id: 7, label: "Đã thanh toán", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_THANH_TOAN"},
             {id: 8, label: "Hoàn thành", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_HOAN_THANH"},
+            {id: 9, label: "Đã Hủy", time: "", icon: <FaFileCircleCheck size={34}/>, status: "DA_HUY"},
+
         ];
 
 
         const handleButtonConfirm = (step) => {
             // Kiểm tra xem đã thanh toán chưa
             const isAlreadyPaid = billHistory.some(h => h.status === "DA_THANH_TOAN");
-
+            console.log("step", step)
             switch(step) {
-                case "TAO_DON_HANG":
-                    return "Tạo đơn hàng";
                 case "CHO_XAC_NHAN":
                     return "Xác nhận";
                 case "DA_XAC_NHAN":
@@ -439,6 +449,8 @@ const BillDetail = () => {
                     return "Hoàn thành đơn";
                 case "DA_THANH_TOAN":
                     return "Hoàn thành đơn";
+                case "DANG_XAC_MINH":
+                    return "Bỏ qua xác minh";
                 default:
                     return "";
             }
@@ -466,18 +478,6 @@ const BillDetail = () => {
             setConfirmNotes(e.target.value)
         }
         
-        const modalConfirmUpdateStatusBill = () => {
-            return (
-                <div>
-                    <div className={"mb-4 w"}>
-                        <h3>Xác nhận đơn hàng</h3>
-                    </div>
-
-                </div>
-
-            )
-        }
-
 
         const showModalBillHistory = () => {
             setOpen(true)
@@ -601,42 +601,16 @@ const BillDetail = () => {
             }
         };
 
-        const handleConfirmPayment = () => {
+
+        const handleCancelBill = () => {
             setOpen(true);
             setWidthModal("40%");
-            setConfirmNotes('');
             setModalType(modalUpdateStatusBillType);
-            // Cập nhật trạng thái thành DA_THANH_TOAN
-            const data = {
-                status: "DA_THANH_TOAN",
-                note: "Xác nhận thanh toán"
-            };
-            handleUpdateStatusBill(data);
+            setIsCancelBill(true)
+            setConfirmNotes('');
         };
 
-        const handleCancelBill = async () => {
-            try {
-                const data = {
-                    status: "DA_HUY",
-                    note: "Đơn hàng đã bị hủy"
-                };
-                await handleUpdateStatusBill(data);
-            } catch (error) {
-                toast.error("Có lỗi xảy ra khi hủy đơn hàng");
-            }
-        };
 
-        const handleReturnRequest = async () => {
-            try {
-                const data = {
-                    status: "TRA_HANG",
-                    note: "Yêu cầu trả hàng"
-                };
-                await handleUpdateStatusBill(data);
-            } catch (error) {
-                toast.error("Có lỗi xảy ra khi yêu cầu trả hàng");
-            }
-        };
 
     const [pdfUrl, setPdfUrl] = useState(null);
     const [isShowPdfOk, setIsShowPdfOk] = useState(true)
@@ -709,6 +683,7 @@ const BillDetail = () => {
                             handleOnEdit={handleOnEditBill}
                         />
                     )}
+                    {modalType === "modalConfirmCancelBill" && modalConfirmCancelBill()}
                 </Modal>
                 <Card className={"mb-2"}>
                     <div>
@@ -720,19 +695,19 @@ const BillDetail = () => {
                     </div>
                     <div className={"d-flex align-items-center justify-content-between"}>
                         <div className={"d-flex align-items-center gap-5"}>
-                            {!["DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                            {!["DANG_XAC_MINH" ,"DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
                                 <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>
                                     {handleButtonConfirm(currentBill?.status)}
                                 </Button>
                             )}
-                            {!["TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                            {!["CHO_XAC_NHAN" ,"DANG_XAC_MINH" ,"TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
                                 <Button onClick={handleOnRollbackStatus} color={"danger"} type={""}>
                                     Quay lại
                                 </Button>
                             )}
                         
-                            {!["DA_HUY", "DA_HOAN_THANH", "TRA_HANG"].includes(currentBill?.status) && (
-                                <Button onClick={handleCancelBill} type="danger">
+                            {["CHO_XAC_NHAN"].includes(currentBill?.status) && (
+                                <Button onClick={handleCancelBill} type="default" >
                                     Hủy đơn
                                 </Button>
                             )}

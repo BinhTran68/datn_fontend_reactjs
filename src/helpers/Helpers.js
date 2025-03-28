@@ -97,6 +97,8 @@ export const convertBillStatusToString = (status) => {
             return "Hủy yêu cầu trả hàng";
         case "TU_CHOI_TRA_HANG":
             return "Từ chối trả hàng";
+        case "DANG_XAC_MINH":
+            return "Đang xác minh";
         default:
             return "Khác";
     }

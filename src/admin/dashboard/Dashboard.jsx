@@ -76,80 +76,10 @@ const Dashboard = () => {
     }, []);
 
     return (
-        <div className="dashboard-container" style={{ padding: '24px' }}>
-            <Title level={2}>Tổng Quan Hệ Thống</Title>
-            <Text>Thời gian hiện tại: {currentTime}</Text>
-            
-            <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
-                <Col xs={24} sm={12} md={6}>
-                    <Card>
-                        <Statistic
-                            title="Tổng Doanh Thu"
-                            value={statistics.totalRevenue}
-                            prefix={<DollarOutlined />}
-                            suffix="VNĐ"
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                    <Card>
-                        <Statistic
-                            title="Tổng Đơn Hàng"
-                            value={statistics.totalOrders}
-                            prefix={<ShoppingCartOutlined />}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                    <Card>
-                        <Statistic
-                            title="Khách Hàng"
-                            value={statistics.totalCustomers}
-                            prefix={<UserOutlined />}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} sm={12} md={6}>
-                    <Card>
-                        <Statistic
-                            title="Sản Phẩm"
-                            value={statistics.totalProducts}
-                            prefix={<ShoppingOutlined />}
-                        />
-                    </Card>
-                </Col>
-            </Row>
+        <div className="dashboard-container">
 
-            <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
-                <Col xs={24} md={12}>
-                    <Card title="Trạng Thái Đơn Hàng">
-                        {data.map((item, index) => (
-                            <div key={index} style={{ marginBottom: '16px' }}>
-                                <Text>{item.label}: </Text>
-                                <Text strong>{item.value}</Text>
-                            </div>
-                        ))}
-                    </Card>
-                </Col>
-                <Col xs={24} md={12}>
-                    <Card title="Top Sản Phẩm Bán Chạy">
-                        {topProducts.map((product, index) => (
-                            <div key={index} style={{ marginBottom: '16px' }}>
-                                <Text>{product.name}: </Text>
-                                <Text strong>{product.sales} đơn</Text>
-                            </div>
-                        ))}
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row style={{ marginTop: '24px' }}>
-                <Col span={24}>
-                    <Card title="Thống Kê Chi Tiết">
                         <Statistical />
-                    </Card>
-                </Col>
-            </Row>
+
         </div>
     );
 };

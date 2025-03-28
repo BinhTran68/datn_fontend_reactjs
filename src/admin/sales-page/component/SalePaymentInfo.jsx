@@ -60,11 +60,7 @@ const SalePaymentInfo = ({
                                 isCOD,
                              handleCheckIsCOD
                          }) => {
-    console.log("shippingFee", selectedVouchers)
     const missingAmount = Math.max(0, amount+shippingFee - customerMoney); // Không cộng cho discount nữa
-
-    console.log("change", change)
-
     return (
         <>
 
@@ -210,60 +206,51 @@ const SalePaymentInfo = ({
                                                 <List
                                                     itemLayout="horizontal"
                                                     dataSource={vouchers}
-                                                    renderItem={(item, index) => (
-                                                        <List.Item
-                                                            actions={[
-                                                                (selectedVouchers?.bestVoucher?.id === item.id ? 
-                                                                    <FaCheckCircle size={25} color={`${COLORS.success}`}/> 
-                                                                    : 
-                                                                    <Button
-                                                                        type={"primary"}
-                                                                        onClick={() => handleOnSelectedVoucher(item)}>
-                                                                        Chọn
-                                                                    </Button>
-                                                                )
-                                                            ]}
-                                                        >
+                                                    renderItem={(item, index) => {
+                                                        const originalTotal = amount + shippingFee; // Total amount including shipping
+                                                        const isVoucherApplicable = originalTotal >= (item.billMinValue || 0); // Check if the voucher can be applied
 
-                                                            <List.Item.Meta
-                                                                avatar={<img width={55} src={voucher_image}
-                                                                             alt={"img voucher"}/>}
-                                                                title={<a href="https://ant.design">{item?.voucherName}</a>}
-
-                                                                description={
-
-                                                                    <div>
+                                                        return (
+                                                            <List.Item
+                                                                actions={[
+                                                                    (selectedVouchers?.bestVoucher?.id === item.id ? 
+                                                                        <FaCheckCircle size={25} color={`${COLORS.success}`}/> 
+                                                                        : 
+                                                                        <Button
+                                                                            type={"primary"}
+                                                                            onClick={() => isVoucherApplicable ? handleOnSelectedVoucher(item) : null}
+                                                                            disabled={!isVoucherApplicable} // Disable if not applicable
+                                                                        >
+                                                                            Chọn
+                                                                        </Button>
+                                                                    )
+                                                                ]}
+                                                            >
+                                                                <List.Item.Meta
+                                                                    avatar={<img width={55} src={voucher_image}
+                                                                                 alt={"img voucher"}/>}
+                                                                    title={<a href="https://ant.design">{item?.voucherName}</a>}
+                                                                    description={
                                                                         <div>
-                                                                            Số lượng : {item?.quantity ?? 0}
-                                                                        </div>
-                                                                        <div>
-                                                                            Ngày hết hạn : {convertDate(item.endDate)}
-                                                                        </div>
-                                                                        <div>
-                                                                            Giá trị giảm : {item?.discountType === "MONEY" 
+                                                                            <div>Số lượng : {item?.quantity ?? 0}</div>
+                                                                            <div>Ngày hết hạn : {convertDate(item.endDate)}</div>
+                                                                            <div>Giá trị giảm : {item?.discountType === "MONEY" 
                                                                                 ? formatVND(item.discountValue) 
                                                                                 : `${item.discountValue}% (tối đa ${formatVND(item.discountMaxValue)})`
-                                                                            }
-                                                                        </div>
-                                                                        <div>
-                                                                            Giá trị đơn hàng tối thiểu: {formatVND(item?.billMinValue || 0)}
-                                                                        </div>
-                                                                        <div>
-                                                                            Giảm tối đa: {item?.discountMaxValue && item.discountType === "PERCENT" 
+                                                                            }</div>
+                                                                            <div>Giá trị đơn hàng tối thiểu: {formatVND(item?.billMinValue || 0)}</div>
+                                                                            <div>Giảm tối đa: {item?.discountMaxValue && item.discountType === "PERCENT" 
                                                                                 ? formatVND(item.discountMaxValue) 
                                                                                 : 'Không giới hạn'
-                                                                            }
+                                                                            }</div>
+                                                                            <div>Loại voucher: {item?.voucherType === "PUBLIC" ? "Công khai" : "Riêng tư"}</div>
                                                                         </div>
-                                                                        <div>
-                                                                            Loại voucher: {item?.voucherType === "PUBLIC" ? "Công khai" : "Riêng tư"}
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                            />
-                                                        </List.Item>
-                                                    )}
+                                                                    }
+                                                                />
+                                                            </List.Item>
+                                                        );
+                                                    }}
                                                 />
-
                                             </div>
                                         </>
                                     )

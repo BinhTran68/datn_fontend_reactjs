@@ -31,8 +31,8 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
                         src={images[0].url} 
                         alt="Sản phẩm"
                         style={{
-                            width: '50px',
-                            height: '50px',
+                            width: '70px',
+                            height: '70px',
                             objectFit: 'cover',
                             borderRadius: '4px'
                         }}
@@ -42,8 +42,8 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
             return (
                 <div 
                     style={{
-                        width: '50px',
-                        height: '50px',
+                        width: '70px',
+                        height: '70px',
                         backgroundColor: '#f5f5f5',
                         display: 'flex',
                         alignItems: 'center',
@@ -69,19 +69,27 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         key: "productName",
         render: (_, record) => {
             const { productName, sizeName, colorName } = record;
-            return productName ? `${productName} - [${sizeName}] - [${colorName}]` : "";
+            return (
+                <div style={{ textAlign: "center", whiteSpace: "normal" }}>
+                    <div style={{ fontWeight: "bold", fontSize: "14px" }}>{productName}</div>
+                    <div style={{ color: "#555", fontSize: "14px" }}>Size: {sizeName}</div>
+                    <div style={{ color: "#888", fontSize: "14px" }}>Màu: {colorName}</div>
+                </div>
+            );
         },
         onCell: () => ({
             style: {
-                width: "100px",
-                height: "50px",
-                lineHeight: "50px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                width: "180px",
+                height: "70px",
+                padding: "8px",
+                textAlign: "center",
+                verticalAlign: "middle",
+                wordWrap: "break-word",
+                whiteSpace: "normal",
             },
         }),
     },
+
     {
         title: "Hãng",
         dataIndex: "brandName",
@@ -97,37 +105,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
             },
         }),
     },
-    {
-        title: "Loại giày",
-        dataIndex: "typeName",
-        key: "productName",
 
-        onCell: () => ({
-            style: {
-                width: "100px",
-                height: "50px",
-                lineHeight: "50px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-            },
-        }),
-    },
-    {
-        title: "Màu sắc",
-        dataIndex: "colorName",
-        key: "productName",
-        onCell: () => ({
-            style: {
-                width: "100px",
-                height: "50px",
-                lineHeight: "50px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-            },
-        }),
-    },
     {
         title: "Chất liệu",
         dataIndex: "materialName",
@@ -144,23 +122,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
             },
         }),
     },
-    {
-        title: "Kích cỡ",
-        dataIndex: "sizeName",
-        key: "productName",
 
-        onCell: () => ({
-            style: {
-                width: "100px",
-                height: "50px",
-                lineHeight: "50px",
-
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-            },
-        }),
-    },
     {
         title: "Đế giày",
         dataIndex: "soleName",

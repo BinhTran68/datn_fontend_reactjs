@@ -5,6 +5,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { baseUrl } from '../../helpers/Helpers.js';
 import dayjs from "dayjs";
+import { useWatch } from 'antd/es/form/Form';
+
 
 
 
@@ -215,6 +217,23 @@ const UpdateVoucher = () => {
         }
     };
 
+// Xử lý tự động cập nhật discountMaxValue khi chọn MONEY
+useEffect(() => {
+    const discountType = form.getFieldValue("discountType");
+    const discountValue = form.getFieldValue("discountValue");
+
+    if (discountType === "MONEY" && discountValue !== undefined) {
+        form.setFieldsValue({ discountMaxValue: discountValue });
+    }
+}, [form, form.getFieldValue("discountType"), form.getFieldValue("discountValue")]);
+const discountType = useWatch("discountType", form);
+useEffect(() => {
+    if (form.getFieldValue("discountType") === "MONEY") {
+        form.setFieldsValue({ discountMaxValue: form.getFieldValue("discountValue") });
+    } else {
+        form.setFieldsValue({ discountMaxValue: null });
+    }
+}, [form.getFieldValue("discountType")]);
 
 
 
@@ -241,49 +260,59 @@ const UpdateVoucher = () => {
                             <Input type="number" placeholder="Nhập số lượng" min={1} disabled={value === "PRIVATE"} />
                         </Form.Item>
 
-                        <Form.Item label="Giá trị giảm" required>
-                            <Input.Group compact>
-                                <Form.Item
-                                    name="discountValue"
-                                    noStyle
-                                    dependencies={["discountType"]}
-                                    rules={[
-                                        ({ getFieldValue }) => ({
-                                            validator(_, value) {
-                                                const num = Number(value);
-                                                const type = getFieldValue("discountType");
-
-                                                if (!value) return Promise.reject(new Error('Không được bỏ trống'));
-
-                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 100)) {
-                                                    return Promise.reject(new Error('Giá trị giảm (%) phải từ 1 đến 100'));
-                                                }
-
-                                                if (num < 1) {
-                                                    return Promise.reject(new Error('Giá trị giảm phải lớn hơn 0'));
-                                                }
-
-                                                return Promise.resolve();
-                                            },
-                                        }),
-                                    ]}
-                                >
-                                    
-                                    <InputNumber placeholder="Nhập giá trị giảm" style={{ width: '70%' }}
-                                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                        parser={value => value.replace(/\D/g, '')} // Chỉ cho nhập số
-                                    />
-                                </Form.Item>
-
-                                <Form.Item name="discountType" initialValue="PERCENT" noStyle rules={[{ required: true, message: 'Không được bỏ trống' }]}>
-                                    <Select placeholder="Chọn loại giảm" style={{ width: '30%' }}>
-                                        <Option value="PERCENT">%</Option>
-                                        <Option value="MONEY">đ</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Input.Group>
-                        </Form.Item>
-
+                      <Form.Item label="Giá trị giảm" required>
+                                                 <Input.Group compact>
+                                                     <Form.Item
+                                                         name="discountValue"
+                                                         noStyle
+                                                         dependencies={["discountType"]}
+                                                         rules={[
+                                                             ({ getFieldValue }) => ({
+                                                                 validator(_, value) {
+                                                                     const num = Number(value);
+                                                                     const type = getFieldValue("discountType");
+                     
+                                                                     if (!value) return Promise.reject(new Error("Không được bỏ trống"));
+                     
+                                                                     if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 100)) {
+                                                                         return Promise.reject(new Error("Giá trị giảm (%) phải từ 1 đến 100"));
+                                                                     }
+                     
+                                                                     if (num < 1) {
+                                                                         return Promise.reject(new Error("Giá trị giảm phải lớn hơn 0"));
+                                                                     }
+                     
+                                                                     return Promise.resolve();
+                                                                 },
+                                                             }),
+                                                         ]}
+                                                     >
+                                                         <InputNumber
+                                                             placeholder="Nhập giá trị giảm"
+                                                             style={{ width: "70%" }}
+                                                             onChange={(value) => {
+                                                                 if (form.getFieldValue("discountType") === "MONEY") {
+                                                                     form.setFieldsValue({ discountMaxValue: value });
+                                                                 }
+                                                             }}
+                                                             formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                                             parser={(value) => value.replace(/\D/g, "")} // Chỉ cho nhập số
+                                                         />
+                                                     </Form.Item>
+                     
+                                                     <Form.Item
+                                                         name="discountType"
+                                                         initialValue="PERCENT"
+                                                         noStyle
+                                                         rules={[{ required: true, message: "Không được bỏ trống" }]}
+                                                     >
+                                                         <Select placeholder="Chọn loại giảm" style={{ width: "30%" }}>
+                                                             <Option value="PERCENT">%</Option>
+                                                             <Option value="MONEY">đ</Option>
+                                                         </Select>
+                                                     </Form.Item>
+                                                 </Input.Group>
+                                             </Form.Item>
 
 
                         <Form.Item
@@ -314,6 +343,7 @@ const UpdateVoucher = () => {
                         <Form.Item
                             name="discountMaxValue"
                             label="Giá trị phiếu giảm giá tối đa"
+                           
                             dependencies={["billMinValue", "discountType", "discountValue"]}
                             rules={[
                                 ({ getFieldValue }) => ({
@@ -324,14 +354,16 @@ const UpdateVoucher = () => {
 
                                         if (discountType === "MONEY") {
                                             if (value !== discountValue) {
-                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa phải bằng giá trị giảm khi giảm giá bằng tiền'));
+                                                return Promise.reject(
+                                                    new Error("Giá trị phiếu giảm giá tối đa phải bằng giá trị giảm khi giảm giá bằng tiền")
+                                                );
                                             }
                                         } else if (discountType === "PERCENT") {
                                             if (value === undefined || value < 0 || !Number.isInteger(Number(value))) {
-                                                return Promise.reject(new Error('Giá trị phải là số nguyên dương'));
+                                                return Promise.reject(new Error("Giá trị phải là số nguyên dương"));
                                             }
                                             if (minValue !== undefined && minValue !== null && Number(value) > Number(minValue)) {
-                                                return Promise.reject(new Error('Giá trị phiếu giảm giá tối đa không được lớn hơn giá trị đơn hàng tối thiểu'));
+                                                return Promise.reject(new Error("Giá trị phiếu giảm giá tối đa không được lớn hơn giá trị đơn hàng tối thiểu"));
                                             }
                                         }
                                         return Promise.resolve();
@@ -341,12 +373,12 @@ const UpdateVoucher = () => {
                         >
                             <InputNumber
                                 placeholder="Nhập giá trị phiếu giảm giá tối đa"
-                                style={{ width: '100%' }}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                style={{ width: "100%" }}
+                                formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
                                 suffix="đ"
-                                disabled={form.getFieldValue("discountType") === "MONEY"}
-                            />
+                                disabled={discountType === "MONEY"}
+                                />
                         </Form.Item>
 
 

@@ -29,7 +29,7 @@ import {printPlugin} from "@react-pdf-viewer/print";
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/print/lib/styles/index.css';
 import 'pdfjs-dist/build/pdf.worker.entry';
-import ScanQrModalComponent from "./component/ScanQRModalComponent.jsx";   // Cấu hình worker
+import ScanQrModalComponent from "./component/ScanQRModalComponent.jsx";
 
 
 const SalesPage = () => {
@@ -107,7 +107,6 @@ const SalesPage = () => {
         setCurrentBillData(currentBillDataMemo)
         console.log(currentBillData)
     }, [currentBillDataMemo])
-
 
     const showModal = () => {
         setOpen(true);
@@ -268,24 +267,6 @@ const SalesPage = () => {
         setPdfUrl(null); // Clear the blob URL when creating a new bill
     };
 
-    useEffect(() => {
-        // Chờ đợi sau 0.5s thì gửi api về server để cập nhật số lượng sản phẩm
-        const timeout = setTimeout(async () => {
-            try {
-                await postChangeQuantityProduct(products);
-                // Có thể thêm thông báo thành công nếu cần
-                // toast.success("Cập nhật số lượng thành công");
-            } catch (error) {
-                // Xử lý lỗi và thông báo cho người dùng
-                toast.error("Lỗi khi cập nhật số lượng sản phẩm");
-                console.error("Error updating product quantities:", error);
-            }
-        }, 500);
-
-        // Cleanup function để tránh memory leak
-        return () => clearTimeout(timeout);
-    }, [products]); // Sửa lại dependency array
-
     const findBestVoucher = (totalAmount) => {
         if (!vouchers || vouchers?.length === 0) return null;
 
@@ -348,63 +329,53 @@ const SalesPage = () => {
         };
     };
 
-    const handleOnAddProductToBill = (record) => {
-        if (!currentBill) {
-            toast.warning("Vui lòng chọn hóa đơn trước khi thêm sản phẩm");
-            return;
-        }
-        if (record.quantity <= 0) {
-            toast.warning("Sản phẩm đã hết hàng");
-            return;
-        }
+    const updateProductList = (currentBill, product, quantityChange, isRestore = false, isDeleteProduct = false) => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const existingProduct = item.productList?.find(p => p.id === record.id && p.price === record.price);
+                    const existingProduct = item.productList.find(p => p.id === product.id);
                     let updatedProductList;
 
                     if (existingProduct) {
-                        if (existingProduct.quantityInCart >= record.quantity) {
-                            toast.warning(`Số lượng sản phẩm không đủ, tối đa ${record.quantity}`);
-                            return item;
+                        if(isDeleteProduct) {
+                            updatedProductList =  item.productList.filter(p => p.id !== product.id); // Xóa sản phẩm trong giỏ hàng
+                        }else {
+                            if (isRestore) {
+                                // Xử lý khi khôi phục số lượng
+                                updatedProductList = item.productList.map(p =>
+                                    p.id === product.id ? { ...p, quantityInCart: p.quantityInCart - quantityChange } : p
+                                );
+                            } else {
+                                // Xử lý khi thêm hoặc thay đổi số lượng
+                                updatedProductList = item.productList.map(p =>
+                                    p.id === product.id ? { ...p, quantityInCart: p.quantityInCart + quantityChange } : p
+                                );
+                            }
                         }
-                        updatedProductList = item.productList.map(p =>
-                            p.id === record.id && p.price === record.price ? {...p, quantityInCart: p.quantityInCart + 1} : p
-                        );
                     } else {
-                        updatedProductList = [...(item.productList || []), {...record, quantityInCart: 1}];
+                        // Nếu sản phẩm chưa tồn tại trong danh sách
+                        updatedProductList = [...(item.productList || []), { ...product, quantityInCart: quantityChange }];
                     }
-
                     // Tính tổng tiền mới
-                    const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
-
-                    // Tự động tìm và áp dụng voucher tốt nhất
+                    const newTotalAmount = calculateTotalAmount({ productList: updatedProductList });
                     const voucherResult = findBestVoucher(newTotalAmount);
                     const discountAmount = voucherResult?.currentDiscount || 0;
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
-
                     // Cập nhật selectedVouchers
                     setSelectedVouchers(prev => ({
                         ...prev,
                         [currentBill]: voucherResult
                     }));
-
-                    // Cập nhật số lượng sản phẩm trong kho
-                    setProducts(prevProducts => prevProducts.map(
-                        (product) => product.id === record.id
-                            ? { ...product, quantity: product.quantity - 1 }
-                            : product
-                    ));
-
+                    const  count = updatedProductList.reduce((total, product) => total + (product.quantityInCart || 0), 0);
                     return {
                         ...item,
-                        productList: updatedProductList,
                         label: (
                             <span>
                                 {item.itemName} <Badge showZero={true} className={"mb-2"}
-                                                 count={updatedProductList?.length ?? 0}/>
+                                                       count={count}/>
                             </span>
                         ),
+                        productList: updatedProductList,
                         payInfo: {
                             ...item.payInfo,
                             amount: newTotalAfterDiscount,
@@ -417,6 +388,61 @@ const SalesPage = () => {
             })
         );
     };
+
+    const handleQuantityChange = (value, product) => {
+
+        if (value > product.quantity) {
+            toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`);
+            handleOnChangeQuantityProduct(product, product.quantity, false);
+            updateProductList(currentBill, product, product.quantity);
+        }
+
+        if (value > product.quantityInCart) {
+            const soLuongTru = value - product.quantityInCart;
+            updateProductList(currentBill, product, soLuongTru);
+            handleOnChangeQuantityProduct(product, soLuongTru, false);
+        }
+        if (value < product.quantityInCart) {
+            const soLuongRestore = product.quantityInCart - value;
+            updateProductList(currentBill, product, soLuongRestore, true);
+            handleOnChangeQuantityProduct(product, soLuongRestore, true);
+        }
+    };
+
+    const handleRemoveProduct = async (product) => {
+        const restoreQuantityPayload = [
+            {
+                id: product.id,
+                quantity: product.quantityInCart || 0,
+                isRestoreQuantity: true
+            }
+        ]
+        await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
+        updateProductList(currentBill, product, -product.quantityInCart, true, true);
+    };
+
+    const handleOnAddProductToBill = (record) => {
+        if (!currentBill) {
+            toast.warning("Vui lòng chọn hóa đơn trước khi thêm sản phẩm");
+            return;
+        }
+        if (record.quantity <= 0) {
+            toast.warning("Sản phẩm đã hết hàng");
+            return;
+        }
+        if (record.status === "NGUNG_HOAT_DONG") {
+            toast.warning("Sản phẩm đã ngừng bán hàng!");
+            return;
+        }
+        handleOnChangeQuantityProduct(record,1, false)
+        updateProductList(currentBill, record, 1);
+    };
+
+    const handleCheckAndAddVoucherToItem = () => {
+        return
+    }
+
+
 
 
     const getAllCustomer = () => {
@@ -442,54 +468,16 @@ const SalesPage = () => {
     };
 
 
-    const handleRemoveProduct = (product) => {
-        setItems(prevItems =>
-            prevItems.map(item =>
-                item.key === currentBill
-                    ? {
-                        ...item,
-                        productList: item.productList.filter(p => p.key !== product.key),
-                        payInfo: {
-                            ...item.payInfo,
-                            amount: calculateTotalAmount({productList: item.productList.filter(p => p.key !== product.key)}),
-                            change: (item.payInfo.customerMoney || 0) - calculateTotalAmount({productList: item.productList.filter(p => p.key !== product.key)})
-                        }
-                    }
-                    : item
-            )
-        );
-    };
-
-
-    const handleQuantityChange = (value, product) => {
-        setItems(prevItems =>
-            prevItems.map(item => {
-                if (item.key === currentBill) {
-                    const updatedProductList = item.productList.map(p => {
-                        if (p.id === product.id && p.price === product.price) {
-                            if (value > product.quantity) {
-                                toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`);
-                                return { ...p, quantityInCart: product.quantity };
-                            }
-                            return { ...p, quantityInCart: value };
-                        }
-                        return p;
-                    });
-                    const newAmount = calculateTotalAmount({ productList: updatedProductList });
-                    return {
-                        ...item,
-                        productList: updatedProductList,
-                        payInfo: {
-                            ...item.payInfo,
-                            amount: newAmount,
-                            change: (item.payInfo.customerMoney || 0) - newAmount
-                        }
-                    };
-                }
-                return item;
-            })
-        );
-    };
+    const handleOnChangeQuantityProduct = async (product, quantity, isRestore) => {
+        const restoreQuantityPayload = [
+            {
+                id: product.id,
+                quantity: quantity,
+                isRestoreQuantity : isRestore ?? true
+            }
+        ]
+        await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
+    }
 
     const onCustomerSelect = async (customer) => {
         // Nếu customer là null (trường hợp xóa selection)
@@ -593,7 +581,6 @@ const SalesPage = () => {
     const getAllVoucher = () => {
         axiosInstance.get(`${baseUrl}/api/admin/bill/vouchers`).then((res) => {
             setVouchers(res.data)
-            console.log(res.data)
         })
     }
 
@@ -812,7 +799,7 @@ const SalesPage = () => {
     }, [pdfUrl, isDocumentLoaded]);
 
     const handleOnPrintBill = async () => {
-        console.log("item, currentBill", items, currentBill)
+        // console.log("item, currentBill", items, currentBill)
         try {
             const id = items.find((item) => item.key === currentBill)?.billCode;
 
@@ -884,8 +871,7 @@ const SalesPage = () => {
                 specificAddress: address?.specificAddress,
             }
         }
-        console.log("detailAddress", detailAddress)
-        
+
         if(detailAddress?.wardId && detailAddress?.districtId){
              feeShipping = await calculateShippingFee({
                 toWardCode: String(detailAddress?.wardId),
@@ -952,7 +938,7 @@ const SalesPage = () => {
     }
 
     const  eventProductDetailChange = (value) => {
-        setItems(prevItems => 
+        setItems(prevItems =>
             prevItems.map(item => {
                 // Kiểm tra trong từng hóa đơn
                 const existingProductIndex = item.productList.findIndex(p => p.id === value.id);
@@ -967,13 +953,13 @@ const SalesPage = () => {
                     toast.success("Sản phẩm vừa được cập nhật")
                     // Tính lại tổng tiền
                     const newTotalAmount = calculateTotalAmount({productList: updatedProductList});
-                    
+
                     // Tìm và áp dụng lại voucher nếu có
                     const bestVoucher = findBestVoucher(newTotalAmount);
                     const discountAmount = bestVoucher
                         ? bestVoucher.currentDiscount
                         : 0;
-    
+
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
 
                     return {
@@ -992,6 +978,16 @@ const SalesPage = () => {
         );
     }
 
+
+    // Hàm xóa sản phẩm trong giỏ hàng
+    const resStoreQuantity = async (billRestore) => {
+        const restoreQuantityPayload = billRestore.productList.map(product => ({
+            id: product.id,
+            quantity: product.quantityInCart || 0
+        }));
+        await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
+    }
+
     const handleCloseTab = async (targetKey) => {
         try {
             const closingBill = items.find(item => item.key === targetKey);
@@ -999,13 +995,7 @@ const SalesPage = () => {
             if (!closingBill) return;
 
             if (!closingBill.isSuccess && closingBill.productList?.length > 0) {
-                const restoreQuantityPayload = closingBill.productList.map(product => ({
-                    id: product.id,
-                    quantity: product.quantityInCart || 0
-                }));
-
-                await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
-
+                await resStoreQuantity(closingBill)
                 setProducts(prevProducts => 
                     prevProducts.map(product => {
                         const returnProduct = closingBill.productList.find(p => p.id === product.id);

@@ -161,7 +161,7 @@ const ProductDetailModal = ({
     stompClient.onConnect = () => {
       stompClient.subscribe("/topic/product-updates", (message) => {
         const updatedProduct = JSON.parse(message.body);
-
+        console.log("updatedProduct ws", updatedProduct)
         setProducts(prevProducts => 
           prevProducts.map(product =>
             product.id === updatedProduct.id ? updatedProduct : product
