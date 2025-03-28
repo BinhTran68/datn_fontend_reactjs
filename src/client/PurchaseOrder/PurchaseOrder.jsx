@@ -421,7 +421,7 @@ const PurchaseOrder = () => {
 
     await cancelBill(cancelOrderId, finalReason);
     setShowCancelModal(false);
-    showNotification("Đơn hàng đã được hủy thành công");
+    // showNotification("Đơn hàng đã được hủy thành công");
   };
 
   // Close cancel modal

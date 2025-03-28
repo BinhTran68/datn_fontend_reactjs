@@ -9,6 +9,8 @@ import MenuList from "./dashboard/MenuList.jsx";
 import BillList from "./bill/BillList.jsx";
 import img from "./../../public/img/thehands.png";
 import { COLORS } from "../constants/constants.js";
+import ChatWidget from "../client/component/Chat/ChatWidget.jsx";
+import { useWebSocket } from "../client/componetC/Socket.js";
 
 const { Header, Sider } = Layout;
 
@@ -16,6 +18,7 @@ function Admin() {
   const [darkTheme, setDarkTheme] = useState(false);
   const [collapse, setCollapse] = useState(false);
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")));
+console.log("dây la use nè ",user);
 
   const toggleTheme = () => {
     setDarkTheme(!darkTheme);
@@ -41,7 +44,25 @@ function Admin() {
     setUser(null);
     navigate("/login");
   };
+ const [messages, setMessages] = useState([]);
 
+  // Hàm xử lý tin nhắn từ WebSocket
+  const handleNewMessage = (newMsg) => {
+    console.log("📨 Nhận tin nhắn bên ngoài:", newMsg);
+    setMessages((prev) => [...prev, newMsg]);
+  };
+  const { connectWS, disconnectWS } = useWebSocket(
+    "/topic/anou",
+    handleNewMessage
+  );
+
+  useEffect(() => {
+    connectWS(); // Kết nối WebSocket khi component mount
+
+    return () => {
+      disconnectWS(); // Ngắt kết nối khi component unmount
+    };
+  }, []);
   return (
     <Layout>
       <Sider
@@ -142,6 +163,8 @@ function Admin() {
         <Content>
           <div style={{ padding: "20px" }}>
             <Outlet />
+            <ChatWidget  staffId={user?.id} senderType={"STAFF"} anou={messages}/>
+
           </div>
         </Content>
       </Layout>

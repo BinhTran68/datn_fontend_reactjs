@@ -456,7 +456,7 @@ const SalesPage = () => {
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
                     dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
-                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    status: item.status,
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
                     addresses: item.addresses,

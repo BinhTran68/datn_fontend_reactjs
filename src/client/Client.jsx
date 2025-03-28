@@ -1,52 +1,56 @@
 import React, { useEffect, useState } from "react";
-
 import { Outlet } from "react-router-dom";
 import Footer from "./component/Footer";
 import HeaderNav from "./component/HeaderNav/HeaderNav.jsx";
-import {Card, Drawer, Layout, Modal} from "antd";
-import { Content, Header } from "antd/es/layout/layout";
-import Nav from "./component/Nav/Nav.jsx";
-import { ProductProvider } from "../store/ProductContext";
-import {FaAnchorCircleXmark, FaXmark} from "react-icons/fa6";
-// import "bootstrap/dist/css/bootstrap.min.css";
+import { Layout } from "antd";
+import { Content } from "antd/es/layout/layout";
+import { Client } from "@stomp/stompjs";
+import ChatWidget from "./component/Chat/ChatWidget.jsx";
+import { useWebSocket } from "./componetC/Socket.js";
 
 const App = () => {
-  const [searchValue, setSearchValue] = useState("");
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
+  const [messages, setMessages] = useState([]);
 
-  // useEffect(() => {
-  //     // Gọi hàm clearGuestCart khi component được render
-  //     clearGuestCart();
-  // }, [clearGuestCart]); // Chỉ gọi lại nếu clearGuestCart thay đổi
+  // Hàm xử lý tin nhắn từ WebSocket
+  const handleNewMessage = (newMsg) => {
+    console.log("📨 Nhận tin nhắn bên ngoài:", newMsg);
+    setMessages((prev) => [...prev, newMsg]);
+  };
+  const { connectWS, disconnectWS } = useWebSocket(
+    "/topic/anou",
+    handleNewMessage
+  );
+
+  useEffect(() => {
+    connectWS(); // Kết nối WebSocket khi component mount
+
+    return () => {
+      disconnectWS(); // Ngắt kết nối khi component unmount
+    };
+  }, []);
 
   return (
-    <div className="">
-
-
-      <Layout>
-
-        <Content
-          style={{
-            backgroundColor: "white",
-          }}
-        >
-          <HeaderNav />
-        </Content>
-        <Content>
-
-          <div className="container">
-            {/* <Nav/> */}
-            <Outlet/>
-          </div>
-        </Content>
-        <Content
-            style={{
-              backgroundColor: "white",
-          }}
-        >
-          <Footer />
-        </Content>
-      </Layout>
-    </div>
+    <Layout>
+      <Content style={{ backgroundColor: "white" }}>
+        <HeaderNav />
+      </Content>
+      <Content>
+        <div className="container">
+          <Outlet />
+          <ChatWidget
+            customerId={user?.id}
+            senderType={"CUSTOMER"}
+            anou={messages}
+          />
+        </div>
+      </Content>
+      <Content style={{ backgroundColor: "white" }}>
+        <Footer />
+      </Content>
+    </Layout>
   );
 };
 

@@ -427,7 +427,7 @@ const ProductDetailDrawer = () => {
       render: (text, record) => (
         <InputNumber
           min={1}
-          max={9999999}
+          max={99999999}
           step={10000}
           maxLength={8}
           value={record.price}
@@ -670,7 +670,9 @@ const ProductDetailDrawer = () => {
                 </Col>
               </Row>
             </Col>
-            <Col span={8}>
+           
+          </Row>
+          <Row> <Col span={8}>
               <div>Màu sắc</div>
               <Row gutter={[5, 0]}>
                 <Col>
@@ -736,8 +738,7 @@ const ProductDetailDrawer = () => {
                   </Button>
                 </Col>
               </Row>
-            </Col>
-          </Row>
+            </Col></Row>
         </Card>
       </Col>
       <Col span={24}>
@@ -812,6 +813,7 @@ const ProductDetailDrawer = () => {
               min={1}
               max={99999999}
               maxLength={8}
+              step={10000}
               value={commonPrice}
               onChange={setCommonPrice}
               suffix="VNĐ"
@@ -821,8 +823,8 @@ const ProductDetailDrawer = () => {
             <InputNumber
               style={{ width: "100%" }}
               min={1}
-              max={10000}
-              maxLength={5}
+              max={9999}
+              maxLength={4}
               value={commonWeight}
               onChange={setCommonWeight}
               suffix="gram"
