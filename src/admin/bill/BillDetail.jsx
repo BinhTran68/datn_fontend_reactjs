@@ -179,7 +179,23 @@ const columnsBillProductDetailTable = [
         title: 'Đơn giá',
         dataIndex: 'price',
         key: 'price',
-    }
+    },
+    {
+        title: 'Hành động',
+        dataIndex: 'action',
+        key: 'action',
+        render: (_, record) => (
+            <Button
+                type="primary"
+                onClick={() => {
+                    console.log(record?.productName);
+                }}
+            >
+                Xóa
+            </Button>
+        ),
+
+    },
 ];
 
 const columnsBillHistory = [
@@ -771,7 +787,6 @@ const BillDetail = () => {
                             <Tag style={{fontSize: 16}}
                                  color="blue">  {currentBill?.customerName ? currentBill.customerName : "Khách lẻ"}</Tag>
                         </Descriptions.Item>
-
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Loại  </span>}>
                             <Tag style={{fontSize: 16}} color="purple">
                                 {currentBill?.billType ?? ""}
@@ -781,9 +796,13 @@ const BillDetail = () => {
                             <Tag style={{fontSize: 16}}
                                  color="blue">  {currentBill?.customerPhone ? currentBill.customerPhone : "Khách lẻ"}</Tag>
                         </Descriptions.Item>
+                        <Descriptions.Item label={<span className={"fw-bold text-black"}>Email</span>} span={2}>
+                            {currentBill?.email}
+                        </Descriptions.Item>
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Địa chỉ  </span>} span={2}>
                             {addressString}
                         </Descriptions.Item>
+
                         <Descriptions.Item label={<span className={"fw-bold text-black"}>Ghi chú  </span>} span={2}>
                             {currentBill?.notes ?? ""}
                         </Descriptions.Item>
@@ -844,6 +863,7 @@ const BillDetail = () => {
                                 <p><strong>Sản phẩm:</strong> {selectedProduct.productName}</p>
                                 <p><strong>Giá:</strong> {formatVND(selectedProduct.price)}</p>
                                 <p><strong>Tồn kho:</strong> {selectedProduct.quantity}</p>
+                                <p><strong>Giá cũ:</strong> {formatVND(selectedProduct.oldPrice || 0)}</p>
                             </div>
                         )}
 
@@ -861,6 +881,8 @@ const BillDetail = () => {
                         <div>
                             <p><strong>Thành tiền:</strong> {formatVND(inputQuantity * (selectedProduct?.price || 0))}</p>
                         </div>
+
+
                     </div>
                 </Modal>
 
