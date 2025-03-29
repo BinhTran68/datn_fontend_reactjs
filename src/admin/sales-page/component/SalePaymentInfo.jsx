@@ -60,11 +60,7 @@ const SalePaymentInfo = ({
                                 isCOD,
                              handleCheckIsCOD
                          }) => {
-    console.log("shippingFee", selectedVouchers)
     const missingAmount = Math.max(0, amount+shippingFee - customerMoney); // Không cộng cho discount nữa
-
-    console.log("change", change)
-
     return (
         <>
 

@@ -7,7 +7,7 @@ import {
   UserOutlined,
   SettingOutlined,
   ProductOutlined,
-  BgColorsOutlined,
+  BgColorsOutlined, CommentOutlined,
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye } from "react-icons/fa6";
@@ -163,6 +163,11 @@ const MenuList = ({ darkTheme }) => {
         <Menu.Item key="progress" icon={<AreaChartOutlined size={iconSize} />}>
           <Link to={"statistical"}>Thống kê</Link>
         </Menu.Item>
+
+        <Menu.Item key="comments" icon={<CommentOutlined size={iconSize} />}>
+          <Link to={"comments"}>Quản lý bình luận</Link>
+        </Menu.Item>
+
         <Menu.SubMenu
           key="submn3"
           icon={<BiSolidDiscount size={iconSize} />}

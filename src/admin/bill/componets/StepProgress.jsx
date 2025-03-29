@@ -7,32 +7,39 @@ import {FaTruckArrowRight, FaTruckFast} from "react-icons/fa6";
 import {LiaAmazonPay} from "react-icons/lia";
 import {convertBillStatusToString, convertLongTimestampToDate} from "../../../helpers/Helpers.js";
 import {CiBookmarkPlus} from "react-icons/ci";
+import {HiOutlineShieldCheck} from "react-icons/hi";
+import {FcCancel} from "react-icons/fc";
 
 const StepProgress = ({steps, currentStep, billHistoryList}) => {
     const defaultStep = 6;
-    
+
     const sizeIcon = 42;
-    
+
     const genIconStepBySatatus = (step) => {
-        switch(step) {
+        console.log("genIconStepBySatatus" , step )
+        switch (step) {
             case "TAO_DON_HANG":
-                return <CiBookmarkPlus size={sizeIcon} />;
+                return <CiBookmarkPlus size={sizeIcon}/>;
             case "CHO_XAC_NHAN":
-                return <LuClipboardPenLine size={sizeIcon} />;
+                return <LuClipboardPenLine size={sizeIcon}/>;
             case "DA_XAC_NHAN":
-                return <LuClipboardCheck size={sizeIcon} />;
+                return <LuClipboardCheck size={sizeIcon}/>;
             case "CHO_VAN_CHUYEN":
-                return <FaTruckArrowRight size={sizeIcon} />;
+                return <FaTruckArrowRight size={sizeIcon}/>;
             case "DANG_VAN_CHUYEN":
-                return <FaTruckFast size={sizeIcon} />;
+                return <FaTruckFast size={sizeIcon}/>;
             case "DA_GIAO_HANG":
-                return <LuClipboardCheck size={sizeIcon} />;
+                return <LuClipboardCheck size={sizeIcon}/>;
             case "DA_THANH_TOAN":
-                return <LiaAmazonPay size={sizeIcon} />;
+                return <LiaAmazonPay size={sizeIcon}/>;
             case "DA_HOAN_THANH":
-                return <LuClipboardCheck size={sizeIcon} />;
+                return <LuClipboardCheck size={sizeIcon}/>;
+            case "DANG_XAC_MINH":
+                return <HiOutlineShieldCheck size={sizeIcon}/>;
+            case "DA_HUY":
+                return <FcCancel  size={sizeIcon}/>;
             default:
-                return <CiBookmarkPlus size={sizeIcon} />;
+                return <CiBookmarkPlus size={sizeIcon}/>;
         }
     }
 
@@ -41,12 +48,12 @@ const StepProgress = ({steps, currentStep, billHistoryList}) => {
         fullBillHistoryList.push({
             id: `placeholder-${fullBillHistoryList.length}`,
             status: null,
-            createdAt: null,    
+            createdAt: null,
         });
     }
 
     return (
-        <div className="d-flex align-items-center" style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+        <div className="d-flex align-items-center" style={{overflowX: 'auto', whiteSpace: 'nowrap'}}>
             {fullBillHistoryList.map((step, index) => (
                 <div
                     key={step.id}

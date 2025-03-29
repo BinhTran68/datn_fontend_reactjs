@@ -41,6 +41,7 @@ import { addToCart, clearCart, getCart } from "../cart/cart.js";
 import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
 import { addToBill } from "../cart/bill.js";
 import { toast } from "react-toastify";
+import CommentSection from "./CommentSection.jsx";
 
 function ProductDetail() {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL
@@ -441,11 +442,12 @@ function ProductDetail() {
                       defaultValue={1}
                       value={quantityAddCart}
                       min={1}
-                      max={50}
+                      max={100}
                       onChange={(value) => {
                         setQuantityAddCart(value); // Cập nhật state khi thay đổi số lượng
                       }}
                     />
+                    <div>Số lượng còn: {getProductDetail.quantity}</div>
                   </Col>
                 </Row>
               </Col>
@@ -472,8 +474,10 @@ function ProductDetail() {
                       // clearCart()
                       const user = JSON.parse(localStorage.getItem(`user`));
                       if (quantityAddCart > getProductDetail.quantity) {
-                        toast.warn("số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có")
-                        return
+                        toast.warn(
+                          "số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
+                        );
+                        return;
                       }
                       if (user) {
                         await addProductToCart({
@@ -496,7 +500,6 @@ function ProductDetail() {
                           colorName: getProductDetail.colorName,
                         });
                         window.dispatchEvent(new Event("cartUpdated"));
-
                       }
 
                       // notification.success({
@@ -506,7 +509,7 @@ function ProductDetail() {
                       //   showProgress: true,
                       //   description: `Thêm vào giỏ hàng thành công!`,
                       // });
-                      message.success("Thêm vào giỏ hàng thành công!");
+                      toast.success("Thêm vào giỏ hàng thành công!");
                       console.log(getCart());
                     }}
                   >
@@ -524,8 +527,10 @@ function ProductDetail() {
                     }}
                     onClick={() => {
                       if (quantityAddCart > getProductDetail.quantity) {
-                        toast.warn("số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có")
-                        return
+                        toast.warn(
+                          "số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
+                        );
+                        return;
                       }
                       addToBill({
                         productDetailId: getProductDetail.id,
@@ -708,9 +713,8 @@ function ProductDetail() {
           >
             DÁNH GIÁ SẢN PHẨM
           </Col>
-          <Col>
-            Sougayilang X + 4 100M Dây câu PE bện siêu dòng Kéo tối đa 66LB Danh
-            sách gói: 1pc dây câu Chi tiết sản phẩm: 1.Thương hiệu: Sougayilang
+          <Col span={24}>
+            <CommentSection id={getProductDetail.id} />
           </Col>
         </Row>
       </Content>
@@ -729,7 +733,7 @@ function ProductDetail() {
           >
             SẢN PHẨM NỔI BẬT
           </Col>
-          <Col>
+          <Col span={24}>
             <Row gutter={[5, 5]}>
               {productHadviewsDescs?.map((product, index) => (
                 <Col

@@ -29,7 +29,7 @@ import ProductDetail from "../admin/product/ProductDetail/ProductDetail.jsx";
 import Product from "../admin/product/Product/Product.jsx";
 import Gender from "../admin/product/Gender/Gender.jsx";
 import GetProductDetail from "../admin/product/Product/GetProductDetail.jsx";
-
+import AddComponet from "../admin/product/ProductDetail/AddComponent.jsx";
 import Detail from "../admin/product/ProductDetail/Detail.jsx";
 
 import AddCustomer from "../customer/AddCustomer.jsx";
@@ -38,6 +38,7 @@ import AddStaff from "../admin/staff/AddStaff.jsx";
 import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
 import {getRole} from "../helpers/Helpers.js";
+import Comments from "../admin/comments/Comments.jsx";
 // import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
@@ -129,7 +130,7 @@ const AdminRouters = {
         },
         {
             path: "product/add",
-            element: <PrivateRoute element={<AddProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddComponet/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
         {
 
@@ -216,6 +217,10 @@ const AdminRouters = {
             element: <PrivateRoute element={<EditStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
         },
 
+        {
+            path: "comments",
+            element: <PrivateRoute element={<Comments/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
     
 
     ],

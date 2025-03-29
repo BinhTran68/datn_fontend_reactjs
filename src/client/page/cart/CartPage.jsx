@@ -403,7 +403,7 @@ const CartPage = () => {
             />
             <InputNumber
               min={1}
-              max={100}
+              // max={100}
               value={Math.min(record.quantityAddCart,realPriceItem?.quantity)}
               onChange={(value) => handleQuantityChange(index, value,realPriceItem.quantity)}
               style={{ width: "50px" }}
@@ -675,22 +675,23 @@ const CartPage = () => {
                                   color: "#888",
                                 }}
                               >
-                                - Giảm {item.discountValue}{" "}
-                                {item.discountType === "MONEY" ? "đ" : `%`}
+                                - Giảm {item.discountType === "MONEY"?item.discountValue.toLocaleString() +"đ":item.discountValue+"%"}{" "}
                                 {item.discountType === "MONEY"
                                   ? ""
-                                  : `Tối đa ${item.discountMaxValue}đ`}
+                                  : `Tối đa ${item.discountMaxValue.toLocaleString()}đ`}
                               </span>
-                              <p>
+                              <div>
                                 <Text type="success">
-                                  Đơn tối thiểu {item.billMinValue} đ
-                                </Text>
-                              </p>
-                              <p>
-                                <Text type="warning">
+                                  Đơn tối thiểu {item.billMinValue.toLocaleString()} đ
+                                </Text>                
+                              </div>
+                              <span>{item.endDate}</span>
+                              <div>
+                                <Text type="danger">
+                            
                                   Số lượng {item.quantity}
                                 </Text>
-                              </p>
+                              </div>
                             </div>
                           </div>
                         </Select.Option>
