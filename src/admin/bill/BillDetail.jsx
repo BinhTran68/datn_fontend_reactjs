@@ -21,7 +21,13 @@ import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
 import axiosInstance from "../../utils/axiosInstance.js";
 import ProductDetailModal from "../sales-page/component/ProductDetailModal.jsx";
 import {toast} from "react-toastify";
-import {CheckOutlined, EditFilled, ExclamationCircleFilled, SelectOutlined} from "@ant-design/icons";
+import {
+    CheckOutlined,
+    EditFilled,
+    ExclamationCircleFilled,
+    ExclamationCircleOutlined,
+    SelectOutlined
+} from "@ant-design/icons";
 import {Viewer} from "@react-pdf-viewer/core";
 
 // Import styles
@@ -195,7 +201,13 @@ const BillDetail = () => {
                 title: 'Đơn giá',
                 dataIndex: 'price',
                 key: 'price',
-                render: (price, record) => formatVND(price * record.quantity),
+                render: (price, record) => formatVND(price),
+            },
+            {
+                title: 'Tổng tiền',
+                dataIndex: 'totalPrice',
+                key: 'totalPrice',
+                render: (price, record) => formatVND(record.price * record.quantity),
             },
             // Ẩn cột "Hành động" nếu không đang chỉnh sửa
             ...(isEditingProduct ? [{
@@ -206,7 +218,7 @@ const BillDetail = () => {
                     <Button
                         type="primary"
                         onClick={() => {
-                            if(billEditProductDetails.length === 1) {
+                            if (billEditProductDetails.length === 1) {
                                 toast.warning("Không thể xóa sản phẩm này");
                                 return;
                             }
@@ -525,7 +537,7 @@ const BillDetail = () => {
             {
                 key: '3',
                 label: 'Voucher áp dụng',
-                children: currentBill?.voucherReponse?.voucherName,
+                children: currentBill?.voucherReponse?.voucherCode,
             },
             {
                 key: '3',
@@ -556,35 +568,31 @@ const BillDetail = () => {
             setModalType(modalUpdateStatusBillType);
         };
 
-        const handleOnAddProductToBill = (product) => {
-            let existingProductIndex = billEditProductDetails.findIndex(item => item.productDetailId === product.id);
-            // Gọi api check số lượng đủ không
-            //
-            if (existingProductIndex !== -1) {
-                const updatedProducts = [...billEditProductDetails];
-                updatedProducts[existingProductIndex].quantity += inputQuantity; // Increase quantity
-                setBillEditProductDetails(updatedProducts);
-            } else {
-                // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới
-                const newProduct = {
-                    ...product,
-                    productDetailId: product.id,
-                    quantity: inputQuantity
-                };
-                setBillEditProductDetails([...billEditProductDetails, newProduct]);
-            }
+    const handleOnAddProductToBill = (product) => {
+        let existingProductIndex = billEditProductDetails.findIndex(
+            item => item.productDetailId === product.id && item.price === product.price
+        );
 
-            // const updatedProductsArray = products.map(item => {
-            //     if (item.id === product.id) {
-            //         return { ...item, quantity: item.quantity - inputQuantity }; // Decrease quantity
-            //     }
-            //     return item; // Keep other products unchanged
-            // });
-            // setProducts(updatedProductsArray); // Update the products state
-            setInputQuantity(1); // Reset input quantity
-        };
+        if (existingProductIndex !== -1) {
+            // Nếu sản phẩm có cùng ID và cùng giá đã tồn tại, chỉ tăng số lượng
+            const updatedProducts = [...billEditProductDetails];
+            updatedProducts[existingProductIndex].quantity += inputQuantity;
+            setBillEditProductDetails(updatedProducts);
+        } else {
+            // Nếu chưa tồn tại sản phẩm có cùng ID và giá, thêm mới
+            const newProduct = {
+                ...product,
+                productDetailId: product.id,
+                quantity: inputQuantity
+            };
+            setBillEditProductDetails([...billEditProductDetails, newProduct]);
+        }
 
-        const calculateTotals = () => {
+        setInputQuantity(1);
+    };
+
+
+    const calculateTotals = () => {
             const totalAmount = billEditProductDetails.reduce((total, product) => total + (product.price * product.quantity), 0);
             const shippingFee = currentBill?.shipMoney || 0; // Assuming shipMoney is part of currentBill
             const discountValue = discount || 0; // Assuming discountMoney is part of currentBill
@@ -669,64 +677,77 @@ const BillDetail = () => {
             }
         };
 
-    const checkAndApplyVoucher = (voucher) => {
+        const checkAndApplyVoucher = (voucher) => {
 
-        const totalAmount = billEditProductDetails.reduce(
-            (total, product) => total + (product.price * product.quantity), 0
-        );
-        console.log(billEditProductDetails)
+            const totalAmount = billEditProductDetails.reduce(
+                (total, product) => total + (product.price * product.quantity), 0
+            );
+            console.log(billEditProductDetails)
 
-        const isVoucherApplicable = totalAmount >= (voucher?.billMinValue || 0);
+            const isVoucherApplicable = totalAmount >= (voucher?.billMinValue || 0);
 
-        if (isVoucherApplicable) {
-            console.log("isVoucherApplicable ", isVoucherApplicable)
-            setSelectedVouchers(voucher);
+            if (isVoucherApplicable) {
+                console.log("isVoucherApplicable ", isVoucherApplicable)
+                setSelectedVouchers(voucher);
 
-            let discountValue = voucher?.discountType === "MONEY"
-                ? voucher?.discountValue
-                : (totalAmount * voucher?.discountValue) / 100;
+                let discountValue = voucher?.discountType === "MONEY"
+                    ? voucher?.discountValue
+                    : (totalAmount * voucher?.discountValue) / 100;
 
-            if (voucher?.discountMaxValue && discountValue > voucher?.discountMaxValue) {
-                discountValue = voucher?.discountMaxValue;
-            }
-
-            // Đảm bảo giảm giá không lớn hơn tổng tiền
-            discountValue = Math.min(discountValue, totalAmount);
-
-            setDiscount(discountValue);
-        } else {
-            console.log("!isVoucherApplicable ", isVoucherApplicable)
-            if (currentVoucher && totalAmount >= (currentVoucher?.billMinValue || 0)) {
-                setSelectedVouchers(currentVoucher);
-
-                let previousDiscountValue = currentVoucher?.discountType === "MONEY"
-                    ? currentVoucher.discountValue
-                    : (totalAmount * currentVoucher.discountValue) / 100;
-
-                if (currentVoucher.discountMaxValue && previousDiscountValue > currentVoucher.discountMaxValue) {
-                    previousDiscountValue = currentVoucher.discountMaxValue;
+                if (voucher?.discountMaxValue && discountValue > voucher?.discountMaxValue) {
+                    discountValue = voucher?.discountMaxValue;
                 }
 
                 // Đảm bảo giảm giá không lớn hơn tổng tiền
-                previousDiscountValue = Math.min(previousDiscountValue, totalAmount);
+                discountValue = Math.min(discountValue, totalAmount);
 
-                setDiscount(previousDiscountValue);
+                setDiscount(discountValue);
             } else {
                 console.log("!isVoucherApplicable ", isVoucherApplicable)
-                setSelectedVouchers(null);
-                setDiscount(0);
+                if (currentVoucher && totalAmount >= (currentVoucher?.billMinValue || 0)) {
+                    setSelectedVouchers(currentVoucher);
+
+                    let previousDiscountValue = currentVoucher?.discountType === "MONEY"
+                        ? currentVoucher.discountValue
+                        : (totalAmount * currentVoucher.discountValue) / 100;
+
+                    if (currentVoucher.discountMaxValue && previousDiscountValue > currentVoucher.discountMaxValue) {
+                        previousDiscountValue = currentVoucher.discountMaxValue;
+                    }
+
+                    // Đảm bảo giảm giá không lớn hơn tổng tiền
+                    previousDiscountValue = Math.min(previousDiscountValue, totalAmount);
+
+                    setDiscount(previousDiscountValue);
+                } else {
+                    console.log("!isVoucherApplicable ", isVoucherApplicable)
+                    setSelectedVouchers(null);
+                    setDiscount(0);
+                }
             }
-        }
-    };
+        };
 
 
-    // Function to handle voucher selection
+        // Function to handle voucher selection
         const handleOnSelectedVoucher = (voucher) => {
             setCurrentVoucher(voucher); // Save the selected voucher as currentVoucher
             checkAndApplyVoucher(voucher);
         };
 
         const {totalAmount, shippingFee, discountValue, finalAmount} = calculateTotals();
+
+        const showConfirmSaveProductBill = () => {
+            Modal.confirm({
+                title: "Xác nhận cập nhật",
+                icon: <ExclamationCircleOutlined/>,
+                content: "Bạn có chắc chắn muốn cập nhật sản phẩm không?",
+                okText: "Xác nhận",
+                cancelText: "Hủy",
+                onOk: handleSaveNewUpdateProduct, // Gọi hàm cập nhật khi nhấn OK
+            });
+        };
+
+
         const handleSaveNewUpdateProduct = async () => {
             const payload = {
                 moneyBeforeDiscount: totalAmount,
@@ -734,7 +755,7 @@ const BillDetail = () => {
                 discountMoney: discount,
                 totalMoney: finalAmount, // Tiền sau giảm giá
                 productDetailRequestList: billEditProductDetails,
-                voucherCode : selectedVouchers?.voucherCode
+                voucherCode: selectedVouchers?.voucherCode
             };
             try {
                 const response = await updateProductBill(id, payload)
@@ -892,7 +913,7 @@ const BillDetail = () => {
                         <h3>Thông tin sản phẩm đã mua</h3>
                         <div className={"d-flex gap-3"}>
                             {
-                                ["CHO_XAC_NHAN", "CHO_XAC_MINH"].includes(currentBill?.status) &&  !isEditingProduct &&
+                                ["CHO_XAC_NHAN", "CHO_XAC_MINH"].includes(currentBill?.status) && !isEditingProduct &&
                                 <Button
                                     type={"primary"}
                                     onClick={() => setIsEditingProduct(true)}
@@ -980,7 +1001,7 @@ const BillDetail = () => {
                                                                 <FaCheckCircle color={COLORS.success}/>
                                                                 <div>
                                                                     <div style={{fontWeight: 'bold'}}>
-                                                                        Đã áp dụng voucher tốt nhất:
+                                                                        Đã áp dụng voucher
                                                                     </div>
                                                                     <div>
                                                                         {selectedVouchers?.voucherName} - Giảm {' '}
@@ -1110,7 +1131,7 @@ const BillDetail = () => {
                                         isEditingProduct && <div className={"d-flex justify-content-end"}>
                                             <Button
                                                 type={"primary"}
-                                                onClick={handleSaveNewUpdateProduct}
+                                                onClick={showConfirmSaveProductBill}
                                                 primary
                                                 icon={<CheckOutlined/>}
                                             >
