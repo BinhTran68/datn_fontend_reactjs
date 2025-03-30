@@ -395,6 +395,8 @@ const Size = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
+
             />
           </Col>
 
@@ -407,6 +409,7 @@ const Size = () => {
             >
               Tìm kiếm
             </Button>
+            
           </Col>
         </Row>
 
@@ -419,6 +422,16 @@ const Size = () => {
             style={{}}
           >
             Thêm Kích cỡ
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{marginLeft:"2rem"}}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}

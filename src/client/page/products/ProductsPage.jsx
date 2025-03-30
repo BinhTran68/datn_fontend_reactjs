@@ -1,335 +1,393 @@
-// import React from 'react'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
+import style from "../TestComponent/TestComponent.module.css";
+import clsx from "clsx";
+import styles from "./Product.module.css";
+
 // import "bootstrap/dist/css/bootstrap.min.css";
-import Button from 'react-bootstrap/Button';
-import FormRange from 'react-bootstrap/FormRange';
-import Offcanvas from 'react-bootstrap/Offcanvas';
-import Form from 'react-bootstrap/Form';
-import Pagination from 'react-bootstrap/Pagination';
-import Carousel from 'react-bootstrap/Carousel';
-// import ExampleCarouselImage from 'components/ExampleCarouselImage';
+import PropProduct from "./PropProduct.jsx";
+import { Content } from "antd/es/layout/layout.js";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Flex,
+  InputNumber,
+  Layout,
+  Menu,
+  message,
+  Radio,
+  Rate,
+  Row,
+  Select,
+  Slider,
+  Space,
+} from "antd";
+import Sider from "antd/es/layout/Sider.js";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  LaptopOutlined,
+  NotificationOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { COLORS } from "../../../constants/constants.js";
+import {
+  apiAddViewProduct,
+  getAllProductHadCreatedAtDesc,
+  getAllProducthadPromotion,
+  getAllProducthadSoldDesc,
+  getAllProducthadViewsDesc,
+} from "./api.js";
+import { FaFilter } from "react-icons/fa";
+import { FiFilter } from "react-icons/fi";
+import { Link } from "react-router-dom";
+const url = "https://res.cloudinary.com/dieyhvcou/image/upload/v1742735758/5_1_b5fisz.png"
+const products = [
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Hot",
+    rate: 5,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Best Sale",
+    rate: 4,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Flash Sale",
+    rate: 3,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Flash Sale",
+    rate: 3,
+  },
+];
 
-import { Container, Row, Col, Card } from 'react-bootstrap';
+const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
+  (icon, index) => {
+    const key = String(index + 1);
+    return {
+      key: `sub${key}`,
+      icon: React.createElement(icon),
+      label: `Danh mục ${key}`,
+      children: new Array(4).fill(null).map((_, j) => {
+        const subKey = index * 4 + j + 1;
+        return {
+          key: subKey,
+          label: `danh mục con${subKey}`,
+        };
+      }),
+    };
+  }
+);
 
-const ProductsPage = () => {
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  const [validated, setValidated] = useState(false);
+function ProductsPage() {
+  const [range, setRange] = useState([]); // Giá trị mặc định
 
-  const products = [
-    {
-      id: 1,
-      title: "Giày Nike Zoom Vapor Pro 2 HC 'White'",
-      code: "DR6191-101",
-      price: "3,500,000 ₫ – 3,100,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png " ,
-    },
-    {
-      id: 2,
-      title: "Giày Tennis Asics Court FF Novak 'Cranberry White'",
-      code: "1041A089-605",
-      price: "4,500,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 3,
-      title: "Giày Lacoste Tennis AG-LT23 Ultra 'Green White'",
-      code: "47SMA0101-2D2",
-      price: "5,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 4,
-      title: "Giày Adidas Barricade 13 'White Lucid Blue'",
-      code: "IF9129",
-      price: "3,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 5,
-      title: "Giày Nike Zoom Vapor Pro 2 HC 'White'",
-      code: "DR6191-101",
-      price: "3,500,000 ₫ – 3,100,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 6,
-      title: "Giày Tennis Asics Court FF Novak 'Cranberry White'",
-      code: "1041A089-605",
-      price: "4,500,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 7,
-      title: "Giày Lacoste Tennis AG-LT23 Ultra 'Green White'",
-      code: "47SMA0101-2D2",
-      price: "5,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 8,
-      title: "Giày Adidas Barricade 13 'White Lucid Blue'",
-      code: "IF9129",
-      price: "3,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+  // productHadCreatedAtDescs
+  const [productHadCreatedAtDescs, setProductHadCreatedAtDescs] = useState();
+  const [pagePeoductHadCreatedAtDesc, setPagePeoductHadCreatedAtDesc] =
+    useState({
+      current: 1,
+      pageSize: 8,
+    });
+  //
+  // productHadCreatedAtDescs
+  const [productHadviewsDescs, setProductHadviewsDescs] = useState();
+  const [PageProductHadviewsDescs, setPageProductHadviewsDescs] = useState({
+    current: 1,
+    pageSize: 8,
+  });
+  //
+  // productHadCreatedAtDescs
+  const [productHadPromotions, setProductHadPromotions] = useState();
+  const [pageProductHadPromotion, setPageProductHadPromotion] = useState({
+    current: 1,
+    pageSize: 8,
+  });
+  //
+  // productHadCreatedAtDescs
+  const [productHadSolDescs, setProductHadSolDescs] = useState();
+  const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
+    current: 1,
+    pageSize: 8,
+  });
+  //
+
+  useEffect(() => {
+
+    getAllProductHadSoldDescs();
+  }, []);
+
+
+  
+
+
+
+  const getAllProductHadSoldDescs = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllProducthadSoldDesc(pageProductHadSolDescs);
+      console.log(
+        "Response tất cá sản phẩm có lươt bán từ nhiều tới ít:",
+        response
+      ); // Log response để kiểm tra dữ liệu trả về
+      setProductHadSolDescs(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addViewProduct = async (productId) => {
+    setLoading(true);
+    try {
+      const response = await apiAddViewProduct(productId);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="container">
-
-        <header >
-          <Carousel>
-            <Carousel.Item interval={500}>
-              <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-              <Carousel.Caption>
-                <h3>aaaaa</h3>
-                <p>ccccccc</p>
-              </Carousel.Caption>
-
-            </Carousel.Item>
-            <Carousel.Item interval={500}>
-            <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-
-              <Carousel.Caption>
-                <h3>Second slide label</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              </Carousel.Caption>
-            </Carousel.Item >
-
-            <Carousel.Item interval={500}>
-            <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-
-              <Carousel.Caption>
-                <h3>Third slide label</h3>
-                <p>
-                  Praesent commodo cursus magna, vel scelerisque nisl consectetur.
-                </p>
-              </Carousel.Caption>
-            </Carousel.Item>
-          </Carousel>
-        </header>
-        <div className='row'>
-
-        <aside className='col-3' style={{paddingTop:'24px'}}>
-          <Button variant="light" onClick={handleShow} style={{ fontWeight: 'bolder' }} >
-            Lọc theo
-          </Button>
-          {/* <img src="https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png" alt="" /> */}
-
-          <Offcanvas show={show} onHide={handleClose}>
-            <Offcanvas.Header closeButton>
-              <Offcanvas.Title>Bộ  Lọc</Offcanvas.Title>
-            </Offcanvas.Header>
-            <Offcanvas.Body>
-              <Form>
-                {['checkbox'].map((type) => (
-                  <div key={`inline-${type}`} className="mb-3" >
-                    <h6>Giới tính</h6>
-                    <Form.Check
-                      inline
-                      label="Nam"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-1`}
+    <>
+      <Content>
+        <Layout>
+          <Sider width={200} style={{ backgroundColor: "white" }}>
+            {/* <Menu
+              mode="inline"
+              defaultSelectedKeys={["1"]}
+              defaultOpenKeys={["sub1"]}
+              style={{
+                height: "100%",
+              }}
+              items={items2}
+            /> */}
+            <Content
+              style={{
+                padding: "0.5rem",
+                // color: `${COLORS.pending}`,
+              }}
+            >
+              <Flex vertical gap={10}>
+                <Space>
+                  <FiFilter /> BỘ LỌC TÌM KIẾM
+                </Space>
+                Thương hiệu
+                <Select />
+                Chất liệu
+                <Select />
+                Màu sắc
+                <Select />
+                Loại để
+                <Select />
+                Loại giày
+                <Select />
+                <Divider />
+                Khoảng giá
+                <Slider
+                  range
+                  min={0}
+                  max={5000000}
+                  step={100}
+                  value={range}
+                  onChange={setRange}
+                />
+                {/* InputNumber */}
+                <Flex gutter={5}>
+                  <Col>
+                    <InputNumber
+                      placeholder="Tù"
+                      min={0}
+                      max={5000000}
+                      step={10000}
+                      value={range[0]}
+                      onChange={(value) => setRange([value, range[1]])}
                     />
-                    <Form.Check
-                      inline
-                      label="Nữ"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-2`}
+                  </Col>
+                  <Col>
+                    <InputNumber
+                      placeholder="Đến"
+                      min={0}
+                      max={5000000}
+                      step={10000}
+                      value={range[1]}
+                      onChange={(value) => setRange([range[0], value])}
                     />
-                    <h6>Kích cỡ</h6>
-                    <Form.Check
-                      inline
-                      label="35"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-3`}
-                    />
-                    <Form.Check
-                      inline
-                      label="36"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-4`}
-                    />
-                    <Form.Check
-                      inline
-                      label="37"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-5`}
-                    />
-                    <Form.Check
-                      inline
-                      label="38"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-6`}
-                    />
-                    <Form.Check
-                      inline
-                      label="39"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-7`}
-                    />
-                    <Form.Check
-                      inline
-                      label="40"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-8`}
-                    />
-                    <h6>Kích cỡ</h6>
-                    <Form.Check
-                      inline
-                      label="Trắng"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-9`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Đen"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-10`}
-                    />
-                    <h6>Hãng</h6>
-                    <Form.Check
-                      inline
-                      label="Nike"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-11`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Puma"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-12`}
-                    />
-                    <h6>Loại</h6>
-                    <Form.Check
-                      inline
-                      label="Thời trang"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-13`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Thể thao"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-14`}
-                    />
-                    <h6>Chất liệu</h6>
-                    <Form.Check
-                      inline
-                      label="Da"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-15`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Vải"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-16`}
-                    />
-                    <h6>Đế giày</h6>
-                    <Form.Check
-                      inline
-                      label="Cao su"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-17`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Nhựa"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}18`}
-                    />
-
-                    <div>
-                      <Form.Check style={{ fontWeight: 'bolder' }}>Chọn khoảng giá </Form.Check>
-                      <Form.Range type="range" class="form-range" id="customRange1" min="500000" max="10000000" step="1" />
-                      {/* <Input type="range" class="form-range" id="customRange1" min="500000" max="10000000" step="1"> */}
-                    </div>
-
-                  </div>
-
+                  </Col>
+                </Flex>
+                <Button type="primary">Áp dụng</Button>
+                <Divider />
+                Đánh giá
+                <Radio.Group
+                  // value={value}
+                  defaultValue={1}
+                  options={[
+                    {
+                      value: 1,
+                      label: (
+                        <Rate
+                          style={{
+                            fontSize: "1rem",
+                          }}
+                          disabled
+                          value={5}
+                        />
+                      ),
+                    },
+                    {
+                      value: 2,
+                      label: (
+                        <Rate
+                          style={{
+                            fontSize: "1rem",
+                          }}
+                          disabled
+                          value={4}
+                        />
+                      ),
+                    },
+                    {
+                      value: 3,
+                      label: (
+                        <Rate
+                          style={{
+                            fontSize: "1rem",
+                          }}
+                          disabled
+                          value={3}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+                <Divider />
+                Dịch vụ, khuyến mãi
+                <Radio.Group
+                  // value={value}
+                  defaultValue={1}
+                  options={[
+                    { value: 1, label: "Đang khuyến mại" },
+                    { value: 2, label: "Free ship" },
+                    { value: 3, label: "Bán chạy" },
+                  ]}
+                />
+              </Flex>
+            </Content>
+          </Sider>
+          <Content
+            style={{
+              padding: "0 0 0 7px",
+              minHeight: 280,
+            }}
+          >
+            <Card
+              style={{
+                borderRadius: 0,
+                marginBottom: "0.3rem",
+              }}
+              title={
+                <Row
+                  style={{
+                    fontSize: "19px",
+                    fontWeight: "normal",
+                    backgroundColor: `${COLORS.backgroundcolor2}`,
+                    padding: "10px",
+                    margin: "1rem",
+                    color: `${COLORS.pending}`,
+                  }}
+                >
+                  SẢN PHẨM BÁN CHẠY
+                </Row>
+              }
+            >
+              <Row gutter={[5, 5]} wrap>
+                {productHadSolDescs?.map((product, index) => (
+                  <Col key={index} span={6}>
+                    <Link
+                      to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                      style={{
+                        textDecoration: "none",
+                        color: "black",
+                        fontWeight: "normal",
+                      }}
+                      onClick={() => addViewProduct(product.productId)} // Gọi addViewProduct khi click
+                    >
+                      <PropProduct
+                        product={{
+                          name:
+                            product.productName?.trim() ||
+                            "Sản phẩm chưa có tên",
+                          price: product.price ?? 0,
+                          promotion:
+                            product.promotionName === "Không có khuyến mãi"
+                              ? null
+                              : product.promotionName,
+                          sale: product.sold ?? 0,
+                          url: product.imageUrl || "https://placehold.co/100",
+                          views: product.views ?? 0,
+                          rate: product.rate ?? 5,
+                        }}
+                      />
+                    </Link>
+                  </Col>
                 ))}
-
-              </Form>
-              <div style={{ textAlign: 'center', fontWeight: 'bolder', width: '100%' }}>
-                <Button variant="light"> Lọc</Button>
-              </div>
-
-
-            </Offcanvas.Body>
-          </Offcanvas>
-        </aside>
-        <article className='col-9'>
-          <Container className="mt-4">
-            <Row>
-              {products.map((product) => (
-                <Col key={product.id} md={4} className="mb-4">
-                  <Card>
-                    <a href="#" style={{color:'black', textDecoration:'none'}}>
-                    <Card.Img className='object-cover' variant="top"  src={product.image} alt={product.title} />
-                    </a>
-                    <Card.Body>
-                      <a href="#" style={{color:'black', textDecoration:'none'}}><Card.Title  className="fw-bold fs-6">{product.title}</Card.Title>
-                      </a>
-                      <a href="#" style={{color:'black', textDecoration:'none'}}><Card.Text className="text-muted">{product.code}</Card.Text>
-                      </a>
-                      <Card.Text className="fw-bold text-danger">{product.price}</Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          </Container>
-
-{/* thanh chuyen page */}
-          <Pagination style={{ paddingLeft: '400px ',borderRadius:'50' }}>
-            <Pagination.First />
-            <Pagination.Prev />
-            <Pagination.Item>{1}</Pagination.Item>
-            <Pagination.Ellipsis />
-
-            <Pagination.Item>{10}</Pagination.Item>
-            <Pagination.Item>{11}</Pagination.Item>
-            <Pagination.Item active>{12}</Pagination.Item>
-            <Pagination.Item>{13}</Pagination.Item>
-            <Pagination.Item disabled>{14}</Pagination.Item>
-
-            <Pagination.Ellipsis />
-            <Pagination.Item>{20}</Pagination.Item>
-            <Pagination.Next />
-            <Pagination.Last />
-          </Pagination>
-        </article>
-
-      </div>
-
-    </div>
-
-  )
+              </Row>
+            </Card>
+ 
+            <Card
+              style={{
+                borderRadius: 0,
+                marginBottom: "0.3rem",
+              }}
+              title={
+                <Row
+                  style={{
+                    fontSize: "19px",
+                    fontWeight: "normal",
+                    backgroundColor: `${COLORS.backgroundcolor2}`,
+                    padding: "10px",
+                    margin: "1rem",
+                    color: `${COLORS.pending}`,
+                  }}
+                >
+                  SẢN PHẨM MỚI
+                </Row>
+              }
+            >
+              <Row gutter={[5, 5]}>
+                {(products || []).map((product, index) => (
+                  <Col key={index} flex={"20%"}>
+                    <PropProduct product={product} />
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </Content>
+        </Layout>
+      </Content>
+    </>
+  );
 }
 
 export default ProductsPage;
-
-
-
-

@@ -216,128 +216,6 @@ function Product() {
     <>
       <Content>
         <Layout>
-          <Sider width={200} style={{ backgroundColor: "white" }}>
-            {/* <Menu
-              mode="inline"
-              defaultSelectedKeys={["1"]}
-              defaultOpenKeys={["sub1"]}
-              style={{
-                height: "100%",
-              }}
-              items={items2}
-            /> */}
-            <Content
-              style={{
-                padding: "0.5rem",
-                // color: `${COLORS.pending}`,
-              }}
-            >
-              <Flex vertical gap={10}>
-                <Space>
-                  <FiFilter /> BỘ LỌC TÌM KIẾM
-                </Space>
-                Thương hiệu
-                <Select />
-                Chất liệu
-                <Select />
-                Màu sắc
-                <Select />
-                Loại để
-                <Select />
-                Loại giày
-                <Select />
-                <Divider />
-                Khoảng giá
-                <Slider
-                  range
-                  min={0}
-                  max={5000000}
-                  step={100}
-                  value={range}
-                  onChange={setRange}
-                />
-                {/* InputNumber */}
-                <Flex gutter={5}>
-                  <Col>
-                    <InputNumber
-                      placeholder="Tù"
-                      min={0}
-                      max={5000000}
-                      step={10000}
-                      value={range[0]}
-                      onChange={(value) => setRange([value, range[1]])}
-                    />
-                  </Col>
-                  <Col>
-                    <InputNumber
-                      placeholder="Đến"
-                      min={0}
-                      max={5000000}
-                      step={10000}
-                      value={range[1]}
-                      onChange={(value) => setRange([range[0], value])}
-                    />
-                  </Col>
-                </Flex>
-                <Button type="primary">Áp dụng</Button>
-                <Divider />
-                Đánh giá
-                <Radio.Group
-                  // value={value}
-                  defaultValue={1}
-                  options={[
-                    {
-                      value: 1,
-                      label: (
-                        <Rate
-                          style={{
-                            fontSize: "1rem",
-                          }}
-                          disabled
-                          value={5}
-                        />
-                      ),
-                    },
-                    {
-                      value: 2,
-                      label: (
-                        <Rate
-                          style={{
-                            fontSize: "1rem",
-                          }}
-                          disabled
-                          value={4}
-                        />
-                      ),
-                    },
-                    {
-                      value: 3,
-                      label: (
-                        <Rate
-                          style={{
-                            fontSize: "1rem",
-                          }}
-                          disabled
-                          value={3}
-                        />
-                      ),
-                    },
-                  ]}
-                />
-                <Divider />
-                Dịch vụ, khuyến mãi
-                <Radio.Group
-                  // value={value}
-                  defaultValue={1}
-                  options={[
-                    { value: 1, label: "Đang khuyến mại" },
-                    { value: 2, label: "Free ship" },
-                    { value: 3, label: "Bán chạy" },
-                  ]}
-                />
-              </Flex>
-            </Content>
-          </Sider>
           <Content
             style={{
               padding: "0 0 0 7px",
@@ -366,7 +244,7 @@ function Product() {
             >
               <Row gutter={[5, 5]} wrap>
                 {productHadSolDescs?.map((product, index) => (
-                  <Col key={index} flex="20%">
+                  <Col key={index} flex={"20%"}>
                     <Link
                       to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
                       style={{

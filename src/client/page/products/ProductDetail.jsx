@@ -442,7 +442,7 @@ function ProductDetail() {
                       defaultValue={1}
                       value={quantityAddCart}
                       min={1}
-                      max={100}
+                      max={getProductDetail.quantity}
                       onChange={(value) => {
                         setQuantityAddCart(value); // Cập nhật state khi thay đổi số lượng
                       }}

@@ -443,6 +443,8 @@ const Type = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
+
             />
           </Col>
 
@@ -467,6 +469,16 @@ const Type = () => {
             style={{}}
           >
             Thêm Loại giày
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{marginLeft:"2rem"}}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}

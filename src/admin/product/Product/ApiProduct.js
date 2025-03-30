@@ -29,7 +29,7 @@ export const fetchProducts = async (pagination) => {
       params: { page: current, size: pageSize },
     });
 
-    const { data, meta } = response.data;
+    const { data, meta } = response.data;    
     return { data, total: meta?.totalElement || 0 };
   } catch (error) {
     const errorMessage =
@@ -41,7 +41,8 @@ export const fetchProducts = async (pagination) => {
 
 export const searchNameProduct = async (pagination, paramName) => {
   const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
-  const { name } = paramName;
+  const name = paramName.name?.trim() || ""; 
+
   try {
     const response = await api.get("/product/search", {
       params: {

@@ -386,6 +386,7 @@ const Category = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
             />
           </Col>
 
@@ -410,6 +411,16 @@ const Category = () => {
             style={{}}
           >
             Thêm Hãng
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{ marginLeft: "2rem" }}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}
