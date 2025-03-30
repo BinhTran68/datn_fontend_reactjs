@@ -476,19 +476,7 @@ const BillDetail = () => {
             setWidthModal("40%");
             setConfirmNotes('');
 
-            // Create the payload
-            const payload = {
-                products: billEditProductDetails, // Array of edited product details
-                voucherId: selectedVouchers?.id, // ID of the selected voucher
-                totalAmount, // Total amount calculated
-                shippingFee, // Shipping fee
-                discountValue, // Discount value
-                finalAmount // Final amount after discount
-            };
-
-            console.log("Payload to be sent:", payload);
-            // Here you can send the payload to your API
-            // axiosInstance.post('/api/admin/bill/update', payload)
+            setModalType(modalUpdateStatusBillType);
         };
 
         const handleOnShowProduct = () => {
