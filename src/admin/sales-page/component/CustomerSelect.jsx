@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Card, Select, Row, Col, Descriptions, Avatar, Tag } from "antd";
 import { UserAddOutlined, PhoneOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
+import {toast} from "react-toastify";
 
 const CustomerSelect = ({ customers, customer, onCustomerSelect }) => {
     return (
@@ -34,8 +35,11 @@ const CustomerSelect = ({ customers, customer, onCustomerSelect }) => {
                                     </Avatar>
                                     <div>
                                         <div>{c.fullName}</div>
-                                        <div style={{ fontSize: '12px', color: '#666' }}>
+                                        <div style={{fontSize: '12px', color: '#666'}}>
                                             {c.phoneNumber} | {c.email}
+                                        </div>
+                                        <div>
+                                            Trạng thái : {c.status === 0  ? 'Đang hoạt động' : 'Đã khóa'}
                                         </div>
                                     </div>
                                 </div>
@@ -48,6 +52,10 @@ const CustomerSelect = ({ customers, customer, onCustomerSelect }) => {
                         }}
                         onSelect={(value) => {
                             const selectedCustomer = customers.find(c => c.id === value);
+                            if(selectedCustomer.status !== 0 ) {
+                                toast.warning("Tài khoản khách hàng đã bị khóa")
+                                return
+                            }
                             if (selectedCustomer) {
                                 onCustomerSelect(selectedCustomer);
                             }
@@ -74,8 +82,8 @@ const CustomerSelect = ({ customers, customer, onCustomerSelect }) => {
                                 </Avatar>
                                 <div>
                                     <h2 style={{ margin: 0 }}>{customer.fullName}</h2>
-                                    <Tag color={customer.status === 1 ? 'green' : 'red'}>
-                                        {customer.status === 1 ? 'Đang hoạt động' : 'Đã khóa'}
+                                    <Tag color={customer.status === 0 ? 'green' : 'red'}>
+                                        {customer.status === 0 ? 'Đang hoạt động' : 'Đã khóa'}
                                     </Tag>
                                 </div>
                             </div>

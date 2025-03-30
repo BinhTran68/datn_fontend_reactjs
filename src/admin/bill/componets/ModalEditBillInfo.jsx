@@ -4,6 +4,7 @@ import axios from "axios";
 import {baseUrl} from "../../../helpers/Helpers.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 import {toast} from "react-toastify";
+import axiosInstance from "../../../utils/axiosInstance.js";
 
 const {Option} = Select;
 
@@ -42,19 +43,16 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
 
             };
 
-            const response = await axios.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
+            const response = await axiosInstance.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
             if (response.status === 200) {
                 toast.success("Cập nhật hóa đơn thành công")
-                toast.info("Thông tin")
-                toast.error("Thông tin")
-                toast.warning("Thông tin")
                 handleOnEdit(response.data.data);
             } else {
-                message.error('Có lỗi xảy ra khi cập nhật!');
+                toast.error('Có lỗi xảy ra khi cập nhật!');
             }
         } catch (error) {
-            console.error(error);
-            message.error('Có lỗi xảy ra khi cập nhật!');
+            toast.error(error);
+            toast.error('Có lỗi xảy ra khi cập nhật!');
         }
     };
 
@@ -73,8 +71,8 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
                 type: currentBill?.type ?? "ONLINE",
                 customerName: currentBill?.customerName ?? "",
                 customerPhone: currentBill?.customerPhone ?? "",
+                email: currentBill?.email ?? "",
                 note: currentBill?.note ?? "",
-                // Ensure default values for address fields are properly set
                 provinceId: currentBill?.address?.provinceId ?? null,
                 districtId: currentBill?.address?.districtId ?? null,
                 wardId: currentBill?.address?.wardId ?? null,
@@ -94,7 +92,10 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
                 </Select>
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Tên khách hàng</span>} name="customerName">
-                <Input disabled/>
+                <Input />
+            </Form.Item>
+            <Form.Item label={<span className="fw-bold text-black">Email khách hàng</span>} name="email">
+                <Input />
             </Form.Item>
             <Form.Item label={<span className="fw-bold text-black">Số điện thoại</span>} name="customerPhone">
                 <Input/>

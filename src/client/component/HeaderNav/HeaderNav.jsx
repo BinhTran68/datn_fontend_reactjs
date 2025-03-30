@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PiBellRinging } from "react-icons/pi";
 import { BsCart2 } from "react-icons/bs";
@@ -26,9 +26,9 @@ import { getCart } from "../../page/cart/cart";
 import axios from "axios";
 import { Client } from "@stomp/stompjs";
 import { apiGetNoti } from "./header.js";
+import {FaXmark} from "react-icons/fa6";
+import {FaUserAstronaut} from "react-icons/fa";
 import SockJS from "sockjs-client";
-import { FaXmark } from "react-icons/fa6";
-import { FaUserAstronaut } from "react-icons/fa";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -66,28 +66,14 @@ function HeaderNav() {
 
     setAiQuestion("");
     try {
-      const res = await axios.post(
-        vitegeminiurl,
-        {
-          contents: [
-            {
-              parts: [{ text: aiQuestionPrev }],
-            },
-          ],
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
 
-      const aiText =
-        res.data.candidates[0]?.content?.parts?.[0]?.text ||
-        "Không có phản hồi từ AI.";
       setAiResponse(aiText);
 
-      setChatHistory((prev) => [...prev, { sender: "ai", text: aiText }]);
+      setChatHistory((prev) => [...prev, { sender: 'ai', text: aiText }]);
+      const res = await axios.post(vitegeminiurl, {
+        contents: [{ parts: [{ text: aiQuestion }] }],
+      }, { headers: { "Content-Type": "application/json" } });
+      setAiResponse(res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.");
     } catch (error) {
       console.error("Lỗi khi gọi Gemini API:", error);
       const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
@@ -303,10 +289,12 @@ function HeaderNav() {
     />
   );
 
-  const handleOnCloseAskAI = () => {
-    console.log("dfsadas");
-    setIsAIModalVisible(false);
-  };
+
+  const  handleOnCloseAskAI = () => {
+    console.log("dfsadas")
+    setIsAIModalVisible(false)
+  }
+
 
   return (
     <div className="header-container">
