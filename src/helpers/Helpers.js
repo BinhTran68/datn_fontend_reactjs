@@ -29,7 +29,6 @@ export const convertLongTimestampToDate = (timestamp) => {
         return null;
     }
     const date = new Date(timestamp); // Convert từ Long sang Date
-    console.log("date", date);
     return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
 };
 export const convertStatusVoucher = (statusVoucher)=>{                     
