@@ -542,6 +542,16 @@ const BillDetail = () => {
                     {formatVND(currentBill?.totalMoney)}
                 </div>,
             },
+            {
+                key: '5',
+                label: 'Tiền khách đưa',
+                span: 2,
+                children: <div style={{
+                    color: "blue"
+                }}>
+                    {formatVND(currentBill?.customerMoney ?? 0)}
+                </div>,
+            }
 
         ];
         const handleOnRollbackStatus = () => {
@@ -635,37 +645,80 @@ const BillDetail = () => {
             }
         };
 
-        const handleQuantityChange = (record, newQuantity) => {
-            if (newQuantity < 1) return;
 
-            const updatedProducts = billEditProductDetails.map(item => {
-                if (item.productDetailId === record.productDetailId) {
-                    return {...item, quantity: newQuantity}; // Chỉ cập nhật sản phẩm cụ thể
+     // const fetchProductDetailLatest = async (id) => {
+     //    const response = await axiosInstance.get(`/api/admin/productdetail/${id}`)
+     //     return response.data.data
+     // }
+
+    const fetchProductDetailLatest = async (id) => {
+        try {
+            const response = await axiosInstance.get(`/api/admin/productdetail/${id}`);
+            return response.data?.data || null; // Tránh lỗi khi dữ liệu null
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+            return null;
+        }
+    };
+
+    const handleQuantityChange = async (record, newQuantity) => {
+        if (newQuantity < 1) return;
+
+        try {
+            const latestProduct = await fetchProductDetailLatest(record.productDetailId);
+            if (!latestProduct || latestProduct.price == null) {
+                toast.warning("Không thể lấy giá sản phẩm. Vui lòng thử lại!");
+                return;
+            }
+
+            let updatedProducts = [...billEditProductDetails];
+
+            if (record.price !== latestProduct.price) {
+                // Nếu giá thay đổi, chỉ cho phép giảm số lượng
+                if (newQuantity < record.quantity) {
+                    updatedProducts = updatedProducts.map(item =>
+                        item.productDetailId === record.productDetailId && item.price === record.price
+                            ? { ...item, quantity: newQuantity }
+                            : item
+                    );
+                    setBillEditProductDetails(updatedProducts);
+                } else {
+                    toast.warning("Giá sản phẩm đã thay đổi. Bạn chỉ có thể giảm số lượng!");
                 }
-                return item; // Giữ nguyên các sản phẩm khác
-            });
+                return;
+            }
+
+            // Nếu giá không thay đổi, cập nhật số lượng như bình thường
+            updatedProducts = updatedProducts.map(item =>
+                item.productDetailId === record.productDetailId && item.price === record.price
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            );
+
             setBillEditProductDetails(updatedProducts);
 
             // Kiểm tra và áp dụng voucher
-            if (newQuantity > record.quantity) {
-                // Tăng số lượng, không xóa voucher
-                checkAndApplyVoucher(selectedVouchers);
-            } else {
-                // Giảm số lượng, kiểm tra điều kiện voucher
-                if (currentVoucher) {
-                    const totalAmount = updatedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
-                    const isCurrentVoucherApplicable = totalAmount >= (currentVoucher?.billMinValue || 0);
-                    if (!isCurrentVoucherApplicable) {
-                        setSelectedVouchers(null); // Không áp dụng voucher
-                        setDiscount(0); // Reset discount
-                    } else {
-                        checkAndApplyVoucher(currentVoucher); // Áp dụng lại voucher nếu còn đủ điều kiện
-                    }
+            const totalAmount = updatedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
+            if (currentVoucher) {
+                if (totalAmount >= (currentVoucher?.billMinValue || 0)) {
+                    checkAndApplyVoucher(currentVoucher); // Giữ voucher nếu vẫn hợp lệ
+                } else {
+                    setSelectedVouchers(null); // Xóa voucher nếu không đủ điều kiện
+                    setDiscount(0);
                 }
             }
-        };
+        } catch (error) {
+            console.error("Lỗi trong handleQuantityChange:", error);
+            toast.error("Đã xảy ra lỗi khi cập nhật sản phẩm!");
+        }
+    };
 
-        const checkAndApplyVoucher = (voucher) => {
+
+
+
+
+
+    const checkAndApplyVoucher = (voucher) => {
 
             const totalAmount = billEditProductDetails.reduce(
                 (total, product) => total + (product.price * product.quantity), 0

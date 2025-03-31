@@ -1,6 +1,6 @@
 import { Menu, Modal } from "antd";
 
-import { useEffect } from "react";
+import {useEffect, useState} from "react";
 
 import {
   AreaChartOutlined,
@@ -27,11 +27,12 @@ import { FaUserCircle } from "react-icons/fa";
 import { BiSolidDiscount } from "react-icons/bi";
 import { CiDiscount1 } from "react-icons/ci";
 import { FaFileInvoice } from "react-icons/fa";
-import { useState } from "react";
 
 const MenuList = ({ darkTheme }) => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null)
+  const [userInfo, setUserInfo] = useState(null);
   const { confirm } = Modal;
 
   const handleLogout = () => {
@@ -42,8 +43,8 @@ const MenuList = ({ darkTheme }) => {
       cancelText: "Hủy",
       onOk() {
         // Xử lý đăng xuất
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("userInfo");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setIsLoggedIn(false);
 
         navigate("/auth/login-admin"); // Điều hướng về trang đăng nhập
@@ -54,17 +55,16 @@ const MenuList = ({ darkTheme }) => {
     });
   };
 
-  const [userInfo, setUserInfo] = useState(null);
+
 
   useEffect(() => {
-    const storedUserInfo = localStorage.getItem("userInfo");
+    const storedUserInfo = localStorage.getItem("user");
     if (storedUserInfo) {
       const parsedUserInfo = JSON.parse(storedUserInfo);
       setUserInfo(parsedUserInfo);
     }
   }, []);
 
-  const isStaff = userInfo?.vaiTro === "ROLE_STAFF";
 
   const iconSize = 20;
 
@@ -78,11 +78,14 @@ const MenuList = ({ darkTheme }) => {
         }}
         className="menu-bar "
       >
-        <Menu.Item key="home" icon={<MdDashboard size={iconSize} />}>
-          <Link className={"text-decoration-none"} to={"dashboard"}>
-            Tổng quan
-          </Link>
-        </Menu.Item>
+        {
+          ["ROLE_ADMIN", "ROLE_MANAGER"].includes(userInfo?.role) &&
+          <Menu.Item key="home" icon={<MdDashboard size={iconSize} />}>
+            <Link className={"text-decoration-none"} to={"dashboard"}>
+              Tổng quan
+            </Link>
+          </Menu.Item>
+        }
 
         <Menu.Item key="activity" icon={<MdLocalShipping size={iconSize} />}>
           <Link className={"text-decoration-none"} to={"sales-page"}>
@@ -152,17 +155,19 @@ const MenuList = ({ darkTheme }) => {
           icon={<UserOutlined size={iconSize} />}
           title="Quản lý tài khoản"
         >
-          <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize} />}>
-            <Link to={"staff"}>Nhân Viên</Link>
-          </Menu.Item>
+          {
+              ["ROLE_ADMIN", "ROLE_MANAGER"].includes(userInfo?.role) &&
+              <Menu.Item key="sub2-t1" icon={<FaRegUser size={iconSize} />}>
+                <Link to={"staff"}>Nhân Viên</Link>
+              </Menu.Item>
+          }
+
           <Menu.Item key="sub2-t2" icon={<FaUserCircle size={iconSize} />}>
             <Link to={"customer"}>Khách hàng</Link>
           </Menu.Item>
         </Menu.SubMenu>
 
-        <Menu.Item key="progress" icon={<AreaChartOutlined size={iconSize} />}>
-          <Link to={"statistical"}>Thống kê</Link>
-        </Menu.Item>
+
 
         <Menu.Item key="comments" icon={<CommentOutlined size={iconSize} />}>
           <Link to={"comments"}>Quản lý bình luận</Link>

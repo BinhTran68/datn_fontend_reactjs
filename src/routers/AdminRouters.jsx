@@ -61,7 +61,7 @@ const AdminRouters = {
     children: [
         {
             path: "dashboard",
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN"]}/>,
         },
         {
             path: "sales-page",
