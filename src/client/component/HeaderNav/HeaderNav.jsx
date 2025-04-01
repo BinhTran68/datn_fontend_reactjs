@@ -56,27 +56,30 @@ function HeaderNav() {
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
 
-    setChatHistory((prev) => [...prev, { sender: 'user', text: aiQuestion }]);
+    // Thêm câu hỏi của người dùng vào lịch sử trò chuyện
+    setChatHistory((prev) => [...prev, { sender: "user", text: aiQuestion }]);
+    const userQuestion = aiQuestion;
+    setAiQuestion(""); // Xóa ô nhập liệu
 
-    const aiQuestionPrev = aiQuestion;
-
-    setAiQuestion("")
     try {
+      const res = await axios.post(
+          vitegeminiurl,
+          {
+            contents: [{ parts: [{ text: userQuestion }] }],
+          },
+          { headers: { "Content-Type": "application/json" } }
+      );
 
-      setAiResponse(aiText);
+      const aiReply = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
+      setAiResponse(aiReply);
 
-      setChatHistory((prev) => [...prev, { sender: 'ai', text: aiText }]);
-      const res = await axios.post(vitegeminiurl, {
-        contents: [{ parts: [{ text: aiQuestion }] }],
-      }, { headers: { "Content-Type": "application/json" } });
-      setAiResponse(res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.");
+      // Thêm phản hồi từ AI vào lịch sử trò chuyện
+      setChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
     } catch (error) {
       console.error("Lỗi khi gọi Gemini API:", error);
       const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
       setAiResponse(errorMessage);
-      setChatHistory((prev) => [...prev, { sender: 'ai', text: errorMessage }]);
-    } finally {
-        setAiQuestion("");
+      setChatHistory((prev) => [...prev, { sender: "ai", text: errorMessage }]);
     }
   };
 

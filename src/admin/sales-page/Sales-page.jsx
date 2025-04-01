@@ -333,47 +333,53 @@ const SalesPage = () => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const existingProduct = item.productList.find(p => p.id === product.id);
+                    const existingProduct = item.productList.find(p => p.id === product.id && p.price === product.price); // Tìm sản phẩm theo id và price
                     let updatedProductList;
 
                     if (existingProduct) {
-                        if(isDeleteProduct) {
-                            updatedProductList =  item.productList.filter(p => p.id !== product.id); // Xóa sản phẩm trong giỏ hàng
-                        }else {
-                            if (isRestore) {
-                                // Xử lý khi khôi phục số lượng
-                                updatedProductList = item.productList.map(p =>
-                                    p.id === product.id ? { ...p, quantityInCart: p.quantityInCart - quantityChange } : p
-                                );
+                        if (isDeleteProduct) {
+                            // Nếu xóa sản phẩm, xóa đúng sản phẩm có id và price khớp
+                            updatedProductList = item.productList.filter(p => !(p.id === product.id && p.price === product.price));
+                        } else {
+                            if (product.price !== existingProduct.price) {
+                                // Nếu giá thay đổi, tạo một bản sao mới với giá mới
+                                updatedProductList = [
+                                    ...item.productList.filter(p => !(p.id === product.id && p.price === existingProduct.price)), // Xóa sản phẩm cũ
+                                    { ...existingProduct, quantityInCart: existingProduct.quantityInCart }, // Giữ sản phẩm cũ với giá cũ
+                                    { ...product, quantityInCart: quantityChange, key: `${product.id}-${product.price}` } // Thêm sản phẩm mới với giá mới
+                                ];
                             } else {
-                                // Xử lý khi thêm hoặc thay đổi số lượng
+                                // Nếu không thay đổi giá, chỉ thay đổi số lượng
                                 updatedProductList = item.productList.map(p =>
-                                    p.id === product.id ? { ...p, quantityInCart: p.quantityInCart + quantityChange } : p
+                                    p.id === product.id && p.price === product.price ? { ...p, quantityInCart: isRestore ? p.quantityInCart - quantityChange : p.quantityInCart + quantityChange } : p
                                 );
                             }
                         }
                     } else {
                         // Nếu sản phẩm chưa tồn tại trong danh sách
-                        updatedProductList = [...(item.productList || []), { ...product, quantityInCart: quantityChange }];
+                        updatedProductList = [...(item.productList || []), { ...product, quantityInCart: quantityChange, key: `${product.id}-${product.price}` }];
                     }
+
                     // Tính tổng tiền mới
                     const newTotalAmount = calculateTotalAmount({ productList: updatedProductList });
                     const voucherResult = findBestVoucher(newTotalAmount);
                     const discountAmount = voucherResult?.currentDiscount || 0;
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
+
                     // Cập nhật selectedVouchers
                     setSelectedVouchers(prev => ({
                         ...prev,
                         [currentBill]: voucherResult
                     }));
-                    const  count = updatedProductList.reduce((total, product) => total + (product.quantityInCart || 0), 0);
+
+                    const count = updatedProductList.reduce((total, product) => total + (product.quantityInCart || 0), 0);
+
                     return {
                         ...item,
                         label: (
                             <span>
-                                {item.itemName} <Badge showZero={true} className={"mb-2"}
-                                                       count={count}/>
-                            </span>
+                            {item.itemName} <Badge showZero={true} className={"mb-2"} count={count}/>
+                        </span>
                         ),
                         productList: updatedProductList,
                         payInfo: {
@@ -389,7 +395,21 @@ const SalesPage = () => {
         );
     };
 
-    const handleQuantityChange = (value, product) => {
+
+    const fetchProductDetailLatest = async (id) => {
+        try {
+            const response = await axiosInstance.get(`/api/admin/productdetail/${id}`);
+            return response.data?.data || null; // Tránh lỗi khi dữ liệu null
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+            return null;
+        }
+    };
+
+    const handleQuantityChange = async (value, productBill) => {
+        // gọi hàm
+
+        const product = await fetchProductDetailLatest(productBill.id);
 
         if (value > product.quantity) {
             toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`);
@@ -397,14 +417,14 @@ const SalesPage = () => {
             updateProductList(currentBill, product, product.quantity);
         }
 
-        if (value > product.quantityInCart) {
-            const soLuongTru = value - product.quantityInCart;
+        if (value > productBill.quantityInCart) {
+            const soLuongTru = value - productBill.quantityInCart;
             updateProductList(currentBill, product, soLuongTru);
             handleOnChangeQuantityProduct(product, soLuongTru, false);
         }
-        if (value < product.quantityInCart) {
-            const soLuongRestore = product.quantityInCart - value;
-            updateProductList(currentBill, product, soLuongRestore, true);
+        if (value < productBill.quantityInCart) {
+            const soLuongRestore = productBill.quantityInCart - value;
+            updateProductList(currentBill, productBill, soLuongRestore, true);
             handleOnChangeQuantityProduct(product, soLuongRestore, true);
         }
     };
