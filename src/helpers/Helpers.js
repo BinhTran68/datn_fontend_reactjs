@@ -171,6 +171,7 @@ export async function generateAddressString(provinceId, districtId, wardId, spec
 }
 
 export function formatVND(number) {
+    console.log("formatVND(number)", number)
     if (typeof number !== "number") {
         return '0 VND' // Kiểm tra nếu không phải là số
     }

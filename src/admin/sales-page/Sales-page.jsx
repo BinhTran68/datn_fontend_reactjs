@@ -71,7 +71,8 @@ const SalesPage = () => {
             recipientName: '',  // Số điện thoại người nhận hàng
             recipientPhoneNumber: '', // Tên ngươi nhận
             shippingFee: 0,
-            isCOD: false
+            isCOD: false,
+            vouchers: []
         },
     ]);
 
@@ -83,9 +84,7 @@ const SalesPage = () => {
             handleOnCreateBill();
         }
     };
-
     const [products, setProducts] = useState([]);
-    const [customers, setCustomers] = useState([])
     const [pagination, setPagination] = useState({
         current: 1,
         pageSize: 5, // Số dòng hiển thị mỗi trang
@@ -93,6 +92,7 @@ const SalesPage = () => {
     const [currentBill, setCurrentBill] = useState() // 1 mảng các sản phẩm
     const [open, setOpen] = useState(false);
     const [vouchers, setVouchers] = useState()
+    const [vouchersPublic, setVouchersPublic] = useState()
     const [selectedVouchers, setSelectedVouchers] = useState({});
 
     const [isScanQr, setIsScanQr] = useState(false)
@@ -130,7 +130,6 @@ const SalesPage = () => {
     useEffect(() => {
         setCurrentBill(defaultKey)
         fetchProductsData()
-        getAllCustomer()
         getAllVoucher()
         getCurrentUserLogin()
     }, []);
@@ -260,7 +259,8 @@ const SalesPage = () => {
             },
             recipientName: '',  // Số điện thoại người nhận hàng
             recipientPhoneNumber: '', // Tên ngươi nhận
-            shippingFee: 0
+            shippingFee: 0,
+            vouchers: vouchersPublic
         };
         setItems([...items, newItem]);
         setCurrentBill(newKey);
@@ -438,34 +438,6 @@ const SalesPage = () => {
         updateProductList(currentBill, record, 1);
     };
 
-    const handleCheckAndAddVoucherToItem = () => {
-        return
-    }
-
-
-
-
-    const getAllCustomer = () => {
-        axios.get('http://localhost:8080/api/admin/customers/')
-            .then((response) => {
-                const fetchedData = response.data.map((item, index) => ({
-                    key: index + 1,
-                    id: item.id,
-                    avatar: item.avatar,
-                    fullName: item.fullName,
-                    CitizenId: item.citizenId,
-                    phoneNumber: item.phoneNumber,
-                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
-                    status: item.status,
-                    email: item.email,
-                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
-                    addresses: item.addresses,
-                    password: item.password
-                }));
-                setCustomers(fetchedData);
-            })
-            .catch((error) => console.error('Error fetching data:', error));
-    };
 
 
     const handleOnChangeQuantityProduct = async (product, quantity, isRestore) => {
@@ -481,7 +453,9 @@ const SalesPage = () => {
 
     const onCustomerSelect = async (customer) => {
         // Nếu customer là null (trường hợp xóa selection)
+
         if (!customer) {
+
             setItems((prevItems) =>
                 prevItems.map((item) => {
                     if (item.key === currentBill) {
@@ -499,7 +473,8 @@ const SalesPage = () => {
                                 specificAddress: ''
                             },
                             isNewShippingInfo: false,
-                            feeShipping: 0
+                            feeShipping: 0,
+
                         };
                     }
                     return item;
@@ -508,6 +483,7 @@ const SalesPage = () => {
             return;
         }
 
+
         // Trường hợp chọn khách hàng
         try {
             let customerAddresses = await Promise.all(
@@ -515,6 +491,73 @@ const SalesPage = () => {
                     ? [customer.addresses.find(addr => addr.isDefault) || customer.addresses[0]]
                     : []
                 ).map(async (ca) => {
+                    const addressString = await generateAddressString(
+                        ca.provinceId,
+                        ca.districtId,
+                        ca.wardId,
+                        ca.specificAddress
+                    );
+                    return {
+                        value: ca.id,
+                        label: addressString,
+                        details: ca
+                    };
+                })
+            );
+
+            // Thêm option "Khác" vào cuối danh sách địa chỉ
+            customerAddresses.push({
+                value: "other",
+                label: "Địa chỉ khác"
+            });
+            const  response = await axiosInstance.get(`/api/admin/bill/vouchers/${customer.id}`)
+            const customerVouchers = response.data
+
+            setItems((prevItems) =>
+                prevItems.map((item) => {
+                    if (item.key === currentBill) {
+                        return {
+                            ...item,
+                            customerInfo: customer,
+                            customerAddresses: customerAddresses,
+                            recipientName: customer.fullName || '',
+                            recipientPhoneNumber: customer.phoneNumber || '',
+                            // Nếu khách hàng có địa chỉ, set địa chỉ đầu tiên làm mặc định
+                            addressShipping: customer.addresses?.[0]?.id || null,
+                            detailAddressShipping: customer.addresses?.[0] ? {
+                                provinceId: customer.addresses[0].provinceId,
+                                districtId: customer.addresses[0].districtId,
+                                wardId: customer.addresses[0].wardId,
+                                specificAddress: customer.addresses[0].specificAddress
+                            } : {
+                                provinceId: null,
+                                districtId: null,
+                                wardId: null,
+                                specificAddress: ''
+                            },
+                            isNewShippingInfo: false,
+                            vouchers: customerVouchers
+                        };
+                    }
+                    return item;
+                })
+            );
+        } catch (error) {
+            console.error("Lỗi khi xử lý địa chỉ khách hàng:", error);
+            // Có thể thêm thông báo lỗi cho người dùng ở đây
+            toast.error("Có lỗi xảy ra khi tải thông tin địa chỉ khách hàng");
+        }
+    };
+
+    const showAllCustomerAddresses = async (customer) => {
+        console.log("showAllCustomerAddresses")
+        if (!customer || !customer.addresses?.length) {
+            return [];
+        }
+
+        try {
+            let customerAddresses = await Promise.all(
+                customer.addresses.map(async (ca) => {
                     const addressString = await generateAddressString(
                         ca.provinceId,
                         ca.districtId,
@@ -565,8 +608,8 @@ const SalesPage = () => {
             );
         } catch (error) {
             console.error("Lỗi khi xử lý địa chỉ khách hàng:", error);
-            // Có thể thêm thông báo lỗi cho người dùng ở đây
             message.error("Có lỗi xảy ra khi tải thông tin địa chỉ khách hàng");
+            return [];
         }
     };
 
@@ -581,6 +624,18 @@ const SalesPage = () => {
     const getAllVoucher = () => {
         axiosInstance.get(`${baseUrl}/api/admin/bill/vouchers`).then((res) => {
             setVouchers(res.data)
+            console.log(res.data)
+            setVouchersPublic(res.data)
+            setItems(prevItems =>
+                prevItems.map(item => {
+                        return {
+                            ...item,
+                            vouchers: res.data
+                        };
+
+                })
+            );
+
         })
     }
 
@@ -1137,13 +1192,13 @@ const SalesPage = () => {
                     dataSource={items.find(item => item.key === currentBill)?.productList || []}
                     columns={salesColumns(handleRemoveProduct, handleQuantityChange)}/>
             </Card>
-            <CustomerSelect customers={customers}
+            <CustomerSelect
                             customer={currentBillData?.customerInfo || null}
                             onCustomerSelect={onCustomerSelect}/>
             <div>
             </div>
             <SalePaymentInfo
-                vouchers={vouchers}
+                vouchers={currentBillData?.vouchers}
                 handleOnSelectedVoucher={handleOnSelectedVoucher}
                 amount={currentBillData?.payInfo?.amount || 0}
                 isShipping={currentBillData?.isShipping || false}
@@ -1180,6 +1235,7 @@ const SalesPage = () => {
                 currentBill={currentBill}
                 isCOD={currentBillData?.isCOD}
                 handleCheckIsCOD={handleCheckIsCOD}
+                showAllCustomerAddresses={showAllCustomerAddresses}
             />
             {pdfUrl ?
                 <div >
