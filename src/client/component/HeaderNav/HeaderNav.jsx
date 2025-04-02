@@ -107,8 +107,7 @@ function HeaderNav() {
   // Fetch notifications
 
   const fetchNotifications = async () => {
-    if (user) {
-      try {
+    try {
         const response = await apiGetNoti(user?.id);
         if (response.code === 200) {
           const unreadNotifications = response.data.filter(
@@ -116,6 +115,9 @@ function HeaderNav() {
           );
           setNotifications(response.data); // Lưu tất cả thông báo
           setNotificationCount(unreadNotifications.length); // Chỉ đếm chưa đọc
+          console.log("số lượng thông báo",response.data);
+          console.log("số lượng thông báo da dọc",unreadNotifications.length);
+          
         } else {
           console.error("Lỗi khi lấy thông báo:", response.status);
           setNotifications([]);
@@ -126,7 +128,7 @@ function HeaderNav() {
         setNotifications([]);
         setNotificationCount(0);
       }
-    }
+    
   };
 
   // Mark notification as read
@@ -161,10 +163,6 @@ function HeaderNav() {
           "/topic/global-notifications/" + user?.id,
           (message) => {
             const newNotification = JSON.parse(message.body);
-            // setNotifications((prev) => [ newNotification,...prev]);
-            // if (!newNotification.isRead) {
-            //   setNotificationCount((prev) => prev + 1);
-            // }
             fetchNotifications();
           }
         );
@@ -190,12 +188,13 @@ function HeaderNav() {
   };
 
   useEffect(() => {
+    fetchNotifications();
+
     if (user) {
-      fetchNotifications();
       connectWebSocket();
     }
     return () => disconnectWebSocket();
-  }, [user]);
+  }, [user,cartCount]);
 
   useEffect(() => {
     fetchCart();
@@ -300,7 +299,7 @@ function HeaderNav() {
     <div className="header-container">
       {/* Top bar */}
       <div className="top-bar" style={{ backgroundColor: "#F37021" }}>
-        <div className="container-fluid px-4 d-flex justify-content-between align-items-center">
+        <div className="container-fluid px-4 py-0 d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-3">
             <Link
               to="/store-system"
@@ -322,7 +321,7 @@ function HeaderNav() {
       </div>
 
       {/* Main Header */}
-      <div className="main-header py-3" style={{ backgroundColor: "white" }}>
+      <div className="main-header py-1" style={{ backgroundColor: "white" }}>
         <div className="container-fluid px-4">
           <Row align="middle" gutter={16}>
             <Col xs={24} md={4}>
@@ -449,7 +448,7 @@ function HeaderNav() {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="category-nav py-2 border-top border-bottom">
+      <nav className="category-nav py-1 border-top border-bottom">
         <div className="container-fluid px-4">
           <Menu
             mode="horizontal"
@@ -482,7 +481,7 @@ function HeaderNav() {
       >
         <div className="mobile-menu">
           <div className="mb-4">
-            <Input.Search placeholder="Tìm kiếm..." enterButton size="large" />
+            <Input.Search placeholder="Tìm kiếm..." enterButton size="small" className="p-0" />
           </div>
           {user && (
             <div className="user-info mb-4 d-flex align-items-center gap-2">

@@ -25,6 +25,7 @@ import { Link } from "react-router-dom";
 import PropProduct from "../products/PropProduct";
 import { COLORS } from "../../../constants/constants";
 import { apiAddViewProduct, getAllProducthadSoldDesc } from "../products/api";
+import HomeCarousel from "./HomeCarousel";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -79,52 +80,26 @@ const HomePage = () => {
     { id: "sale", name: "Khuyến Mãi" },
   ];
 
-  const banners = [
-    {
-      id: 1,
-      image:
-        "https://salt.tikicdn.com/ts/tmp/59/24/36/cea1f55d81620d5767ca2b8c09794a95.jpg",
-      title: "BỘ SƯU TẬP MỚI NHẤT",
-      subtitle: "Khám phá các mẫu giày mới nhất mùa này",
-      link: "/collections/new",
-    },
-    {
-      id: 2,
-      image: "https://i.ytimg.com/vi/CXSko9ySpyo/maxresdefault.jpg",
-      title: "GIẢM GIÁ LÊN ĐẾN 50%",
-      subtitle: "Ưu đãi đặc biệt cho các mẫu giày hot nhất",
-      link: "/collections/sale",
-    },
-    {
-      id: 3,
-      image:
-        "https://png.pngtree.com/thumb_back/fw800/background/20220929/pngtree-shoes-promotion-banner-background-image_1466238.jpg",
-      title: "GIÀY THỂ THAO CHÍNH HÃNG",
-      subtitle: "Đa dạng mẫu mã từ các thương hiệu nổi tiếng",
-      link: "/collections/sport",
-    },
-  ];
-
   const blogs = [
     {
       id: 1,
       title: "5 Cách phối đồ với giày sneaker trắng",
       image:
-        "https://img.freepik.com/free-photo/white-high-top-sneakers-unisex-footwear-fashion_53876-106036.jpg",
+        "https://bazaarvietnam.vn/wp-content/uploads/2021/08/cach-phoi-do-voi-giay-the-thao-trang-5-e1628170548847.jpg",
       date: "05/03/2025",
     },
     {
       id: 2,
       title: "Hướng dẫn chọn size giày chuẩn",
       image:
-        "https://img.freepik.com/free-photo/measuring-foot-size-with-ruler_23-2149860438.jpg",
+        "https://chandat.net/wp-content/uploads/2018/07/xem-ki-huong-dan-ve-size-giay-312358.jpg",
       date: "27/02/2025",
     },
     {
       id: 3,
       title: "Cách bảo quản giày thể thao đúng cách",
       image:
-        "https://img.freepik.com/free-photo/sports-shoe-pair-design-casual-leather_1203-6400.jpg",
+        "https://file.hstatic.net/1000230642/file/6aaba9fc4aab43d786a87d08315c98d8.png",
       date: "15/02/2025",
     },
   ];
@@ -146,12 +121,12 @@ const HomePage = () => {
     {
       name: "Converse",
       image:
-        "https://1000logos.net/wp-content/uploads/2021/04/Converse-logo.png",
+        "https://logohistory.net/wp-content/uploads/2023/12/New-Balance-Logo-1972.png",
     },
     {
       name: "Vans",
       image:
-        "https://1000logos.net/wp-content/uploads/2020/07/Vans-Logo-2016.jpg",
+        "https://1000logos.net/wp-content/uploads/2017/06/Vans-logo-640x360.png",
     },
   ];
 
@@ -192,54 +167,7 @@ const HomePage = () => {
   return (
     <Card bodyStyle={{ padding: 0 }}>
       {/* Banner Carousel */}
-      <Carousel autoplay effect="fade" dots={{ className: "carousel-dots" }}>
-        {banners.map((banner) => (
-          <div key={banner.id}>
-            <div
-              style={{
-                height: 500,
-                backgroundImage: `url(${banner.image})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                position: "relative",
-                display: "flex",
-                alignItems: "center",
-                padding: "0 50px",
-              }}
-            >
-              <div style={{ maxWidth: 500, color: "white" }}>
-                <Title
-                  level={2}
-                  style={{
-                    color: "white",
-                    marginBottom: 10,
-                    textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  {banner.title}
-                </Title>
-                <Paragraph
-                  style={{
-                    fontSize: 18,
-                    marginBottom: 20,
-                    textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
-                  }}
-                >
-                  {banner.subtitle}
-                </Paragraph>
-                <Button
-                  type="primary"
-                  size="large"
-                  style={{ backgroundColor: "#ff6600", borderColor: "#ff6600" }}
-                  href={banner.link}
-                >
-                  Xem ngay
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </Carousel>
+      <HomeCarousel />
 
       {/* Featured Categories */}
       <div style={{ padding: "30px 24px" }}>
@@ -462,67 +390,98 @@ const HomePage = () => {
           </Col>
         </Row>
       </div>
-
+      <Row
+        gutter={[24, 24]}
+        justify="space-between"
+        align="middle"
+        className="p-2"
+      >
+        {brands.map((brand, index) => (
+          <Col key={index} span={4}>
+            <div style={{ textAlign: "center" }}>
+              <img
+                src={brand.image}
+                alt={brand.name}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: 60,
+                  filter: "grayscale(100%)",
+                  opacity: 0.6,
+                  transition: "all 0.3s",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.filter = "grayscale(0)";
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.filter = "grayscale(100%)";
+                  e.currentTarget.style.opacity = "0.6";
+                }}
+              />
+            </div>
+          </Col>
+        ))}
+      </Row>
       {/* Best Selling Products */}
       <div style={{ padding: "0 24px" }}>
-      <Card
-            title={
-              <div
-                style={{
-                  fontSize: "19px",
-                  fontWeight: "normal",
-                  backgroundColor: `${COLORS.backgroundcolor2}`,
-                  padding: "10px",
-                  margin: "1rem",
-                  color: `${COLORS.pending}`,
-                }}
+        <Card
+          title={
+            <div
+              style={{
+                fontSize: "19px",
+                fontWeight: "normal",
+                backgroundColor: `${COLORS.backgroundcolor2}`,
+                padding: "10px",
+                margin: "1rem",
+                color: `${COLORS.pending}`,
+              }}
+            >
+              SẢN PHẨM BÁN CHẠY
+            </div>
+          }
+          bordered={false}
+        >
+          <Row gutter={[16, 24]}>
+            {productHadSolDescs?.map((product, index) => (
+              <Col
+                key={index}
+                xs={24}
+                sm={12}
+                md={8}
+                lg={6}
+                xl={{ flex: "20%" }}
               >
-                SẢN PHẨM BÁN CHẠY
-              </div>
-            }
-            bordered={false}
-          >
-            <Row gutter={[16, 24]}>
-              {productHadSolDescs?.map((product, index) => (
-                <Col
-                  key={index}
-                  xs={24}
-                  sm={12}
-                  md={8}
-                  lg={6}
-                  xl={{ flex: "20%" }}  
+                <Link
+                  to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    fontWeight: "normal",
+                    display: "block",
+                    width: "100%",
+                  }}
+                  onClick={() => addViewProduct(product.productId)}
                 >
-                  <Link
-                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
-                    style={{
-                      textDecoration: "none",
-                      color: "black",
-                      fontWeight: "normal",
-                      display: "block",
-                      width: "100%",
+                  <PropProduct
+                    product={{
+                      name:
+                        product.productName?.trim() || "Sản phẩm chưa có tên",
+                      price: product.price ?? 0,
+                      promotion:
+                        product.promotionName === "Không có khuyến mãi"
+                          ? null
+                          : product.promotionName,
+                      sale: product.sold ?? 0,
+                      url: product.imageUrl || "https://placehold.co/100",
+                      views: product.views ?? 0,
+                      rate: product.rate ?? 5,
                     }}
-                    onClick={() => addViewProduct(product.productId)}
-                  >
-                    <PropProduct
-                      product={{
-                        name:
-                          product.productName?.trim() || "Sản phẩm chưa có tên",
-                        price: product.price ?? 0,
-                        promotion:
-                          product.promotionName === "Không có khuyến mãi"
-                            ? null
-                            : product.promotionName,
-                        sale: product.sold ?? 0,
-                        url: product.imageUrl || "https://placehold.co/100",
-                        views: product.views ?? 0,
-                        rate: product.rate ?? 5,
-                      }}
-                    />
-                  </Link>
-                </Col>
-              ))}
-            </Row>
-          </Card>
+                  />
+                </Link>
+              </Col>
+            ))}
+          </Row>
+        </Card>
       </div>
 
       {/* Blog Posts */}
@@ -581,7 +540,7 @@ const HomePage = () => {
                 }
               >
                 <Card.Meta
-                  title={<a href={`/blogs/${blog.id}`}>{blog.title}</a>}
+                  title={<a style={{color:`${COLORS.primary}`}} href={`/blogs/${blog.id}`}>{blog.title}</a>}
                   description={
                     <a
                       href={`/blogs/${blog.id}`}
@@ -592,7 +551,7 @@ const HomePage = () => {
                         marginTop: 5,
                       }}
                     >
-                      Đọc tiếp
+                      Đọc tiếp .....
                     </a>
                   }
                 />
@@ -602,42 +561,7 @@ const HomePage = () => {
         </Row>
       </div>
 
-      {/* Brands */}
-      <div
-        style={{
-          backgroundColor: "#f9f9f9",
-          padding: "30px 24px",
-          marginBottom: 30,
-        }}
-      >
-        <Row gutter={[24, 24]} justify="space-between" align="middle">
-          {brands.map((brand, index) => (
-            <Col key={index} span={4}>
-              <div style={{ textAlign: "center" }}>
-                <img
-                  src={brand.image}
-                  alt={brand.name}
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: 60,
-                    filter: "grayscale(100%)",
-                    opacity: 0.6,
-                    transition: "all 0.3s",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.filter = "grayscale(0)";
-                    e.currentTarget.style.opacity = "1";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.filter = "grayscale(100%)";
-                    e.currentTarget.style.opacity = "0.6";
-                  }}
-                />
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
+   
     </Card>
   );
 };

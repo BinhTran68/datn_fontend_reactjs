@@ -116,7 +116,7 @@ function PropProduct({ product }) {
           }}
         >
           <div
-            className="card-title mb-3 "
+            // className="card-title"
             style={{
               fontSize: "1rem",
               height: "30%",
@@ -147,17 +147,19 @@ function PropProduct({ product }) {
                 {formatPriceRange(product.price)}
               </span>
 
-              <sup
+             <div>
+             <sup
                 className="badge"
                 style={{
                   fontSize: "0.7rem",
-                  background: "#FEEEEA",
+                  background:`${product.promotion?"#FEEEEA":"white"}`,
                   color: "#EE4D2D",
                   marginLeft: "0.5rem",
                 }}
               >
-                {product.promotion}
+                {product.promotion||<div hidden>"Chưa có khuyến mại"</div>}
               </sup>
+             </div>
             </div>
           </div>
           <div>

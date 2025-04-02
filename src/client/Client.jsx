@@ -16,16 +16,25 @@ const App = () => {
     JSON.parse(localStorage.getItem("user"))
   );
   const [messages, setMessages] = useState([]);
+  const [messages1, setMessages1] = useState([]);
 
   // Hàm xử lý tin nhắn từ WebSocket
   const handleNewMessage = (newMsg) => {
     console.log("📨 Nhận tin nhắn bên ngoài:", newMsg);
     setMessages((prev) => [...prev, newMsg]);
   };
+  // const handleNewMessage1 = (newMsg) => {
+  //   console.log("📨 Nhận tin nhắn bên ngoài:", newMsg);
+  //   setMessages((prev) => [...prev, newMsg]);
+  // };
   const { connectWS, disconnectWS } = useWebSocket(
     "/topic/anou",
     handleNewMessage
   );
+  // const { connectWS1, disconnectWS1 } = useWebSocket(
+  //   `/topic/global-notifications/${user?.id}`,
+  //   handleNewMessage1
+  // );
 
   useEffect(() => {
     connectWS(); // Kết nối WebSocket khi component mount
@@ -36,8 +45,17 @@ const App = () => {
   }, []);
 
   return (
-    <Layout>
-      <Content style={{ backgroundColor: "white" }}>
+    <Layout style={{
+      minHeight:"100px"
+    }}>
+    <Content
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+          backgroundColor: "white",
+        }}
+      >
         <HeaderNav />
       </Content>
       <Content>

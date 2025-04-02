@@ -39,9 +39,13 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
     if (conversationId != null && showMessages) return;
     fetchData();
   }, [isChatOpen, customerId, staffId, senderType, anou]);
+  
   const fetchData = async () => {
-    if (!customerId) return;
-      
+    console.log("dsufdsufdsfusdudsf 1");
+
+    // if (!customerId) return;
+    console.log("dsufdsufdsfusdudsf 2");
+
     
     try {
       if (senderType === "STAFF") {
@@ -50,6 +54,8 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
         );
         const convs = response.data;
         setConversations(convs);
+        console.log("dsufdsufdsfusdudsf 3");
+
         // Khởi tạo unread counts từ backend hoặc tính từ tin nhắn SENT
         const counts = {};
         let total = 0;
