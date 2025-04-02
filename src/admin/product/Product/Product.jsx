@@ -1,12 +1,44 @@
-import {  Table,  Input,  Button,  Row,  Col,  Typography,  Card,  Modal,  Pagination,  message,  Tag,  Form,  Space,  Radio,  Flex,  Grid, Popconfirm, Tooltip, Switch,
+import {
+  Table,
+  Input,
+  Button,
+  Row,
+  Col,
+  Typography,
+  Card,
+  Modal,
+  Pagination,
+  message,
+  Tag,
+  Form,
+  Space,
+  Radio,
+  Flex,
+  Grid,
+  Popconfirm,
+  Tooltip,
+  Switch,
 } from "antd";
 import styles from "./Product.module.css";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import ModalAddProduct from "./ModalAddProduct.jsx";
-import {  useEffect,  useState,  useCallback,  useRef,  useLayoutEffect,
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useLayoutEffect,
 } from "react";
 import axios from "axios";
-import {  fetchProducts,  createProduct,  updateProduct,  deleteProduct,  getProduct,  searchNameProduct,  existsByProductName,  switchStatus,
+import {
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProduct,
+  searchNameProduct,
+  existsByProductName,
+  switchStatus,
 } from "./ApiProduct.js";
 import { FaEye, FaRegTrashCan } from "react-icons/fa6";
 import { RxUpdate } from "react-icons/rx";
@@ -207,10 +239,10 @@ const Product = () => {
 
   const columns = [
     {
-      title: "STT",
+      title: "#",
       dataIndex: "stt",
       key: "stt",
-      width: "5rem",
+      width: "2rem",
       render: (_, __, index) => (
         <div style={{ height: "2rem" }}>
           {index + 1 + (pagination.current - 1) * pagination.pageSize}
@@ -218,10 +250,59 @@ const Product = () => {
       ),
     },
     {
-      title: "Tên Hãng",
+      title: "Ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {record.id && (
+            <img
+              src={
+                record?.image
+                  ? Array.isArray(record.image)
+                    ? record.image.length > 0
+                      ? record.image[0]?.url // Nếu là mảng và có phần tử, lấy phần tử đầu tiên
+                      : "https://placehold.co/100" // Nếu là mảng nhưng rỗng, dùng ảnh mặc định
+                    : record.image // Nếu là string, dùng trực tiếp
+                  : "https://placehold.co/100" // Nếu không có image, dùng ảnh mặc định
+              }
+              alt={text}
+              style={{
+                width: "50px",
+                height: "50px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+          )}
+          {/* <span
+            style={{
+              maxWidth: "100px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {text}
+          </span> */}
+        </div>
+      ),
+    },
+    {
+      title: "Tên sản phẩm",
       dataIndex: "productName",
       key: "productName",
-      width: "20rem",
+
+      onCell: () => ({
+        style: {
+          width: "100px",
+          height: "50px",
+          lineHeight: "50px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        },
+      }),
     },
     {
       title: "Số lượng",
@@ -230,19 +311,18 @@ const Product = () => {
       width: "20rem",
     },
 
-    
     {
       title: "Ngày cập nhật",
       dataIndex: "updatedAt",
       key: "updateAt",
       width: "15rem",
-      render: (text) => {
-        // Kiểm tra xem ngày có hợp lệ không
-        const date = new Date(text);
+      render: (_, record) => {
+        const timestamp = Number(record.updateAt); // Convert text to a number
+        const date = new Date(timestamp); // Create a Date object
         if (isNaN(date.getTime())) {
           return ""; // Nếu không hợp lệ, trả về chuỗi trống
         }
-        return date.toLocaleDateString(); // Nếu hợp lệ, trả về ngày đã format
+        return date.toLocaleDateString("vi-VN"); // Format ngày theo chuẩn Việt Nam
       },
     },
     {
@@ -379,6 +459,7 @@ const Product = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
             />
           </Col>
 
@@ -424,7 +505,20 @@ const Product = () => {
                   Xem tất cả các sản phẩm chi tiết
                 </Button>
               </Link>
-            </Col>
+            </Col>{" "}
+            <Button
+              type="primary"
+              onClick={() => {
+                setRequestSearch({ name: "" });
+                setPagination({
+                  current: 1,
+                  pageSize: pagination.pageSize,
+                });
+              }}
+              style={{ marginLeft: "2rem" }}
+            >
+              Làm mới
+            </Button>
           </Row>
 
           <ModalAddProduct
@@ -456,7 +550,7 @@ const Product = () => {
                 type="primary"
                 loading={loading}
                 onClick={() => formUpdate.submit()}
-              // disabled={!isActiveUpdate}
+                // disabled={!isActiveUpdate}
               >
                 Xác nhận
               </Button>,

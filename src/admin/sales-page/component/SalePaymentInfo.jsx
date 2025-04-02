@@ -361,7 +361,7 @@ const SalePaymentInfo = ({
                             </Form.Item>
 
                             {
-                                paymentMethods === "bank" &&
+                                isShipping &&
                                 <Form.Item hidden={isSuccess}>
                                     <Checkbox checked={isCOD} value={isCOD} onChange={handleCheckIsCOD}>
                                         Thanh toán khi giao hàng

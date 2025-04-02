@@ -39,7 +39,7 @@ import {
 } from "./api";
 import { addToCart, clearCart, getCart } from "../cart/cart.js";
 import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
-import { addToBill } from "../cart/bill.js";
+import { addToBill, clearBill } from "../cart/bill.js";
 import { toast } from "react-toastify";
 import CommentSection from "./CommentSection.jsx";
 
@@ -121,6 +121,7 @@ function ProductDetail() {
     getColorsOfProduct(productId);
     getSizesOfProduct(productId);
     getAllProductHadViewsDescs();
+    clearBill();
   }, [productId, colorId, sizeId]);
   // Khi thay đổi color, cập nhật danh sách size tương ứng
   useEffect(() => {
@@ -326,11 +327,43 @@ function ProductDetail() {
               }}
             >
               <h2>
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                  minimumFractionDigits: 0,
-                }).format(getProductDetail.price)}
+                {getProductDetail.promotion?.discountValue ? (
+                  <div>
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                      minimumFractionDigits: 1, // Hiển thị tối thiểu 2 chữ số sau dấu phẩy
+                      maximumFractionDigits: 1, // Giới hạn tối đa 2 chữ số sau dấu phẩy
+                    }).format(
+                      getProductDetail.price -
+                        (getProductDetail.price *
+                          getProductDetail.promotion?.discountValue) /
+                          100
+                    )}{" "}
+                    <span
+                      style={{
+                        textDecoration: "line-through",
+                        marginLeft: "8px",
+                        fontSize: "1.5rem",
+                        color: "GrayText",
+                      }}
+                    >
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      }).format(getProductDetail.price)}
+                    </span>
+                  </div>
+                ) : (
+                  new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                    // minimumFractionDigits: 1,
+                    // maximumFractionDigits: 1,
+                  }).format(getProductDetail.price)
+                )}
               </h2>
             </Col>
             <Row gutter={[20, 30]}>
@@ -442,7 +475,7 @@ function ProductDetail() {
                       defaultValue={1}
                       value={quantityAddCart}
                       min={1}
-                      max={100}
+                      max={getProductDetail.quantity}
                       onChange={(value) => {
                         setQuantityAddCart(value); // Cập nhật state khi thay đổi số lượng
                       }}
@@ -484,7 +517,12 @@ function ProductDetail() {
                           customerId: user.id,
                           productDetailId: getProductDetail.id,
                           quantityAddCart: quantityAddCart,
-                          price: getProductDetail.price,
+                          price: getProductDetail.promotion?.discountValue
+                            ? getProductDetail.price -
+                              (getProductDetail.price *
+                                getProductDetail.promotion.discountValue) /
+                                100
+                            : getProductDetail.price,
                           productName: `${getProductDetail.productName} [${getProductDetail.colorName}-${getProductDetail.sizeName}]`,
                           image: getProductDetail.image[0]?.url || "",
                         });
@@ -493,7 +531,12 @@ function ProductDetail() {
                         addToCart({
                           productDetailId: getProductDetail.id,
                           quantityAddCart: quantityAddCart,
-                          price: getProductDetail.price,
+                          price: getProductDetail.promotion?.discountValue
+                            ? getProductDetail.price -
+                              (getProductDetail.price *
+                                getProductDetail.promotion.discountValue) /
+                                100
+                            : getProductDetail.price,
                           productName: getProductDetail.productName,
                           image: getProductDetail.image[0]?.url || "",
                           sizeName: getProductDetail.sizeName,

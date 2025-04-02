@@ -116,7 +116,6 @@ const Material = () => {
   // validate cho create
   const [errorMessage, setErrorMessage] = useState("");
 
- 
   // Hàm fetch dữ liệu materials
   useEffect(() => {
     fetchMaterialsData();
@@ -404,6 +403,7 @@ const Material = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
             />
           </Col>
 
@@ -428,6 +428,16 @@ const Material = () => {
             style={{}}
           >
             Thêm Chất liệu
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{ marginLeft: "2rem" }}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}

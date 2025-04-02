@@ -1,335 +1,381 @@
-// import React from 'react'
-import React, { useState } from 'react';
-// import "bootstrap/dist/css/bootstrap.min.css";
-import Button from 'react-bootstrap/Button';
-import FormRange from 'react-bootstrap/FormRange';
-import Offcanvas from 'react-bootstrap/Offcanvas';
-import Form from 'react-bootstrap/Form';
-import Pagination from 'react-bootstrap/Pagination';
-import Carousel from 'react-bootstrap/Carousel';
-// import ExampleCarouselImage from 'components/ExampleCarouselImage';
+import React, { useCallback, useEffect, useState, useRef } from "react";
+import style from "../TestComponent/TestComponent.module.css";
+import clsx from "clsx";
+import styles from "./Product.module.css";
+import PropProduct from "./PropProduct.jsx";
+import { Content } from "antd/es/layout/layout.js";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Flex,
+  InputNumber,
+  Layout,
+  Menu,
+  message,
+  Pagination,
+  Radio,
+  Rate,
+  Row,
+  Select,
+  Slider,
+  Space,
+} from "antd";
+import Sider from "antd/es/layout/Sider.js";
+import { LaptopOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
+import { COLORS } from "../../../constants/constants.js";
+import {
+  apiAddViewProduct,
+  getAllProductHadCreatedAtDesc,
+  getAllProducthadPromotion,
+  getAllProducthadSoldDesc,
+  getAllProducthadViewsDesc,
+} from "./api.js";
+import { FaFilter } from "react-icons/fa";
+import { FiFilter } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import FilterSelect from "./FilterSelect.jsx";
+import {
+  fetchDataSelectBrand,
+  fetchDataSelectColor,
+  fetchDataSelectGender,
+  fetchDataSelectMaterial,
+  fetchDataSelectProduct,
+  fetchDataSelectSize,
+  fetchDataSelectSole,
+  fetchDataSelectType,
+} from "../../../admin/product/ProductDetail/ApiProductDetail.js";
 
-import { Container, Row, Col, Card } from 'react-bootstrap';
+const url =
+  "https://res.cloudinary.com/dieyhvcou/image/upload/v1742735758/5_1_b5fisz.png";
+const products = [
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Hot",
+    rate: 5,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Best Sale",
+    rate: 4,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Flash Sale",
+    rate: 3,
+  },
+  {
+    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
+    price: 50000,
+    promotion: "giảm 20%",
+    sale: "342",
+    url: url,
+    statusSale: "Flash Sale",
+    rate: 3,
+  },
+];
 
-const ProductsPage = () => {
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  const [validated, setValidated] = useState(false);
+const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
+  (icon, index) => {
+    const key = String(index + 1);
+    return {
+      key: `sub${key}`,
+      icon: React.createElement(icon),
+      label: `Danh mục ${key}`,
+      children: new Array(4).fill(null).map((_, j) => {
+        const subKey = index * 4 + j + 1;
+        return {
+          key: subKey,
+          label: `danh mục con${subKey}`,
+        };
+      }),
+    };
+  }
+);
 
-  const products = [
-    {
-      id: 1,
-      title: "Giày Nike Zoom Vapor Pro 2 HC 'White'",
-      code: "DR6191-101",
-      price: "3,500,000 ₫ – 3,100,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png " ,
-    },
-    {
-      id: 2,
-      title: "Giày Tennis Asics Court FF Novak 'Cranberry White'",
-      code: "1041A089-605",
-      price: "4,500,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 3,
-      title: "Giày Lacoste Tennis AG-LT23 Ultra 'Green White'",
-      code: "47SMA0101-2D2",
-      price: "5,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 4,
-      title: "Giày Adidas Barricade 13 'White Lucid Blue'",
-      code: "IF9129",
-      price: "3,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 5,
-      title: "Giày Nike Zoom Vapor Pro 2 HC 'White'",
-      code: "DR6191-101",
-      price: "3,500,000 ₫ – 3,100,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 6,
-      title: "Giày Tennis Asics Court FF Novak 'Cranberry White'",
-      code: "1041A089-605",
-      price: "4,500,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 7,
-      title: "Giày Lacoste Tennis AG-LT23 Ultra 'Green White'",
-      code: "47SMA0101-2D2",
-      price: "5,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-    {
-      id: 8,
-      title: "Giày Adidas Barricade 13 'White Lucid Blue'",
-      code: "IF9129",
-      price: "3,900,000 ₫",
-      image: "https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png",
-    },
-  ];
+function ProductsPage() {
+  const [filteredData, setFilteredData] = useState({
+    products: [],
+    pagination: {},
+    filters: {},
+  });
+
+  // State quản lý phân trang
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    totalPages: 0,
+    totalElements: 0,
+  });
+
+  const [dataSelectBrand, setDataSelectBrand] = useState([]);
+  const [dataSelectColor, setDataSelectColor] = useState([]);
+  const [dataSelectGender, setDataSelectGender] = useState([]);
+  const [dataSelectMaterial, setDataSelectMaterial] = useState([]);
+  const [dataSelectProduct, setDataSelectProduct] = useState([]);
+  const [dataSelectSize, setDataSelectSize] = useState([]);
+  const [dataSelectSole, setDataSelectSole] = useState([]);
+  const [dataSelectType, setDataSelectType] = useState([]);
+  const [requestSearch, setRequestSearch] = useState({
+    name: "",
+  });
+  const [range, setRange] = useState([]); // Giá trị mặc định
+
+  const [loading, setLoading] = useState(false);
+  const [productHadSolDescs, setProductHadSolDescs] = useState();
+  const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
+    current: 1,
+    pageSize: 8,
+  });
+
+  // Sử dụng useRef để lưu giá trị pagination trước đó
+  const prevPaginationRef = useRef(pagination);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setDataSelectBrand((await fetchDataSelectBrand()).data);
+        setDataSelectProduct((await fetchDataSelectProduct()).data);
+        setDataSelectType((await fetchDataSelectType()).data);
+        setDataSelectColor((await fetchDataSelectColor()).data);
+        setDataSelectMaterial((await fetchDataSelectMaterial()).data);
+        setDataSelectSize((await fetchDataSelectSize()).data);
+        setDataSelectSole((await fetchDataSelectSole()).data);
+        setDataSelectGender((await fetchDataSelectGender()).data);
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // const getAllProductHadSoldDescs = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await getAllProducthadSoldDesc(pageProductHadSolDescs);
+  //     console.log("Response tất cả sản phẩm có lượt bán từ nhiều tới ít:", response);
+  //     setProductHadSolDescs(response.data);
+  //   } catch (error) {
+  //     message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const formatFiltersToString = (filters) => {
+    const filterParts = [];
+
+    if (filters.productId) {
+      const product = dataSelectProduct.find((p) => p.id === filters.productId);
+      filterParts.push(`Sản phẩm: ${product?.productName || "N/A"}`);
+    }
+    if (filters.brandId) {
+      const brand = dataSelectBrand.find((b) => b.id === filters.brandId);
+      filterParts.push(`Thương hiệu: ${brand?.brandName || "N/A"}`);
+    }
+    if (filters.typeId) {
+      const type = dataSelectType.find((t) => t.id === filters.typeId);
+      filterParts.push(`Loại giày: ${type?.typeName || "N/A"}`);
+    }
+    if (filters.colorId) {
+      const color = dataSelectColor.find((c) => c.id === filters.colorId);
+      filterParts.push(`Màu sắc: ${color?.colorName || "N/A"}`);
+    }
+    if (filters.materialId) {
+      const material = dataSelectMaterial.find((m) => m.id === filters.materialId);
+      filterParts.push(`Chất liệu: ${material?.materialName || "N/A"}`);
+    }
+    if (filters.sizeId) {
+      const size = dataSelectSize.find((s) => s.id === filters.sizeId);
+      filterParts.push(`Kích cỡ: ${size?.sizeName || "N/A"}`);
+    }
+    if (filters.soleId) {
+      const sole = dataSelectSole.find((s) => s.id === filters.soleId);
+      filterParts.push(`Đế giày: ${sole?.soleName || "N/A"}`);
+    }
+    if (filters.genderId) {
+      const gender = dataSelectGender.find((g) => g.id === filters.genderId);
+      filterParts.push(`Giới tính: ${gender?.genderName || "N/A"}`);
+    }
+    if (filters.minPrice !== null) {
+      filterParts.push(`Giá tối thiểu: ${filters.minPrice?.toLocaleString()||0}`);
+    }
+    if (filters.maxPrice !== null) {
+      filterParts.push(`Giá tối đa: ${filters.maxPrice?.toLocaleString()||0}`);
+    }
+
+    return filterParts.length > 0 ? filterParts.join(", ") : "Chưa có dữ liệu lọc";
+  };
+  const addViewProduct = async (productId) => {
+    setLoading(true);
+    try {
+      const response = await apiAddViewProduct(productId);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilter = useCallback((data) => {
+    setFilteredData(data);
+
+    // Chỉ cập nhật pagination nếu totalPages hoặc totalElements thay đổi
+    if (
+      data?.pagination.totalPages !== pagination.totalPages ||
+      data?.pagination.totalElements !== pagination.totalElements
+    ) {
+      setPagination((prev) => ({
+        ...prev,
+        totalPages: data?.pagination.totalPages || 0,
+        totalElements: data?.pagination.totalElements || 0,
+      }));
+    }
+
+    console.log("Dữ liệu lọc nhận được:", data);
+  }, [pagination.totalPages, pagination.totalElements]); // Chỉ phụ thuộc vào totalPages và totalElements
+
+  const handlePaginationChange = useCallback((newPagination) => {
+    setPagination((prev) => ({
+      ...prev,
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    }));
+  }, []);
+
+  const onPageChange = (page, pageSize) => {
+    handlePaginationChange({ current: page, pageSize });
+  };
 
   return (
-    <div className="container">
+    <>
+      <Content>
+        <Layout>
+          <Sider width={200} style={{ backgroundColor: "white" }}>
+            <Content style={{ padding: "0.5rem" }}>
+              <FilterSelect
+                onFilter={handleFilter}
+                onPaginationChange={handlePaginationChange}
+                pagination={pagination}
+                dataSelectProduct={dataSelectProduct}
+                dataSelectBrand={dataSelectBrand}
+                dataSelectType={dataSelectType}
+                dataSelectColor={dataSelectColor}
+                dataSelectMaterial={dataSelectMaterial}
+                dataSelectSize={dataSelectSize}
+                dataSelectSole={dataSelectSole}
+                dataSelectGender={dataSelectGender}
+              />
+            </Content>
+          </Sider>
 
-        <header >
-          <Carousel>
-            <Carousel.Item interval={500}>
-              <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-              <Carousel.Caption>
-                <h3>aaaaa</h3>
-                <p>ccccccc</p>
-              </Carousel.Caption>
-
-            </Carousel.Item>
-            <Carousel.Item interval={500}>
-            <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-
-              <Carousel.Caption>
-                <h3>Second slide label</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              </Carousel.Caption>
-            </Carousel.Item >
-
-            <Carousel.Item interval={500}>
-            <img src="https://authentic-shoes.com/wp-content/uploads/2024/05/AJ4MilitaryBlue_Primary_Desktop-2048x623.webp" alt="" width={"100%"}/>
-
-              <Carousel.Caption>
-                <h3>Third slide label</h3>
-                <p>
-                  Praesent commodo cursus magna, vel scelerisque nisl consectetur.
-                </p>
-              </Carousel.Caption>
-            </Carousel.Item>
-          </Carousel>
-        </header>
-        <div className='row'>
-
-        <aside className='col-3' style={{paddingTop:'24px'}}>
-          <Button variant="light" onClick={handleShow} style={{ fontWeight: 'bolder' }} >
-            Lọc theo
-          </Button>
-          {/* <img src="https://authentic-shoes.com/wp-content/uploads/2023/04/1041a182_100.png_31777d11226e41b1af636650ca10426e-300x142.png" alt="" /> */}
-
-          <Offcanvas show={show} onHide={handleClose}>
-            <Offcanvas.Header closeButton>
-              <Offcanvas.Title>Bộ  Lọc</Offcanvas.Title>
-            </Offcanvas.Header>
-            <Offcanvas.Body>
-              <Form>
-                {['checkbox'].map((type) => (
-                  <div key={`inline-${type}`} className="mb-3" >
-                    <h6>Giới tính</h6>
-                    <Form.Check
-                      inline
-                      label="Nam"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-1`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Nữ"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-2`}
-                    />
-                    <h6>Kích cỡ</h6>
-                    <Form.Check
-                      inline
-                      label="35"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-3`}
-                    />
-                    <Form.Check
-                      inline
-                      label="36"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-4`}
-                    />
-                    <Form.Check
-                      inline
-                      label="37"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-5`}
-                    />
-                    <Form.Check
-                      inline
-                      label="38"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-6`}
-                    />
-                    <Form.Check
-                      inline
-                      label="39"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-7`}
-                    />
-                    <Form.Check
-                      inline
-                      label="40"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-8`}
-                    />
-                    <h6>Kích cỡ</h6>
-                    <Form.Check
-                      inline
-                      label="Trắng"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-9`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Đen"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-10`}
-                    />
-                    <h6>Hãng</h6>
-                    <Form.Check
-                      inline
-                      label="Nike"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-11`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Puma"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-12`}
-                    />
-                    <h6>Loại</h6>
-                    <Form.Check
-                      inline
-                      label="Thời trang"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-13`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Thể thao"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-14`}
-                    />
-                    <h6>Chất liệu</h6>
-                    <Form.Check
-                      inline
-                      label="Da"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-15`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Vải"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-16`}
-                    />
-                    <h6>Đế giày</h6>
-                    <Form.Check
-                      inline
-                      label="Cao su"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}-17`}
-                    />
-                    <Form.Check
-                      inline
-                      label="Nhựa"
-                      name="group1"
-                      type={type}
-                      id={`inline-${type}18`}
-                    />
-
-                    <div>
-                      <Form.Check style={{ fontWeight: 'bolder' }}>Chọn khoảng giá </Form.Check>
-                      <Form.Range type="range" class="form-range" id="customRange1" min="500000" max="10000000" step="1" />
-                      {/* <Input type="range" class="form-range" id="customRange1" min="500000" max="10000000" step="1"> */}
-                    </div>
-
-                  </div>
-
-                ))}
-
-              </Form>
-              <div style={{ textAlign: 'center', fontWeight: 'bolder', width: '100%' }}>
-                <Button variant="light"> Lọc</Button>
-              </div>
-
-
-            </Offcanvas.Body>
-          </Offcanvas>
-        </aside>
-        <article className='col-9'>
-          <Container className="mt-4">
-            <Row>
-              {products.map((product) => (
-                <Col key={product.id} md={4} className="mb-4">
-                  <Card>
-                    <a href="#" style={{color:'black', textDecoration:'none'}}>
-                    <Card.Img className='object-cover' variant="top"  src={product.image} alt={product.title} />
-                    </a>
-                    <Card.Body>
-                      <a href="#" style={{color:'black', textDecoration:'none'}}><Card.Title  className="fw-bold fs-6">{product.title}</Card.Title>
-                      </a>
-                      <a href="#" style={{color:'black', textDecoration:'none'}}><Card.Text className="text-muted">{product.code}</Card.Text>
-                      </a>
-                      <Card.Text className="fw-bold text-danger">{product.price}</Card.Text>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
+          <Content style={{ padding: "0 0 0 7px", minHeight: 280 }}>
+            <Card
+              style={{ borderRadius: 0, marginBottom: "0.3rem" }}
+              title={
+                <Row
+                  style={{
+                    fontSize: "19px",
+                    fontWeight: "normal",
+                    backgroundColor: `${COLORS.backgroundcolor2}`,
+                    padding: "10px",
+                    margin: "1rem",
+                    color: `${COLORS.pending}`,
+                  }}
+                >
+                  SẢN PHẨM LỌC THEO: {formatFiltersToString(filteredData?.filters)}
+                </Row>
+              }
+            >
+              <Row gutter={[5, 5]} wrap>
+                {filteredData.products.length > 0 ? (
+                  filteredData.products.map((product, index) => (
+                    <Col key={index} flex={"20%"}>
+                      <Link
+                        to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                        style={{
+                          textDecoration: "none",
+                          color: "black",
+                          fontWeight: "normal",
+                        }}
+                        onClick={() => addViewProduct(product.productId)}
+                      >
+                        <PropProduct
+                          product={{
+                            name: product.productName?.trim() || "Sản phẩm chưa có tên",
+                            price: product.price ?? 0,
+                            promotion:
+                              product.promotionName === "Không có khuyến mãi"
+                                ? null
+                                : product.promotionName,
+                            sale: product.sold ?? 0,
+                            url: product.imageUrl || "https://placehold.co/100",
+                            views: product.views ?? 0,
+                            rate: product.rate ?? 5,
+                          }}
+                        />
+                      </Link>
+                    </Col>
+                  ))
+                ) : (
+                  <div>Không tìm thấy sản phẩm nào!</div>
+                )}
+              </Row>
+            <Row className="p-3">
+            <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.totalElements}
+                onChange={onPageChange}
+                showSizeChanger
+                pageSizeOptions={["10", "20", "50"]}
+              />
             </Row>
-          </Container>
+            </Card>
 
-{/* thanh chuyen page */}
-          <Pagination style={{ paddingLeft: '400px ',borderRadius:'50' }}>
-            <Pagination.First />
-            <Pagination.Prev />
-            <Pagination.Item>{1}</Pagination.Item>
-            <Pagination.Ellipsis />
-
-            <Pagination.Item>{10}</Pagination.Item>
-            <Pagination.Item>{11}</Pagination.Item>
-            <Pagination.Item active>{12}</Pagination.Item>
-            <Pagination.Item>{13}</Pagination.Item>
-            <Pagination.Item disabled>{14}</Pagination.Item>
-
-            <Pagination.Ellipsis />
-            <Pagination.Item>{20}</Pagination.Item>
-            <Pagination.Next />
-            <Pagination.Last />
-          </Pagination>
-        </article>
-
-      </div>
-
-    </div>
-
-  )
+            <Card
+              style={{ borderRadius: 0, marginBottom: "0.3rem" }}
+              title={
+                <Row
+                  style={{
+                    fontSize: "19px",
+                    fontWeight: "normal",
+                    backgroundColor: `${COLORS.backgroundcolor2}`,
+                    padding: "10px",
+                    margin: "1rem",
+                    color: `${COLORS.pending}`,
+                  }}
+                >
+                  SẢN PHẨM MỚI
+                </Row>
+              }
+            >
+              <Row gutter={[5, 5]}>
+                {(products || []).map((product, index) => (
+                  <Col key={index} flex={"20%"}>
+                    <PropProduct product={product} />
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </Content>
+        </Layout>
+      </Content>
+    </>
+  );
 }
 
 export default ProductsPage;
-
-
-
-

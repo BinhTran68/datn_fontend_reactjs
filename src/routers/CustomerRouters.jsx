@@ -1,14 +1,4 @@
-// import HomePage from "../customer/component/pages/HomePage";
-// import TrangChu from "../customer/component/product/TrangChu";
-// import FilterProduct from "../customer/component/product/FilterProduct";
-// import ProductDetail from "../customer/component/product/ProductDetail";
-// import PreCheckout from "../customer/component/shopon/PreCheckout";
-// import OrderConfirmation from "../customer/component/shopon/OrderConfirmation";
-// import InvoiceLookup from "../customer/component/shopon/InvoiceLookup";
-// import GioiThieu from "../customer/component/gioithieu/GioiThieu";
-// import FailedPay from "../customer/component/shopon/FailedPay";
-// import HandlePayment from "../customer/component/shopon/HandlePayment"
-// import AccountInfo from "../customer/component/profile/AccountInfo";
+
 import { Navigate } from "react-router-dom";
 import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
@@ -17,13 +7,6 @@ import ProductsPage from "../client/page/products/ProductsPage.jsx";
 import Test from "../client/page/TestComponent/Test.jsx";
 import PurchaseOrder from "../client/PurchaseOrder/PurchaseOrder.jsx";
 import SearchBill from "../admin/searchbill/SearchBill.jsx";
-// import Product from "../admin/product/product.jsx";
-// import ProductManagement from "../admin/product/ProductManagement.jsx";
-// import Sole from "../admin/product/sole.jsx";
-// import Size from "../admin/product/Size.jsx";
-// import Material from "../admin/product/Material.jsx";
-// import Color from "../admin/product/Color.jsx";
-// import Category from "../admin/product/Brand/Brand.jsx";
 import PhoneAuth from "../client/test/SendOtp.jsx";
 import Chat from "../client/test/websocket/Chat.jsx";
 import Trademark from "../admin/product/Trademark.jsx";

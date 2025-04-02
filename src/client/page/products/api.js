@@ -151,3 +151,31 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
+
+
+  export const apiFilter = async (requestFilter) => {
+    try {
+      const response = await api.get("/filter", {
+        params: {
+          productId: requestFilter.productId || null,
+          brandId: requestFilter.brandId || null,
+          genderId: requestFilter.genderId || null,
+          typeId: requestFilter.typeId || null,
+          colorId: requestFilter.colorId || null,
+          materialId: requestFilter.materialId || null,
+          minPrice: requestFilter.minPrice || null,
+          maxPrice: requestFilter.maxPrice || null,
+          page: requestFilter.page || 1, 
+          size: requestFilter.size, 
+        },
+      });
+      console.log("dếosodasdoaodkasod",response.data);
+      
+      return response.data; // Trả về toàn bộ response.data (bao gồm data và meta)
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+      console.error(errorMessage);
+      throw error;
+    }
+  };

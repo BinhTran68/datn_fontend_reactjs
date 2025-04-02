@@ -2,6 +2,7 @@ import { Button, Result, List, Typography, Card, Row, Space } from "antd";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { apiStartCheck, apiStopCheck } from "./sussess";
+import { clearBill } from "./bill";
 
 const { Title, Text } = Typography;
 
@@ -31,6 +32,7 @@ function Success() {
   useEffect(() => {
     window.dispatchEvent(new Event("cartUpdated"));
     apiStartCheck()
+    clearBill()
     return ()=>{
       apiStopCheck()
     }

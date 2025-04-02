@@ -444,7 +444,36 @@ const GetProductDetail = () => {
       }),
     },
     {
-      title: "Sản phẩm",
+      title: "Ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {record.id && (
+            <img
+              src={
+                record &&
+                !Array.isArray(record) &&
+                typeof record.image === "string" &&
+                record.image.trim() !== ""
+                  ? record.image
+                  : "https://placehold.co/100"
+              }
+              alt={text}
+              style={{
+                width: "50px",
+                height: "50px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+          )}
+      
+        </div>
+      ),
+    },
+    {
+      title: "Tên sản phẩm",
       dataIndex: "productName",
       key: "productName",
 
@@ -722,7 +751,7 @@ const GetProductDetail = () => {
               <Col>
                 <Tooltip title="Xem chi tiết sản phẩm">
                   <Link to={`${record.id}`}>
-                    <Button icon={<FiEye />} />
+                    <Button icon={<FaEye color={`${COLORS.primary}`} size={20} />} />
                   </Link>
                 </Tooltip>
               </Col>

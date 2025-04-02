@@ -397,6 +397,8 @@ const Sole = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
+
             />
           </Col>
 
@@ -409,6 +411,7 @@ const Sole = () => {
             >
               Tìm kiếm
             </Button>
+            
           </Col>
         </Row>
 
@@ -421,6 +424,16 @@ const Sole = () => {
             style={{}}
           >
             Thêm Đế giày
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{marginLeft:"2rem"}}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}
