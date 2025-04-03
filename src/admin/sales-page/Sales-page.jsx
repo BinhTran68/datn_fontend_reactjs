@@ -117,19 +117,9 @@ const SalesPage = () => {
     const handleCancel = () => {
         setOpen(false);
     };
-    const fetchProductsData = async () => {
-        try {
-            const response = await fetchProducts(pagination);
-            setProducts(response.data);
-        } catch (error) {
-            toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-        } finally {
 
-        }
-    };
     useEffect(() => {
         setCurrentBill(defaultKey)
-        fetchProductsData()
         getAllVoucher()
         getCurrentUserLogin()
     }, []);
@@ -333,35 +323,45 @@ const SalesPage = () => {
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
-                    const existingProduct = item.productList.find(p => p.id === product.id && p.price === product.price); // Tìm sản phẩm theo id và price
+                    // Tìm sản phẩm theo id và price
+                    const existingProduct = item.productList.find(p => p.id === product.id && p.price === product.price);
                     let updatedProductList;
 
                     if (existingProduct) {
                         if (isDeleteProduct) {
-                            // Nếu xóa sản phẩm, xóa đúng sản phẩm có id và price khớp
+                            // Nếu xóa sản phẩm, loại bỏ sản phẩm có id và price khớp
                             updatedProductList = item.productList.filter(p => !(p.id === product.id && p.price === product.price));
                         } else {
                             if (product.price !== existingProduct.price) {
                                 // Nếu giá thay đổi, tạo một bản sao mới với giá mới
                                 updatedProductList = [
-                                    ...item.productList.filter(p => !(p.id === product.id && p.price === existingProduct.price)), // Xóa sản phẩm cũ
+                                    ...item.productList.filter(p => !(p.id === product.id && p.price === existingProduct.price)),
                                     { ...existingProduct, quantityInCart: existingProduct.quantityInCart }, // Giữ sản phẩm cũ với giá cũ
                                     { ...product, quantityInCart: quantityChange, key: `${product.id}-${product.price}` } // Thêm sản phẩm mới với giá mới
                                 ];
                             } else {
-                                // Nếu không thay đổi giá, chỉ thay đổi số lượng
+                                // Nếu giá không thay đổi, cập nhật số lượng
                                 updatedProductList = item.productList.map(p =>
-                                    p.id === product.id && p.price === product.price ? { ...p, quantityInCart: isRestore ? p.quantityInCart - quantityChange : p.quantityInCart + quantityChange } : p
+                                    p.id === product.id && p.price === product.price
+                                        ? { ...p, quantityInCart: isRestore ? p.quantityInCart - quantityChange : p.quantityInCart + quantityChange }
+                                        : p
                                 );
                             }
                         }
                     } else {
-                        // Nếu sản phẩm chưa tồn tại trong danh sách
+                        // Nếu sản phẩm chưa có trong danh sách, thêm mới
                         updatedProductList = [...(item.productList || []), { ...product, quantityInCart: quantityChange, key: `${product.id}-${product.price}` }];
                     }
 
-                    // Tính tổng tiền mới
-                    const newTotalAmount = calculateTotalAmount({ productList: updatedProductList });
+                    // Tính tổng tiền mới với giảm giá nếu có
+                    const newTotalAmount = updatedProductList.reduce((total, p) => {
+                        const hasPromotion = p.promotionResponse?.discountValue;
+                        const discountValue = hasPromotion ? p.promotionResponse.discountValue : 0;
+                        const effectivePrice = p.price * (1 - discountValue / 100);
+                        return total + effectivePrice * (p.quantityInCart || 1);
+                    }, 0);
+
+                    // Tìm voucher tốt nhất dựa trên tổng tiền sau giảm giá
                     const voucherResult = findBestVoucher(newTotalAmount);
                     const discountAmount = voucherResult?.currentDiscount || 0;
                     const newTotalAfterDiscount = Math.max(0, newTotalAmount - discountAmount);
@@ -372,13 +372,14 @@ const SalesPage = () => {
                         [currentBill]: voucherResult
                     }));
 
-                    const count = updatedProductList.reduce((total, product) => total + (product.quantityInCart || 0), 0);
+                    // Tính tổng số lượng sản phẩm trong giỏ
+                    const count = updatedProductList.reduce((total, p) => total + (p.quantityInCart || 0), 0);
 
                     return {
                         ...item,
                         label: (
                             <span>
-                            {item.itemName} <Badge showZero={true} className={"mb-2"} count={count}/>
+                            {item.itemName} <Badge showZero={true} className={"mb-2"} count={count} />
                         </span>
                         ),
                         productList: updatedProductList,
@@ -442,6 +443,7 @@ const SalesPage = () => {
     };
 
     const handleOnAddProductToBill = (record) => {
+        console.log("record", record)
         if (!currentBill) {
             toast.warning("Vui lòng chọn hóa đơn trước khi thêm sản phẩm");
             return;
@@ -637,10 +639,12 @@ const SalesPage = () => {
     // Hàm tính tổng tiền giỏ hàng
     const calculateTotalAmount = (bill) => {
         return bill.productList.reduce((total, product) => {
-            return total + (product.price * (product.quantityInCart || 1));
+            const hasPromotion = product.promotionResponse?.discountValue;
+            const discountValue = hasPromotion ? product.promotionResponse.discountValue : 0;
+            const effectivePrice = product.price * (1 - discountValue / 100);
+            return total + (effectivePrice * (product.quantityInCart || 1));
         }, 0);
     };
-
     const getAllVoucher = () => {
         axiosInstance.get(`${baseUrl}/api/admin/bill/vouchers`).then((res) => {
             setVouchers(res.data)
@@ -831,7 +835,7 @@ const SalesPage = () => {
                     specificAddress: bill.detailAddressShipping?.specificAddress || "",
                 },
                 billDetailRequests: bill.productList.map(product => ({
-                    price: product.price,
+                    price: product.price * (1 - (product.promotionResponse?.discountValue || 0) / 100),
                     productDetailId: product.id,
                     quantity: product.quantityInCart
                 }))

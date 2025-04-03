@@ -61,7 +61,7 @@ const SalePaymentInfo = ({
                              handleCheckIsCOD,
                              showAllCustomerAddresses
                          }) => {
-    const missingAmount = Math.max(0, amount+shippingFee - customerMoney); // Không cộng cho discount nữa
+    const missingAmount = Math.max(0, amount+(parseInt(shippingFee)) - customerMoney); // Không cộng cho discount nữa
 
     console.log("shippingFee", shippingFee)
     return (
@@ -222,7 +222,7 @@ const SalePaymentInfo = ({
                                                     itemLayout="horizontal"
                                                     dataSource={vouchers}
                                                     renderItem={(item, index) => {
-                                                        const originalTotal = amount + shippingFee; // Total amount including shipping
+                                                        const originalTotal = amount + parseInt(shippingFee); // Total amount including shipping
                                                         const isVoucherApplicable = originalTotal >= (item.billMinValue || 0); // Check if the voucher can be applied
 
                                                         return (
@@ -283,7 +283,7 @@ const SalePaymentInfo = ({
                                 <Text strong>{formatVND(shippingFee ? parseInt(shippingFee) : 0)}</Text>
                             </Form.Item>
                             <Form.Item label="Tổng tiền cần thanh toán">
-                                <Text strong style={{color: "red"}}>{formatVND(amount + shippingFee)}</Text>
+                                <Text strong style={{color: "red"}}>{formatVND(amount + parseInt(shippingFee))}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
