@@ -163,10 +163,21 @@ const BillDetail = () => {
                 }),
             },
             {
-                title: 'Thông tin sản phẩm',
+                title: 'Sản phẩm',
                 dataIndex: 'productName',
+                align: 'center',
                 key: 'productName',
-                // render: (text) => <a>{text}</a>,
+                render: (_, record) => {
+                    const {productName, sizeName, colorName, materialName, soleName} = record;
+                    return productName ? (
+                        <div>
+                            <div>{`${productName} - [${sizeName}] - [${colorName}]`}</div>
+                            <div style={{fontSize: '12px', color: '#888'}}>
+                                {`Chất liệu: ${materialName}, Đế: ${soleName}`}
+                            </div>
+                        </div>
+                    ) : "";
+                },
             },
             {
                 title: 'Màu sắc',
@@ -566,43 +577,7 @@ const BillDetail = () => {
             setModalType(modalUpdateStatusBillType);
         };
 
-    const handleOnAddProductToBill = (product) => {
-        let existingProductIndex = billEditProductDetails.findIndex(
-            item => item.productDetailId === product.id && item.price === product.price
-        );
 
-        if (existingProductIndex !== -1) {
-            // Nếu sản phẩm có cùng ID và cùng giá đã tồn tại, chỉ tăng số lượng
-            const updatedProducts = [...billEditProductDetails];
-            updatedProducts[existingProductIndex].quantity += inputQuantity;
-            setBillEditProductDetails(updatedProducts);
-        } else {
-            // Nếu chưa tồn tại sản phẩm có cùng ID và giá, thêm mới
-            const newProduct = {
-                ...product,
-                productDetailId: product.id,
-                quantity: inputQuantity
-            };
-            setBillEditProductDetails([...billEditProductDetails, newProduct]);
-        }
-
-        setInputQuantity(1);
-    };
-
-
-    const calculateTotals = () => {
-            const totalAmount = billEditProductDetails.reduce((total, product) => total + (product.price * product.quantity), 0);
-            const shippingFee = currentBill?.shipMoney || 0; // Assuming shipMoney is part of currentBill
-            const discountValue = discount || 0; // Assuming discountMoney is part of currentBill
-            const finalAmount = totalAmount + shippingFee - discount;
-
-            return {
-                totalAmount,
-                shippingFee,
-                discountValue,
-                finalAmount
-            };
-        };
 
 
         const handleCancelBill = () => {
@@ -646,20 +621,70 @@ const BillDetail = () => {
         };
 
 
-     // const fetchProductDetailLatest = async (id) => {
-     //    const response = await axiosInstance.get(`/api/admin/productdetail/${id}`)
-     //     return response.data.data
-     // }
+        // const fetchProductDetailLatest = async (id) => {
+        //    const response = await axiosInstance.get(`/api/admin/productdetail/${id}`)
+        //     return response.data.data
+        // }
 
-    const fetchProductDetailLatest = async (id) => {
-        try {
-            const response = await axiosInstance.get(`/api/admin/productdetail/${id}`);
-            return response.data?.data || null; // Tránh lỗi khi dữ liệu null
-        } catch (error) {
-            console.error("Lỗi khi lấy thông tin sản phẩm:", error);
-            return null;
+        const fetchProductDetailLatest = async (id) => {
+            try {
+                const response = await axiosInstance.get(`/api/admin/productdetail/${id}`);
+                return response.data?.data || null; // Tránh lỗi khi dữ liệu null
+            } catch (error) {
+                console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+                return null;
+            }
+        };
+
+
+    const handleOnAddProductToBill = (product) => {
+        const discountValue = product.promotionResponse?.discountValue || 0;
+        const discountedPrice = product.price * (1 - discountValue / 100); // Giá sau giảm giá
+
+        let existingProductIndex = billEditProductDetails.findIndex(
+            item => item.productDetailId === product.id && item.price === discountedPrice // So sánh với giá sau giảm giá
+        );
+
+        if (existingProductIndex !== -1) {
+            // Nếu sản phẩm có cùng ID và giá đã giảm tồn tại, chỉ tăng số lượng
+            const updatedProducts = [...billEditProductDetails];
+            updatedProducts[existingProductIndex].quantity += inputQuantity;
+            setBillEditProductDetails(updatedProducts);
+        } else {
+            // Nếu chưa tồn tại sản phẩm có cùng ID và giá đã giảm, thêm mới
+            const newProduct = {
+                ...product,
+                productDetailId: product.id,
+                price: discountedPrice, // Gán giá sau giảm
+                quantity: inputQuantity
+            };
+            setBillEditProductDetails([...billEditProductDetails, newProduct]);
         }
+
+        setInputQuantity(1);
     };
+
+
+
+    const calculateTotals = () => {
+        const totalAmount = billEditProductDetails.reduce((total, product) => {
+            const discountValue = product.promotionResponse?.discountValue || 0;
+            const discountedPrice = product.price * (1 - discountValue / 100);
+            return total + (discountedPrice * product.quantity);
+        }, 0);
+
+        const shippingFee = currentBill?.shipMoney || 0;
+        const discountValue = discount || 0;
+        const finalAmount = totalAmount + shippingFee - discountValue;
+
+        return {
+            totalAmount,
+            shippingFee,
+            discountValue,
+            finalAmount
+        };
+    };
+
 
     const handleQuantityChange = async (record, newQuantity) => {
         if (newQuantity < 1) return;
@@ -671,14 +696,17 @@ const BillDetail = () => {
                 return;
             }
 
+            const discountValue = latestProduct.promotionResponse?.discountValue || 0;
+            const discountedPrice = latestProduct.price * (1 - discountValue / 100);
+
             let updatedProducts = [...billEditProductDetails];
 
-            if (record.price !== latestProduct.price) {
+            if (record.price !== discountedPrice) {
                 // Nếu giá thay đổi, chỉ cho phép giảm số lượng
                 if (newQuantity < record.quantity) {
                     updatedProducts = updatedProducts.map(item =>
                         item.productDetailId === record.productDetailId && item.price === record.price
-                            ? { ...item, quantity: newQuantity }
+                            ? {...item, quantity: newQuantity}
                             : item
                     );
                     setBillEditProductDetails(updatedProducts);
@@ -691,19 +719,24 @@ const BillDetail = () => {
             // Nếu giá không thay đổi, cập nhật số lượng như bình thường
             updatedProducts = updatedProducts.map(item =>
                 item.productDetailId === record.productDetailId && item.price === record.price
-                    ? { ...item, quantity: newQuantity }
+                    ? {...item, quantity: newQuantity}
                     : item
             );
 
             setBillEditProductDetails(updatedProducts);
 
             // Kiểm tra và áp dụng voucher
-            const totalAmount = updatedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
+            const totalAmount = updatedProducts.reduce((total, product) => {
+                const discountValue = product.promotionResponse?.discountValue || 0;
+                const discountedPrice = product.price * (1 - discountValue / 100);
+                return total + (discountedPrice * product.quantity);
+            }, 0);
+
             if (currentVoucher) {
                 if (totalAmount >= (currentVoucher?.billMinValue || 0)) {
-                    checkAndApplyVoucher(currentVoucher); // Giữ voucher nếu vẫn hợp lệ
+                    checkAndApplyVoucher(currentVoucher);
                 } else {
-                    setSelectedVouchers(null); // Xóa voucher nếu không đủ điều kiện
+                    setSelectedVouchers(null);
                     setDiscount(0);
                 }
             }
@@ -715,61 +748,54 @@ const BillDetail = () => {
 
 
 
-
-
-
     const checkAndApplyVoucher = (voucher) => {
+        const totalAmount = billEditProductDetails.reduce((total, product) => {
+            const discountValue = product.promotionResponse?.discountValue || 0;
+            const discountedPrice = product.price * (1 - discountValue / 100);
+            return total + (discountedPrice * product.quantity);
+        }, 0);
 
-            const totalAmount = billEditProductDetails.reduce(
-                (total, product) => total + (product.price * product.quantity), 0
-            );
-            console.log(billEditProductDetails)
+        const isVoucherApplicable = totalAmount >= (voucher?.billMinValue || 0);
 
-            const isVoucherApplicable = totalAmount >= (voucher?.billMinValue || 0);
+        if (isVoucherApplicable) {
+            setSelectedVouchers(voucher);
 
-            if (isVoucherApplicable) {
-                console.log("isVoucherApplicable ", isVoucherApplicable)
-                setSelectedVouchers(voucher);
+            let discountValue = voucher?.discountType === "MONEY"
+                ? voucher?.discountValue
+                : (totalAmount * voucher?.discountValue) / 100;
 
-                let discountValue = voucher?.discountType === "MONEY"
-                    ? voucher?.discountValue
-                    : (totalAmount * voucher?.discountValue) / 100;
-
-                if (voucher?.discountMaxValue && discountValue > voucher?.discountMaxValue) {
-                    discountValue = voucher?.discountMaxValue;
-                }
-
-                // Đảm bảo giảm giá không lớn hơn tổng tiền
-                discountValue = Math.min(discountValue, totalAmount);
-
-                setDiscount(discountValue);
-            } else {
-                console.log("!isVoucherApplicable ", isVoucherApplicable)
-                if (currentVoucher && totalAmount >= (currentVoucher?.billMinValue || 0)) {
-                    setSelectedVouchers(currentVoucher);
-
-                    let previousDiscountValue = currentVoucher?.discountType === "MONEY"
-                        ? currentVoucher.discountValue
-                        : (totalAmount * currentVoucher.discountValue) / 100;
-
-                    if (currentVoucher.discountMaxValue && previousDiscountValue > currentVoucher.discountMaxValue) {
-                        previousDiscountValue = currentVoucher.discountMaxValue;
-                    }
-
-                    // Đảm bảo giảm giá không lớn hơn tổng tiền
-                    previousDiscountValue = Math.min(previousDiscountValue, totalAmount);
-
-                    setDiscount(previousDiscountValue);
-                } else {
-                    console.log("!isVoucherApplicable ", isVoucherApplicable)
-                    setSelectedVouchers(null);
-                    setDiscount(0);
-                }
+            if (voucher?.discountMaxValue && discountValue > voucher?.discountMaxValue) {
+                discountValue = voucher?.discountMaxValue;
             }
-        };
+
+            discountValue = Math.min(discountValue, totalAmount); // Đảm bảo không vượt quá tổng tiền
+
+            setDiscount(discountValue);
+        } else {
+            if (currentVoucher && totalAmount >= (currentVoucher?.billMinValue || 0)) {
+                setSelectedVouchers(currentVoucher);
+
+                let previousDiscountValue = currentVoucher?.discountType === "MONEY"
+                    ? currentVoucher.discountValue
+                    : (totalAmount * currentVoucher.discountValue) / 100;
+
+                if (currentVoucher.discountMaxValue && previousDiscountValue > currentVoucher.discountMaxValue) {
+                    previousDiscountValue = currentVoucher.discountMaxValue;
+                }
+
+                previousDiscountValue = Math.min(previousDiscountValue, totalAmount);
+
+                setDiscount(previousDiscountValue);
+            } else {
+                setSelectedVouchers(null);
+                setDiscount(0);
+            }
+        }
+    };
 
 
-        // Function to handle voucher selection
+
+    // Function to handle voucher selection
         const handleOnSelectedVoucher = (voucher) => {
             setCurrentVoucher(voucher); // Save the selected voucher as currentVoucher
             checkAndApplyVoucher(voucher);

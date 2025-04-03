@@ -36,18 +36,23 @@ function HeaderNav() {
   );
   const [cartCount, setCartCount] = useState(getCart().length);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [isAIModalVisible, setIsAIModalVisible] = useState(false);
   const navigate = useNavigate();
 
-  const [aiQuestion, setAiQuestion] = useState("");
+
   const [aiResponse, setAiResponse] = useState("");
-  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL;
+
+
 
   // Notification state
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [stompClient, setStompClient] = useState(null);
 
+
+  const [isAIModalVisible, setIsAIModalVisible] = useState(false);
+
+  const [aiQuestion, setAiQuestion] = useState("");
+  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL;
   const [chatHistory, setChatHistory] = useState([
     { sender: 'ai', text: "Xin chào quý khách. Chúng tôi có thể hỗ trợ gì cho bạn" }
   ]);
@@ -374,7 +379,7 @@ function HeaderNav() {
                     onClick={() => setIsAIModalVisible(true)}
                     style={{
                       position: "fixed",
-                      bottom: "100px",
+                      bottom: "60px",
                       right: "20px",
                       width: "60px",
                       height: "60px",
