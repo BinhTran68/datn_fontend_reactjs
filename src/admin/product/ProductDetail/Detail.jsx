@@ -94,6 +94,7 @@ const Detail = () => {
         <Descriptions.Item label="Thương hiệu">
           {product.brandName}
         </Descriptions.Item>
+        
         <Descriptions.Item label="Loại giày">
           {product.typeName}
         </Descriptions.Item>

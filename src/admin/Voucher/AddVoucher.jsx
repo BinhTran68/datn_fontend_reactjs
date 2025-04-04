@@ -112,7 +112,7 @@ const AddVoucher = () => {
     useEffect(() => {
         const discountType = form.getFieldValue("discountType");
         const discountValue = form.getFieldValue("discountValue");
-    
+
         if (discountType === "MONEY" && discountValue !== undefined) {
             form.setFieldsValue({ discountMaxValue: discountValue });
         }
@@ -125,9 +125,9 @@ const AddVoucher = () => {
             form.setFieldsValue({ discountMaxValue: null });
         }
     }, [form.getFieldValue("discountType")]);
-    
-    
-    
+
+
+
     const rowSelection = {
         selectedRowKeys,
         onChange: onSelectChange,
@@ -206,14 +206,28 @@ const AddVoucher = () => {
 
 
     //     };
+    const [nameLength, setNameLength] = useState(0);
+
     return (
         <Row gutter={20}>
             <Col span={8}>
                 <Card>
-                    {/* <Modal title="Thêm mới phiếu giảm giá" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} okText="Xác nhận" cancelText="Hủy"> */}
                     <Form form={form} layout="vertical">
-                        <Form.Item name="voucherName" label="Tên phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
-                            <Input placeholder="Nhập tên phiếu giảm giá" />
+                        <Form.Item
+                            name="voucherName"
+                            label={`Tên phiếu giảm giá (${nameLength}/100)`}
+                            style={{ marginBottom: "12px" }}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên phiếu giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
+                        >
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
                         </Form.Item>
                         <Form.Item name="quantity" label="Số lượng" rules={[
                             { required: true, message: 'Vui lòng nhập số lượng' },
@@ -313,7 +327,7 @@ const AddVoucher = () => {
                         <Form.Item
                             name="discountMaxValue"
                             label="Giá trị phiếu giảm giá tối đa"
-                           
+
                             dependencies={["billMinValue", "discountType", "discountValue"]}
                             rules={[
                                 ({ getFieldValue }) => ({
@@ -348,7 +362,7 @@ const AddVoucher = () => {
                                 parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
                                 suffix="đ"
                                 disabled={discountType === "MONEY"}
-                                />
+                            />
                         </Form.Item>
 
                         <Form.Item

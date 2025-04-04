@@ -320,13 +320,6 @@ const VoucherList = () => {
         }
     };
 
-    const handleAdd = () => {
-        setIsDeatil(false)
-        setIsEdit(false)
-        setEditingVoucher(null);
-        setIsModalOpen(true);
-    };
-
     const handleEdit = (record) => {
         navigate(`/admin/voucher/update/${record.id}`);
     };
@@ -368,41 +361,6 @@ const VoucherList = () => {
             setSearch(value); // Update search term
         }
     };
-
-    
-    const searchPromtion = async (voucherName) => {
-        setLoading(true);
-        try {
-            
-            const response = await axios.get(`${baseUrl}/api/admin/voucher/search/byName`, {
-                params: { voucherName } // Sử dụng params để tránh lỗi encode URL
-            });
-
-            if (response.data?.data) {
-                setVoucherData(response.data.data); // Cập nhật danh sách voucher
-            } else {
-                setVoucherData([]); // Trả về mảng rỗng nếu không có dữ liệu
-            }
-        } catch (error) {
-            console.error("Lỗi khi tìm kiếm phiếu giảm giá:", error);
-            message.error("Có lỗi xảy ra khi tìm kiếm.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const debouncedSearch = useCallback(
-        debounce((value) => {
-            if (value.trim()) { // Tránh tìm kiếm chuỗi rỗng
-                searchPromtion(value);
-                searchPromtion1(value);
-
-            } else {
-                getPageVoucher(); // Nếu rỗng, tải lại danh sách voucher mặc định
-            }
-        }, 1000),
-        []
-    );
 
     useEffect(() => {
         console.log("Danh sách voucher sau khi cập nhật:", voucherData);
@@ -488,7 +446,7 @@ const VoucherList = () => {
             <Card>
                 <Link to={"/admin/voucher/add"} >
                     <Button type="primary" icon={<PlusOutlined />}
-                        onClick={handleAdd} style={{
+                         style={{
                             marginBottom: '20px',
                             border: 'none',
                             backgroundColor: '#ff974d'

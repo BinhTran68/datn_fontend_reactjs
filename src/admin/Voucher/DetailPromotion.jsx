@@ -2,10 +2,10 @@ import {
     Modal, Table, Input, Button, Row, Col, Typography, Card, Checkbox, message, InputNumber, Form, DatePicker, Select
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { useEffect, useState  } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
-import { useNavigate ,useParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 
 
@@ -23,7 +23,7 @@ const DetailPromotion = () => {
     const [productDetails, setProductDetails] = useState([]);
     const [selectedProductDetails, setSelectedProductDetails] = useState([]);
     const navigate = useNavigate();
-    
+
 
     const { id } = useParams(); // 🟢 Lấy ID từ URL
 
@@ -246,7 +246,7 @@ const DetailPromotion = () => {
                         if (e.target.checked) {
                             setSelectedProducts(products);
                             setProductDetails([]); // Reset chi tiết sản phẩm
-                            
+
                             products.forEach(async (record) => {
                                 try {
                                     const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
@@ -335,6 +335,7 @@ const DetailPromotion = () => {
         { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: "10rem" },
         { title: "Trọng Lượng (kg)", dataIndex: "weight", key: "weight", width: "10rem" },
     ];
+    const [nameLength, setNameLength] = useState(0);
 
     return (
         <Row gutter={24}>
@@ -344,10 +345,19 @@ const DetailPromotion = () => {
                     <Form form={form} layout="vertical" disabled> {/* Chỉnh label lên trên */}
                         <Form.Item
                             name="promotionName"
-                            label="Tên đợt giảm giá"
+                            label={`Tên đợt giảm giá (${nameLength}/100)`}
                             style={{ marginBottom: "12px" }}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
                         >
-                            <Input placeholder="Nhập tên đợt giảm giá" style={{ width: "100%" }} />
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
                         </Form.Item>
 
 
@@ -401,7 +411,7 @@ const DetailPromotion = () => {
                         <Form.Item name="endDate" label="Ngày kết thúc" rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc!' }]}>
                             <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
                         </Form.Item>
-                      
+
 
                     </Form>
                 </Card>

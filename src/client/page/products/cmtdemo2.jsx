@@ -1,5 +1,226 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
+import {
+  Input,
+  Button,
+  List,
+  Card,
+  Space,
+  Typography,
+  Avatar,
+  Col,
+  Row,
+} from "antd";
+
+const { Title } = Typography;
+
+const CommentSection = ({ id }) => {
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
+  const [comments, setComments] = useState([]);
+  const [productId, setProductId] = useState(id);
+  const [customerId, setCustomerId] = useState(user?.id);
+  const [comment, setComment] = useState("");
+  const stompClient = useRef(null);
+  const commentsRef = useRef(null);
+  
+  useEffect(() => {
+    setProductId(id);
+  }, [id]);
+  
+ useEffect(() => {
+    connectWebSocket(); // Gọi hàm connectWebSocket để kết nối
+    return () => {
+        if (stompClient.current) {
+            stompClient.current.deactivate(); // Đảm bảo đóng kết nối khi không sử dụng
+        }
+    };
+}, [productId]);
+  
+  const fetchComments = async () => {
+    try {
+        const response = await fetch(`http://localhost:8080/comments/${productId}`);
+        if (!response.ok) throw new Error("Lỗi khi tải bình luận");
+
+        const data = await response.json();
+        console.log("Dữ liệu bình luận từ API:", data);
+
+        setComments(data.map(comment => ({
+            ...comment,
+            replies: comment.replies || [], // Đảm bảo replies luôn là mảng
+        })));
+    } catch (error) {
+        console.error("Lỗi khi lấy bình luận:", error);
+    }
+};
+
+const connectWebSocket = () => {
+  const socket = new WebSocket("ws://localhost:8080/ws");
+  stompClient.current = new Client({
+    webSocketFactory: () => socket,
+    reconnectDelay: 5000,
+    onConnect: (frame) => {
+      console.log("✅ WebSocket Connected:", frame);
+      stompClient.current.subscribe(`/topic/comments/${productId}`, (message) => {
+        const newComment = JSON.parse(message.body);
+        
+        // Kiểm tra xem có phải là phản hồi hay không
+        if (newComment.parentId) {
+          // Nếu là phản hồi, tìm bình luận gốc và gắn vào
+          setComments((prevComments) => {
+            const parentIndex = prevComments.findIndex(
+              (comment) => comment.id === newComment.parentId
+            );
+            
+            if (parentIndex !== -1) {
+              // Tạo bản sao của mảng comments
+              const updatedComments = [...prevComments];
+              // Thêm phản hồi vào bình luận gốc
+              updatedComments[parentIndex] = {
+                ...updatedComments[parentIndex],
+                replies: [
+                  ...(updatedComments[parentIndex].replies || []),
+                  newComment
+                ]
+              };
+              return updatedComments;
+            }
+            return prevComments;
+          });
+        } else {
+          // Nếu là bình luận gốc, thêm vào bình luận mới
+          setComments((prevComments) => [
+            ...prevComments,
+            { ...newComment, replies: [] }, // Tạo mới bình luận và khởi tạo mảng replies
+          ]);
+        }
+      });
+      
+      // Thêm subscription riêng cho việc nhận phản hồi admin
+      stompClient.current.subscribe(`/topic/admin-replies`, (message) => {
+        const adminReply = JSON.parse(message.body);
+        fetchComments(); // Gọi lại API để đảm bảo dữ liệu cập nhật đúng sau reload
+    });
+    
+    },
+    onStompError: (frame) => console.error("❌ STOMP Error:", frame.headers["message"]),
+    onWebSocketClose: (event) => console.warn("⚠️ WebSocket Closed:", event),
+    debug: (str) => console.log("🛠 WebSocket Debug:", str),
+  });
+
+  try {
+    stompClient.current.activate();
+  } catch (error) {
+    console.error("❌ WebSocket Activation Error:", error);
+  }
+};
+
+  useEffect(() => {
+    // Scroll to the latest comment
+    if (commentsRef.current) {
+      commentsRef.current.scrollTop = commentsRef.current.scrollHeight;
+    }
+  }, [comments]);
+
+  const sendComment = () => {
+    if (comment.trim() && stompClient.current && stompClient.current.connected) {
+        const message = {
+            customerId,
+            comment,
+            createdAt: new Date().toISOString(), // Lấy thời gian chuẩn UTC
+        };
+
+        stompClient.current.publish({
+            destination: `/app/comment/${productId}`,
+            body: JSON.stringify(message),
+        });
+
+        setComment(""); 
+    } else {
+        console.warn("Không thể gửi bình luận: STOMP client chưa kết nối");
+    }
+  };
+
+  const formatTime = (timeString) => {
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleString("vi-VN");
+    } catch (error) {
+      return timeString;
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px", margin: "0 auto" }}>
+      <Card style={{ marginTop: "20px" }}>
+        <div
+          ref={commentsRef}
+          style={{ maxHeight: "300px", overflowY: "auto", padding: "10px" }}
+        >
+ <List
+    dataSource={comments.filter(comment => comment.replies && comment.replies.length > 0)} // Only show comments with replies
+    renderItem={(item) => (
+        <List.Item>
+            <List.Item.Meta
+                title={
+                    <Row>
+                        <Col span={1}><Avatar src={user?.avatar || 'https://via.placeholder.com/40'} /></Col>
+                        <Col span={23}>
+                            <strong>{item.fullName}</strong>
+                            <span style={{ color: "#888" }}> ({formatTime(item.createdAt)})</span>
+                        </Col>
+                        <Col span={24}>{item.comment}</Col>
+
+                        {/* Hiển thị phản hồi của admin nếu có */}
+                        {item.replies?.length > 0 && (
+                            <Col span={24} style={{ paddingLeft: "20px", borderLeft: "2px solid #ddd", marginTop: "10px" }}>
+                                {item.replies.map(reply => (
+                                    <Row key={reply.id} style={{ marginBottom: "10px" }}>
+                                        <Col span={1}><Avatar style={{ backgroundColor: "#ff4d4f" }}>A</Avatar></Col>
+                                        <Col span={23}>
+                                            <strong style={{ color: "#ff4d4f" }}>Admin</strong>
+                                            <span style={{ color: "#888" }}> ({formatTime(reply.createdAt)})</span>
+                                            <div>{reply.comment}</div>
+                                        </Col>
+                                    </Row>
+                                ))}
+                            </Col>
+                        )}
+                    </Row>
+                }
+            />
+        </List.Item>
+    )}
+/>
+
+          {user?.id && (
+            <Space style={{ width: "100%" }}>
+              <Input
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Nội dung"
+                maxLength={500}
+                onPressEnter={sendComment}
+                style={{
+                  minWidth: "400px",
+                }}
+              />
+              <Button type="primary" onClick={sendComment}>
+                Bình luận
+              </Button>
+            </Space>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+export default CommentSection;
+
+import React, { useEffect, useState, useRef } from "react";
+import { Client } from "@stomp/stompjs";
 import { Input, Button, List, Card, Space, Typography, Avatar, Col, Row, message, Select } from "antd";
 import { Rate } from "antd";
 import { EditOutlined, FilterOutlined } from "@ant-design/icons";
@@ -29,13 +250,14 @@ const CommentSection = ({ id }) => {
   }, [id]);
 
   useEffect(() => {
-    fetchComments(); // fetch dữ liệu mỗi khi id sản phẩm thay đổi
-    connectWebSocket(); // cũng kết nối WebSocket cho đúng sản phẩm
+    fetchComments();
+    connectWebSocket();
     return () => {
-      if (stompClient.current) stompClient.current.deactivate();
+      if (stompClient.current) {
+        stompClient.current.deactivate();
+      }
     };
   }, [productId]);
-  
 
   useEffect(() => {
     // Filter comments when starFilter or comments change
@@ -60,8 +282,7 @@ const CommentSection = ({ id }) => {
         return;
       }
 
-      const formattedData = commentsData
-      .map((item, index) => ({
+      const formattedData = commentsData.map((item, index) => ({
         id: item.id || index + 1,
         fullName: item.fullName || "Khách hàng ẩn danh",
         comment: item.comment || "Không có bình luận",
@@ -69,14 +290,8 @@ const CommentSection = ({ id }) => {
         customerEmail: item.customerEmail || "Không có tài khoản",
         createdAt: item.createdAt || new Date().toISOString(),
         rate: item.rate || 5,
-        adminReply: item.adminReply || "",
         replies: item.replies || []
-      }))
-      .filter(item => item.productId === productId); // 🧠 lọc theo sản phẩm
-    
-    setComments(formattedData);
-    setFilteredComments(formattedData);
-    
+      }));
 
       setComments(formattedData);
       setFilteredComments(formattedData);
@@ -102,101 +317,53 @@ const CommentSection = ({ id }) => {
         client.subscribe(`/topic/comments/${productId}`, (message) => {
           const updatedComment = JSON.parse(message.body);
           console.log("Received updated comment:", updatedComment);  // Debug to check the data
-
+        
           setComments((prevComments) =>
             prevComments.map((c) =>
               c.id === updatedComment.id ? { ...c, comment: updatedComment.comment, rate: updatedComment.rate } : c
             )
           );
         });
-
-        // Subscribe to admin replies - FIXED IMPLEMENTATION
-        // In CommentSection.js - modify the WebSocket connection:
-        client.subscribe(`/topic/comments`, (message) => {
-          try {
-            const data = JSON.parse(message.body);
         
-            // Kiểm tra nếu đây là một cập nhật từ admin
-            if (data.parentId && data.comment) {
-              setComments((prevComments) =>
-                prevComments.map((comment) =>
-                  comment.id === data.parentId
-                    ? { ...comment, adminReply: data.comment }
-                    : comment
-                )
-              );
-            }
-        
-            // Xử lý xóa bình luận nếu có
-            if (data.action === "delete" && data.commentId) {
-              setComments((prevComments) =>
-                prevComments.filter((comment) => comment.id !== data.commentId)
-              );
-            }
-          } catch (error) {
-            console.error("Lỗi khi xử lý WebSocket message:", error);
-          }
+        // Subscribe to admin replies (if needed)
+        client.subscribe(`/topic/admin-replies`, (message) => {
+          const adminReply = JSON.parse(message.body);
+          setComments((prevComments) =>
+            prevComments.map((comment) =>
+              comment.id === adminReply.parentId
+                ? {
+                  ...comment,
+                  replies: comment.replies.some(reply => reply.id === adminReply.id)
+                    ? comment.replies
+                    : [...comment.replies, adminReply]
+                }
+                : comment
+            )
+          );
         });
         
-        // Additional subscription specifically for admin replies - to handle different message formats
-        client.subscribe(`/topic/admin-replies/${productId}`, (message) => {
-          try {
-            const replyData = JSON.parse(message.body);
-            console.log("Received from admin-replies topic:", replyData);
-
-            // Check for different possible structures
-            if ((replyData.parentId || replyData.commentId) && replyData.productId === productId) {
-              const commentId = replyData.parentId || replyData.commentId;
-              const replyContent = replyData.comment || replyData.content || replyData.text || replyData.reply || "";
-
-              setComments((prevComments) =>
-                prevComments.map((comment) =>
-                  comment.id === commentId
-                    ? { ...comment, adminReply: replyContent }
-                    : comment
-                )
-              );
-            }
-          } catch (error) {
-            console.error("Lỗi khi xử lý phản hồi admin từ topic chuyên dụng:", error);
-          }
-        });
-
+        // Subscribe to new comments topic
         client.subscribe(`/topic/new-comments/${productId}`, (message) => {
           try {
             const newComment = JSON.parse(message.body);
             console.log("Received new comment:", newComment);
-        
-            // Gửi thông báo về admin ngay lập tức
-            stompClient.current.publish({
-              destination: `/app/admin/new-comment/${productId}`,
-              body: JSON.stringify(newComment),
-            });
-        
+            
             if (isSubmitting) {
               message.success("Bình luận đã được gửi thành công!");
               setIsSubmitting(false);
-        
+              
               // Thêm bình luận mới vào danh sách
-  // Trong `/topic/new-comments/${productId}`
-if (newComment.productId === productId) {
-  const commentToAdd = {
-    id: newComment.id || Date.now(),
-    fullName: user?.fullName || "Khách hàng ẩn danh",
-    comment: newComment.comment,
-    productId: productId,
-    customerEmail: user?.email || "anonymous@example.com",
-    createdAt: newComment.createdAt || new Date().toISOString(),
-    rate: newComment.rate,
-    adminReply: "",
-    replies: [],
-  };
-
-  setComments(prev => [...prev, commentToAdd]);
-  setHasCommented(true);
-}
-
-        
+              const commentToAdd = {
+                id: newComment.id || Date.now(),
+                fullName: user?.fullName || "Khách hàng ẩn danh",
+                comment: newComment.comment,
+                productId: productId,
+                customerEmail: user?.email || "anonymous@example.com",
+                createdAt: newComment.createdAt || new Date().toISOString(),
+                rate: newComment.rate,
+                replies: []
+              };
+              
               setComments(prevComments => [...prevComments, commentToAdd]);
               setHasCommented(true);
             }
@@ -204,7 +371,6 @@ if (newComment.productId === productId) {
             console.error("Lỗi khi xử lý bình luận mới:", error);
           }
         });
-        
       },
       onStompError: (frame) => {
         console.error('Broker reported error: ' + frame.headers['message']);
@@ -231,18 +397,18 @@ if (newComment.productId === productId) {
       message.error("Vui lòng nhập nội dung bình luận!");
       return;
     }
-
+    
     if (stompClient.current && stompClient.current.connected) {
       // Lưu trữ các giá trị hiện tại trước khi reset
       const commentText = comment;
       const rateValue = rate;
       const newCommentId = Date.now(); // Tạo ID tạm thời
-
+      
       // Reset form ngay lập tức để tạo cảm giác phản hồi nhanh
       setComment("");
       setRate(5);
       setIsSubmitting(true);
-
+      
       // Thêm comment mới vào state ngay lập tức để hiển thị
       const optimisticComment = {
         id: newCommentId,
@@ -252,48 +418,47 @@ if (newComment.productId === productId) {
         customerEmail: user?.email || "anonymous@example.com",
         createdAt: new Date().toISOString(),
         rate: rateValue,
-        adminReply: "", // Initialize with empty admin reply
         replies: [],
         isPending: true // Đánh dấu là đang chờ xác nhận từ server
       };
-
+      
       setComments(prevComments => [...prevComments, optimisticComment]);
       setHasCommented(true);
-
+      
       const commentMessage = {
         customerId,
         comment: commentText,
         rate: rateValue,
         createdAt: new Date().toISOString(),
       };
-
+      
       try {
         stompClient.current.publish({
           destination: `/app/comment/${productId}`,
           body: JSON.stringify(commentMessage),
         });
-
+        
         // Giảm timeout xuống và thêm logic cập nhật comment
         setTimeout(() => {
           if (isSubmitting) {
             setIsSubmitting(false);
-            message.success("Bình luận đã được gửi thành công!");
-
+            message.success("Bình luận đã được gửi thành công!"); 
+            
             // Cập nhật trạng thái isPending nếu không nhận được phản hồi từ server
-            setComments(prevComments =>
-              prevComments.map(c =>
-                c.id === newCommentId ? { ...c, isPending: false } : c
+            setComments(prevComments => 
+              prevComments.map(c => 
+                c.id === newCommentId ? {...c, isPending: false} : c
               )
             );
           }
         }, 2000); // Giảm từ 5000ms xuống 2000ms
       } catch (error) {
         console.error("Lỗi khi gửi bình luận:", error);
-
+        
         // Xóa comment optimistic nếu gặp lỗi
         setComments(prevComments => prevComments.filter(c => c.id !== newCommentId));
         setHasCommented(false);
-
+        
         message.error("Không thể gửi bình luận: " + error.message);
         setIsSubmitting(false);
       }
@@ -302,7 +467,6 @@ if (newComment.productId === productId) {
       message.error("Không thể kết nối đến máy chủ bình luận. Vui lòng thử lại sau.");
     }
   };
-
   const formatTime = (timeString) => {
     try {
       const date = new Date(timeString);
@@ -331,57 +495,52 @@ if (newComment.productId === productId) {
     setEditText(comment.comment);
     setEditRate(comment.rate);
   };
+
   const saveEditedComment = () => {
     if (!editText.trim()) {
-        message.error("Vui lòng nhập nội dung bình luận!");
-        return;
+      message.error("Vui lòng nhập nội dung bình luận!");
+      return;
     }
-
+    
     if (stompClient.current && stompClient.current.connected) {
-        const updatedComment = {
-            customerId,
-            comment: editText,
-            rate: editRate,
-            parentId: editingComment,
-            updatedAt: null // Đảm bảo updatedAt là null
-
-        };
-
-        try {
-            stompClient.current.publish({
-                destination: `/app/comment/update/${productId}`, // Gửi thông báo tới server
-                body: JSON.stringify(updatedComment),
-            });
-
-            // Cập nhật UI ngay sau khi gửi request
-            setComments((prevComments) =>
-                prevComments.map((comment) =>
-                    comment.id === editingComment
-                        ? { ...comment, comment: editText, rate: editRate }
-                        : comment
-                )
-            );
-
-            // Gửi thông báo cho admin ngay lập tức
-            stompClient.current.publish({
-                destination: `/app/admin/update/${productId}`, // Gửi thông báo cập nhật tới admin
-                body: JSON.stringify({ commentId: editingComment, comment: editText, rate: editRate }),
-            });
-
-            setEditingComment(null);
-            setEditText("");
-            setEditRate(5);
-            message.success("Bình luận đã được cập nhật thành công!");
-        } catch (error) {
-            console.error("Lỗi khi gửi cập nhật:", error);
-            message.error("Không thể cập nhật bình luận: " + error.message);
-        }
+      const updatedComment = {
+        customerId,
+        comment: editText,
+        rate: editRate,
+        parentId: editingComment, // Send the ID of the comment being updated
+      };
+  
+      // Log to ensure the data being sent is correct
+      console.log("Sending updated comment:", updatedComment);
+      
+      try {
+        stompClient.current.publish({
+          destination: `/app/update-comment/${productId}`, // Send updated comment via WebSocket
+          body: JSON.stringify(updatedComment),
+        });
+      
+        // Update local state directly after sending the update
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.id === editingComment
+              ? { ...comment, comment: editText, rate: editRate } // Update comment with new content
+              : comment
+          )
+        );
+      
+        setEditingComment(null);
+        setEditText("");
+        setEditRate(5);
+        message.success("Bình luận đã được cập nhật thành công!");
+      } catch (error) {
+        console.error("Lỗi khi cập nhật bình luận:", error);
+        message.error("Không thể cập nhật bình luận: " + error.message);
+      }
     } else {
-        console.warn("Không thể gửi cập nhật: STOMP client chưa kết nối");
-        message.error("Kết nối WebSocket không ổn định!");
+      console.warn("Không thể gửi cập nhật: STOMP client chưa kết nối");
+      message.error("Kết nối WebSocket không ổn định!");
     }
-};
-
+  };
 
   const handleFilterChange = (value) => {
     setStarFilter(Number(value));
@@ -395,39 +554,7 @@ if (newComment.productId === productId) {
     }
     return stars;
   };
-
-  // Admin reply component - Enhanced to handle empty/falsy values better
-  const AdminReply = ({ reply }) => {
-    // Extra validation to ensure we don't render empty replies
-    if (!reply || reply === "" || reply === "undefined" || reply === "null") return null;
-    
-    return (
-      <div 
-        style={{ 
-          backgroundColor: '#e6f7ff', 
-          padding: '10px 15px', 
-          borderRadius: '8px',
-          marginTop: '10px',
-          marginBottom: '10px'
-        }}
-      >
-        <Row>
-          <Col span={1}>
-            <Avatar style={{ backgroundColor: '#fa8c16' }}>A</Avatar>
-          </Col>
-          <Col span={23}>
-            <div>
-                            {/* <span style={{ color: "#888", marginLeft: "10px" }}> Khách hàng đã chỉnh sửa bình luận của họ lúc:{formatTime(new Date().toISOString())}</span> */}
-
-              <strong>Trả lời từ người bán</strong>
-            </div>
-            <div style={{ marginTop: '5px' }}>{reply}</div>
-          </Col>
-        </Row>
-      </div>
-    );
-  };
-
+  
   return (
     <div style={{ padding: "20px", margin: "0 auto" }}>
       <Card style={{ marginTop: "20px" }}>
@@ -441,11 +568,11 @@ if (newComment.productId === productId) {
             </Col>
             <Col>
               <Space>
-                <FilterOutlined />
+                <FilterOutlined /> 
                 <span>Lọc theo: </span>
-                <Select
-                  defaultValue="0"
-                  style={{ width: 160 }}
+                <Select 
+                  defaultValue="0" 
+                  style={{ width: 160 }} 
                   onChange={handleFilterChange}
                   dropdownMatchSelectWidth={false}
                 >
@@ -505,11 +632,7 @@ if (newComment.productId === productId) {
                             </Space>
                           </Space>
                         ) : (
-                          <>
-                            <p>{item.comment}</p>
-                            {/* Display admin reply with enhanced component */}
-                            <AdminReply reply={item.adminReply} />
-                          </>
+                          <p>{item.comment}</p>
                         )}
                       </>
                     }
@@ -519,7 +642,7 @@ if (newComment.productId === productId) {
                       type="link"
                       icon={<EditOutlined />}
                       onClick={() => editComment(item)}
-                      style={{ float: "right", marginBottom: "130px"  }}
+                      style={{ float: "right" }}
                     />
                   )}
                 </List.Item>
@@ -538,9 +661,9 @@ if (newComment.productId === productId) {
                   rows={3}
                   style={{ minWidth: "400px" }}
                 />
-                <Button
-                  type="primary"
-                  onClick={sendComment}
+                <Button 
+                  type="primary" 
+                  onClick={sendComment} 
                   loading={isSubmitting}
                   disabled={isSubmitting}
                 >
