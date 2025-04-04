@@ -341,6 +341,7 @@ const UpdatePromotion = () => {
         { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: "10rem" },
         { title: "Trọng Lượng (kg)", dataIndex: "weight", key: "weight", width: "10rem" },
     ];
+    const [nameLength, setNameLength] = useState(0);
 
     return (
         <Row gutter={24}>
@@ -350,11 +351,19 @@ const UpdatePromotion = () => {
                     <Form form={form} layout="vertical">
                         <Form.Item
                             name="promotionName"
-                            label="Tên đợt giảm giá"
+                            label={`Tên đợt giảm giá (${nameLength}/100)`}
                             style={{ marginBottom: "12px" }}
-                            rules={[{ required: true, message: "Không được bỏ trống" }]}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
                         >
-                            <Input placeholder="Nhập tên đợt giảm giá" style={{ width: "100%" }} />
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
                         </Form.Item>
 
                         <Form.Item

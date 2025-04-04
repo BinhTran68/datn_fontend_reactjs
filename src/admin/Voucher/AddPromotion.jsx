@@ -294,6 +294,7 @@ const AddPromotion = () => {
         { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: "10rem" },
         { title: "Trọng Lượng (kg)", dataIndex: "weight", key: "weight", width: "10rem" },
     ];
+    const [nameLength, setNameLength] = useState(0);
 
     return (
         <Row gutter={24}>
@@ -301,14 +302,22 @@ const AddPromotion = () => {
             <Col span={8}>
                 <Card>
                     <Form form={form} layout="vertical">
-                        <Form.Item
-                            name="promotionName"
-                            label="Tên đợt giảm giá"
-                            style={{ marginBottom: "12px" }}
-                            rules={[{ required: true, message: "Không được bỏ trống" }]}
-                        >
-                            <Input placeholder="Nhập tên đợt giảm giá" style={{ width: "100%" }} />
-                        </Form.Item>
+                    <Form.Item
+    name="promotionName"
+    label={`Tên đợt giảm giá (${nameLength}/100)`}
+    style={{ marginBottom: "12px" }}
+    rules={[
+        { required: true, message: "Không được bỏ trống" },
+        { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
+    ]}
+>
+    <Input 
+        placeholder="Nhập tên đợt giảm giá"
+        style={{ width: "100%" }}
+        maxLength={100}
+        onChange={(e) => setNameLength(e.target.value.length)}
+    />
+</Form.Item>
 
                         <Form.Item
                             name="discountValue"
@@ -436,18 +445,7 @@ const AddPromotion = () => {
             <Card style={{ marginTop: "30px" }}>
                 <Title level={2}>Sản Phẩm Chi Tiết</Title>
 
-                <Row gutter={[16, 16]}>
-                    <Col span={20}>
-                        <Input
-                            placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
-                            prefix={<SearchOutlined />}
-                            allowClear
-                            onChange={handleSearchChange}
-                        />
-                    </Col>
-
-                </Row>
-
+             
                 <Table
                     columns={columnsDetail}
                     dataSource={productDetails}  // ✅ Hiển thị danh sách chi tiết thay vì `products`
