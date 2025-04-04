@@ -20,6 +20,15 @@ export function convertDate(isoString) {
   return `${day}-${month}-${year}`;
 }
 
+export function convertDateFullYear(isoString) {
+    const date = new Date(isoString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
+    const year = String(date.getFullYear()); // Lấy 2 số cuối của năm
+
+    return `${day}-${month}-${year}`;
+}
+
 
 
 

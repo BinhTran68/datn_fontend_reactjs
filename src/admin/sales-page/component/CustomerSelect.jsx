@@ -4,6 +4,7 @@ import { UserAddOutlined, PhoneOutlined, MailOutlined, IdcardOutlined } from '@a
 import {toast} from "react-toastify";
 import axiosInstance from "../../../utils/axiosInstance.js";
 import {debounce} from "lodash";
+import {convertDate, convertDateFullYear} from "../../../helpers/Helpers.js";
 
 const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
 
@@ -127,7 +128,7 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                                     {customer.gender === 1 ? 'Nam' : 'Nữ'}
                                 </Descriptions.Item>
                                 <Descriptions.Item label="Ngày sinh" span={1}>
-                                    {customer.dateBirth}
+                                    {convertDateFullYear(customer.dateBirth)}
                                 </Descriptions.Item>
                             </Descriptions>
                         </Col>

@@ -638,6 +638,16 @@ const BillDetail = () => {
 
 
     const handleOnAddProductToBill = (product) => {
+        if(product.quantity < 1 ) {
+            toast.warning("Số lượng sản phẩm không đủ!")
+            return
+        }
+        if(product.status !== "HOAT_DONG" ) {
+            toast.warning("Sản phẩm đã ngừng bán!")
+            return
+        }
+
+
         const discountValue = product.promotionResponse?.discountValue || 0;
         const discountedPrice = product.price * (1 - discountValue / 100); // Giá sau giảm giá
 
@@ -694,6 +704,14 @@ const BillDetail = () => {
             if (!latestProduct || latestProduct.price == null) {
                 toast.warning("Không thể lấy giá sản phẩm. Vui lòng thử lại!");
                 return;
+            }
+            if(latestProduct.quantity < 1 ) {
+                toast.warning("Số lượng sản phẩm không đủ!")
+                return
+            }
+            if(latestProduct.status !== "HOAT_DONG" ) {
+                toast.warning("Sản phẩm đã ngừng bán!")
+                return
             }
 
             const discountValue = latestProduct.promotionResponse?.discountValue || 0;
