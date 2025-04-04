@@ -57,30 +57,45 @@ const SalePaymentInfo = ({
                              handleOnChangeShippingFee,
                              currentBill,
                              transactionCode,
-                                isCOD,
-                             handleCheckIsCOD
+                             isCOD,
+                             handleCheckIsCOD,
+                             showAllCustomerAddresses
                          }) => {
-    const missingAmount = Math.max(0, amount+shippingFee - customerMoney); // Không cộng cho discount nữa
+    const missingAmount = Math.max(0, amount+(parseInt(shippingFee)) - customerMoney); // Không cộng cho discount nữa
+
+    console.log("shippingFee", shippingFee)
     return (
         <>
-
             <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
                 Giao hàng
             </Checkbox>
 
             <Card>
-                <h3 style={{ marginBottom: '16px' }}>Thông tin giao hàng</h3>
-                <hr />
+                <div className={"d-flex gap-5 align-items-center justify-content-between"}>
+                    <h3 style={{marginBottom: '16px'}}>Thông tin giao hàng</h3>
+                    {
+                        isShipping &&  customerInfo &&   <Button type={"primary"} onClick={
+                            () =>   showAllCustomerAddresses(customerInfo)
+                        }>
+                            Xem tất cả địa chỉ
+                        </Button>
+                    }
+                </div>
+                <hr/>
                 <Form layout="vertical">
                     {isShipping && (
-                        <Form.Item name="address">
+                        <Form.Item name="address" >
                             <Radio.Group
                                 style={style}
                                 onChange={onAddressSelected}
                                 value={addressShipping}
                                 options={customerAddresses}
                             />
+
+
                         </Form.Item>
+
+
                     )}
 
                     {isShipping && (
@@ -119,7 +134,7 @@ const SalePaymentInfo = ({
                                 min={0}
                                 placeholder="Nhập số tiền"
                                 onChange={handleOnChangeShippingFee}
-                                value={parseInt(shippingFee)}
+                                value={shippingFee}
                                 suffix="VNĐ"
                             />
                         </Form.Item>
@@ -207,7 +222,7 @@ const SalePaymentInfo = ({
                                                     itemLayout="horizontal"
                                                     dataSource={vouchers}
                                                     renderItem={(item, index) => {
-                                                        const originalTotal = amount + shippingFee; // Total amount including shipping
+                                                        const originalTotal = amount + parseInt(shippingFee); // Total amount including shipping
                                                         const isVoucherApplicable = originalTotal >= (item.billMinValue || 0); // Check if the voucher can be applied
 
                                                         return (
@@ -265,10 +280,10 @@ const SalePaymentInfo = ({
                                 <Text strong>{formatVND(discount)}</Text>
                             </Form.Item>
                             <Form.Item label="Phí vận chuyển">
-                                <Text strong>{formatVND(shippingFee || 0)}</Text>
+                                <Text strong>{formatVND(shippingFee ? parseInt(shippingFee) : 0)}</Text>
                             </Form.Item>
                             <Form.Item label="Tổng tiền cần thanh toán">
-                                <Text strong style={{color: "red"}}>{formatVND(amount + shippingFee)}</Text>
+                                <Text strong style={{color: "red"}}>{formatVND(amount + parseInt(shippingFee))}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
@@ -346,7 +361,7 @@ const SalePaymentInfo = ({
                             </Form.Item>
 
                             {
-                                paymentMethods === "bank" &&
+                                isShipping &&
                                 <Form.Item hidden={isSuccess}>
                                     <Checkbox checked={isCOD} value={isCOD} onChange={handleCheckIsCOD}>
                                         Thanh toán khi giao hàng

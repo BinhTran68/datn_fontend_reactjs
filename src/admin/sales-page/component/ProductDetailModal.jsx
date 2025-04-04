@@ -27,7 +27,7 @@ import {
   fetchDataSelectType,
   filterData,
   getAllProductDetailExportData,
-  switchStatus,
+  switchStatus, filterDataWithPromotion,
 } from "../../product/ProductDetail/ApiProductDetail.js";
 import {productTableColumn} from "../columns/productTableColumn.jsx";
 import {Client} from "@stomp/stompjs";
@@ -120,7 +120,7 @@ const ProductDetailModal = ({
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const response = await fetchProducts(pagination);
+      const response = await filterDataWithPromotion(pagination, requestFilter);
       console.log("response", response)
       if (response && response.data) {
         setProducts(response.data);
@@ -137,7 +137,7 @@ const ProductDetailModal = ({
   const loadFilteredData = async () => {
     setLoading(true);
     try {
-      const response = await filterData(pagination, requestFilter);
+      const response = await filterDataWithPromotion(pagination, requestFilter);
       if (response && response.data) {
         setProducts(response.data);
         setTotalProducts(response.total || 0);

@@ -423,3 +423,45 @@ export const switchStatus = async (id, statusO) => {
     throw error;
   }
 };
+
+
+export const fetchProductsWithPromotion = async (pagination) => {
+  const { current, pageSize } = pagination;
+
+  try {
+    const response = await api.get("/productdetail", {
+      params: { page: current, size: pageSize },
+    });
+
+    const { data, meta } = response.data;
+    return { data, total: meta?.totalElement || 0 };
+  } catch (error) {
+    const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
+
+
+export const filterDataWithPromotion = async (pagination, requestFilter) => {
+  const { current, pageSize } = pagination;
+
+  try {
+    const response = await api.post(
+        "/productdetail/filter-with-promotion",
+        requestFilter, // Đây là request body
+        {
+          params: { page: current, size: pageSize }, // Đây là params
+        }
+    );
+
+    const { data, meta } = response.data;
+    return { data, total: meta?.totalElement || 0 };
+  } catch (error) {
+    const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};

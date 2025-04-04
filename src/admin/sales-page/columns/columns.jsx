@@ -1,6 +1,7 @@
 import {Button, Image, InputNumber} from "antd";
 import React from "react";
 import {formatVND} from "../../../helpers/Helpers.js";
+import {COLORS} from "../../../constants/constants.js";
 
 export const salesColumns = (onActionClick, handleOnChangeQuantityInCart, ) => [
     {
@@ -70,12 +71,49 @@ export const salesColumns = (onActionClick, handleOnChangeQuantityInCart, ) => [
             ) : "";
         },
     },
+
     {
-        title: 'Giá',
-        dataIndex: 'price',
-        align: 'center',
-        key: 'price',
-        render: (price) => formatVND(price)
+        title: "Giá",
+        dataIndex: "price",
+        key: "price",
+        render: (price, record) => {
+            if (price === null || price === undefined) return "Chưa có giá";
+
+            const formattedPrice = new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+            }).format(price);
+
+            const hasPromotion = record.promotionResponse?.promotionName && record.promotionResponse?.discountValue;
+            const discountValue = record.promotionResponse?.discountValue || 0;
+            const discountedPrice = price * (1 - discountValue / 100);
+
+            return (
+                <div className="">
+
+                    <div style={{ fontWeight: "", fontSize: "14px", textDecoration: hasPromotion ? "line-through" : "none" }}>
+                        {formattedPrice}
+                    </div>
+                    {hasPromotion && (
+                        <div style={{ color: "red", fontSize: "13px" }}>
+                            Giảm {discountValue} %
+                        </div>
+                    )}
+                    {hasPromotion && (
+                        <div>
+                            <div style={{
+                                color: COLORS.primary
+                            }} className="fw-bold">
+                                {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND"
+                                }).format(discountedPrice)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        },
     },
     {
         title: 'Số lượng',
@@ -96,11 +134,14 @@ export const salesColumns = (onActionClick, handleOnChangeQuantityInCart, ) => [
         title: 'Tổng tiền',
         align: 'center',
         key: 'totalPrice',
-        // nếu có discount thì viết logic ở đây
-        render: (_, record) =>
-            formatVND(record.price * (record.quantityInCart || 1)),
-    },
+        render: (_, record) => {
+            const hasPromotion = record.promotionResponse?.promotionName && record.promotionResponse?.discountValue;
+            const discountValue = record.promotionResponse?.discountValue || 0;
+            const effectivePrice = hasPromotion ? record.price * (1 - discountValue / 100) : record.price;
 
+            return formatVND(effectivePrice * (record.quantityInCart || 1));
+        },
+    },
     {
         title: 'Hành động',
         dataIndex: 'action',

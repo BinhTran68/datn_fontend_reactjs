@@ -24,10 +24,10 @@ import {
 import { SearchOutlined, RobotOutlined } from "@ant-design/icons";
 import { getCart } from "../../page/cart/cart";
 import axios from "axios";
-import { Client } from "@stomp/stompjs";
-import { apiGetNoti } from "./header.js";
 import {FaXmark} from "react-icons/fa6";
 import {FaUserAstronaut} from "react-icons/fa";
+import { Client } from "@stomp/stompjs";
+import { apiGetNoti } from "./header.js";
 import SockJS from "sockjs-client";
 
 function HeaderNav() {
@@ -36,23 +36,25 @@ function HeaderNav() {
   );
   const [cartCount, setCartCount] = useState(getCart().length);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [isAIModalVisible, setIsAIModalVisible] = useState(false);
   const navigate = useNavigate();
 
-  const [aiQuestion, setAiQuestion] = useState("");
+
   const [aiResponse, setAiResponse] = useState("");
-  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL;
+
+
 
   // Notification state
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [stompClient, setStompClient] = useState(null);
 
+
+  const [isAIModalVisible, setIsAIModalVisible] = useState(false);
+
+  const [aiQuestion, setAiQuestion] = useState("");
+  const vitegeminiurl = import.meta.env.VITE_GEMINI_URL;
   const [chatHistory, setChatHistory] = useState([
-    {
-      sender: "ai",
-      text: "Xin chào quý khách. Chúng tôi có thể hỗ trợ gì cho bạn",
-    },
+    { sender: 'ai', text: "Xin chào quý khách. Chúng tôi có thể hỗ trợ gì cho bạn" }
   ]);
 
   const messagesEndRef = useRef(null);
@@ -60,27 +62,33 @@ function HeaderNav() {
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
 
+    // Thêm câu hỏi của người dùng vào lịch sử trò chuyện
     setChatHistory((prev) => [...prev, { sender: "user", text: aiQuestion }]);
+    const userQuestion = aiQuestion;
+    setAiQuestion(""); // Xóa ô nhập liệu
 
     const aiQuestionPrev = aiQuestion;
 
-    setAiQuestion("");
+    setAiQuestion("")
     try {
+      const res = await axios.post(
+          vitegeminiurl,
+          {
+            contents: [{ parts: [{ text: userQuestion }] }],
+          },
+          { headers: { "Content-Type": "application/json" } }
+      );
 
-      setAiResponse(aiText);
+      const aiReply = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
+      setAiResponse(aiReply);
 
-      setChatHistory((prev) => [...prev, { sender: 'ai', text: aiText }]);
-      const res = await axios.post(vitegeminiurl, {
-        contents: [{ parts: [{ text: aiQuestion }] }],
-      }, { headers: { "Content-Type": "application/json" } });
-      setAiResponse(res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.");
+      // Thêm phản hồi từ AI vào lịch sử trò chuyện
+      setChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
     } catch (error) {
       console.error("Lỗi khi gọi Gemini API:", error);
       const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
       setAiResponse(errorMessage);
       setChatHistory((prev) => [...prev, { sender: "ai", text: errorMessage }]);
-    } finally {
-      setAiQuestion("");
     }
   };
 
@@ -115,9 +123,6 @@ function HeaderNav() {
           );
           setNotifications(response.data); // Lưu tất cả thông báo
           setNotificationCount(unreadNotifications.length); // Chỉ đếm chưa đọc
-          console.log("số lượng thông báo",response.data);
-          console.log("số lượng thông báo da dọc",unreadNotifications.length);
-          
         } else {
           console.error("Lỗi khi lấy thông báo:", response.status);
           setNotifications([]);
@@ -128,7 +133,7 @@ function HeaderNav() {
         setNotifications([]);
         setNotificationCount(0);
       }
-    
+
   };
 
   // Mark notification as read
@@ -374,7 +379,7 @@ function HeaderNav() {
                     onClick={() => setIsAIModalVisible(true)}
                     style={{
                       position: "fixed",
-                      bottom: "100px",
+                      bottom: "60px",
                       right: "20px",
                       width: "60px",
                       height: "60px",
@@ -391,7 +396,7 @@ function HeaderNav() {
                 </Tooltip>
                 {user ? (
                   <>
-                   
+
                     <Popover content={content} trigger="click">
                       <div
                         className="user-info d-flex align-items-center gap-2  py-1"
@@ -608,6 +613,7 @@ function HeaderNav() {
           </Button>
         </div>
       </Drawer>
+
     </div>
   );
 }

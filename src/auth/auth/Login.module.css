@@ -119,6 +119,20 @@
   animation: fadeIn 1s ease-out;
 }
 
+.loginGoogleeButton {
+  width: 100%;
+  padding: 9px;
+  background-color: var(--white);
+  color: var(--secondary-blue);
+  border: 1px solid var(--secondary-blue); /* Thêm border màu xanh */
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  animation: fadeIn 1s ease-out;
+}
+
 .loginButton:hover, .signupButton:hover {
   background-color: var(--primary-orange-light);
   transform: translateY(-2px);

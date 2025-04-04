@@ -1,5 +1,6 @@
 import {Button, Tag, Tooltip} from "antd";
 import React from "react";
+import {COLORS} from "../../../constants/constants.js";
 
 export const productTableColumn = (pagination, handleOnAddProductToBill) => [
     {
@@ -96,7 +97,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         key: "productName",
         onCell: () => ({
             style: {
-                width: "100px",
+                width: "80px",
                 height: "50px",
                 lineHeight: "50px",
                 overflow: "hidden",
@@ -112,7 +113,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         key: "productName",
         onCell: () => ({
             style: {
-                width: "100px",
+                width: "80px",
                 height: "50px",
                 lineHeight: "50px",
 
@@ -174,18 +175,48 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         title: "Giá",
         dataIndex: "price",
         key: "price",
-        render: (price) => {
-            if (price === null || price === undefined) return null; // Nếu không có dữ liệu, trả về null
-            return new Intl.NumberFormat("vi-VN", {
+        render: (price, record) => {
+            if (price === null || price === undefined) return "Chưa có giá";
+
+            const formattedPrice = new Intl.NumberFormat("vi-VN", {
                 style: "currency",
                 currency: "VND",
             }).format(price);
+
+            const hasPromotion = record.promotionResponse?.promotionName && record.promotionResponse?.discountValue;
+            const discountValue = record.promotionResponse?.discountValue || 0;
+            const discountedPrice = price * (1 - discountValue / 100);
+
+            return (
+                <div className="">
+
+                    <div style={{ fontWeight: "", fontSize: "14px", textDecoration: hasPromotion ? "line-through" : "none" }}>
+                        {formattedPrice}
+                    </div>
+                    {hasPromotion && (
+                        <div style={{ color: "red", fontSize: "13px" }}>
+                            Giảm {discountValue} %
+                        </div>
+                    )}
+                    {hasPromotion && (
+                        <div>
+                            <div style={{
+                                color: COLORS.primary
+                            }} className="fw-bold">
+                                {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND"
+                                }).format(discountedPrice)}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
         },
         onCell: () => ({
             style: {
                 width: "100px",
-                height: "50px",
-                lineHeight: "50px",
+                height: "10px",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -213,7 +244,6 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         title: "Thao tác",
         dataIndex: "actions",
         key: "actions",
-        width: "10rem",
         render: (_, record) => {
             if (!record.status || Object.keys(record).length === 0) {
                 return null;
