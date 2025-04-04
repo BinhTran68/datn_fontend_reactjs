@@ -55,7 +55,7 @@ function Success() {
           isSuccess && (
             <Space>
               <Button key="buy" onClick={() => navigate("/cart")}>
-                Mua thêm
+                Giỏ hàng
               </Button>
              {user?.id?( <Button
                 key="purchaseorder"

@@ -2,6 +2,7 @@ import {Tag} from "antd";
 import {
     convertLongTimestampToDate,
     formatVND,
+    paymentBillStatusConvert,
     paymentMethodConvert,
     paymentTypeConvert
 } from "../../../helpers/Helpers.js";
@@ -35,6 +36,15 @@ export const columnsPaymentMethodTable = [
         render: (text) => <Tag style={{
             fontSize: 16
         }} color={"blue"}>{paymentMethodConvert[text]}</Tag>,
+
+    },
+    {
+        title: 'Trạng thái thanh toán',
+        dataIndex: 'paymentBillStatus',
+        key: 'paymentBillStatus',
+        render: (text) => <Tag style={{
+            fontSize: 16
+        }} color={"blue"}>{paymentBillStatusConvert[text]}</Tag>,
 
     },
     {

@@ -178,6 +178,9 @@ function PropProduct({ product }) {
                 ) : (
                   <div >
                     <div > {formatPriceRange(product.price)}</div>
+                    <span className="text-decoration-line-through text-secondary fw-normal fs-6 text-white">
+                       ko co
+                    </span>
                     <sup
                       style={{
                         fontSize: "0.7rem",
@@ -188,7 +191,7 @@ function PropProduct({ product }) {
                       }}
                     >
                       {product.promotion || (
-                        <div hidden>"Chưa có khuyến mại"</div>
+                        <div hidden>Chưa có khuyến mại</div>
                       )}
                     </sup>
                   </div>
