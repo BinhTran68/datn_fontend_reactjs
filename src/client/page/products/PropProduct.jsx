@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa6";
 import { FaFireAlt, FaPhoneAlt } from "react-icons/fa";
 import { Button, Col, Flex, Rate, Row } from "antd";
+import Integer from "@zxing/library/esm/core/util/Integer";
 
 const formatPriceRange = (price) => {
   if (!price) return ""; // Nếu giá trị rỗng, trả về chuỗi rỗng
@@ -62,7 +63,9 @@ function PropProduct({ product }) {
       ),
       "Flash Sale": (
         <>
-          <div style={{color:"green"}}><FaBolt  /> Flash Sale</div>
+          <div style={{ color: "green" }}>
+            <FaBolt /> Flash Sale
+          </div>
         </>
       ),
     }[product.statusSale] || null;
@@ -74,7 +77,7 @@ function PropProduct({ product }) {
       <div
         className={clsx("card", styles.productcard)}
         style={{
-          height: "22rem",
+          height: "23rem",
           // height: "24rem",
 
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
@@ -86,7 +89,7 @@ function PropProduct({ product }) {
           className="card-img-top p-0"
           style={{
             objectFit: "contain", // Giữ tỉ lệ ảnh ban đầu
-            height: "59%",
+            height: "55%",
           }}
         />
         <div className="position-absolute top">
@@ -135,7 +138,13 @@ function PropProduct({ product }) {
             <div>
               <span
                 className="fw-bold fs-5 text-danger"
-                title={formatPriceRange(product.price)}
+                title={
+                  product.promotionView?.maxDiscount > 0
+                    ? formatPriceRange(
+                        product.promotionView.rangePriceAfterPromotion
+                      ) + `- ${product.promotionView.maxDiscount} % `
+                    : formatPriceRange(product.price)
+                }
                 style={{
                   display: "inline-block",
                   whiteSpace: "nowrap",
@@ -144,22 +153,52 @@ function PropProduct({ product }) {
                   maxWidth: "180px", // Điều chỉnh chiều rộng tùy ý
                 }}
               >
-                {formatPriceRange(product.price)}
-              </span>
+                {product.promotionView?.maxDiscount > 0 ? (
+                  <div>
+                    <div>
+                      {formatPriceRange(
+                        product.promotionView.rangePriceAfterPromotion
+                      )}
+                    </div>
+                    <span className="text-decoration-line-through text-secondary fw-normal fs-6">
+                      {formatPriceRange(product.promotionView.rangePriceRoot)}{" "}
+                    </span>
+                    <sup
+                      className="badge"
+                      style={{
+                        fontSize: "0.7rem",
+                        background: "#FEEEEA",
+                        color: "#EE4D2D",
+                        marginLeft: "0.5rem",
+                      }}
+                    >
+                      - {product.promotionView.maxDiscount}%
+                    </sup>{" "}
+                  </div>
+                ) : (
+                  <div>
+                    <div> {formatPriceRange(product.price)}</div>
 
-             <div>
-             <sup
-                className="badge"
-                style={{
-                  fontSize: "0.7rem",
-                  background:`${product.promotion?"#FEEEEA":"white"}`,
-                  color: "#EE4D2D",
-                  marginLeft: "0.5rem",
-                }}
-              >
-                {product.promotion||<div hidden>"Chưa có khuyến mại"</div>}
-              </sup>
-             </div>
+                    <div>
+                      <sup
+                        className="badge"
+                        style={{
+                          fontSize: "0.7rem",
+                          background: `${
+                            product.promotion ? "#FEEEEA" : "white"
+                          }`,
+                          color: "#EE4D2D",
+                          marginLeft: "0.5rem",
+                        }}
+                      >
+                        {product.promotion || (
+                          <div hidden>"Chưa có khuyến mại"</div>
+                        )}
+                      </sup>
+                    </div>
+                  </div>
+                )}
+              </span>
             </div>
           </div>
           <div>
