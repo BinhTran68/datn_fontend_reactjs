@@ -84,6 +84,9 @@ const Product = () => {
   const [dataSelectSize, setDataSelectSize] = useState([]);
   const [dataSelectSole, setDataSelectSole] = useState([]);
   const [dataSelectType, setDataSelectType] = useState([]);
+  const [requestSearch, setRequestSearch] = useState({
+    name: "",
+  });
 
   const [totalProducts, setTotalProducts] = useState(0);
   const [request, setRequest] = useState({
@@ -112,7 +115,9 @@ const Product = () => {
   const [openUpdate, setOpenUpdate] = useState(false);
 
   useEffect(() => {
-    if (filterActice) {
+    if (requestSearch?.name.trim()) {
+      fetchProductsData();
+    } else if (filterActice) {
       fetchfilterData(pagination, requestFilter);
     } else {
       fetchProductsData();
@@ -137,7 +142,7 @@ const Product = () => {
   const [isExporting, setIsExporting] = useState(false); // Thêm flag kiểm soát xuất dữ liệu
 
   useEffect(() => {
-    if (exportdata.length > 0 && isExporting) {
+    if (exportdata?.length > 0 && isExporting) {
       exportToExcel(); // Chỉ gọi khi có dữ liệu và flag isExporting là true
       setIsExporting(false); // Reset lại trạng thái xuất sau khi đã xuất
       fetchProductsData();
@@ -158,7 +163,7 @@ const Product = () => {
 
   // exporrt excel
   const exportToExcel = () => {
-    if (exportdata.length === 0) {
+    if (exportdata?.length === 0) {
       message.warning("Không có dữ liệu để xuất!");
       return;
     }
@@ -208,18 +213,36 @@ const Product = () => {
     saveAs(excelBlob, `Danh_sach_san_pham_${timestamp}.xlsx`);
   };
 
+  // const fetchProductsData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetchProducts(pagination);
+  //     console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
+  //     setProducts(response.data);
+  //     setTotalProducts(response.total);
+  //     setexportdata(response.data);
+  //   } catch (error) {
+  //     message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const fetchProductsData = async () => {
     setLoading(true);
     try {
-      const response = await fetchProducts(pagination);
-      console.log("Response from API:", response); // Log response để kiểm tra dữ liệu trả về
-      setProducts(response.data);
-      setTotalProducts(response.total);
-      setexportdata(response.data);
+      const { data, total } = requestSearch?.name?.trim()
+        ? await searchNameProduct(pagination, requestSearch)
+        : await fetchProducts(pagination);
+      setProducts(data);
+      setTotalProducts(total);
+      setexportdata(data.data);
+
+      console.log(requestSearch.name + "đây là search");
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
+      console.log(products);
     }
   };
   const ExportAllData = async () => {
@@ -470,7 +493,46 @@ const Product = () => {
       }),
     },
     {
-      title: "Sản phẩm",
+      title: "Ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {record.id && (
+            <img
+              src={
+                record?.image
+                  ? Array.isArray(record.image)
+                    ? record.image.length > 0
+                      ? record.image[0]?.url // Nếu là mảng và có phần tử, lấy phần tử đầu tiên
+                      : "https://placehold.co/100" // Nếu là mảng nhưng rỗng, dùng ảnh mặc định
+                    : record.image // Nếu là string, dùng trực tiếp
+                  : "https://placehold.co/100" // Nếu không có image, dùng ảnh mặc định
+              }
+              alt={text}
+              style={{
+                width: "50px",
+                height: "50px",
+                objectFit: "cover",
+                borderRadius: "5px",
+              }}
+            />
+          )}
+          {/* <span
+            style={{
+              maxWidth: "100px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {text}
+          </span> */}
+        </div>
+      ),
+    },
+    {
+      title: "Tên sản phẩm",
       dataIndex: "productName",
       key: "productName",
 
@@ -488,7 +550,7 @@ const Product = () => {
     {
       title: "Hãng",
       dataIndex: "brandName",
-      key: "productName",
+      key: "brandName",
 
       onCell: () => ({
         style: {
@@ -770,7 +832,24 @@ const Product = () => {
       },
     },
   ];
+  const searchName = async () => {
+    setLoading(true);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    try {
+      const { data, total } = await searchNameProduct(
+        pagination,
+        requestSearch
+      );
+      console.log("asasadsadsadasdasdsa", data);
 
+      setProducts(data);
+      setTotalProducts(total);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Card>
       <Title level={2}>Tất cả Sản phẩm chi tiết</Title>
@@ -778,10 +857,18 @@ const Product = () => {
         <Row gutter={[16, 16]}>
           <Col span={20}>
             <Input
-              placeholder="Nhập vào tên Sản phẩmbạn muốn tìm!"
+              placeholder="Nhập vào tên Sản phẩm bạn muốn tìm!"
               prefix={<SearchOutlined />}
               allowClear
               name="name"
+              value={requestSearch.name}
+              onChange={(e) => {
+                setRequestSearch((prev) => ({
+                  ...prev,
+                  name: e.target.value, // Cập nhật giá trị nhập vào
+                }));
+              }}
+              onPressEnter={searchName}
             />
           </Col>
 
@@ -789,7 +876,7 @@ const Product = () => {
             <Button
               type="primary"
               icon={<SearchOutlined />}
-              // onClick={searchName}
+              onClick={searchName}
               style={{}}
             >
               Tìm kiếm
@@ -812,7 +899,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                // value={request.productId}
+                value={requestFilter?.productName}
                 onChange={(value) => {
                   setPagination({ current: 1, pageSize: pagination.pageSize });
                   setFilterActice(true);
@@ -844,7 +931,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                // value={dataSelectBrand.id}
+                value={requestFilter?.brandName}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -876,8 +963,8 @@ const Product = () => {
                 //     .toLowerCase()
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
+                value={requestFilter?.typeName}
 
-                value={dataSelectType.id}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -910,7 +997,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={dataSelectColor.id}
+                value={requestFilter?.colorName}
                 onChange={(e) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -962,8 +1049,8 @@ const Product = () => {
                 //     .toLowerCase()
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
+                value={requestFilter?.materialName}
 
-                value={dataSelectMaterial.id}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -996,7 +1083,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={dataSelectSize.id}
+                value={requestFilter?.sizeName}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -1029,7 +1116,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={dataSelectSole.id}
+                value={requestFilter?.soleName}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -1062,7 +1149,7 @@ const Product = () => {
                 //     .localeCompare((optionB?.label ?? "").toLowerCase())
                 // }
 
-                value={dataSelectGender.id}
+                value={requestFilter?.genderName}
                 onChange={(value) => {
                   setFilterActice(true);
                   setPagination({ current: 1, pageSize: pagination.pageSize });
@@ -1125,9 +1212,35 @@ const Product = () => {
               // onClick={handleExportClick}
             >
               <TiExport size={22} />
-              Xuất Excel
+              Xuất File Excel
             </Button>
           </Popconfirm>
+          <Tooltip title="làm mới trang và bộ lọc">
+            <Button
+              type="primary"
+              onClick={() => {
+                setFilterActice(false);
+                setRequestFilter((prev) => ({
+                  productName: null,
+                  brandName: null,
+                  typeName: null,
+                  colorName: null,
+                  materialName: null,
+                  sizeName: null,
+                  soleName: null,
+                  genderName: null,
+                  status: null,
+                  sortByQuantity: null,
+                  sortByPrice: null,
+                }));
+                setRequestSearch({ name: "" });
+              }}
+              style={{marginLeft:"2rem"}}
+            >
+              <TiExport size={22} />
+              làm mới
+            </Button>
+          </Tooltip>
           <ModalEditSanPham
             handleClose={() => {
               setOpenUpdate(false);

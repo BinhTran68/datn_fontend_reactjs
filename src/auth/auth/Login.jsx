@@ -3,6 +3,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import styles from "./Login.module.css";
 import { COLORS } from "../../constants/constants.js";
+import {toast} from "react-toastify";
+import {Button} from "antd";
+import {FcGoogle} from "react-icons/fc";
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -16,6 +19,7 @@ const Login = () => {
         const user = localStorage.getItem("user");
         
         if (token && user) {
+            toast.success("Bạn đã đăng nhập thành công")
             navigate("/");
         }
 
@@ -117,9 +121,27 @@ const Login = () => {
                         disabled={loading}
                     >
                         {loading ? (
-                            <span className={styles.spinner}></span>
+                            <span className={styles.spinner}> </span>
                         ) : (
-                            "ĐĂNG NHẬP"
+                            <div>
+                                ĐĂNG NHẬP
+                            </div>
+                        )}
+                    </button>
+                    <hr/>
+
+                    <button
+                        type="submit"
+                        className={styles.loginGoogleeButton}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <span className={styles.spinner}> </span>
+                        ) : (
+                            <div className={"d-flex gap-3 align-items-center justify-content-center"}>
+                                <FcGoogle size={28} />
+                                ĐĂNG NHẬP BẰNG GOOGE
+                            </div>
                         )}
                     </button>
 
@@ -131,21 +153,7 @@ const Login = () => {
                 </form>
 
                 <div className={styles.orDivider}>hoặc</div>
-                
-                <div className={styles.socialButtons}>
-                    <a href="#" className={`${styles.socialButton} ${styles.facebook}`}>
-                        <span>f</span>
-                    </a>
-                    <a href="#" className={`${styles.socialButton} ${styles.twitter}`}>
-                        <span>t</span>
-                    </a>
-                    <a
-                        href="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/api/v1/auth/oauth/google&response_type=code&client_id=949623093363-hhnb82n3djt2h4ovguvmqdk714rnihqv.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline"
-                        className={`${styles.socialButton} ${styles.google}`}
-                    >
-                        <span>G+</span>
-                    </a>
-                </div>
+
 
                 <div className={styles.signupLink}>
                     <p>Chưa có tài khoản?</p>

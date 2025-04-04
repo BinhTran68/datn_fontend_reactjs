@@ -42,7 +42,7 @@ export const fetchMaterials = async (pagination) => {
 
 export const searchNameMaterial = async (pagination, paramName) => {
   const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
-  const { name } = paramName;
+  const name = paramName.name?.trim() || ""; 
   try {
     const response = await api.get("/material/search", {
       params: {

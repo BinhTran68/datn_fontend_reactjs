@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio } from 'antd';
@@ -177,6 +178,12 @@ const UpdateCustomer = () => {
         try {
             const values = await form.validateFields();
             
+            // Validate address fields before submitting
+            if (!address.provinceId || !address.districtId || !address.wardId || !address.specificAddress) {
+                message.error('Vui lòng điền đầy đủ thông tin địa chỉ!');
+                return;
+            }
+
             // Handle avatar using Cloudinary
             let avatarUrl = selectedRecord?.avatar || '';
             let avatarPublicId = selectedRecord?.avatarPublicId || '';
@@ -237,6 +244,10 @@ const UpdateCustomer = () => {
         });
     };
 
+    // Function to disable future dates in DatePicker
+    const disableFutureDates = (current) => {
+        return current && current > moment().endOf('day');
+    };
 
     const uploadButton = (
         <div className="ant-upload-btn">
@@ -262,13 +273,17 @@ const UpdateCustomer = () => {
 
     const customRequest = async ({ file, onSuccess, onError }) => {
         try {
-          const result = await cloudinaryUpload(file);
-          onSuccess(result, file);
+            const result = await cloudinaryUpload(file);
+            onSuccess(result, file);
         } catch (error) {
-          console.error("Custom request error:", error);
-          onError(error);
+            console.error("Custom request error:", error);
+            onError(error);
         }
     };
+
+    // Validation patterns
+    const phonePattern = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+    const citizenIdPattern = /^[0-9]{9}$|^[0-9]{12}$/;
 
     return (
         <div style={{ padding: '20px' }}>
@@ -277,7 +292,7 @@ const UpdateCustomer = () => {
             <Row gutter={16}>
                 <Col span={6}>
                     <Card>
-                    <Form.Item label="Ảnh đại diện" style={{ textAlign: 'center' }}>
+                        <Form.Item label="Ảnh đại diện" style={{ textAlign: 'center' }}>
                             <Upload
                                 customRequest={customRequest}
                                 fileList={fileList}
@@ -322,7 +337,12 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="fullName"
                                         label="Tên khách hàng"
-                                        rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng!' }]}
+                                        rules={[
+                                            { required: true, message: 'Vui lòng nhập tên khách hàng!' },
+                                            { min: 2, message: 'Tên phải có ít nhất 2 ký tự!' },
+                                            { max: 50, message: 'Tên không được vượt quá 50 ký tự!' },
+                                            { pattern: /^[a-zA-ZÀ-ỹ\s]+$/, message: 'Tên chỉ được chứa chữ cái và khoảng trắng!' }
+                                        ]}
                                     >
                                         <Input />
                                     </Form.Item>
@@ -331,9 +351,23 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="dateBirth"
                                         label="Ngày sinh"
-                                        rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
+                                        rules={[
+                                            { required: true, message: 'Vui lòng chọn ngày sinh!' },
+                                            () => ({
+                                                validator(_, value) {
+                                                    if (!value || value <= moment()) {
+                                                        return Promise.resolve();
+                                                    }
+                                                    return Promise.reject(new Error('Ngày sinh không thể là ngày trong tương lai!'));
+                                                },
+                                            }),
+                                        ]}
                                     >
-                                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+                                        <DatePicker 
+                                            format="DD/MM/YYYY" 
+                                            style={{ width: '100%' }} 
+                                            disabledDate={disableFutureDates}
+                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -343,7 +377,10 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="CitizenId"
                                         label="Căn cước công dân"
-                                        rules={[{ required: true, message: 'Vui lòng nhập CCCD!' }]}
+                                        rules={[
+                                            { required: true, message: 'Vui lòng nhập CCCD!' },
+                                            { pattern: citizenIdPattern, message: 'CCCD phải có 9 hoặc 12 số!' }
+                                        ]}
                                     >
                                         <Input />
                                     </Form.Item>
@@ -359,7 +396,6 @@ const UpdateCustomer = () => {
                                             <Radio value={false}>Nữ</Radio>
                                         </Radio.Group>
                                     </Form.Item>
-
                                 </Col>
                             </Row>
 
@@ -368,7 +404,11 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="email"
                                         label="Email"
-                                        rules={[{ required: true, message: 'Vui lòng nhập email!' }, { type: 'email', message: 'Email không hợp lệ!' }]}
+                                        rules={[
+                                            { required: true, message: 'Vui lòng nhập email!' }, 
+                                            { type: 'email', message: 'Email không hợp lệ!' },
+                                            { max: 100, message: 'Email không được vượt quá 100 ký tự!' }
+                                        ]}
                                     >
                                         <Input />
                                     </Form.Item>
@@ -377,7 +417,10 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="phoneNumber"
                                         label="Số điện thoại"
-                                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                                        rules={[
+                                            { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                                            { pattern: phonePattern, message: 'Số điện thoại không hợp lệ! (Phải bắt đầu bằng 0 hoặc +84, tiếp theo là 3,5,7,8,9 và 8 số tiếp theo)' }
+                                        ]}
                                     >
                                         <Input />
                                     </Form.Item>
@@ -385,7 +428,10 @@ const UpdateCustomer = () => {
                             </Row>
 
                             {isAddressLoaded && (
-                                <Form.Item label="Địa chỉ">
+                                <Form.Item 
+                                    label="Địa chỉ"
+                                    rules={[{ required: true, message: 'Vui lòng nhập đầy đủ địa chỉ!' }]}
+                                >
                                     <AddressSelectorAntd
                                         provinceId={parseInt(address.provinceId)}
                                         districtId={parseInt(address.districtId)}
@@ -426,323 +472,3 @@ const UpdateCustomer = () => {
 };
 
 export default UpdateCustomer;
-
-
-
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio } from 'antd';
-// import { UploadOutlined } from '@ant-design/icons';
-// import moment from 'moment';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
-
-// const { Option } = Select;
-// const { Password } = Input;
-
-// const UpdateCustomer = () => {
-//     const [form] = Form.useForm();
-//     const { id } = useParams();
-//         const navigate = useNavigate();
-//     const [fileList, setFileList] = useState([]);
-//     const [address, setAddress] = useState({
-//         provinceId: null,
-//         districtId: null,
-//         wardId: null,
-//         specificAddress: null,
-//     });
-//     const [selectedRecord, setSelectedRecord] = useState(null);
-//     const [isAddressLoaded, setIsAddressLoaded] = useState(false);
-
-//     useEffect(() => {
-//         fetchCustomer(id);
-//     }, [id]);
-
-    
-//     const fetchCustomer = async (id) => {
-//         try {
-//             const response = await axios.get(`http://localhost:8080/api/admin/customers/detail/${id}`);
-//             const customer = response.data;
-//             setSelectedRecord(customer);
-
-//             // Find default address
-//             const defaultAddress = customer.addresses?.find(addr => addr.isAddressDefault);
-            
-//             if (defaultAddress) {
-//                 // Convert IDs to strings if they're numbers
-//                 const addressData = {
-//                     provinceId: String(defaultAddress.provinceId),
-//                     districtId: String(defaultAddress.districtId),
-//                     wardId: String(defaultAddress.wardId),
-//                     specificAddress: defaultAddress.specificAddress || ''
-//                 };
-                
-//                 setAddress(addressData);
-//                 setIsAddressLoaded(true);
-//             }
-
-//             // Set other form values
-//             form.setFieldsValue({
-//                 fullName: customer.fullName,
-//                 CitizenId: customer.citizenId,
-//                 phoneNumber: customer.phoneNumber,
-//                 email: customer.email,
-//                 gender: customer.gender,
-//                 dateBirth: moment(customer.dateBirth),
-//                 status: customer.status,
-//                 password: customer.password,
-//             });
-
-//             // Handle avatar
-//             if (customer.avatar) {
-//                 setFileList([{
-//                     uid: '-1',
-//                     name: 'avatar',
-//                     status: 'done',
-//                     url: customer.avatar,
-//                 }]);
-//             }
-//         } catch (error) {
-//             console.error('Error fetching customer:', error);
-//             message.error('Không thể tải thông tin khách hàng');
-//         }
-//     };
-
-//     const handleAvatarChange = ({ fileList: newFileList }) => {
-//         setFileList(newFileList);
-//     };
-
-//     const beforeUpload = (file) => {
-//         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-//         if (!isJpgOrPng) {
-//             message.error('You can only upload JPG/PNG file!');
-//         }
-//         const isLt2M = file.size / 1024 / 1024 < 2;
-//         if (!isLt2M) {
-//             message.error('Image must smaller than 2MB!');
-//         }
-//         return isJpgOrPng && isLt2M;
-//     };
-
-
-   
-
-//     const handleOk = async () => {
-//         try {
-//             const values = await form.validateFields();
-            
-//             // Handle avatar upload if needed
-//             let avatarUrl = selectedRecord?.avatar || '';
-//             if (fileList.length > 0 && fileList[0].originFileObj) {
-//                 const formData = new FormData();
-//                 formData.append('file', fileList[0].originFileObj);
-//                 const uploadRes = await axios.post('http://localhost:8080/api/admin/customers/upload', formData, {
-//                     headers: { 'Content-Type': 'multipart/form-data' }
-//                 });
-//                 avatarUrl = uploadRes.data;
-//             }
-
-//             // Prepare customer data
-//             const customerData = {
-//                 fullName: values.fullName,
-//                 citizenId: values.CitizenId,
-//                 phoneNumber: values.phoneNumber,
-//                 email: values.email,
-//                 gender: values.gender,
-//                 dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
-//                 status: values.status,
-//                 avatar: avatarUrl,
-//                 password: values.password,
-//             };
-
-//             // Update customer info
-//             await axios.put(`http://localhost:8080/api/admin/customers/update/${id}`, customerData);
-
-//             // Handle address update
-//             const defaultAddress = selectedRecord.addresses?.find(addr => addr.isAddressDefault);
-//             const addressData = {
-//                 provinceId: address.provinceId,
-//                 districtId: address.districtId,
-//                 wardId: address.wardId,
-//                 specificAddress: address.specificAddress,
-//                 isAddressDefault: true
-//             };
-
-//             if (defaultAddress) {
-//                 await axios.put(`http://localhost:8080/api/admin/customers/update-address/${defaultAddress.id}`, addressData);
-//             } else {
-//                 await axios.post(`http://localhost:8080/api/admin/customers/add-address/${id}`, addressData);
-//             }
-
-//             message.success('Cập nhật khách hàng thành công!');
-//             navigate("/admin/customer");
-//         } catch (error) {
-//             console.error('Error updating customer:', error);
-//             message.error('Cập nhật khách hàng thất bại!');
-//         }
-//     };
-
-
-
-
-
-//     const handleAddressChange = (provinceId, districtId, wardId, specificAddress) => {
-//         setAddress({
-//             provinceId: provinceId,
-//             districtId: districtId,
-//             wardId: wardId,
-//             specificAddress: specificAddress
-//         });
-//     };
-
-//     return (
-//         <div style={{ padding: '20px' }}>
-//             <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Chỉnh sửa khách hàng</h2>
-
-//             <Row gutter={16}>
-//                 {/* <Col span={6}>
-//                     <Card>
-//                         <Form.Item label="Ảnh đại diện">
-//                             <Upload
-//                                 action=""
-//                                 listType="picture-card"
-//                                 fileList={fileList}
-//                                 onChange={handleAvatarChange}
-//                                 beforeUpload={beforeUpload}
-//                             >
-//                                 {fileList.length < 1 && '+ Upload'}
-//                             </Upload>
-//                         </Form.Item>
-//                     </Card>
-//                 </Col> */}
-
-//                 <Col span={18}>
-//                     <Card>
-//                         <Form form={form} layout="vertical">
-//                             <Row gutter={16}>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="fullName"
-//                                         label="Tên khách hàng"
-//                                         rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng!' }]}
-//                                     >
-//                                         <Input />
-//                                     </Form.Item>
-//                                 </Col>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="dateBirth"
-//                                         label="Ngày sinh"
-//                                         rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
-//                                     >
-//                                         <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-//                                     </Form.Item>
-//                                 </Col>
-//                             </Row>
-
-//                             <Row gutter={16}>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="CitizenId"
-//                                         label="Căn cước công dân"
-//                                         rules={[{ required: true, message: 'Vui lòng nhập CCCD!' }]}
-//                                     >
-//                                         <Input />
-//                                     </Form.Item>
-//                                 </Col>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="gender"
-//                                         label="Giới tính"
-//                                         rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
-//                                     >
-//                                         <Radio.Group>
-//                                             <Radio value={true}>Nam</Radio>
-//                                             <Radio value={false}>Nữ</Radio>
-//                                         </Radio.Group>
-//                                     </Form.Item>
-
-//                                 </Col>
-//                             </Row>
-
-//                             <Row gutter={16}>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="email"
-//                                         label="Email"
-//                                         rules={[{ required: true, message: 'Vui lòng nhập email!' }, { type: 'email', message: 'Email không hợp lệ!' }]}
-//                                     >
-//                                         <Input />
-//                                     </Form.Item>
-//                                 </Col>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="phoneNumber"
-//                                         label="Số điện thoại"
-//                                         rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-//                                     >
-//                                         <Input />
-//                                     </Form.Item>
-//                                 </Col>
-//                             </Row>
-
-//                             {isAddressLoaded && (
-//                                 <Form.Item label="Địa chỉ">
-//                                     <AddressSelectorAntd
-//                                         provinceId={parseInt(address.provinceId)}
-//                                         districtId={parseInt(address.districtId)}
-//                                         wardId={parseInt(address.wardId)}
-//                                         specificAddressDefault={address.specificAddress}
-//                                         onAddressChange={handleAddressChange}
-//                                     />
-//                                 </Form.Item>
-//                             )}
-
-//                             <Row gutter={16}>
-//                                 <Col span={12}>
-//                                     <Form.Item
-//                                         name="status"
-//                                         label="Trạng thái"
-//                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
-//                                     >
-//                                         <Select>
-//                                             <Option value={1}>Kích hoạt</Option>
-//                                             <Option value={0}>Khóa</Option>
-//                                         </Select>
-//                                     </Form.Item>
-//                                 </Col>
-//                                 {/* <Col span={12}>
-//                                     <Form.Item
-//                                         name="password"
-//                                         label="Mật khẩu"
-//                                     >
-//                                         <Password />
-//                                     </Form.Item>
-//                                 </Col> */}
-//                             </Row>
-
-//                             <Form.Item>
-//                                 <Button type="primary" onClick={handleOk} style={{ marginRight: '10px' }}>
-//                                     Lưu
-//                                 </Button>
-//                                 <Button onClick={() => navigate('/admin/customer')}>Hủy</Button>
-//                             </Form.Item>
-//                         </Form>
-//                     </Card>
-//                 </Col>
-//             </Row>
-//         </div>
-//     );
-// };
-
-// export default UpdateCustomer;
-
-
-
-
-
-

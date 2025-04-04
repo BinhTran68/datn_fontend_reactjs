@@ -16,7 +16,6 @@ const StepProgress = ({steps, currentStep, billHistoryList}) => {
     const sizeIcon = 42;
 
     const genIconStepBySatatus = (step) => {
-        console.log("genIconStepBySatatus" , step )
         switch (step) {
             case "TAO_DON_HANG":
                 return <CiBookmarkPlus size={sizeIcon}/>;

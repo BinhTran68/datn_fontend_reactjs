@@ -14,7 +14,38 @@ import {
 import { FaFireAlt, FaPhoneAlt } from "react-icons/fa";
 import { Button, Col, Flex, Rate, Row } from "antd";
 
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+const formatPriceRange = (price) => {
+  if (!price) return ""; // Nếu giá trị rỗng, trả về chuỗi rỗng
+
+  // Chuyển thành string nếu price không phải là string
+  const priceStr = String(price);
+
+  // Kiểm tra nếu không chứa dấu " - " thì chỉ cần format một giá trị
+  if (!priceStr.includes(" - ")) {
+    return parseInt(priceStr).toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
+
+  // Tách chuỗi theo " - "
+  const priceParts = priceStr.split(" - ").map((p) => parseInt(p));
+
+  if (priceParts.length === 2 && priceParts[0] === priceParts[1]) {
+    return priceParts[0].toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }); // Nếu hai giá giống nhau, chỉ hiển thị một giá
+  }
+
+  return `${priceParts[0].toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  })} - ${priceParts[1].toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  })}`; // Nếu khác nhau, format từng giá trị
+};
 
 function PropProduct({ product }) {
   const statusSaleContent =
@@ -31,7 +62,7 @@ function PropProduct({ product }) {
       ),
       "Flash Sale": (
         <>
-          <FaBolt /> Flash Sale
+          <div style={{color:"green"}}><FaBolt  /> Flash Sale</div>
         </>
       ),
     }[product.statusSale] || null;
@@ -43,7 +74,7 @@ function PropProduct({ product }) {
       <div
         className={clsx("card", styles.productcard)}
         style={{
-          height: "21rem",
+          height: "22rem",
           // height: "24rem",
 
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
@@ -85,7 +116,7 @@ function PropProduct({ product }) {
           }}
         >
           <div
-            className="card-title mb-3 "
+            // className="card-title"
             style={{
               fontSize: "1rem",
               height: "30%",
@@ -98,39 +129,53 @@ function PropProduct({ product }) {
 
           <div
             style={{
-              fontSize: "1rem",
+              fontSize: "0.8rem",
             }}
           >
             <div>
-              <span className="fw-bold fs-5 text-danger">
-                {product.price.toLocaleString("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                })}
+              <span
+                className="fw-bold fs-5 text-danger"
+                title={formatPriceRange(product.price)}
+                style={{
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "180px", // Điều chỉnh chiều rộng tùy ý
+                }}
+              >
+                {formatPriceRange(product.price)}
               </span>
-              <sup
+
+             <div>
+             <sup
                 className="badge"
                 style={{
                   fontSize: "0.7rem",
-                  background: "#FEEEEA",
+                  background:`${product.promotion?"#FEEEEA":"white"}`,
                   color: "#EE4D2D",
                   marginLeft: "0.5rem",
                 }}
               >
-                {product.promotion}
+                {product.promotion||<div hidden>"Chưa có khuyến mại"</div>}
               </sup>
+             </div>
             </div>
           </div>
-          <div><Rate value={product.rate} disabled style={{
-              fontSize:"0.8rem",
-              
-            }}/></div>
+          <div>
+            <Rate
+              value={product.rate}
+              disabled
+              style={{
+                fontSize: "0.8rem",
+              }}
+            />
+          </div>
           <div className="d-flex justify-content-between align-items-center">
             {/* <div className={style.stars}>
               &#9733;&#9733;&#9733;&#9733;&#9733;
             </div> */}
-            
-              
+
             <div style={{ fontSize: "0.8rem" }}>Đã bán: {product.sale}</div>
             <div style={{ fontSize: "0.8rem" }}>Lượt xem: {product.views}</div>
           </div>

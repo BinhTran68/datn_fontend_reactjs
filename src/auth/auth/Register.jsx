@@ -4,6 +4,8 @@ import axios from "axios";
 import styles from "./Register.module.css";
 import { validateEmail } from "../../helpers/Helpers.js";
 import { COLORS } from "../../constants/constants.js";
+import {toast} from "react-toastify";
+import log from "eslint-plugin-react/lib/util/log.js";
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -99,11 +101,8 @@ const Register = () => {
             );
 
             const data = response.data;
-            if (data.code === 1000) {
-                navigate("/auth/login");
-            } else {
-                setErrorMessage("Đăng ký không thành công. Vui lòng thử lại.");
-            }
+            toast.success("Đăng ký thành công!")
+            navigate("/")
         } catch (error) {
             setErrorMessage(
                 error.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại."

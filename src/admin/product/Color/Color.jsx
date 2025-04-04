@@ -437,6 +437,8 @@ const Color = () => {
                   name: e.target.value, // Cập nhật giá trị nhập vào
                 }));
               }}
+              onPressEnter={searchName}
+
             />
           </Col>
 
@@ -461,6 +463,16 @@ const Color = () => {
             style={{}}
           >
             Thêm Màu sắc
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => {
+              setRequestSearch({ name: "" });
+              setPagination({ current: 1, pageSize: pagination.pageSize });
+            }}
+            style={{marginLeft:"2rem"}}
+          >
+            Làm mới
           </Button>
           <Modal
             open={openCreate}

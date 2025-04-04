@@ -310,14 +310,31 @@ const PayMent = () => {
       dataIndex: "price",
       key: "price",
       align: "right",
+      render: (price) => (
+        <span>
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).format(price)}
+        </span>
+      ),
     },
     {
       title: "TẠM TÍNH",
       dataIndex: "price",
-      key: "price",
+      key: "subtotal",
       align: "right",
       render: (_, record) => (
-        <Space>{record.price * record.quantityAddCart}đ</Space>
+        <Space>
+          {new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).format(record.price * record.quantityAddCart)}
+        </Space>
       ),
     },
   ];
@@ -523,8 +540,8 @@ const PayMent = () => {
                 <LuTicket size={27} style={{ color: `${COLORS.primary}` }} />
                 Voucher: {voucher[0].note}
               </Col>
-              - {voucher[0].discountValue} đ
-            </Flex>
+              - {voucher[0].discountValue?.toLocaleString("vi-VN")} đ
+              </Flex>
           )}
           <Divider />
           <h3 style={{ textAlign: "right" }}>

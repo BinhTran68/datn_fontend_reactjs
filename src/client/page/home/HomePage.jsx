@@ -1,330 +1,568 @@
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Col,
+  Row,
+  Carousel,
+  Button,
+  Input,
+  Typography,
+  Divider,
+  Space,
+  message,
+  Avatar,
+  Flex,
+} from "antd";
+import {
+  SearchOutlined,
+  ShoppingCartOutlined,
+  RightOutlined,
+  FacebookOutlined,
+  InstagramOutlined,
+  TwitterOutlined,
+} from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import PropProduct from "../products/PropProduct";
+import { COLORS } from "../../../constants/constants";
+import { apiAddViewProduct, getAllProducthadSoldDesc } from "../products/api";
+import HomeCarousel from "./HomeCarousel";
 
-
-// HomePage.jsx
-import React, { useState , useEffect } from 'react';
-import styles from './HomePage.module.css';
+const { Title, Text, Paragraph } = Typography;
 
 const HomePage = () => {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [productHadSolDescs, setProductHadSolDescs] = useState([]);
+  const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
+    current: 1,
+    pageSize: 8,
+  });
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentBannerIndex((prevIndex) => (prevIndex + 1) % banners.length);
-    }, 5000); // Change banner every 5 seconds
-
-    return () => clearInterval(timer);
+    getAllProductHadSoldDescs();
   }, []);
 
+  const getAllProductHadSoldDescs = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllProducthadSoldDesc(pageProductHadSolDescs);
+      console.log(
+        "Response tất cá sản phẩm có lươt bán từ nhiều tới ít:",
+        response
+      );
+      setProductHadSolDescs(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addViewProduct = async (productId) => {
+    setLoading(true);
+    try {
+      await apiAddViewProduct(productId);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const categories = [
-    { id: 'all', name: 'Tất cả' },
-    { id: 'men', name: 'Giày Nam' },
-    { id: 'women', name: 'Giày Nữ' },
-    { id: 'sport', name: 'Giày Thể Thao' },
-    { id: 'casual', name: 'Giày Casual' },
-    { id: 'sale', name: 'Khuyến Mãi' }
-  ];
-
-  const featuredProducts = [
-    { 
-      id: 1, 
-      name: 'Giày Nike Air Max', 
-      price: '2.490.000₫', 
-      oldPrice: '3.200.000₫', 
-      image: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/7fbc5e94-8d49-4730-a280-f19d3cfad0b0/air-max-90-shoes-N8MLr4.png', 
-      category: 'sport', 
-      isNew: true, 
-      isSale: true 
-    },
-    { 
-      id: 2, 
-      name: 'Giày Adidas Ultra Boost', 
-      price: '2.790.000₫', 
-      oldPrice: '3.500.000₫', 
-      image: 'https://cf.shopee.vn/file/8c4bdfcb1341fe0db77ad6e1677a0c3b', 
-      category: 'sport', 
-      isNew: false, 
-      isSale: true 
-    },
-    { 
-      id: 3, 
-      name: 'Giày Converse Classic', 
-      price: '1.590.000₫', 
-      oldPrice: '', 
-      image: 'https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw456d6503/images/a_107/M9166_A_107X1.jpg', 
-      category: 'casual', 
-      isNew: true, 
-      isSale: false 
-    },
-    { 
-      id: 4, 
-      name: 'Giày Vans Old Skool', 
-      price: '1.690.000₫', 
-      oldPrice: '', 
-      image: 'https://cf.shopee.vn/file/e65e148ce6a9eef57621921f41cf66ef', 
-      category: 'casual', 
-      isNew: false, 
-      isSale: false 
-    },
-    { 
-      id: 5, 
-      name: 'Giày Thể Thao Puma', 
-      price: '1.890.000₫', 
-      oldPrice: '2.300.000₫', 
-      image: 'https://cf.shopee.vn/file/sg-11134201-22100-1wjvs3odqyiv54', 
-      category: 'sport', 
-      isNew: false, 
-      isSale: true 
-    },
-    { 
-      id: 6, 
-      name: 'Giày Cao Gót Elegance', 
-      price: '1.350.000₫', 
-      oldPrice: '', 
-      image: 'https://cf.shopee.vn/file/28ad9c6c06615339b2109efefa0c8eeb', 
-      category: 'women', 
-      isNew: true, 
-      isSale: false 
-    },
-    { 
-      id: 7, 
-      name: 'Giày Tây Nam Oxford', 
-      price: '2.150.000₫', 
-      oldPrice: '', 
-      image: 'https://tse1.mm.bing.net/th?id=OIP.mmKYtRHklyCBEVguNWdcqQHaHa&pid=Api&P=0&h=180', 
-      category: 'men', 
-      isNew: false, 
-      isSale: false 
-    },
-    { 
-      id: 8, 
-      name: 'Giày Lười Nam', 
-      price: '1.450.000₫', 
-      oldPrice: '1.800.000₫', 
-      image: 'https://tse3.mm.bing.net/th?id=OIP.5yNcgb_V44HGbp0A6Xh9iQHaHa&pid=Api&P=0&h=180', 
-      category: 'men', 
-      isNew: false, 
-      isSale: true 
-    },
-  ];
-
-  const banners = [
-    { 
-      id: 1, 
-      image: 'https://salt.tikicdn.com/ts/tmp/59/24/36/cea1f55d81620d5767ca2b8c09794a95.jpg', 
-      title: 'BỘ SƯU TẬP MỚI NHẤT', 
-      subtitle: 'Khám phá các mẫu giày mới nhất mùa này', 
-      link: '/collections/new' 
-    },
-    { 
-      id: 2, 
-      image: 'https://i.ytimg.com/vi/CXSko9ySpyo/maxresdefault.jpg', 
-      title: 'GIẢM GIÁ LÊN ĐẾN 50%', 
-      subtitle: 'Ưu đãi đặc biệt cho các mẫu giày hot nhất', 
-      link: '/collections/sale' 
-    },
-    { 
-      id: 3, 
-      image: 'https://png.pngtree.com/thumb_back/fw800/background/20220929/pngtree-shoes-promotion-banner-background-image_1466238.jpg', 
-      title: 'GIÀY THỂ THAO CHÍNH HÃNG', 
-      subtitle: 'Đa dạng mẫu mã từ các thương hiệu nổi tiếng', 
-      link: '/collections/sport' 
-    },
+    { id: "all", name: "Tất cả" },
+    { id: "men", name: "Giày Nam" },
+    { id: "women", name: "Giày Nữ" },
+    { id: "sport", name: "Giày Thể Thao" },
+    { id: "casual", name: "Giày Casual" },
+    { id: "sale", name: "Khuyến Mãi" },
   ];
 
   const blogs = [
-    { 
-      id: 1, 
-      title: '5 Cách phối đồ với giày sneaker trắng', 
-      image: 'https://img.freepik.com/free-photo/white-high-top-sneakers-unisex-footwear-fashion_53876-106036.jpg', 
-      date: '05/03/2025' 
+    {
+      id: 1,
+      title: "5 Cách phối đồ với giày sneaker trắng",
+      image:
+        "https://bazaarvietnam.vn/wp-content/uploads/2021/08/cach-phoi-do-voi-giay-the-thao-trang-5-e1628170548847.jpg",
+      date: "05/03/2025",
     },
-    { 
-      id: 2, 
-      title: 'Hướng dẫn chọn size giày chuẩn', 
-      image: 'https://img.freepik.com/free-photo/measuring-foot-size-with-ruler_23-2149860438.jpg', 
-      date: '27/02/2025' 
+    {
+      id: 2,
+      title: "Hướng dẫn chọn size giày chuẩn",
+      image:
+        "https://chandat.net/wp-content/uploads/2018/07/xem-ki-huong-dan-ve-size-giay-312358.jpg",
+      date: "27/02/2025",
     },
-    { 
-      id: 3, 
-      title: 'Cách bảo quản giày thể thao đúng cách', 
-      image: 'https://img.freepik.com/free-photo/sports-shoe-pair-design-casual-leather_1203-6400.jpg', 
-      date: '15/02/2025' 
+    {
+      id: 3,
+      title: "Cách bảo quản giày thể thao đúng cách",
+      image:
+        "https://file.hstatic.net/1000230642/file/6aaba9fc4aab43d786a87d08315c98d8.png",
+      date: "15/02/2025",
     },
   ];
 
-  const filteredProducts = featuredProducts.filter(product => 
-    (activeCategory === 'all' || product.category === activeCategory) &&
-    (product.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const brands = [
+    {
+      name: "Nike",
+      image: "https://1000logos.net/wp-content/uploads/2021/11/Nike-Logo.png",
+    },
+    {
+      name: "Adidas",
+      image:
+        "https://1000logos.net/wp-content/uploads/2019/06/Adidas-Logo-1991.jpg",
+    },
+    {
+      name: "Puma",
+      image: "https://1000logos.net/wp-content/uploads/2017/05/PUMA-logo.jpg",
+    },
+    {
+      name: "Converse",
+      image:
+        "https://logohistory.net/wp-content/uploads/2023/12/New-Balance-Logo-1972.png",
+    },
+    {
+      name: "Vans",
+      image:
+        "https://1000logos.net/wp-content/uploads/2017/06/Vans-logo-640x360.png",
+    },
+  ];
+
+  // Create CSS classes for hover effects using React's inline styles
+  const categoryCardStyle = {
+    height: 200,
+    overflow: "hidden",
+    position: "relative",
+    cursor: "pointer",
+  };
+
+  const categoryOverlayStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    transition: "all 0.3s ease",
+  };
+
+  const categoryButtonStyle = {
+    marginTop: 20,
+    backgroundColor: "#ff6600",
+    borderColor: "#ff6600",
+    opacity: 0,
+    transform: "translateY(20px)",
+    transition: "all 0.3s ease",
+  };
+
+  // Use local state to track hover state for each category card
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   return (
-    <div className={styles.container}>
-      
-      {/* Slider/Banner */}
-     <div className={styles.bannerSlider}>
-        {banners.map((banner, index) => (
-          <div 
-            key={banner.id}
-            className={`${styles.mainBanner} ${index === currentBannerIndex ? styles.active : ''}`} 
-            style={{ backgroundImage: `url(${banner.image})` }}
-          >
-            <div className={styles.bannerContent}>
-              <h2>{banner.title}</h2>
-              <p>{banner.subtitle}</p>
-              <a href={banner.link} className={styles.bannerBtn}>Xem ngay</a>
-            </div>
-          </div>
-        ))}
-        <div className={styles.bannerDots}>
-          {banners.map((_, index) => (
-            <span 
-              key={index} 
-              className={index === currentBannerIndex ? styles.activeDot : ''}
-              onClick={() => setCurrentBannerIndex(index)}
-            ></span>
-          ))}
-        </div>
-      </div>
+    <Card bodyStyle={{ padding: 0 }}>
+      {/* Banner Carousel */}
+      <HomeCarousel />
 
       {/* Featured Categories */}
-      <div className={styles.featuredCategories}>
-        <div className={styles.categoryBox}>
-          <img src="https://tungluxury.com/wp-content/uploads/2023/02/giay-louis-vuitton-lv-trainer-54-damier-ebene-multi-like-auth-3.jpg" alt="Giày Nam" />
-          <h3>Giày Nam</h3>
-          <a href="/collections/men">Xem thêm</a>
-        </div>
-        <div className={styles.categoryBox}>
-          <img src="https://cf.shopee.vn/file/2b84a350c4819800e127af7a01e3c4cc" alt="Giày Nữ" />
-          <h3>Giày Nữ</h3>
-          <a href="/collections/women">Xem thêm</a>
-        </div>
-        <div className={styles.categoryBox}>
-          <img src="https://product.hstatic.net/200000174405/product/s6ip3iygk4_2feda4d717464f84a8946706f215a298.jpg" alt="Giày Thể Thao" />
-          <h3>Giày Thể Thao</h3>
-          <a href="/collections/sport">Xem thêm</a>
-        </div>
+      <div style={{ padding: "30px 24px" }}>
+        <Row gutter={[24, 24]}>
+          <Col span={8}>
+            <Card
+              hoverable
+              cover={
+                <div
+                  style={categoryCardStyle}
+                  onMouseEnter={() => setHoveredCategory("men")}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <img
+                    alt="Giày Nam"
+                    src="https://tungluxury.com/wp-content/uploads/2023/02/giay-louis-vuitton-lv-trainer-54-damier-ebene-multi-like-auth-3.jpg"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div
+                    style={{
+                      ...categoryOverlayStyle,
+                      backgroundColor:
+                        hoveredCategory === "men"
+                          ? "rgba(0,0,0,0.6)"
+                          : "rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    <Title
+                      level={3}
+                      style={{ color: "white", margin: 0, textAlign: "center" }}
+                    >
+                      Giày Nam
+                    </Title>
+                    <Button
+                      type="primary"
+                      style={{
+                        ...categoryButtonStyle,
+                        opacity: hoveredCategory === "men" ? 1 : 0,
+                        transform:
+                          hoveredCategory === "men"
+                            ? "translateY(0)"
+                            : "translateY(20px)",
+                      }}
+                      href="/collections/men"
+                    >
+                      Xem thêm
+                    </Button>
+                  </div>
+                </div>
+              }
+              bodyStyle={{ display: "none" }}
+            />
+          </Col>
+          <Col span={8}>
+            <Card
+              hoverable
+              cover={
+                <div
+                  style={categoryCardStyle}
+                  onMouseEnter={() => setHoveredCategory("women")}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <img
+                    alt="Giày Nữ"
+                    src="https://cf.shopee.vn/file/2b84a350c4819800e127af7a01e3c4cc"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div
+                    style={{
+                      ...categoryOverlayStyle,
+                      backgroundColor:
+                        hoveredCategory === "women"
+                          ? "rgba(0,0,0,0.6)"
+                          : "rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    <Title
+                      level={3}
+                      style={{ color: "white", margin: 0, textAlign: "center" }}
+                    >
+                      Giày Nữ
+                    </Title>
+                    <Button
+                      type="primary"
+                      style={{
+                        ...categoryButtonStyle,
+                        opacity: hoveredCategory === "women" ? 1 : 0,
+                        transform:
+                          hoveredCategory === "women"
+                            ? "translateY(0)"
+                            : "translateY(20px)",
+                      }}
+                      href="/collections/women"
+                    >
+                      Xem thêm
+                    </Button>
+                  </div>
+                </div>
+              }
+              bodyStyle={{ display: "none" }}
+            />
+          </Col>
+          <Col span={8}>
+            <Card
+              hoverable
+              cover={
+                <div
+                  style={categoryCardStyle}
+                  onMouseEnter={() => setHoveredCategory("sport")}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <img
+                    alt="Giày Thể Thao"
+                    src="https://product.hstatic.net/200000174405/product/s6ip3iygk4_2feda4d717464f84a8946706f215a298.jpg"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div
+                    style={{
+                      ...categoryOverlayStyle,
+                      backgroundColor:
+                        hoveredCategory === "sport"
+                          ? "rgba(0,0,0,0.6)"
+                          : "rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    <Title
+                      level={3}
+                      style={{ color: "white", margin: 0, textAlign: "center" }}
+                    >
+                      Giày Thể Thao
+                    </Title>
+                    <Button
+                      type="primary"
+                      style={{
+                        ...categoryButtonStyle,
+                        opacity: hoveredCategory === "sport" ? 1 : 0,
+                        transform:
+                          hoveredCategory === "sport"
+                            ? "translateY(0)"
+                            : "translateY(20px)",
+                      }}
+                      href="/collections/sport"
+                    >
+                      Xem thêm
+                    </Button>
+                  </div>
+                </div>
+              }
+              bodyStyle={{ display: "none" }}
+            />
+          </Col>
+        </Row>
       </div>
 
       {/* Promo Banners */}
-      <div className={styles.promoBanners}>
-        <div className={styles.promoBanner}>
-          <img src="https://img.freepik.com/free-vector/free-shipping-concept-illustration_114360-1554.jpg" alt="Free Shipping" />
-          <div className={styles.promoContent}>
-            <h3>Miễn phí vận chuyển</h3>
-            <p>Cho đơn hàng từ 1.000.000₫</p>
-          </div>
-        </div>
-        <div className={styles.promoBanner}>
-          <img src="https://img.freepik.com/free-vector/guarantee-concept-illustration_114360-10886.jpg" alt="Authentic" />
-          <div className={styles.promoContent}>
-            <h3>Sản phẩm chính hãng</h3>
-            <p>Cam kết 100% authentic</p>
-          </div>
-        </div>
-        <div className={styles.promoBanner}>
-          <img src="https://img.freepik.com/free-vector/call-center-concept-illustration_114360-2211.jpg" alt="Support" />
-          <div className={styles.promoContent}>
-            <h3>Hỗ trợ 24/7</h3>
-            <p>Hotline: 0987 654 321</p>
-          </div>
-        </div>
+      <div style={{ padding: "0 24px 30px" }}>
+        <Row gutter={[24, 24]}>
+          <Col span={8}>
+            <Card bordered>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <img
+                  src="https://img.freepik.com/free-vector/free-shipping-concept-illustration_114360-1554.jpg"
+                  alt="Free Shipping"
+                  style={{ width: 60, height: 60, marginRight: 15 }}
+                />
+                <div>
+                  <Title level={5} style={{ margin: "0 0 5px" }}>
+                    Miễn phí vận chuyển
+                  </Title>
+                  <Text type="secondary">Cho đơn hàng từ 1.000.000₫</Text>
+                </div>
+              </div>
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card bordered>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <img
+                  src="https://img.freepik.com/free-vector/guarantee-concept-illustration_114360-10886.jpg"
+                  alt="Authentic"
+                  style={{ width: 60, height: 60, marginRight: 15 }}
+                />
+                <div>
+                  <Title level={5} style={{ margin: "0 0 5px" }}>
+                    Sản phẩm chính hãng
+                  </Title>
+                  <Text type="secondary">Cam kết 100% authentic</Text>
+                </div>
+              </div>
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card bordered>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <img
+                  src="https://img.freepik.com/free-vector/call-center-concept-illustration_114360-2211.jpg"
+                  alt="Support"
+                  style={{ width: 60, height: 60, marginRight: 15 }}
+                />
+                <div>
+                  <Title level={5} style={{ margin: "0 0 5px" }}>
+                    Hỗ trợ 24/7
+                  </Title>
+                  <Text type="secondary">Hotline: 0987 654 321</Text>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        </Row>
       </div>
-
-      {/* Featured Products */}
-      <div className={styles.featuredProducts}>
-        <h2 className={styles.sectionTitle}>Sản phẩm nổi bật</h2>
-        
-        <div className={styles.productFilters}>
-          <ul>
-            {categories.map(category => (
-              <li 
-                key={category.id}
-                className={activeCategory === category.id ? styles.active : ''}
-                onClick={() => setActiveCategory(category.id)}
-              >
-                {category.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className={styles.productGrid}>
-          {filteredProducts.map(product => (
-            <div key={product.id} className={styles.productCard}>
-              <div className={styles.productImg}>
-                <img src={product.image} alt={product.name} />
-                {product.isNew && <span className={styles.newBadge}>New</span>}
-                {product.isSale && <span className={styles.saleBadge}>Sale</span>}
-                <div className={styles.productActions}>
-                  <button className={styles.quickView}><i className="fas fa-eye"></i></button>
-                  <button className={styles.addToCart}><i className="fas fa-shopping-cart"></i></button>
-                  <button className={styles.addToWishlist}><i className="fas fa-heart"></i></button>
-                </div>
-              </div>
-              <div className={styles.productInfo}>
-                <h3><a href={`/products/${product.id}`}>{product.name}</a></h3>
-                <div className={styles.productPrice}>
-                  <span className={styles.currentPrice}>{product.price}</span>
-                  {product.oldPrice && <span className={styles.oldPrice}>{product.oldPrice}</span>}
-                </div>
-              </div>
+      <Row
+        gutter={[24, 24]}
+        justify="space-between"
+        align="middle"
+        className="p-2"
+      >
+        {brands.map((brand, index) => (
+          <Col key={index} span={4}>
+            <div style={{ textAlign: "center" }}>
+              <img
+                src={brand.image}
+                alt={brand.name}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: 60,
+                  filter: "grayscale(100%)",
+                  opacity: 0.6,
+                  transition: "all 0.3s",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.filter = "grayscale(0)";
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.filter = "grayscale(100%)";
+                  e.currentTarget.style.opacity = "0.6";
+                }}
+              />
             </div>
-          ))}
-        </div>
-        
-        <div className={styles.viewAll}>
-          <a href="/collections/all" className={styles.viewAllBtn}>Xem tất cả sản phẩm</a>
-        </div>
+          </Col>
+        ))}
+      </Row>
+      {/* Best Selling Products */}
+      <div style={{ padding: "0 24px" }}>
+        <Card
+          title={
+            <div
+              style={{
+                fontSize: "19px",
+                fontWeight: "normal",
+                backgroundColor: `${COLORS.backgroundcolor2}`,
+                padding: "10px",
+                margin: "1rem",
+                color: `${COLORS.pending}`,
+              }}
+            >
+              SẢN PHẨM BÁN CHẠY
+            </div>
+          }
+          bordered={false}
+        >
+          <Row gutter={[16, 24]}>
+            {productHadSolDescs?.map((product, index) => (
+              <Col
+                key={index}
+                xs={24}
+                sm={12}
+                md={8}
+                lg={6}
+                xl={{ flex: "20%" }}
+              >
+                <Link
+                  to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    fontWeight: "normal",
+                    display: "block",
+                    width: "100%",
+                  }}
+                  onClick={() => addViewProduct(product.productId)}
+                >
+                  <PropProduct
+                    product={{
+                      name:
+                        product.productName?.trim() || "Sản phẩm chưa có tên",
+                      price: product.price ?? 0,
+                      promotion:
+                        product.promotionName === "Không có khuyến mãi"
+                          ? null
+                          : product.promotionName,
+                      sale: product.sold ?? 0,
+                      url: product.imageUrl || "https://placehold.co/100",
+                      views: product.views ?? 0,
+                      rate: product.rate ?? 5,
+                    }}
+                  />
+                </Link>
+              </Col>
+            ))}
+          </Row>
+        </Card>
       </div>
-
-      {/* Testimonials */}
-    
-      
 
       {/* Blog Posts */}
-      <div className={styles.blogPosts}>
-        <h2 className={styles.sectionTitle}>Tin tức & Bài viết</h2>
-        <div className={styles.blogGrid}>
-          {blogs.map(blog => (
-            <div key={blog.id} className={styles.blogCard}>
-              <div className={styles.blogImg}>
-                <img src={blog.image} alt={blog.title} />
-                <span className={styles.blogDate}>{blog.date}</span>
-              </div>
-              <div className={styles.blogInfo}>
-                <h3><a href={`/blogs/${blog.id}`}>{blog.title}</a></h3>
-                <a href={`/blogs/${blog.id}`} className={styles.readMore}>Đọc tiếp</a>
-              </div>
-            </div>
+      <div style={{ padding: "30px 24px" }}>
+        <Title
+          level={2}
+          style={{
+            textAlign: "center",
+            marginBottom: 30,
+            position: "relative",
+          }}
+        >
+          Tin tức & Bài viết
+          <div
+            style={{
+              position: "absolute",
+              bottom: -10,
+              left: "50%",
+              width: 60,
+              height: 3,
+              backgroundColor: "#ff6600",
+              transform: "translateX(-50%)",
+            }}
+          />
+        </Title>
+        <Row gutter={[24, 24]}>
+          {blogs.map((blog) => (
+            <Col key={blog.id} xs={24} sm={12} md={8}>
+              <Card
+                hoverable
+                cover={
+                  <div style={{ position: "relative", height: 200 }}>
+                    <img
+                      src={blog.image}
+                      alt={blog.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        backgroundColor: "#ff6600",
+                        color: "white",
+                        padding: "5px 10px",
+                        fontSize: 12,
+                      }}
+                    >
+                      {blog.date}
+                    </div>
+                  </div>
+                }
+              >
+                <Card.Meta
+                  title={<a style={{color:`${COLORS.primary}`}} href={`/blogs/${blog.id}`}>{blog.title}</a>}
+                  description={
+                    <a
+                      href={`/blogs/${blog.id}`}
+                      style={{
+                        display: "inline-block",
+                        color: "#ff6600",
+                        fontWeight: 600,
+                        marginTop: 5,
+                      }}
+                    >
+                      Đọc tiếp .....
+                    </a>
+                  }
+                />
+              </Card>
+            </Col>
           ))}
-        </div>
+        </Row>
       </div>
 
-      {/* Brands */}
-      <div className={styles.brands}>
-        <div className={styles.brandsWrapper}>
-          <div className={styles.brandItem}>
-            <img src="https://1000logos.net/wp-content/uploads/2021/11/Nike-Logo.png" alt="Nike" />
-          </div>
-          <div className={styles.brandItem}>
-            <img src="https://1000logos.net/wp-content/uploads/2019/06/Adidas-Logo-1991.jpg" alt="Adidas" />
-          </div>
-          <div className={styles.brandItem}>
-            <img src="https://1000logos.net/wp-content/uploads/2017/05/PUMA-logo.jpg" alt="Puma" />
-          </div>
-          <div className={styles.brandItem}>
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Converse-logo.png" alt="Converse" />
-          </div>
-          <div className={styles.brandItem}>
-            <img src="https://1000logos.net/wp-content/uploads/2020/07/Vans-Logo-2016.jpg" alt="Vans" />
-          </div>
-        </div>
-      </div>
-
-    
-    </div>
+   
+    </Card>
   );
 };
 

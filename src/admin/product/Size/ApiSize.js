@@ -42,7 +42,7 @@ export const fetchSizes = async (pagination) => {
 
 export const searchNameSize = async (pagination, paramName) => {
   const { current, pageSize } = pagination; // Trích xuất current và pageSize từ pagination
-  const { name } = paramName;
+  const name = paramName.name?.trim() || ""; 
   try {
     const response = await api.get("/size/search", {
       params: {

@@ -136,7 +136,7 @@ const CartPage = () => {
     try {
       const res = await apiGetRealPrice(listcart);
       setProductsRealPrice(res.data);
-      console.log("real price", res.data?.voucher?.id);
+      console.log("real price", res.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
@@ -175,8 +175,8 @@ const CartPage = () => {
 
   const handleQuantityChange = async (index, value, quantity) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
-    if (value>quantity) {
-      toast.warn("số lượng mua ko được quá số lượng của của hàng")
+    if (value > quantity) {
+      toast.warn("số lượng mua ko được quá số lượng của của hàng");
       return;
     }
     if (user) {
@@ -294,11 +294,33 @@ const CartPage = () => {
     );
   }, [selectedRowKeys]);
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
+  // const rowSelection = {
+  //   selectedRowKeys,
+  //   onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
+  // };
+  // Hàm kiểm tra trạng thái sản phẩm
+  const isProductDisabled = (productDetailId) => {
+    const realPriceItem = productsRealPrice.find(
+      (item) => item.productDetailId === productDetailId
+    );
+    return realPriceItem?.status === "NGUNG_HOAT_DONG";
   };
 
+  // Cấu hình rowSelection để vô hiệu hóa các hàng ngừng hoạt động
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedKeys) => {
+      // Lọc bỏ các sản phẩm có status NGUNG_HOAT_DONG
+      const validKeys = selectedKeys.filter(
+        (key) => !isProductDisabled(products[key]?.productDetailId)
+      );
+      setSelectedRowKeys(validKeys);
+    },
+    getCheckboxProps: (record) => ({
+      disabled: isProductDisabled(record.productDetailId), // Vô hiệu hóa checkbox
+      name: record.productName,
+    }),
+  };
   const columns = [
     {
       title: "SẢN PHẨM",
@@ -319,7 +341,11 @@ const CartPage = () => {
             {record.colorName
               ? `${record.productName}[${record.colorName}-${record.sizeName}]`
               : `${record.productName}`}
+              <br/> {isProductDisabled(record.productDetailId) && (
+            <Text type="danger">Sản phẩm đã ngừng hoạt động</Text>
+          )}
           </Text>
+         
         </Space>
       ),
     },
@@ -383,44 +409,51 @@ const CartPage = () => {
       dataIndex: "quantity",
       key: "quantity",
       render: (_, record, index) => {
-          // Tìm giá thực tế
-          const realPriceItem = productsRealPrice.find(
-            (item) => item.productDetailId === record.productDetailId
-          );
-  
-        return(
-        
+        // Tìm giá thực tế
+        const realPriceItem = productsRealPrice.find(
+          (item) => item.productDetailId === record.productDetailId
+        );
+
+        return (
           <Row>
             <Flex gap={0.8}>
-            <Button
-              icon={<MinusOutlined />}
-              onClick={() =>
-                handleQuantityChange(
-                  index,
-                  Math.max(1, record.quantityAddCart - 1),realPriceItem.quantity
-                )
-              }
-            />
-            <InputNumber
-              min={1}
-              // max={100}
-              value={Math.min(record.quantityAddCart,realPriceItem?.quantity)}
-              onChange={(value) => handleQuantityChange(index, value,realPriceItem.quantity)}
-              style={{ width: "50px" }}
-            />
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() =>
-                handleQuantityChange(index, record.quantityAddCart + 1,realPriceItem.quantity)
-              }
-            />
-            
-          </Flex>
-          <Col span={24}>Số lượng còn: {realPriceItem?.quantity}</Col>
+              <Button
+                icon={<MinusOutlined />}
+                onClick={() =>
+                  handleQuantityChange(
+                    index,
+                    Math.max(1, record.quantityAddCart - 1),
+                    realPriceItem.quantity
+                  )
+                }
+              />
+              <InputNumber
+                min={1}
+                // max={100}
+                value={Math.min(
+                  record.quantityAddCart,
+                  realPriceItem?.quantity
+                )}
+                onChange={(value) =>
+                  handleQuantityChange(index, value, realPriceItem.quantity)
+                }
+                style={{ width: "100px" }}
+              />
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() =>
+                  handleQuantityChange(
+                    index,
+                    record.quantityAddCart + 1,
+                    realPriceItem.quantity
+                  )
+                }
+              />
+            </Flex>
+            <Col span={24}>Số lượng còn: {realPriceItem?.quantity}</Col>
           </Row>
-          
-        )
-      }
+        );
+      },
     },
 
     {
@@ -513,8 +546,8 @@ const CartPage = () => {
   ];
 
   return (
-    <div >
-      <Content style={{ backgroundColor: "white", minHeight:800 }}>
+    <div>
+      <Content style={{ backgroundColor: "white", minHeight: 800 }}>
         <Row gutter={[16, 16]} style={{ padding: "20px" }}>
           <Col span={16}>
             <Content>
@@ -675,20 +708,23 @@ const CartPage = () => {
                                   color: "#888",
                                 }}
                               >
-                                - Giảm {item.discountType === "MONEY"?item.discountValue.toLocaleString() +"đ":item.discountValue+"%"}{" "}
+                                - Giảm{" "}
+                                {item.discountType === "MONEY"
+                                  ? item.discountValue.toLocaleString() + "đ"
+                                  : item.discountValue + "%"}{" "}
                                 {item.discountType === "MONEY"
                                   ? ""
                                   : `Tối đa ${item.discountMaxValue.toLocaleString()}đ`}
                               </span>
                               <div>
                                 <Text type="success">
-                                  Đơn tối thiểu {item.billMinValue.toLocaleString()} đ
-                                </Text>                
+                                  Đơn tối thiểu{" "}
+                                  {item.billMinValue.toLocaleString()} đ
+                                </Text>
                               </div>
                               <span>{item.endDate}</span>
                               <div>
                                 <Text type="danger">
-                            
                                   Số lượng {item.quantity}
                                 </Text>
                               </div>

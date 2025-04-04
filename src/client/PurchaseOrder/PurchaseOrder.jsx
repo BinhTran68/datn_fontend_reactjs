@@ -663,7 +663,7 @@ const PurchaseOrder = () => {
                   </span>
                 </div>
                 <div className={styles.orderTotal}>
-                  <span className={styles.totalLabel}>tiền ship:</span>
+                  <span className={styles.totalLabel}>Tiền ship:</span>
                   <span className={styles.totalPrice}>
                     {formatPrice(order.shipMoney)}
                   </span>

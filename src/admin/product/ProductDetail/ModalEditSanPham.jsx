@@ -259,15 +259,15 @@ const exits = async (productData) => {
     soleId: Yup.number().required("Chất liệu đế là bắt buộc"),
     quantity: Yup.number()
       .required("Số lượng là bắt buộc")
-      .min(0, "Số lượng phải lớn hơn hoặc bằng 0")
-      .max(999999, "Số lượng không được vượt quá 999999"), // Thay đổi giá trị tối đa theo nhu cầu
+      .min(1, "Số lượng phải lớn hơn  0")
+      .max(999999, "Số lượng không được vượt quá 99999"), // Thay đổi giá trị tối đa theo nhu cầu
     price: Yup.number()
       .required("Giá bán là bắt buộc")
-      .min(0, "Giá bán phải lớn hơn hoặc bằng 0")
+      .min(1, "Giá bán phải lớn hơn  0")
       .max(99999999, "Giá bán không được vượt quá 99.999.999 VNĐ"), // Thay đổi giá trị tối đa theo nhu cầu
     weight: Yup.number()
       .required("Cân nặng là bắt buộc")
-      .min(0, "Cân nặng phải lớn hơn hoặc bằng 0")
+      .min(100, "Cân nặng phải lớn hơn  100")
       .max(10000, "Cân nặng không được vượt quá 10000 gram"), // Thay đổi giá trị tối đa theo nhu cầu
     description: Yup.string().nullable(),
   });
@@ -631,7 +631,8 @@ const exits = async (productData) => {
               <InputNumber
                 {...field}
                 placeholder="Số lượng"
-                min={0}
+                min={1}
+                maxLength={4}
                 style={{ width: "100%" }}
                 suffix={<span>Đôi</span>}
               />
@@ -653,7 +654,8 @@ const exits = async (productData) => {
               <InputNumber
                 {...field}
                 placeholder="Giá bán"
-                min={0}
+                min={1}
+                maxLength={8}
                 style={{ width: "100%" }}
                 suffix={<span>VNĐ</span>}
               />
@@ -675,7 +677,8 @@ const exits = async (productData) => {
               <InputNumber
                 {...field}
                 placeholder="Cân nặng"
-                min={0}
+                min={100}
+                maxLength={4}
                 style={{ width: "100%" }}
                 suffix={<span>gram</span>}
               />
