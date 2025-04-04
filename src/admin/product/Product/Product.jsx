@@ -253,6 +253,7 @@ const Product = () => {
       title: "Ảnh",
       dataIndex: "image",
       key: "image",
+      width:"100px",
       render: (text, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {record.id && (
@@ -311,20 +312,20 @@ const Product = () => {
       width: "20rem",
     },
 
-    {
-      title: "Ngày cập nhật",
-      dataIndex: "updatedAt",
-      key: "updateAt",
-      width: "15rem",
-      render: (_, record) => {
-        const timestamp = Number(record.updateAt); // Convert text to a number
-        const date = new Date(timestamp); // Create a Date object
-        if (isNaN(date.getTime())) {
-          return ""; // Nếu không hợp lệ, trả về chuỗi trống
-        }
-        return date.toLocaleDateString("vi-VN"); // Format ngày theo chuẩn Việt Nam
-      },
-    },
+    // {
+    //   title: "Ngày cập nhật",
+    //   dataIndex: "updatedAt",
+    //   key: "updateAt",
+    //   width: "15rem",
+    //   render: (_, record) => {
+    //     const timestamp = Number(record.updateAt); // Convert text to a number
+    //     const date = new Date(timestamp); // Create a Date object
+    //     if (isNaN(date.getTime())) {
+    //       return ""; // Nếu không hợp lệ, trả về chuỗi trống
+    //     }
+    //     return date.toLocaleDateString("vi-VN"); // Format ngày theo chuẩn Việt Nam
+    //   },
+    // },
     {
       title: "Trạng thái",
       dataIndex: "status",
