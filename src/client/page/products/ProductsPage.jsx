@@ -303,7 +303,7 @@ function ProductsPage() {
               <Row gutter={[5, 5]} wrap>
                 {filteredData.products.length > 0 ? (
                   filteredData.products.map((product, index) => (
-                    <Col key={index} flex={"20%"}>
+                    <Col key={index} flex={"20%"} style={{maxWidth:"20%"}}>
                       <Link
                         to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
                         style={{
@@ -349,31 +349,6 @@ function ProductsPage() {
             </Row>
             </Card>
 
-            <Card
-              style={{ borderRadius: 0, marginBottom: "0.3rem" }}
-              title={
-                <Row
-                  style={{
-                    fontSize: "19px",
-                    fontWeight: "normal",
-                    backgroundColor: `${COLORS.backgroundcolor2}`,
-                    padding: "10px",
-                    margin: "1rem",
-                    color: `${COLORS.pending}`,
-                  }}
-                >
-                  SẢN PHẨM MỚI
-                </Row>
-              }
-            >
-              <Row gutter={[5, 5]}>
-                {(products || []).map((product, index) => (
-                  <Col key={index} flex={"20%"}>
-                    <PropProduct product={product} />
-                  </Col>
-                ))}
-              </Row>
-            </Card>
           </Content>
         </Layout>
       </Content>

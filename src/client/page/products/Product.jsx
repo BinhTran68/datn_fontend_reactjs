@@ -1,35 +1,13 @@
 import React, { useEffect, useState } from "react";
-import style from "../TestComponent/TestComponent.module.css";
-import clsx from "clsx";
-import styles from "./Product.module.css";
-
-// import "bootstrap/dist/css/bootstrap.min.css";
-import PropProduct from "./PropProduct.jsx";
-import { Content } from "antd/es/layout/layout.js";
+import { Link } from "react-router-dom";
 import {
-  Button,
   Card,
   Col,
-  Divider,
-  Flex,
-  InputNumber,
   Layout,
-  Menu,
   message,
-  Radio,
-  Rate,
+  Pagination,
   Row,
-  Select,
-  Slider,
-  Space,
 } from "antd";
-import Sider from "antd/es/layout/Sider.js";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  LaptopOutlined,
-  NotificationOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
 import { COLORS } from "../../../constants/constants.js";
 import {
   apiAddViewProduct,
@@ -38,317 +16,196 @@ import {
   getAllProducthadSoldDesc,
   getAllProducthadViewsDesc,
 } from "./api.js";
-import { FaFilter } from "react-icons/fa";
-import { FiFilter } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import PropProduct from "./PropProduct.jsx";
 
-const products = [
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-    statusSale: "Hot",
-    rate: 5,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-    statusSale: "Best Sale",
-    rate: 4,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-    statusSale: "Flash Sale",
-    rate: 3,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-    statusSale: "Flash Sale",
-    rate: 3,
-  },
-];
-
-const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
-  (icon, index) => {
-    const key = String(index + 1);
-    return {
-      key: `sub${key}`,
-      icon: React.createElement(icon),
-      label: `Danh mục ${key}`,
-      children: new Array(4).fill(null).map((_, j) => {
-        const subKey = index * 4 + j + 1;
-        return {
-          key: subKey,
-          label: `danh mục con${subKey}`,
-        };
-      }),
-    };
-  }
-);
+const { Content } = Layout;
 
 function Product() {
-  const [range, setRange] = useState([]); // Giá trị mặc định
-
+  // Loading
   const [loading, setLoading] = useState(false);
-  // productHadCreatedAtDescs
-  const [productHadCreatedAtDescs, setProductHadCreatedAtDescs] = useState();
-  const [pagePeoductHadCreatedAtDesc, setPagePeoductHadCreatedAtDesc] =
-    useState({
-      current: 1,
-      pageSize: 8,
-    });
-  //
-  // productHadCreatedAtDescs
-  const [productHadviewsDescs, setProductHadviewsDescs] = useState();
-  const [PageProductHadviewsDescs, setPageProductHadviewsDescs] = useState({
-    current: 1,
-    pageSize: 8,
-  });
-  //
-  // productHadCreatedAtDescs
-  const [productHadPromotions, setProductHadPromotions] = useState();
-  const [pageProductHadPromotion, setPageProductHadPromotion] = useState({
-    current: 1,
-    pageSize: 8,
-  });
-  //
-  // productHadCreatedAtDescs
-  const [productHadSolDescs, setProductHadSolDescs] = useState();
+
+  // --- Sản phẩm bán chạy ---
+  const [productHadSolDescs, setProductHadSolDescs] = useState([]);
   const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
     current: 1,
-    pageSize: 8,
+    pageSize: 10,
   });
-  //
+  const [totalProductHadSolDescs, setTotalProductHadSolDescs] = useState(0);
 
+  // --- Sản phẩm giảm giá ---
+  const [productHadPromotions, setProductHadPromotions] = useState([]);
+  const [pageProductHadPromotion, setPageProductHadPromotion] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+  const [totalProductHadPromotion, setTotalProductHadPromotion] = useState(0);
+
+  // --- Sản phẩm mới ---
+  const [productHadCreatedAtDescs, setProductHadCreatedAtDescs] = useState([]);
+
+  // --- Sản phẩm nhiều lượt xem ---
+  const [productHadViewsDescs, setProductHadViewsDescs] = useState([]);
+
+  // Fetch: Bán chạy
   useEffect(() => {
-    getAllProductHadcreateAtDescS();
-    getAllProducthadPromotions();
-    getAllProductHadSoldDescs();
-  }, []);
+    const fetchSoldDesc = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllProducthadSoldDesc(pageProductHadSolDescs);
+        setProductHadSolDescs(res.data);
+        setTotalProductHadSolDescs(res.total);
+      } catch (err) {
+        message.error(err.message || "Lỗi khi tải sản phẩm bán chạy");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSoldDesc();
+  }, [pageProductHadSolDescs.current, pageProductHadSolDescs.pageSize]);
+
+  // Fetch: Giảm giá
   useEffect(() => {
-    console.log("product ren");
-  }, []);
+    const fetchPromotions = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllProducthadPromotion(pageProductHadPromotion);
+        setProductHadPromotions(res.data);
+        setTotalProductHadPromotion(res.total);  // Lưu tổng số sản phẩm giảm giá
+      } catch (err) {
+        message.error(err.message || "Lỗi khi tải sản phẩm giảm giá");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPromotions();
+  }, [pageProductHadPromotion.current, pageProductHadPromotion.pageSize]);
 
-  const getAllProductHadcreateAtDescS = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllProductHadCreatedAtDesc(
-        pagePeoductHadCreatedAtDesc
-      );
-      console.log("Response tất cá sản phẩm mới nhất theo ngày tạo:", response); // Log response để kiểm tra dữ liệu trả về
-      setProductHadCreatedAtDescs(response.data);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getAllProductHadViewsDescs = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllProducthadViewsDesc(
-        PageProductHadviewsDescs
-      );
-      console.log(
-        "Response tất cá sản phẩm có view từ nhiều tới ít:",
-        response
-      ); // Log response để kiểm tra dữ liệu trả về
-      setProductHadviewsDescs(response.data);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const getAllProducthadPromotions = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllProducthadPromotion(pageProductHadPromotion);
-      console.log("Response tất cá sản phẩm nằm trong đợt giảm giá:", response); // Log response để kiểm tra dữ liệu trả về
-      setProductHadPromotions(response.data);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const getAllProductHadSoldDescs = async () => {
-    setLoading(true);
-    try {
-      const response = await getAllProducthadSoldDesc(pageProductHadSolDescs);
-      console.log(
-        "Response tất cá sản phẩm có lươt bán từ nhiều tới ít:",
-        response
-      ); // Log response để kiểm tra dữ liệu trả về
-      setProductHadSolDescs(response.data);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // View sản phẩm
   const addViewProduct = async (productId) => {
-    setLoading(true);
     try {
-      const response = await apiAddViewProduct(productId);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
+      await apiAddViewProduct(productId);
+    } catch (err) {
+      message.error(err.message || "Lỗi khi cập nhật lượt xem");
     }
   };
 
   return (
-    <>
-      <Content>
-        <Layout>
-          <Content
-            style={{
-              padding: "0 0 0 7px",
-              minHeight: 280,
-            }}
-          >
-            <Card
-              style={{
-                borderRadius: 0,
-                marginBottom: "0.3rem",
-              }}
-              title={
-                <Row
-                  style={{
-                    fontSize: "19px",
-                    fontWeight: "normal",
-                    backgroundColor: `${COLORS.backgroundcolor2}`,
-                    padding: "10px",
-                    margin: "1rem",
-                    color: `${COLORS.pending}`,
-                  }}
-                >
-                  SẢN PHẨM BÁN CHẠY
-                </Row>
-              }
-            >
-              <Row gutter={[5, 5]} wrap>
-                {productHadSolDescs?.map((product, index) => (
-                  <Col key={index} flex={"20%"}>
-                    <Link
-                      to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
-                      style={{
-                        textDecoration: "none",
-                        color: "black",
-                        fontWeight: "normal",
-                      }}
-                      onClick={() => addViewProduct(product.productId)} // Gọi addViewProduct khi click
-                    >
-                      <PropProduct
-                        product={{
-                          name:
-                            product.productName?.trim() ||
-                            "Sản phẩm chưa có tên",
-                          price: product.price ?? 0,
-                          promotion:
-                            product.promotionName === "Không có khuyến mãi"
-                              ? null
-                              : product.promotionName,
-                          sale: product.sold ?? 0,
-                          url: product.imageUrl || "https://placehold.co/100",
-                          views: product.views ?? 0,
-                          rate: product.rate ?? 5,
-                        }}
-                      />
-                    </Link>
-                  </Col>
-                ))}
+    <Content>
+      <Layout>
+        <Content style={{ padding: "0 0 0 7px", minHeight: 280 }}>
+          {/* Bán chạy */}
+          <Card
+            style={{ borderRadius: 0, marginBottom: "0.3rem" }}
+            title={
+              <Row
+                style={{
+                  fontSize: "19px",
+                  fontWeight: "normal",
+                  backgroundColor: COLORS.backgroundcolor2,
+                  padding: "10px",
+                  margin: "1rem",
+                  color: COLORS.pending,
+                }}
+              >
+                SẢN PHẨM BÁN CHẠY
               </Row>
-            </Card>
-            <Card
-              style={{
-                borderRadius: 0,
-                marginBottom: "0.3rem",
-              }}
-              title={
-                <Row
-                  style={{
-                    fontSize: "19px",
-                    fontWeight: "normal",
-                    backgroundColor: `${COLORS.backgroundcolor2}`,
-                    padding: "10px",
-                    margin: "1rem",
-                    color: `${COLORS.pending}`,
-                  }}
-                >
-                  SẢN PHẨM ĐANG GIẢM GIÁ
-                </Row>
-              }
-            >
-              <Row gutter={[5, 5]}>
-                {(productHadPromotions || []).map((product, index) => (
-                  <Col key={index} flex={"20%"}>
+            }
+          >
+            <Row gutter={[5, 5]} wrap>
+              {productHadSolDescs.map((product, index) => (
+                <Col key={index} flex="20%">
+                  <Link
+                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                    style={{ textDecoration: "none", color: "black" }}
+                    onClick={() => addViewProduct(product.productId)}
+                  >
                     <PropProduct
                       product={{
-                        name:
-                          product.productName?.trim() || "Sản phẩm chưa có tên",
+                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
                         price: product.price ?? 0,
-                        promotion:
-                          product.promotionName === "Không có khuyến mãi"
-                            ? null
-                            : product.promotionName,
+                        promotionView: product.promotionView,
                         sale: product.sold ?? 0,
-                        url: product.imageUrl || "https://placehold.co/600x400",
+                        url: product.imageUrl || "https://placehold.co/100",
                         views: product.views ?? 0,
-                        rate: product.rate ?? 4,
+                        rate: product.rate ?? 5,
                       }}
                     />
-                  </Col>
-                ))}
+                  </Link>
+                </Col>
+              ))}
+            </Row>
+            <Row>
+              <Pagination
+                current={pageProductHadSolDescs.current}
+                pageSize={pageProductHadSolDescs.pageSize}
+                total={totalProductHadSolDescs}
+                onChange={(page, pageSize) =>
+                  setPageProductHadSolDescs({ current: page, pageSize })
+                }
+                showSizeChanger
+                pageSizeOptions={["2", "16", "24"]}
+              />
+            </Row>
+          </Card>
+
+          {/* Giảm giá */}
+          <Card
+            style={{ borderRadius: 0, marginBottom: "0.3rem" }}
+            title={
+              <Row
+                style={{
+                  fontSize: "19px",
+                  fontWeight: "normal",
+                  backgroundColor: COLORS.backgroundcolor2,
+                  padding: "10px",
+                  margin: "1rem",
+                  color: COLORS.pending,
+                }}
+              >
+                SẢN PHẨM ĐANG GIẢM GIÁ
               </Row>
-            </Card>
-            <Card
-              style={{
-                borderRadius: 0,
-                marginBottom: "0.3rem",
-              }}
-              title={
-                <Row
-                  style={{
-                    fontSize: "19px",
-                    fontWeight: "normal",
-                    backgroundColor: `${COLORS.backgroundcolor2}`,
-                    padding: "10px",
-                    margin: "1rem",
-                    color: `${COLORS.pending}`,
-                  }}
-                >
-                  SẢN PHẨM MỚI
-                </Row>
-              }
-            >
-              <Row gutter={[5, 5]}>
-                {(products || []).map((product, index) => (
-                  <Col key={index} flex={"20%"}>
-                    <PropProduct product={product} />
-                  </Col>
-                ))}
-              </Row>
-            </Card>
-          </Content>
-        </Layout>
-      </Content>
-    </>
+            }
+          >
+            <Row gutter={[5, 5]}>
+              {productHadPromotions.map((product, index) => (
+                <Col key={index} flex="20%">
+                  <Link
+                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                    style={{ textDecoration: "none", color: "black" }}
+                    onClick={() => addViewProduct(product.productId)}
+                  >
+                    <PropProduct
+                      product={{
+                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
+                        price: product.price ?? 0,
+                        promotionView: product.promotionView,
+                        sale: product.sold ?? 0,
+                        url: product.imageUrl || "https://placehold.co/100",
+                        views: product.views ?? 0,
+                        rate: product.rate ?? 5,
+                      }}
+                    />
+                  </Link>
+                </Col>
+              ))}
+            </Row>
+            <Row>
+              <Pagination
+                current={pageProductHadPromotion.current}
+                pageSize={pageProductHadPromotion.pageSize}
+                total={totalProductHadPromotion}
+                onChange={(page, pageSize) =>
+                  setPageProductHadPromotion({ current: page, pageSize })
+                }
+                showSizeChanger
+                pageSizeOptions={["2", "16", "24"]}
+              />
+            </Row>
+          </Card>
+
+        </Content>
+      </Layout>
+    </Content>
   );
 }
 
