@@ -42,6 +42,7 @@ import GetProductDetail from "../../../admin/product/Product/GetProductDetail";
 import { addToBill, clearBill } from "../cart/bill.js";
 import { toast } from "react-toastify";
 import CommentSection from "./CommentSection.jsx";
+import { clearVoucher } from "../cart/voucher.js";
 
 function ProductDetail() {
   const [searchParams] = useSearchParams(); // Lấy query parameters từ URL
@@ -122,6 +123,7 @@ function ProductDetail() {
     getSizesOfProduct(productId);
     getAllProductHadViewsDescs();
     clearBill();
+    clearVoucher()
   }, [productId, colorId, sizeId]);
   // Khi thay đổi color, cập nhật danh sách size tương ứng
   useEffect(() => {
@@ -355,6 +357,7 @@ function ProductDetail() {
                         maximumFractionDigits: 1,
                       }).format(getProductDetail.price)}
                     </span>
+                    <sup style={{fontSize:"2rem", color:"red"}}>-{getProductDetail.promotion?.discountValue}%</sup>
                   </div>
                 ) : (
                   new Intl.NumberFormat("vi-VN", {
@@ -578,8 +581,12 @@ function ProductDetail() {
                       addToBill({
                         productDetailId: getProductDetail.id,
                         quantityAddCart: quantityAddCart,
-                        price: getProductDetail.price,
-                        productName: getProductDetail.productName,
+                        price: getProductDetail.promotion?.discountValue
+                        ? getProductDetail.price -
+                          (getProductDetail.price *
+                            getProductDetail.promotion.discountValue) /
+                            100
+                        : getProductDetail.price,                        productName: getProductDetail.productName,
                         image: getProductDetail.image[0]?.url || "",
                         sizeName: getProductDetail.sizeName,
                         colorName: getProductDetail.colorName,

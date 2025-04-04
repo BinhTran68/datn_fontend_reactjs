@@ -1237,7 +1237,6 @@ const Product = () => {
               }}
               style={{marginLeft:"2rem"}}
             >
-              <TiExport size={22} />
               làm mới
             </Button>
           </Tooltip>
