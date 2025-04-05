@@ -796,6 +796,9 @@ const exits = async (productData) => {
                 onRemove={(file) => handleRemove(file)} // Xử lý khi ảnh bị xóa
                 onPreview={onPreview} // Hàm xem trước ảnh khi nhấp
                 multiple={true}
+                accept="image/jpeg, image/png"
+                
+
               >
                 {/* Hiển thị nút upload nếu số lượng ảnh ít hơn 6 */}
                 {field.value.length < 6 && (

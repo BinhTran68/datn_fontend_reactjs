@@ -212,7 +212,6 @@ const CartPage = () => {
       message.error("Mã giảm giá không hợp lệ!");
       return;
     }
-    console.log("ádsadsadsads", selectedVoucher);
 
     const {
       voucherCode,
@@ -239,8 +238,6 @@ const CartPage = () => {
     }
 
     setDiscount(discountAmount);
-    console.log("diacount giảm giA", discount);
-
     setAppliedDiscount(
       `Mã ${voucherCode} - Giảm ${discountAmount.toLocaleString()} đ`
     );
@@ -249,56 +246,35 @@ const CartPage = () => {
 
   const totalSelectedPrice = selectedRowKeys.reduce((acc, index) => {
     const record = products[index];
-
-    // Kiểm tra record hợp lệ
     if (!record || !record.productDetailId || !record.quantityAddCart) {
-      return acc; // Bỏ qua nếu record không hợp lệ
+      return acc;
     }
 
-    // Tìm giá thực tế từ productsRealPrice
     const realPriceItem = productsRealPrice.find(
       (item) => item.productDetailId === record.productDetailId
     );
 
-    // Đảm bảo giá gốc và giá thực tế là số
     const originalPrice = Number(record.price) || 0;
     const displayPrice = realPriceItem?.price
       ? Number(realPriceItem.price)
       : originalPrice;
 
-    // Tính tổng dựa trên giá thực tế
     const itemTotal = displayPrice * record.quantityAddCart;
-
-    // Debug để kiểm tra
-    console.log(
-      `Product: ${record.productName}, Display Price: ${displayPrice}, Quantity: ${record.quantityAddCart}, Item Total: ${itemTotal}`
-    );
-
     return acc + itemTotal;
   }, 0);
+
   const calculateDiscountedTotal = () => totalSelectedPrice - discount;
   const discountedTotal = calculateDiscountedTotal();
 
   useEffect(() => {
-    if (selectedRowKeys.length === 0) return; // Nếu không có hàng nào được chọn, không làm gì cả
+    if (selectedRowKeys.length === 0) return;
 
-    // Tìm những sản phẩm có key nằm trong selectedRowKeys
     const selectedItems = products.filter((_, index) =>
       selectedRowKeys.includes(index)
     );
     setSelecteditem(selectedItems);
-    console.log(
-      "🔍 Danh sách sản phẩm được chọn:",
-      selectedItems,
-      selectedRowKeys
-    );
-  }, [selectedRowKeys]);
+  }, [selectedRowKeys, products]);
 
-  // const rowSelection = {
-  //   selectedRowKeys,
-  //   onChange: (selectedKeys) => setSelectedRowKeys(selectedKeys),
-  // };
-  // Hàm kiểm tra trạng thái sản phẩm
   const isProductDisabled = (productDetailId) => {
     const realPriceItem = productsRealPrice.find(
       (item) => item.productDetailId === productDetailId
@@ -306,18 +282,16 @@ const CartPage = () => {
     return realPriceItem?.status === "NGUNG_HOAT_DONG";
   };
 
-  // Cấu hình rowSelection để vô hiệu hóa các hàng ngừng hoạt động
   const rowSelection = {
     selectedRowKeys,
     onChange: (selectedKeys) => {
-      // Lọc bỏ các sản phẩm có status NGUNG_HOAT_DONG
       const validKeys = selectedKeys.filter(
         (key) => !isProductDisabled(products[key]?.productDetailId)
       );
       setSelectedRowKeys(validKeys);
     },
     getCheckboxProps: (record) => ({
-      disabled: isProductDisabled(record.productDetailId), // Vô hiệu hóa checkbox
+      disabled: isProductDisabled(record.productDetailId),
       name: record.productName,
     }),
   };
@@ -341,11 +315,11 @@ const CartPage = () => {
             {record.colorName
               ? `${record.productName}[${record.colorName}-${record.sizeName}]`
               : `${record.productName}`}
-              <br/> {isProductDisabled(record.productDetailId) && (
-            <Text type="danger">Sản phẩm đã ngừng hoạt động</Text>
-          )}
+            <br />
+            {isProductDisabled(record.productDetailId) && (
+              <Text type="danger">Sản phẩm đã ngừng hoạt động</Text>
+            )}
           </Text>
-         
         </Space>
       ),
     },
@@ -354,30 +328,19 @@ const CartPage = () => {
       dataIndex: "price",
       key: "price",
       render: (_, record) => {
-        // Kiểm tra record hợp lệ
-        if (!record || !record.productDetailId) {
-          return <Text strong>0 đ</Text>;
-        }
+        if (!record) return <Text strong>0 đ</Text>;
 
-        // Tìm giá thực tế
         const realPriceItem = productsRealPrice.find(
           (item) => item.productDetailId === record.productDetailId
         );
 
-        // Đảm bảo giá gốc và giá thực tế là số
-        const originalPrice = Number(record.price) || 0; // Chuyển đổi thành số, mặc định là 0 nếu không hợp lệ
+        const originalPrice = Number(record.price) || 0;
         const displayPrice = realPriceItem?.price
           ? Number(realPriceItem.price)
-          : originalPrice; // Sử dụng realPrice nếu có, nếu không thì dùng originalPrice
+          : originalPrice;
 
-        // Kiểm tra nếu có sự thay đổi giá
         const hasPriceChanged =
           realPriceItem && Number(realPriceItem.price) !== originalPrice;
-
-        // Debug để kiểm tra giá trị
-        console.log(
-          `Product: ${record.productName}, Original Price: ${originalPrice}, Real Price: ${realPriceItem?.price}, Has Changed: ${hasPriceChanged}`
-        );
 
         return (
           <Space direction="vertical">
