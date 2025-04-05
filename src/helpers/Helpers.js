@@ -117,14 +117,23 @@ export const convertBillStatusToString = (status) => {
 
 
 export const paymentTypeConvert = {
+    "COD":"CoD",
     "THANH_TOAN_TRUOC": "Thanh toán trước",
     "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng"
 };
 
 export const paymentMethodConvert = {
+    "COD":"CoD",
+    "ZALO_PAY":"Zalo pay",
     "TIEN_MAT": "Tiền mặt",
     "CHUYEN_KHOAN": "Chuyển khoản",
     "TIEN_MAT_AND_CHUYEN_KHOAN": "Tiền mặt và Chuyển khoản"
+};
+export const paymentBillStatusConvert = {
+    "CHUA_THANH_TOAN":"Chưa thanh toán",
+    "DA_THANH_TOAN":"Đã thanh toán",
+    "DA_HOAN_TIEN": "Đã hoàn tiền",
+ 
 };
 
 

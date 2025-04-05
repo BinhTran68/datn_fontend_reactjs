@@ -379,7 +379,7 @@ function HeaderNav() {
                     onClick={() => setIsAIModalVisible(true)}
                     style={{
                       position: "fixed",
-                      bottom: "60px",
+                      bottom: "90px",
                       right: "20px",
                       width: "60px",
                       height: "60px",

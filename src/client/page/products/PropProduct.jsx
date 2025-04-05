@@ -22,7 +22,7 @@ const formatPriceRange = (price) => {
   const priceStr = String(price);
 
   // Kiểm tra nếu không chứa dấu " - " thì chỉ cần format một giá trị
-  if (!priceStr.includes(" - ")) {
+  if (!priceStr.includes("-")) {
     return parseInt(priceStr).toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -150,7 +150,7 @@ function PropProduct({ product }) {
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  maxWidth: "180px", // Điều chỉnh chiều rộng tùy ý
+                  maxWidth: "100%", // Điều chỉnh chiều rộng tùy ý
                 }}
               >
                 {product.promotionView?.maxDiscount > 0 ? (
@@ -176,26 +176,24 @@ function PropProduct({ product }) {
                     </sup>{" "}
                   </div>
                 ) : (
-                  <div>
-                    <div> {formatPriceRange(product.price)}</div>
-
-                    <div>
-                      <sup
-                        className="badge"
-                        style={{
-                          fontSize: "0.7rem",
-                          background: `${
-                            product.promotion ? "#FEEEEA" : "white"
-                          }`,
-                          color: "#EE4D2D",
-                          marginLeft: "0.5rem",
-                        }}
-                      >
-                        {product.promotion || (
-                          <div hidden>"Chưa có khuyến mại"</div>
-                        )}
-                      </sup>
-                    </div>
+                  <div >
+                    <div > {formatPriceRange(product.price)}</div>
+                    <span className="text-decoration-line-through text-secondary fw-normal fs-6 text-white">
+                       ko co
+                    </span>
+                    <sup
+                      style={{
+                        fontSize: "0.7rem",
+                        background: `${
+                          product.promotion ? "#FEEEEA" : "white"
+                        }`,
+                        color: "#EE4D2D",
+                      }}
+                    >
+                      {product.promotion || (
+                        <div hidden>Chưa có khuyến mại</div>
+                      )}
+                    </sup>
                   </div>
                 )}
               </span>

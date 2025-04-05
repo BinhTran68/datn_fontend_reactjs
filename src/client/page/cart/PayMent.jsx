@@ -78,6 +78,7 @@ const PayMent = () => {
   const [productData, setProductData] = useState(getBill()); // 1 mảng các sản phẩm
   const [voucher, setVoucher] = useState(getVoucher()); // 1 mảng các sản phẩm
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [moneyBeforeDiscount, setMoneyBeforeDiscount] = useState(null);
 
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
@@ -86,6 +87,7 @@ const PayMent = () => {
     discountMoney: 0,
     totalMoney: 0,
     moneyAfter: 0,
+    moneyBeforeDiscount:0,
     desiredDateOfReceipt: null,
     shipDate: null,
     shippingAddressId: null,
@@ -276,6 +278,7 @@ const PayMent = () => {
       parseFloat(voucher[0]?.discountValue || 0);
     return sum;
   }, [productData, bill?.shipMoney]);
+
   const totalAmountNoship = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
 
@@ -285,6 +288,16 @@ const PayMent = () => {
       0
     );
     sum = sum - parseFloat(voucher[0]?.discountValue || 0);
+    return sum;
+  }, [productData, bill?.shipMoney]);
+  const caculamoneyBeforeDiscount = useMemo(() => {
+    if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
+
+    let sum = productData.reduce(
+      (sum, item) =>
+        sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
+      0
+    );
     return sum;
   }, [productData, bill?.shipMoney]);
   const columns = [
@@ -361,6 +374,7 @@ const PayMent = () => {
       customerId: user?.id || null,
       voucherId: voucher[0]?.voucherId,
       discountMoney: voucher[0]?.discountValue,
+      moneyBeforeDiscount: caculamoneyBeforeDiscount
       // discountMoney: voucher[0]?.totalAfterDiscount,
     }));
 
