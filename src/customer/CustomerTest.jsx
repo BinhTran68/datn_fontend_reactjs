@@ -17,6 +17,7 @@ import {COLORS} from "../constants/constants.js";
 import {Tooltip} from 'antd';
 import * as XLSX from 'xlsx';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
+import {genStringAccountStatus} from "./accountService.js";
 
 const {Option} = Select;
 const {RangePicker} = DatePicker;
@@ -133,7 +134,7 @@ const CustomerTest = () => {
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
                     dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
-                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    status: item.status,
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
                     addresses: item.addresses,
@@ -169,7 +170,7 @@ const CustomerTest = () => {
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
                     dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
-                    status: item.status === 1 ? 'Kích hoạt' : 'Khóa',
+                    status: item.status,
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
                     addresses: item.addresses,
@@ -184,6 +185,8 @@ const CustomerTest = () => {
             })
             .catch((error) => console.error('Error fetching filtered data:', error));
     };
+
+
 
     const handleReset = () => {
         setSearchText('');
@@ -399,23 +402,16 @@ const CustomerTest = () => {
             key: 'fullName',
         },
         {
-            title: 'CCCD',
-            dataIndex: 'CitizenId',
-            key: 'CitizenId',
-        },
-        {
             title: 'Số điện thoại',
             dataIndex: 'phoneNumber',
             key: 'phoneNumber',
-        },
-        {
-            title: 'Ngày sinh',
-            dataIndex: 'dateBirth',
-            key: 'dateBirth',
             render: (text) => (
-                <span>{moment(text).format('DD/MM/YYYY')}</span>
-            ),
+                <div>
+                    {text ? text : "Chưa cập nhật"}
+                </div>
+            )
         },
+
         {
             title: 'Email',
             dataIndex: 'email',
@@ -426,24 +422,51 @@ const CustomerTest = () => {
             title: 'Trạng Thái',
             dataIndex: 'status',
             key: 'status',
-            render: (text) => (
-                <Button
-                type={text === 'Kích hoạt' ? 'primary' : 'danger'}
-                style={{
-                    borderRadius: '5px',
-                    padding: '2px 15px',
-                    height: '30px',
-                    textAlign: 'center',
-                    fontWeight: 'normal',
-                    backgroundColor: text === 'Kích hoạt' ? '#f6ffed' : '#fff1f0',
-                    color: text === 'Kích hoạt' ? '#52c41a' : '#ff4d4f',
-                    border: text === 'Kích hoạt' ? '1px solid #b7eb8f' : '1px solid #ffa39e'
-                }}
-            >
-                {text }
-            </Button>
-            ),
+            render: (status) => {
+                let bgColor = '';
+                let color = '';
+                let border = '';
+                let label = genStringAccountStatus(status);
+
+                switch (status) {
+                    case 1: // Hoạt động
+                        bgColor = '#f6ffed';
+                        color = '#52c41a';
+                        border = '1px solid #b7eb8f';
+                        break;
+                    case 2: // Đã khóa
+                        bgColor = '#fff1f0';
+                        color = '#ff4d4f';
+                        border = '1px solid #ffa39e';
+                        break;
+                    case 3: // Chưa kích hoạt
+                    default:
+                        bgColor = '#fffbe6';
+                        color = '#faad14';
+                        border = '1px solid #ffe58f';
+                        break;
+                }
+
+                return (
+                    <Button
+                        type="default"
+                        style={{
+                            borderRadius: '5px',
+                            padding: '2px 15px',
+                            height: '30px',
+                            textAlign: 'center',
+                            fontWeight: 'normal',
+                            backgroundColor: bgColor,
+                            color: color,
+                            border: border,
+                        }}
+                    >
+                        {label}
+                    </Button>
+                );
+            },
         },
+
         {
             title: 'Hành động',
             key: 'action',
@@ -608,7 +631,7 @@ const CustomerTest = () => {
                         style={{width: '250px', marginRight: "20px", borderRadius: '10px'}}
                     >
                         <Option value="Tất cả">Tất cả</Option>
-                        <Option value="Kích hoạt">Kích hoạt</Option>
+                        <Option value="Hoạt Động">Hoạt Động</Option>
                         <Option value="Khóa">Khóa</Option>
                     </Select>
 

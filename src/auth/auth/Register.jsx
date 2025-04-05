@@ -101,7 +101,7 @@ const Register = () => {
             );
 
             const data = response.data;
-            toast.success("Đăng ký thành công!")
+            toast.success("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản!")
             navigate("/")
         } catch (error) {
             setErrorMessage(

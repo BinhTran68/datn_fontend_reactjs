@@ -154,7 +154,7 @@ const UpdateCustomer = () => {
                 phoneNumber: customer.phoneNumber,
                 email: customer.email,
                 gender: customer.gender,
-                dateBirth: moment(customer.dateBirth),
+                dateBirth: customer.dateBirth ? moment(customer.dateBirth) : null,
                 status: customer.status,
                 password: customer.password,
             });
@@ -179,10 +179,10 @@ const UpdateCustomer = () => {
             const values = await form.validateFields();
             
             // Validate address fields before submitting
-            if (!address.provinceId || !address.districtId || !address.wardId || !address.specificAddress) {
-                message.error('Vui lòng điền đầy đủ thông tin địa chỉ!');
-                return;
-            }
+            // if (!address.provinceId || !address.districtId || !address.wardId || !address.specificAddress) {
+            //     message.error('Vui lòng điền đầy đủ thông tin địa chỉ!');
+            //     return;
+            // }
 
             // Handle avatar using Cloudinary
             let avatarUrl = selectedRecord?.avatar || '';
@@ -193,7 +193,7 @@ const UpdateCustomer = () => {
                 avatarUrl = fileList[0].url;
                 avatarPublicId = fileList[0].uid;
             }
-
+            console.log("values.dateBirth", values.dateBirth)
             // Prepare customer data
             const customerData = {
                 fullName: values.fullName,
@@ -201,7 +201,9 @@ const UpdateCustomer = () => {
                 phoneNumber: values.phoneNumber,
                 email: values.email,
                 gender: values.gender,
-                dateBirth: values.dateBirth.format('YYYY-MM-DDTHH:mm:ss'),
+                dateBirth: values.dateBirth && typeof values.dateBirth.format === 'function'
+                    ? values.dateBirth.format('YYYY-MM-DDTHH:mm:ss')
+                    : null,
                 status: values.status,
                 avatar: avatarUrl,
                 avatarPublicId: avatarPublicId,
@@ -292,7 +294,7 @@ const UpdateCustomer = () => {
             <Row gutter={16}>
                 <Col span={6}>
                     <Card>
-                        <Form.Item label="Ảnh đại diện" style={{ textAlign: 'center' }}>
+                        <Form.Item style={{ textAlign: 'center' }}>
                             <Upload
                                 customRequest={customRequest}
                                 fileList={fileList}
@@ -352,7 +354,6 @@ const UpdateCustomer = () => {
                                         name="dateBirth"
                                         label="Ngày sinh"
                                         rules={[
-                                            { required: true, message: 'Vui lòng chọn ngày sinh!' },
                                             () => ({
                                                 validator(_, value) {
                                                     if (!value || value <= moment()) {
@@ -378,7 +379,6 @@ const UpdateCustomer = () => {
                                         name="CitizenId"
                                         label="Căn cước công dân"
                                         rules={[
-                                            { required: true, message: 'Vui lòng nhập CCCD!' },
                                             { pattern: citizenIdPattern, message: 'CCCD phải có 9 hoặc 12 số!' }
                                         ]}
                                     >
@@ -430,7 +430,6 @@ const UpdateCustomer = () => {
                             {isAddressLoaded && (
                                 <Form.Item 
                                     label="Địa chỉ"
-                                    rules={[{ required: true, message: 'Vui lòng nhập đầy đủ địa chỉ!' }]}
                                 >
                                     <AddressSelectorAntd
                                         provinceId={parseInt(address.provinceId)}
@@ -450,8 +449,9 @@ const UpdateCustomer = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                                     >
                                         <Select>
-                                            <Option value={1}>Kích hoạt</Option>
-                                            <Option value={0}>Khóa</Option>
+                                            <Option value={0}>Hoạt Động</Option>
+                                            <Option value={1}>Ngưng hoạt động</Option>
+                                            <Option value={2}>Chưa kích hoạt</Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
