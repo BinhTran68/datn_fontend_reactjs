@@ -5,6 +5,9 @@ import { baseUrl, convertStatusVoucher } from '../../helpers/Helpers.js';
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaEye, FaTrash, FaPen } from "react-icons/fa6"; // Thay FaEdit bằng FaPen
+import {toast} from "react-toastify";
+import { FaEdit } from "react-icons/fa";
+
 
 const PromotionList = () => {
     const navigate = useNavigate();
@@ -68,7 +71,7 @@ const PromotionList = () => {
                 <Space size="middle">
                     {record.statusPromotion !== 'ngung_kich_hoat' && (
                         <Tooltip title="Chỉnh sửa">
-                            <FaPen
+                            <FaEdit
                                 style={{ color: "#ff974d", fontSize: "1.2rem", cursor: "pointer" }}
                                 onClick={() => navigate(`/admin/promotion/update/${record.id}`)}
                             />
@@ -93,9 +96,9 @@ const PromotionList = () => {
                                                 timeout: 5000
                                             });
                                             getPagePromotion();
-                                            message.success("Cập nhật trạng thái thành công");
+                                            toast.success("Cập nhật trạng thái thành công");
                                         } catch (error) {
-                                            message.error("Cập nhật trạng thái thất bại: " + error.message);
+                                            toast.error("Cập nhật trạng thái thất bại: " + error.message);
                                             console.error(error);
                                         }
                                     }
@@ -130,7 +133,7 @@ const PromotionList = () => {
             setPromotionData(data || []);
             setPagination(prev => ({ ...prev, total: totalElements || 0 }));
         } catch (error) {
-            message.error('Lỗi khi tải danh sách promotion');
+            toast.error('Lỗi khi tải danh sách promotion');
             console.error(error);
         }
     };

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Table, Tag, Button, Space, message, Select, DatePicker, Input, Modal, Form, Row, Col, Checkbox } from "antd";
 import { CommentOutlined, SortAscendingOutlined, SortDescendingOutlined } from "@ant-design/icons";
 import { Client } from "@stomp/stompjs";
+import {toast} from "react-toastify";
+
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -17,7 +19,10 @@ const Comments = () => {
     const [starFilter, setStarFilter] = useState(null);
     const [notRepliedOnly, setNotRepliedOnly] = useState(false);
     const [sortOrder, setSortOrder] = useState("descend"); // descend: mới nhất lên đầu (mặc định)
-
+    const [productOptions, setProductOptions] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
+    
     // Apply filters function
     const applyFilters = () => {
         let result = [...comments];
@@ -37,6 +42,74 @@ const Comments = () => {
         
         setFilteredComments(result);
     };
+    useEffect(() => {
+        fetchProductList();
+    }, []);
+    const fetchProductList = async () => {
+        try {
+            const res = await fetch("http://localhost:8080/api/admin/comments/productName");
+            const response = await res.json();
+            
+            // Extract data array from response
+            const data = response.data || [];
+    
+            if (Array.isArray(data)) {
+                setProductOptions(data);
+            } else {
+                console.error("API không trả về mảng sản phẩm:", data);
+            }
+        } catch (err) {
+            console.error("Lỗi khi lấy danh sách sản phẩm:", err);
+        }
+    };
+    
+    const fetchFilteredComments = async (productName, createdAt) => {
+        try {
+            let query = "http://localhost:8080/api/admin/comments/search";
+            const params = [];
+    
+            if (productName) {
+                params.push(`productName=${encodeURIComponent(productName)}`);
+            }
+            if (createdAt) {
+                params.push(`createdAt=${createdAt}`);
+                        }
+    
+            if (params.length > 0) {
+                query += `?${params.join("&")}`;
+            }
+    
+            const res = await fetch(query);
+            const result = await res.json();
+            const data = result.data || result;
+    
+            const formattedData = data.map((item) => ({
+                id: item.id,
+                fullName: item.fullName || "Khách hàng ẩn danh",
+                comment: item.comment || "Không có bình luận",
+                productName: item.productName || "Không có sản phẩm",
+                productId: item.productId,
+                customerEmail: item.customerEmail || "Không có email",
+                createdAt: item.createdAt || new Date().toISOString(),
+                rate: item.rate || 0,
+                adminReply: typeof item.adminReply === 'string' ? item.adminReply :
+                    (Array.isArray(item.adminReply) && item.adminReply.length > 0 ?
+                        (typeof item.adminReply[0] === 'object' ? item.adminReply[0].comment : item.adminReply[0])
+                        : '')
+            }));
+    
+            setComments(formattedData);
+            setFilteredComments(formattedData);
+        } catch (err) {
+            console.error("Lỗi khi lọc bình luận:", err);
+            toast.error("Không thể lọc bình luận.");
+        }
+    };
+    useEffect(() => {
+        const timestamp = selectedDate ? new Date(selectedDate).getTime() : null;
+        fetchFilteredComments(selectedProduct, timestamp);
+    }, [selectedProduct, selectedDate]);
+    
 
     // Apply filters whenever filter criteria changes
     useEffect(() => {
@@ -47,7 +120,7 @@ const Comments = () => {
         {
             title: "STT",
             align: "center",
-            render: (_, __, index) => index + 1,
+            render: (_, record) => filteredComments.findIndex(item => item.id === record.id) + 1,
         },
         {
             title: "Bình luận",
@@ -61,7 +134,22 @@ const Comments = () => {
             title: "Ngày bình luận",
             dataIndex: "createdAt",
             render: text => convertToVietnamTime(text),
+            sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+            sortOrder: sortOrder,
+            columnTitle: (
+                <span title={sortOrder === "ascend" 
+                    ? "Sắp xếp: Cũ nhất → Mới nhất" 
+                    : "Sắp xếp: Mới nhất → Cũ nhất"}>
+                    Ngày bình luận
+                </span>
+            ),
+            onHeaderCell: () => ({
+                onClick: () => {
+                    setSortOrder(prevSortOrder => prevSortOrder === "ascend" ? "descend" : "ascend");
+                },
+            }),
         },
+        
         
         {
             title: "Đánh giá",
@@ -136,14 +224,14 @@ const Comments = () => {
             
                 // Nhận các sự kiện chung (ví dụ: client gửi bình luận, xóa...)
                 client.subscribe(`/topic/comments`, (message) => {
-                    console.log("WebSocket message received:", message.body);
+                    console.log("WebSocket message received:", toast.body);
                     setHasChanges(true);
                 });
             
                 // Nhận phản hồi từ admin cho mọi sản phẩm
                 client.subscribe(`/topic/admin-replies/*`, (message) => {
                     try {
-                        const data = JSON.parse(message.body);
+                        const data = JSON.parse(toast.body);
                         console.log("Received admin reply:", data);
             
                         if (data.parentId && data.comment) {
@@ -188,7 +276,7 @@ const Comments = () => {
 
             if (!Array.isArray(commentsData)) {
                 console.error("API không trả về mảng bình luận:", commentsData);
-                message.error("Dữ liệu API không đúng định dạng!");
+                toast.error("Dữ liệu API không đúng định dạng!");
                 return;
             }
 
@@ -215,7 +303,7 @@ const Comments = () => {
 
         } catch (error) {
             console.error("Lỗi khi tải dữ liệu bình luận:", error);
-            message.error(`Không thể tải dữ liệu: ${error.message}`);
+            toast.error(`Không thể tải dữ liệu: ${error.message}`);
         }
     };
 
@@ -258,7 +346,7 @@ const Comments = () => {
            
             
             setReplyModalVisible(false);
-            message.success("Phản hồi đã được gửi!");
+            toast.success("Phản hồi đã được gửi!");
 
             // Update local state
             setComments(prevComments => {
@@ -274,7 +362,7 @@ const Comments = () => {
             });
         } catch (error) {
             console.error("Lỗi khi phản hồi:", error);
-            message.error(error.message || "Không thể gửi phản hồi!");
+            toast.error(error.message || "Không thể gửi phản hồi!");
         }
     };
 
@@ -302,7 +390,7 @@ const Comments = () => {
                 throw new Error(`Lỗi API: ${response.status}`);
             }
 
-            message.success("Xóa bình luận thành công!");
+            toast.success("Xóa bình luận thành công!");
 
             // Cập nhật UI ngay lập tức
             setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
@@ -316,7 +404,7 @@ const Comments = () => {
             }
         } catch (error) {
             console.error("Lỗi khi xóa bình luận:", error);
-            message.error(error.message || "Không thể xóa bình luận!");
+            toast.error(error.message || "Không thể xóa bình luận!");
         }
     };
 
@@ -368,16 +456,37 @@ const Comments = () => {
                         </Select>
                     </Col>
                     <Col xs={24} sm={12} md={6}>
-                        <Select
-                            placeholder="Lọc theo sản phẩm"
-                            allowClear
-                            showSearch
-                            style={{ width: "100%" }}
-                        ></Select>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <DatePicker placeholder="Từ ngày" style={{ width: "100%" }} />
-                    </Col>
+    <Select
+        placeholder="Lọc theo sản phẩm"
+        allowClear
+        showSearch
+        style={{ width: "100%" }}
+        onChange={(value) => setSelectedProduct(value || null)}
+    >
+        {productOptions.map((product, idx) => (
+            <Option key={idx} value={product.productName || product.name}>
+                {product.productName || product.name}
+            </Option>
+        ))}
+    </Select>
+</Col>
+
+<Col xs={24} sm={12} md={6}>
+    <DatePicker
+        placeholder="Từ ngày"
+        style={{ width: "100%" }}
+        format="DD/MM/YYYY" 
+        onChange={(date) => {
+            if (date) {
+                const dateObj = date.toDate();
+                setSelectedDate(dateObj);
+            } else {
+                setSelectedDate(null);
+            }
+        }}
+    />
+</Col>
+
                     <Col xs={24} sm={12} md={6}>
                         <Checkbox checked={notRepliedOnly} onChange={handleNotRepliedChange}>
                             Chưa trả lời
@@ -386,10 +495,16 @@ const Comments = () => {
                 </Row>
             </div>
             <Table
-                dataSource={filteredComments}
-                columns={columns}
-                rowKey={(record) => record.id || record.createdAt || Math.random().toString(36).substring(7)}
-            />
+    dataSource={filteredComments}
+    columns={columns}
+    rowKey={(record) => record.id || record.createdAt || Math.random().toString(36).substring(7)}
+    locale={{
+        triggerAsc: "Bình luận cũ nhất",
+        triggerDesc: "Bình luận mới nhất",
+        cancelSort: "Bình luận cũ nhất",
+    }}
+/>
+
 
             <Modal
                 title={`Trả lời bình luận của: ${currentComment?.fullName}`}

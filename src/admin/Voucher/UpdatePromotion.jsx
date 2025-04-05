@@ -7,6 +7,8 @@ import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import {toast} from "react-toastify";
+
 
 
 const UpdatePromotion = () => {
@@ -68,7 +70,7 @@ const UpdatePromotion = () => {
                     setSelectedProductDetails(selectedProductDetailsData);
                 }
             } catch (error) {
-                message.error("Có lỗi xảy ra khi tải dữ liệu chương trình khuyến mãi.");
+                toast.error("Có lỗi xảy ra khi tải dữ liệu chương trình khuyến mãi.");
             }
         };
 
@@ -84,11 +86,11 @@ const UpdatePromotion = () => {
             console.log("Selected product details:", selectedProductDetails);
             // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
             if (selectedProducts.length === 0) {
-                message.error("Vui lòng chọn ít nhất một sản phẩm!");
+                toast.error("Vui lòng chọn ít nhất một sản phẩm!");
                 return;
             }
             if (selectedProductDetails.length === 0) {
-                message.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
+                toast.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
                 return;
             }
             const requestData = {
@@ -109,7 +111,7 @@ const UpdatePromotion = () => {
             // ✅ In ra phản hồi từ backend để kiểm tra
             console.log("Phản hồi từ backend:", response.data.data);
 
-            message.success("sửa chương trình khuyến mãi thành công!");
+            toast.success("sửa chương trình khuyến mãi thành công!");
 
             form.resetFields();
             setSelectedProducts([]);
@@ -120,7 +122,7 @@ const UpdatePromotion = () => {
 
 
         } catch (error) {
-            message.error(error.response?.data?.message || "Có lỗi xảy ra khi sửa chương trình khuyến mãi!");
+            toast.error(error.response?.data?.message || "Có lỗi xảy ra khi sửa chương trình khuyến mãi!");
             console.error("Lỗi:", error.response?.data || error.message);
         }
     };
@@ -131,7 +133,7 @@ const UpdatePromotion = () => {
             content: "Bạn có chắc chắn muốn sửa chương trình khuyến mãi này không?",
             onOk: handleupdatePromotion, // Nếu OK, thì gọi hàm xử lý update
             onCancel() {
-                message.info("Hủy sửa chương trình khuyến mãi.");
+                toast.info("Hủy sửa chương trình khuyến mãi.");
             },
         });
     };
@@ -149,7 +151,7 @@ const UpdatePromotion = () => {
 
             setProducts(filteredProducts);
         } catch (error) {
-            message.error("Có lỗi xảy ra khi tải dữ liệu.");
+            toast.error("Có lỗi xảy ra khi tải dữ liệu.");
         } finally {
             setLoading(false);
         }
@@ -187,7 +189,7 @@ const UpdatePromotion = () => {
             }
         } catch (error) {
             console.error("Lỗi khi tìm kiếm sản phẩm:", error);
-            message.error("Có lỗi xảy ra khi tìm kiếm.");
+            toast.error("Có lỗi xảy ra khi tìm kiếm.");
         } finally {
             setLoading(false);
         }
@@ -224,7 +226,7 @@ const UpdatePromotion = () => {
                     setSelectedProducts(prevSelected => [...prevSelected, record]);
                 }
             } catch (error) {
-                message.error("Lỗi khi tải chi tiết sản phẩm.");
+                toast.error("Lỗi khi tải chi tiết sản phẩm.");
             }
         } else {
             // ✅ Xóa sản phẩm khỏi danh sách đã chọn
@@ -263,7 +265,7 @@ const UpdatePromotion = () => {
                                         setProductDetails(prev => [...prev, ...response.data.data]);
                                     }
                                 } catch (error) {
-                                    message.error("Lỗi khi tải chi tiết sản phẩm.");
+                                    toast.error("Lỗi khi tải chi tiết sản phẩm.");
                                 }
                             });
                         } else {
