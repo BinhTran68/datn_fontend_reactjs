@@ -296,6 +296,7 @@ const BillDetail = () => {
                         : "Cập nhật trạng thái thành công")
                 );
             } catch (error) {
+                console.log(error)
                 toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
             } finally {
                 setIsCancelBill(false)
