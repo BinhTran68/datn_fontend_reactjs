@@ -761,7 +761,7 @@ function ProductDetail() {
               color: `${COLORS.pending}`,
             }}
           >
-            DÁNH GIÁ SẢN PHẨM
+            ĐÁNH GIÁ SẢN PHẨM
           </Col>
           <Col span={24}>
             <CommentSection id={getProductDetail.id} />

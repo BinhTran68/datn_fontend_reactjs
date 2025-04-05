@@ -6,6 +6,7 @@ import moment from 'moment';
 import { baseUrl } from '../../helpers/Helpers.js';
 import dayjs from "dayjs";
 import { useWatch } from 'antd/es/form/Form';
+import {toast} from "react-toastify";
 
 
 
@@ -205,7 +206,7 @@ const UpdateVoucher = () => {
 
             console.log("Dữ liệu gửi lên API:", requestData);
             await axios.put(`${baseUrl}/api/admin/voucher/update/${id}`, requestData);
-            message.success("Thêm mới phiếu giảm giá thành công!");
+            toast.success("Thêm mới phiếu giảm giá thành công!");
 
             form.resetFields();
             setSelectedRowKeys([]);
@@ -213,7 +214,7 @@ const UpdateVoucher = () => {
             navigate("/admin/vouchelist"); // Thay đổi đường dẫn theo cấu trúc của bạn
 
         } catch (error) {
-            message.error("Lỗi khi lưu dữ liệu!");
+            toast.error("Lỗi khi lưu dữ liệu!");
         }
     };
 
@@ -236,6 +237,7 @@ useEffect(() => {
 }, [form.getFieldValue("discountType")]);
 
 
+const [nameLength, setNameLength] = useState(0);
 
     return (
         <Row gutter={20}>
@@ -243,8 +245,21 @@ useEffect(() => {
                 <Card>
                     {/* <Modal title="Thêm mới phiếu giảm giá" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} okText="Xác nhận" cancelText="Hủy"> */}
                     <Form form={form} layout="vertical">
-                        <Form.Item name="voucherName" label="Tên phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
-                            <Input placeholder="Nhập tên phiếu giảm giá" />
+                    <Form.Item
+                            name="voucherName"
+                            label={`Tên phiếu giảm giá (${nameLength}/100)`}
+                            style={{ marginBottom: "12px" }}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên phiếu giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
+                        >
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
                         </Form.Item>
                         <Form.Item name="quantity" label="Số lượng" rules={[
                             { required: true, message: 'Vui lòng nhập số lượng' },

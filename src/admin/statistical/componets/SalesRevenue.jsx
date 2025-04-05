@@ -99,10 +99,11 @@ const RevenueCards = ({ showCustomCard, customData }) => {
 
     return (
         <>
-            {/* <h2 style={{ color: "orange", fontSize: 25, fontWeight: "bold", marginBottom: 20, marginTop: 40 }}>
-                Thống kê doanh thu của cửa hàng
-            </h2> */}
+
+
+
             <Row gutter={[16, 16]} justify="center">
+   
                 {cards.map((item, index) => (
                     <Col xs={24} sm={12} md={12} lg={6} key={index}>
                         <Card title={item.title} hoverable style={cardStyles} headStyle={item.headStyle}>
@@ -141,6 +142,32 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                     </Col>
                 ))}
             </Row>
+            <Row gutter={[16, 16]} style={{paddingTop:"10px"}}>
+    <Col span={24} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ 
+            borderRadius: '8px', 
+            padding: '16px', 
+            background: '#ffffff', 
+            width: '280px', 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            textAlign: 'left'
+        }}>
+            <span style={{ fontSize: '14px', fontWeight: '600' }}>Chú thích</span>
+            <hr style={{ width: '100%', margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <span style={{ color: "#007bff", fontSize: "12px", fontWeight: "500" }}>● Số lượng đơn</span>
+                <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
+                <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
+                <span style={{ color: "#dc3545", fontSize: "12px", fontWeight: "500" }}>● Đơn hủy</span>
+                <span style={{ color: "#6c757d", fontSize: "12px", fontWeight: "500" }}>● Đơn hoàn</span>
+            </div>
+        </div>
+    </Col>
+</Row>
+
 
             {customData && (
                 <Row justify="center" style={{ marginTop: 20 }}>
@@ -214,11 +241,7 @@ const DateFilter = ({ onSetCustomData, customData }) => {
                     style={{ width: "250px", height: "25px" }}
                 />
             </div>
-            {/* {dateRange && (
-                <div style={{ marginTop: "10px", fontWeight: "bold", fontSize: "16px", textAlign: "center" }}>
-                    Khoảng thời gian: {dateRange.startDate} → {dateRange.endDate}
-                </div>
-            )} */}
+           
         </Card>
     );
 };

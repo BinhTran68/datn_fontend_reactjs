@@ -7,6 +7,8 @@ import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
+import ProductDetailFilter from '../Voucher/ProductDetailFilter ';
 
 
 
@@ -24,6 +26,9 @@ const AddPromotion = () => {
     const [productDetails, setProductDetails] = useState([]);
     const [selectedProductDetails, setSelectedProductDetails] = useState([]);
     const navigate = useNavigate();
+    //lưu sp detail
+    const [originalProductDetails, setOriginalProductDetails] = useState([]);
+
 
 
     //xử lí nút add
@@ -34,15 +39,15 @@ const AddPromotion = () => {
             console.log("Form values:", values);
             console.log("Selected products:", selectedProducts);
             console.log("Selected product details:", selectedProductDetails);
-              // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
-        if (selectedProducts.length === 0) {
-            message.error("Vui lòng chọn ít nhất một sản phẩm!");
-            return;
-        }
-        if (selectedProductDetails.length === 0) {
-            message.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
-            return;
-        }
+            // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
+            if (selectedProducts.length === 0) {
+                toast.error("Vui lòng chọn ít nhất một sản phẩm!");
+                return;
+            }
+            if (selectedProductDetails.length === 0) {
+                toast.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
+                return;
+            }
             const requestData = {
                 ...values,
                 discountType: "PERCENT",
@@ -62,7 +67,7 @@ const AddPromotion = () => {
             // ✅ In ra phản hồi từ backend để kiểm tra
             console.log("Phản hồi từ backend:", response.data.data);
 
-            message.success("Thêm chương trình khuyến mãi thành công!");
+            toast.success("Thêm chương trình khuyến mãi thành công!");
 
             form.resetFields();
             setSelectedProducts([]);
@@ -73,7 +78,7 @@ const AddPromotion = () => {
 
 
         } catch (error) {
-            message.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm chương trình khuyến mãi!");
+            toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm chương trình khuyến mãi!");
             console.error("Lỗi:", error.response?.data || error.message);
         }
     };
@@ -84,7 +89,7 @@ const AddPromotion = () => {
             content: "Bạn có chắc chắn muốn thêm chương trình khuyến mãi này không?",
             onOk: handleAddPromotion, // Nếu OK, thì gọi hàm xử lý add
             onCancel() {
-                message.info("Hủy thêm chương trình khuyến mãi.");
+                toast.info("Hủy thêm chương trình khuyến mãi.");
             },
         });
     };
@@ -102,7 +107,7 @@ const AddPromotion = () => {
 
             setProducts(filteredProducts);
         } catch (error) {
-            message.error("Có lỗi xảy ra khi tải dữ liệu.");
+            toast.error("Có lỗi xảy ra khi tải dữ liệu.");
         } finally {
             setLoading(false);
         }
@@ -140,11 +145,22 @@ const AddPromotion = () => {
             }
         } catch (error) {
             console.error("Lỗi khi tìm kiếm sản phẩm:", error);
-            message.error("Có lỗi xảy ra khi tìm kiếm.");
+            toast.error("Có lỗi xảy ra khi tìm kiếm.");
         } finally {
             setLoading(false);
         }
     };
+    //tìm kiếm sản phẩm chi tiết
+    const handleFilterResults = (filteredProducts) => {
+        const selectedIds = selectedProductDetails.map((item) => item.id);
+        setProductDetails(filteredProducts);
+      
+
+      };
+    
+
+
+    //tìm kiếm sản phẩm chi tiết
     /**
      * 🟢 Xử lý khi người dùng nhập vào ô tìm kiếm
      */
@@ -165,36 +181,46 @@ const AddPromotion = () => {
     };
     const handleCheckboxChange = async (e, record) => {
         if (e.target.checked) {
-            try {
-                const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
-
-                if (response.data?.data) {
-                    const newDetails = response.data.data.filter(detail =>
-                        !productDetails.some(item => item.id === detail.id)
-                    );
-
-                    setProductDetails(prevDetails => [...prevDetails, ...newDetails]);
-                    setSelectedProducts(prevSelected => [...prevSelected, record]);
-                }
-            } catch (error) {
-                message.error("Lỗi khi tải chi tiết sản phẩm.");
+          try {
+            const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
+      
+            if (response.data?.data) {
+              const newDetails = response.data.data.filter(
+                (detail) => !productDetails.some((item) => item.id === detail.id)
+              );
+      
+              const updatedDetails = [...productDetails, ...newDetails];
+              setProductDetails(updatedDetails);
+              setSelectedProducts((prevSelected) => [...prevSelected, record]);
+              //
+              setOriginalProductDetails((prev) => [...prev, ...newDetails]); // Lưu dữ liệu gốc
             }
+          } catch (error) {
+            toast.error("Lỗi khi tải chi tiết sản phẩm.");
+          }
         } else {
-            // ✅ Xóa sản phẩm khỏi danh sách đã chọn
-            const updatedSelectedProducts = selectedProducts.filter(p => p.id !== record.id);
-            setSelectedProducts(updatedSelectedProducts);
+          // Remove the product from selected products
+          const updatedSelectedProducts = selectedProducts.filter((p) => p.id !== record.id);
+          setSelectedProducts(updatedSelectedProducts);
+      
+          // Remove related product details
+          const updatedDetails = productDetails.filter((detail) => detail.productId !== record.id);
+          setProductDetails(updatedDetails);
+          setOriginalProductDetails((prev) => prev.filter((detail) => detail.productId !== record.id)); // Cập nhật dữ liệu gốc
+          setSelectedProductDetails((prevSelected) =>
+            prevSelected.filter((detail) => detail.productId !== record.id)
+          );
+      
 
-            // ✅ Xóa chi tiết sản phẩm liên quan
-            setProductDetails(prevDetails => prevDetails.filter(detail => detail.productId !== record.id));
-            setSelectedProductDetails(prevSelected => prevSelected.filter(detail => detail.productId !== record.id));
-
-            // ✅ Nếu không còn sản phẩm nào được chọn, xóa hết danh sách chi tiết
-            if (updatedSelectedProducts.length === 0) {
-                setProductDetails([]);
-                setSelectedProductDetails([]);
-            }
+      
+          // If no products are selected, clear everything
+          if (updatedSelectedProducts.length === 0) {
+            setProductDetails([]);
+            setSelectedProductDetails([]);
+            setOriginalProductDetails([]); // Reset dữ liệu gốc khi không còn sản phẩm nào được chọn
+          }
         }
-    };
+      };
     useEffect(() => {
         fetchProductsData();
     }, []);
@@ -216,7 +242,7 @@ const AddPromotion = () => {
                                         setProductDetails(prev => [...prev, ...response.data.data]);
                                     }
                                 } catch (error) {
-                                    message.error("Lỗi khi tải chi tiết sản phẩm.");
+                                    toast.error("Lỗi khi tải chi tiết sản phẩm.");
                                 }
                             });
                         } else {
@@ -294,6 +320,7 @@ const AddPromotion = () => {
         { title: "Số lượng", dataIndex: "quantity", key: "quantity", width: "10rem" },
         { title: "Trọng Lượng (kg)", dataIndex: "weight", key: "weight", width: "10rem" },
     ];
+    const [nameLength, setNameLength] = useState(0);
 
     return (
         <Row gutter={24}>
@@ -303,11 +330,19 @@ const AddPromotion = () => {
                     <Form form={form} layout="vertical">
                         <Form.Item
                             name="promotionName"
-                            label="Tên đợt giảm giá"
+                            label={`Tên đợt giảm giá (${nameLength}/100)`}
                             style={{ marginBottom: "12px" }}
-                            rules={[{ required: true, message: "Không được bỏ trống" }]}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
                         >
-                            <Input placeholder="Nhập tên đợt giảm giá" style={{ width: "100%" }} />
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
                         </Form.Item>
 
                         <Form.Item
@@ -436,32 +471,26 @@ const AddPromotion = () => {
             <Card style={{ marginTop: "30px" }}>
                 <Title level={2}>Sản Phẩm Chi Tiết</Title>
 
-                <Row gutter={[16, 16]}>
-                    <Col span={20}>
-                        <Input
-                            placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
-                            prefix={<SearchOutlined />}
-                            allowClear
-                            onChange={handleSearchChange}
-                        />
-                    </Col>
-
-                </Row>
-
+                {/* Add the filter component here */}
+                <ProductDetailFilter
+                    productDetails={productDetails}
+                    onFilterResults={handleFilterResults}
+                    //
+                    originalDetails={productDetails} // Dữ liệu hiện tại sau khi lọc
+                    rootProductDetails={originalProductDetails} // Dữ liệu gốc
+                />
                 <Table
                     columns={columnsDetail}
-                    dataSource={productDetails}  // ✅ Hiển thị danh sách chi tiết thay vì `products`
+                    dataSource={productDetails}
                     rowKey="id"
                     loading={loading}
                     pagination={{
                         current: currentPage1,
                         pageSize: pageSize1,
-                        total: productDetails.length, // ✅ Sử dụng độ dài của productDetails
-                        onChange: (page) => setCurrentPage1(page), // ✅ Cập nhật currentPage1
+                        total: productDetails.length,
+                        onChange: (page) => setCurrentPage1(page),
                     }}
-
                 />
-
             </Card>
         </Row>
     );
