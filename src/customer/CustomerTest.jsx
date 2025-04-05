@@ -429,17 +429,17 @@ const CustomerTest = () => {
                 let label = genStringAccountStatus(status);
 
                 switch (status) {
-                    case 1: // Hoạt động
+                    case 0: // Hoạt động
                         bgColor = '#f6ffed';
                         color = '#52c41a';
                         border = '1px solid #b7eb8f';
                         break;
-                    case 2: // Đã khóa
+                    case 1: // Đã khóa
                         bgColor = '#fff1f0';
                         color = '#ff4d4f';
                         border = '1px solid #ffa39e';
                         break;
-                    case 3: // Chưa kích hoạt
+                    case 2: // Chưa kích hoạt
                     default:
                         bgColor = '#fffbe6';
                         color = '#faad14';

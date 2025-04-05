@@ -6,6 +6,8 @@ import { validateEmail } from "../../helpers/Helpers.js";
 import { COLORS } from "../../constants/constants.js";
 import {toast} from "react-toastify";
 import log from "eslint-plugin-react/lib/util/log.js";
+import {GoogleLogin} from "@react-oauth/google";
+import {FcGoogle} from "react-icons/fc";
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -123,6 +125,30 @@ const Register = () => {
         }, 300);
     };
 
+    const handleGoogleLogin = async (response) => {
+        console.log("response", response)
+        try {
+            const { credential } = response;
+            const googleToken = credential;
+
+            // Send Google token to backend for validation
+            const res = await axios.post(`http://localhost:8080/api/authentication/google-login/${googleToken}`)
+
+            if (res.status === 200) {
+                // Save user data to localStorage or handle further logic here
+                const data = res.data;
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.customer));
+                window.dispatchEvent(new Event("cartUpdated"));
+                navigate("/");
+                toast.success("Đăng nhập thành công!");
+            }
+        } catch (error) {
+            setErrorMessage("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
+            console.error("Google login error: ", error);
+        }
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.singleColumnContainer}>
@@ -153,7 +179,7 @@ const Register = () => {
                         />
                         {errors.fullName && <div className={styles.errorText}>{errors.fullName}</div>}
                     </div>
-                    
+
                     <div className={styles.inputGroup}>
                         <input
                             type="email"
@@ -166,7 +192,7 @@ const Register = () => {
                         />
                         {errors.email && <div className={styles.errorText}>{errors.email}</div>}
                     </div>
-                    
+
                     <div className={styles.inputGroup}>
                         <input
                             type="password"
@@ -179,7 +205,7 @@ const Register = () => {
                         />
                         {errors.password && <div className={styles.errorText}>{errors.password}</div>}
                     </div>
-                    
+
                     <div className={styles.inputGroup}>
                         <input
                             type="password"
@@ -204,25 +230,33 @@ const Register = () => {
                             "ĐĂNG KÝ"
                         )}
                     </button>
-                </form>
-                
-                <div className={styles.orDivider}>hoặc</div>
-                
-                <div className={styles.socialButtons}>
-                    <a href="#" className={`${styles.socialButton} ${styles.facebook}`}>
-                        <span>f</span>
-                    </a>
-                    <a href="#" className={`${styles.socialButton} ${styles.twitter}`}>
-                        <span>t</span>
-                    </a>
-                    <a 
-                        href="https://accounts.google.com/o/oauth2/v2/auth?redirect_uri=http://localhost:8080/api/v1/auth/oauth/google&response_type=code&client_id=949623093363-hhnb82n3djt2h4ovguvmqdk714rnihqv.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&access_type=offline"
-                        className={`${styles.socialButton} ${styles.google}`}
+
+                    {/* Google Login Button */}
+                    <div className={styles.orDivider}>hoặc</div>
+                    <GoogleLogin
+                        onSuccess={handleGoogleLogin}
+                        onError={(error) => console.error("Login Failed:", error)}
+                        useOneTap
                     >
-                        <span>G+</span>
-                    </a>
-                </div>
-                
+                        <button
+                            type="button"
+                            className={styles.loginGoogleeButton}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <span className={styles.spinner}> </span>
+                            ) : (
+                                <div className={"d-flex gap-3 align-items-center justify-content-center"}>
+                                    <FcGoogle size={28}/>
+                                    ĐĂNG NHẬP BẰNG GOOGLE
+                                </div>
+                            )}
+                        </button>
+                    </GoogleLogin>
+
+                </form>
+
+
                 <div className={styles.loginLink}>
                     <p>Đã có tài khoản?</p>
                     <Link to="/login" className={styles.loginButtonLink} onClick={handleRedirectToLogin}>
