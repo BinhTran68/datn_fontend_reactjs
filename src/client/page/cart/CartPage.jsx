@@ -82,10 +82,12 @@ const CartPage = () => {
       console.log("Thêm vào bill khi unmount", getBill());
       // clearBill(); // Nếu cần xóa bill khi unmount
     };
-  }, [user?.id, pageCart.current, pageCart.pageSize]); // Depend vào user.id & phân trang
+  }, [user?.id]); // Chỉ phụ thuộc vào user.id
+
   const fetchCart = async () => {
     if (user?.id) {
       // Đảm bảo user có id
+
       try {
         const response = await axios.get(
           "http://localhost:8080/api/client/getallcartforcustomerid",
@@ -98,15 +100,16 @@ const CartPage = () => {
           }
         );
 
-        setProducts(response.data?.data || []); // Nếu không có data, trả về mảng rỗng
+        setProducts(response.data?.data || []);
         await getRealPrice(response.data?.data || []);
       } catch (error) {
         console.error("Lỗi khi lấy giỏ hàng:", error);
-        setProducts([]); // Đảm bảo không bị crash giao diện
+        setProducts([]);
       }
     } else {
-      setProducts(getCart()); // Lấy từ localStorage nếu chưa đăng nhập
-      getRealPrice(getCart());
+      const localCart = getCart();
+      setProducts(localCart);
+      getRealPrice(localCart);
     }
   };
   const vouchersValid = async () => {
@@ -259,7 +262,16 @@ const CartPage = () => {
       ? Number(realPriceItem.price)
       : originalPrice;
 
-    const itemTotal = displayPrice * record.quantityAddCart;
+    // const itemTotal = displayPrice * record.quantityAddCart;
+    // lấy ra số lượng thật
+    const quantity = Math.min(
+      record.quantityAddCart,
+      realPriceItem?.quantity
+    );
+  // set lại số lượng 
+    // handleQuantityChange(index, quantity, realPriceItem.quantity);
+    const itemTotal = displayPrice * quantity;
+
     return acc + itemTotal;
   }, 0);
 
@@ -441,7 +453,11 @@ const CartPage = () => {
           : originalPrice;
 
         // Tạm tính dựa trên giá thực tế
-        const subTotal = displayPrice * record.quantityAddCart;
+        // const subTotal = displayPrice * record.quantityAddCart;
+        const subTotal = displayPrice * Math.min(
+          record.quantityAddCart,
+          realPriceItem?.quantity
+        );
 
         // Kiểm tra nếu có sự thay đổi giá
         const hasPriceChanged =
@@ -548,7 +564,7 @@ const CartPage = () => {
                   block
                   onClick={() => {
                     // handleButtonClick("Mua ngay thành công!");
-                    if (selectedRitem.length > 0) {
+                    if (selectedRitem.length > 0 ) {
                       const updatedSelectedRitem = selectedRitem.map((item) => {
                         const realPriceItem = productsRealPrice.find(
                           (priceItem) =>
@@ -561,8 +577,26 @@ const CartPage = () => {
                         return {
                           ...item,
                           price: realPrice, // Thêm realPrice vào object
+                          // lấy min để tránh số lượng lớn hơn số lượng có trong kho
+                          quantityAddCart: Math.min(
+                            item.quantityAddCart,
+                            realPriceItem?.quantity
+                          ),
                         };
                       });
+
+                      // Check for items with zero or invalid quantity
+                      const invalidItems = updatedSelectedRitem.filter((item) => {
+                        const realPriceItem = productsRealPrice.find(
+                          (priceItem) => priceItem.productDetailId === item.productDetailId
+                        );
+                        return !realPriceItem || realPriceItem.quantity === 0 || item.quantityAddCart === 0;
+                      });
+                      
+                      if (invalidItems.length > 0) {
+                        toast.error("Có sản phẩm không còn hàng hoặc số lượng không hợp lệ");
+                        return;
+                      }
 
                       const vocher = {
                         voucherId: discountCode || null, // ID của voucher nếu có
@@ -577,7 +611,7 @@ const CartPage = () => {
                       navigate("/payment");
                       toast.success("xác nhận mua hàng");
                     } else {
-                      toast.warn("chưa chọn sản phẩm nào");
+                      toast.warn("chưa chọn sản phẩm nào hoặc Tổng tiền bằng 0");
                     }
                   }}
                 >
