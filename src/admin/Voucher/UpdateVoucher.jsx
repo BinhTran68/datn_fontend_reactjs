@@ -6,6 +6,7 @@ import moment from 'moment';
 import { baseUrl } from '../../helpers/Helpers.js';
 import dayjs from "dayjs";
 import { useWatch } from 'antd/es/form/Form';
+import {toast} from "react-toastify";
 
 
 
@@ -205,7 +206,7 @@ const UpdateVoucher = () => {
 
             console.log("Dữ liệu gửi lên API:", requestData);
             await axios.put(`${baseUrl}/api/admin/voucher/update/${id}`, requestData);
-            message.success("Thêm mới phiếu giảm giá thành công!");
+            toast.success("Thêm mới phiếu giảm giá thành công!");
 
             form.resetFields();
             setSelectedRowKeys([]);
@@ -213,7 +214,7 @@ const UpdateVoucher = () => {
             navigate("/admin/vouchelist"); // Thay đổi đường dẫn theo cấu trúc của bạn
 
         } catch (error) {
-            message.error("Lỗi khi lưu dữ liệu!");
+            toast.error("Lỗi khi lưu dữ liệu!");
         }
     };
 

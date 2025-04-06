@@ -347,8 +347,8 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
                       <br />
                       {senderType === "STAFF" && (
                         <Text type="secondary" style={{ fontSize: "12px" }}>
-                          {item?.lastMessage.senderType === senderType ? "tôi:  " : ""}
-                          {item?.lastMessage.lastMesage || "Chưa có tin nhắn"}
+                          {item?.lastMessage?.senderType === senderType ? "tôi:  " : ""}
+                          {item?.lastMessage?.lastMesage || "Chưa có tin nhắn"}
                         </Text>
                       )}
                     </div>

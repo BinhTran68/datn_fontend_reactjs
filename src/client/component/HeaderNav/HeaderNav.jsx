@@ -58,6 +58,7 @@ function HeaderNav() {
   ]);
 
   const messagesEndRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
 
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
@@ -156,50 +157,80 @@ function HeaderNav() {
   // WebSocket connection
 
   const connectWebSocket = () => {
-    // const socket = new SockJS("http://localhost:8080/ws"); // Dùng SockJS
-
     const socket = new WebSocket("ws://localhost:8080/ws");
+    
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+      connectionTimeout: 5000,
+      
       onConnect: (frame) => {
         console.log("✅ WebSocket Connected:", frame);
+        // Clear any existing reconnect timeout
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
         client.subscribe(
-          "/topic/global-notifications/" + user?.id,
+          `/topic/global-notifications/${user?.id}`,
           (message) => {
             const newNotification = JSON.parse(message.body);
             fetchNotifications();
           }
         );
       },
-      onStompError: (frame) =>
-        console.error("❌ STOMP Error:", frame.headers["message"]),
-      onWebSocketClose: (event) => console.warn("⚠️ WebSocket Closed:", event),
+
+      onStompError: (frame) => {
+        console.error("❌ STOMP Error:", frame.headers["message"]);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        reconnectTimeoutRef.current = setTimeout(() => client.activate(), 5000);
+      },
+
+      onWebSocketClose: (event) => {
+        console.warn("⚠️ WebSocket Closed:", event);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        reconnectTimeoutRef.current = setTimeout(() => client.activate(), 5000);
+      },
+
       debug: (str) => console.log("🛠 WebSocket Debug:", str),
     });
+
     try {
       client.activate();
       setStompClient(client);
     } catch (error) {
       console.error("❌ WebSocket Activation Error:", error);
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      reconnectTimeoutRef.current = setTimeout(() => client.activate(), 5000);
     }
   };
 
   const disconnectWebSocket = () => {
-    if (stompClient && stompClient.connected) {
+    if (stompClient) {
       stompClient.deactivate();
       setStompClient(null);
+      // Clear any existing reconnect timeout
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-
-    if (user) {
+    if (user?.id) {
       connectWebSocket();
     }
     return () => disconnectWebSocket();
-  }, [user,cartCount]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchCart();
@@ -225,9 +256,10 @@ function HeaderNav() {
   const menuItems = [
     { key: "home", label: "TRANG CHỦ", path: "/" },
     { key: "products", label: "SẢN PHẨM", path: "/products" },
-    { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/test" },
+    { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/products/bestseller" },
+    // { key: "about", label: "VỀ CHÚNG TÔI", path: "/about" },
     { key: "contact", label: "LIÊN HỆ", path: "/contact" },
-    { key: "support", label: "HỖ TRỢ", path: "/contact" },
+    // { key: "support", label: "HỖ TRỢ", path: "/contact" },
     { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/searchbill" },
   ];
 

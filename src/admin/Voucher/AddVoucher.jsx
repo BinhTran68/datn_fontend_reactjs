@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType } from '../../helpers/Helpers.js';
 import dayjs from 'dayjs';
 import { useWatch } from 'antd/es/form/Form';
+import {toast} from "react-toastify";
 
 
 
@@ -191,7 +192,7 @@ const AddVoucher = () => {
             console.log("Dữ liệu gửi lên API:", requestData);
 
             await axios.post("http://localhost:8080/api/admin/voucher/add", requestData);
-            message.success("Thêm mới phiếu giảm giá thành công!");
+            toast.success("Thêm mới phiếu giảm giá thành công!");
 
             form.resetFields();
             setSelectedRowKeys([]);
@@ -199,7 +200,7 @@ const AddVoucher = () => {
             navigate("/admin/vouchelist"); // Thay đổi đường dẫn theo cấu trúc của bạn
 
         } catch (error) {
-            message.error("Lỗi khi lưu dữ liệu!");
+            toast.error("Lỗi khi lưu dữ liệu!");
         }
     };
 

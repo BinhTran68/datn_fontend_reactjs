@@ -39,6 +39,9 @@ import { COLORS } from "../../../constants/constants";
 import { removeBillFromCart } from "./cart";
 import { FaLocationDot } from "react-icons/fa6";
 import { apiGetAddressDefaut } from "./apiPayment";
+import { FaMoneyBill } from "react-icons/fa6";
+import { DollarOutlined } from "@ant-design/icons";
+
 
 const { Option } = Select;
 
@@ -178,7 +181,7 @@ const PayMent = () => {
       };
 
       setSelectedAddress(newAddress);
-      const totalFee = await calculateShippingFee({
+      const totalFee = caculamoneyBeforeDiscount >= 3000000 ? 0 : await calculateShippingFee({
         toWardCode: String(newAddress?.wardId),
         toDistrictId: Number(newAddress?.districtId),
       });
@@ -543,9 +546,18 @@ const PayMent = () => {
           />
           <Flex justify="space-between">
             <Col>
-              <FcShipped size={27} /> Phí vận chuyển (GHN):{" "}
+              <DollarOutlined style={{
+                color: COLORS.primary,
+                fontSize: "1.3rem"
+              }}  /> Tổng tiền Hàng mua:{" "}
             </Col>
-            + {formatVND(parseInt(bill?.shipMoney) || 0)}
+            + {formatVND(parseInt(caculamoneyBeforeDiscount) || 0)}
+          </Flex>
+          <Flex justify="space-between">
+            <Col>
+              <FcShipped size={27} /> Phí vận chuyển (GHN): {caculamoneyBeforeDiscount >= 3000000 ? <span style={{color: "green"}}>(Miễn phí vận chuyển đơn hàng trên 2 triệu)</span> : ""}
+            </Col>
+            {caculamoneyBeforeDiscount >= 3000000 ? 0 : "+"+ formatVND(parseInt(bill?.shipMoney) || 0)}
           </Flex>
 
           {voucher.length > 0 && voucher[0].note && (
@@ -572,12 +584,7 @@ const PayMent = () => {
                 Thực hiện thanh toán bằng ứng dụng zalo pay.
               </Paragraph>
             </div>
-            {/* <img
-              src="https://authentic-shoes.com/wp-content/uploads/2023/11/Screenshot-2023-11-24-at-23.19.42.png"
-              alt="Bank transfer"
-              width="300"
-            /> */}
-
+      
             <div>
               <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
             </div>

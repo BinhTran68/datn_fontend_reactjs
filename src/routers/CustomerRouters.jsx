@@ -4,10 +4,11 @@ import HomePage from "../client/page/home/HomePage.jsx";
 import Client from "../client/Client.jsx";
 import CartPage from "../client/page/cart/CartPage.jsx";
 import ProductsPage from "../client/page/products/ProductsPage.jsx";
-import Test from "../client/page/TestComponent/Test.jsx";
+import Product from "../client/page/products/Product.jsx";
 import PurchaseOrder from "../client/PurchaseOrder/PurchaseOrder.jsx";
 import SearchBill from "../admin/searchbill/SearchBill.jsx";
 import PhoneAuth from "../client/test/SendOtp.jsx";
+import About from "../client/page/About/About.jsx";
 import Chat from "../client/test/websocket/Chat.jsx";
 import Trademark from "../admin/product/Trademark.jsx";
 import VoucheList from "../admin/Voucher/VoucheList.jsx";
@@ -81,8 +82,8 @@ const CustomerRouters = {
     },
 
     {
-      path: "test",
-      element: <RoleRedirect element={<Test />} />,
+      path: "products/bestseller",
+      element: <RoleRedirect element={<Product />} />,
     },
     {
       path: "payment",
@@ -162,9 +163,11 @@ const CustomerRouters = {
       path: "chat",
       element: <RoleRedirect element={<Chat />} />,
     },
+    {
+      path: "about",
+      element: <RoleRedirect element={<About />} />,
+    },
 
-
- 
  
  
 

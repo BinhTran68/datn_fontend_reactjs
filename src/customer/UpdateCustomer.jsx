@@ -178,11 +178,7 @@ const UpdateCustomer = () => {
         try {
             const values = await form.validateFields();
             
-            // Validate address fields before submitting
-            // if (!address.provinceId || !address.districtId || !address.wardId || !address.specificAddress) {
-            //     message.error('Vui lòng điền đầy đủ thông tin địa chỉ!');
-            //     return;
-            // }
+            // Removed address validation check as requested
 
             // Handle avatar using Cloudinary
             let avatarUrl = selectedRecord?.avatar || '';
@@ -193,7 +189,7 @@ const UpdateCustomer = () => {
                 avatarUrl = fileList[0].url;
                 avatarPublicId = fileList[0].uid;
             }
-            console.log("values.dateBirth", values.dateBirth)
+
             // Prepare customer data
             const customerData = {
                 fullName: values.fullName,
@@ -213,7 +209,7 @@ const UpdateCustomer = () => {
             // Update customer info
             await axios.put(`http://localhost:8080/api/admin/customers/update/${id}`, customerData);
 
-            // Handle address update
+            // Handle address update - still updating address but without validation check
             const defaultAddress = selectedRecord.addresses?.find(addr => addr.isAddressDefault);
             const addressData = {
                 provinceId: address.provinceId,
@@ -354,6 +350,7 @@ const UpdateCustomer = () => {
                                         name="dateBirth"
                                         label="Ngày sinh"
                                         rules={[
+                                            { required: true, message: 'Vui lòng chọn ngày sinh!' },
                                             () => ({
                                                 validator(_, value) {
                                                     if (!value || value <= moment()) {
@@ -379,6 +376,7 @@ const UpdateCustomer = () => {
                                         name="CitizenId"
                                         label="Căn cước công dân"
                                         rules={[
+                                            { required: true, message: 'Vui lòng nhập CCCD!' },
                                             { pattern: citizenIdPattern, message: 'CCCD phải có 9 hoặc 12 số!' }
                                         ]}
                                     >

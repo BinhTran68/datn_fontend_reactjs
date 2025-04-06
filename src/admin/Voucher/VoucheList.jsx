@@ -10,6 +10,7 @@ import { FaEdit } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { debounce } from "lodash"; // Thêm debounce để tránh gọi API liên tục
+import {toast} from "react-toastify";
 
 const { Option } = Select;
 
@@ -100,7 +101,7 @@ const VoucherList = () => {
         ,
 
         {
-            title: ' Giá trị đơn tối thiểu để áp dụng phiếu giảm giá',
+            title: ' Giá trị đơn hàng tối thiểu để áp dụng phiếu giảm giá',
             dataIndex: 'billMinValue',
             key: 'billMinValue',
             align: 'center',
@@ -108,11 +109,12 @@ const VoucherList = () => {
             render: (text) => text ? <span>{text.toLocaleString()} đ</span> : <span>0 đ</span>,
         },
         {
-            title: 'Giá trị tối đa',
+            title: 'Giá trị giảm tối đa cho đơn hàng',
 
             dataIndex: 'discountMaxValue',
             key: 'discountMaxValue',
             align: 'center',
+            className: 'column-border-right',
 
             render: (text) => text ? <span>{text.toLocaleString()} đ</span> : <span>0 đ</span>,
         },
@@ -207,9 +209,9 @@ const VoucherList = () => {
 
                                             await switchVoucherStatus(record.id, { status: newStatus });
                                             getPageVoucher();
-                                            message.success("Cập nhật trạng thái thành công");
+                                            toast.success("Cập nhật trạng thái thành công");
                                         } catch (error) {
-                                            message.error("Cập nhật trạng thái không thành công");
+                                            toast.error("Cập nhật trạng thái không thành công");
                                         }
                                     }
                                 });
@@ -330,10 +332,10 @@ const VoucherList = () => {
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${baseUrl}/api/admin/voucher/delete/${id}`);
-            message.success('Xóa phiếu giảm giá thành công!');
+            toast.success('Xóa phiếu giảm giá thành công!');
             getPageVoucher();  // Fetch updated list
         } catch (error) {
-            message.error('Lỗi khi xóa phiếu giảm giá!');
+            toast.error('Lỗi khi xóa phiếu giảm giá!');
         }
     };
     const [isDetail, setIsDeatil] = useState(false);
@@ -455,7 +457,7 @@ const VoucherList = () => {
                     </Button>
                 </Link>
                 <Table
-                    columns={columns(handleEdit, handleDelete, handleDetail)}
+                    columns={columns(handleEdit, handleDelete, handleDetail) }
                     dataSource={voucherData}
                     rowKey="id"
                     pagination={{
@@ -463,6 +465,7 @@ const VoucherList = () => {
                         pageSize: pagination.size,
                         total: pagination.total
                     }}
+                    
                     onChange={handleOnChangeTable}
                 />
             </Card>

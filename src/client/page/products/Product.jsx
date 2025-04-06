@@ -125,7 +125,7 @@ function Product() {
                         price: product.price ?? 0,
                         promotionView: product.promotionView,
                         sale: product.sold ?? 0,
-                        url: product.imageUrl || "https://placehold.co/100",
+                        url: product.imageUrl || "https://placehold.co/50",
                         views: product.views ?? 0,
                         rate: product.rate ?? 5,
                       }}
@@ -134,7 +134,7 @@ function Product() {
                 </Col>
               ))}
             </Row>
-            <Row>
+            <Row className="p-3">
               <Pagination
                 current={pageProductHadSolDescs.current}
                 pageSize={pageProductHadSolDescs.pageSize}
@@ -189,7 +189,7 @@ function Product() {
                 </Col>
               ))}
             </Row>
-            <Row>
+            <Row className="p-3">
               <Pagination
                 current={pageProductHadPromotion.current}
                 pageSize={pageProductHadPromotion.pageSize}

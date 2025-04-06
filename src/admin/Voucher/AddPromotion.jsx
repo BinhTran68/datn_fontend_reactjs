@@ -1,19 +1,23 @@
 import {
-    Modal, Table, Input, Button, Row, Col, Typography, Card, Checkbox, message, InputNumber, Form, DatePicker, Select
+    Modal, Table, Input, Button, Row, Col, Typography, Card, Checkbox, message, InputNumber, Form, DatePicker, Select, Collapse, Space, Tooltip, Spin
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { SearchOutlined, FilterOutlined, ClearOutlined, DownOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import _ from "lodash"; // Import lodash để debounce API call
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
 
-
+const { Option } = Select;
+const { Title } = Typography;
+const { Panel } = Collapse;
 
 const AddPromotion = () => {
     const [form] = Form.useForm();
-    const { Title } = Typography;
+    const [filterForm] = Form.useForm();
     const [loading, setLoading] = useState(false); // Trạng thái loading
+    const [filterLoading, setFilterLoading] = useState(false); // Thêm state filterLoading
     const [products, setProducts] = useState([]); // Danh sách sản phẩm
     const [selectedProducts, setSelectedProducts] = useState([]); // Danh sách sản phẩm đã chọn
     const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm
@@ -24,7 +28,214 @@ const AddPromotion = () => {
     const [productDetails, setProductDetails] = useState([]);
     const [selectedProductDetails, setSelectedProductDetails] = useState([]);
     const navigate = useNavigate();
+    //lưu sp detail
+    const [originalProductDetails, setOriginalProductDetails] = useState([]);
+    const [filterOptions, setFilterOptions] = useState({
+        brands: [],
+        types: [],
+        colors: [],
+        materials: [],
+        sizes: [],
+        soles: [],
+        genders: [],
+        weights: [],
+    });
 
+    // Thêm state để lưu trữ danh sách ban đầu
+    const [originalList, setOriginalList] = useState([]);
+
+    // Cập nhật useEffect để lưu danh sách ban đầu
+    useEffect(() => {
+        if (Array.isArray(productDetails) && productDetails.length > 0 && originalList.length === 0) {
+            setOriginalList([...productDetails]);
+        }
+    }, [productDetails]);
+
+    // Generate filter options
+    const generateFilterOptions = useCallback((details) => {
+        if (!details || !Array.isArray(details)) {
+            return {
+                brands: [],
+                types: [],
+                colors: [],
+                materials: [],
+                sizes: [],
+                soles: [],
+                genders: [],
+                weights: [],
+            };
+        }
+        
+        const options = {
+            brands: [],
+            types: [],
+            colors: [],
+            materials: [],
+            sizes: [],
+            soles: [],
+            genders: [],
+            weights: [],
+        };
+
+        details.forEach(item => {
+            if (item?.brandName) options.brands.push(item.brandName);
+            if (item?.typeName) options.types.push(item.typeName);
+            if (item?.colorName) options.colors.push(item.colorName);
+            if (item?.materialName) options.materials.push(item.materialName);
+            if (item?.sizeName) options.sizes.push(item.sizeName);
+            if (item?.soleName) options.soles.push(item.soleName);
+            if (item?.genderName) options.genders.push(item.genderName);
+            if (item?.weight) options.weights.push(item.weight);
+        });
+
+        // Remove duplicates and sort
+        Object.keys(options).forEach(key => {
+            options[key] = [...new Set(options[key])].sort();
+        });
+
+        return options;
+    }, []);
+
+    useEffect(() => {
+        if (Array.isArray(productDetails)) {
+            const options = generateFilterOptions(productDetails);
+            setFilterOptions(options);
+        }
+    }, [productDetails, generateFilterOptions]);
+
+    // Cập nhật useEffect để lưu danh sách ban đầu
+    useEffect(() => {
+        if (Array.isArray(productDetails) && productDetails.length > 0 && originalProductDetails.length === 0) {
+            setOriginalProductDetails([...productDetails]);
+        }
+    }, [productDetails]);
+
+    // Sửa lại handleFilterSearch để lọc từ danh sách gốc
+    const handleFilterSearch = useCallback(() => {
+        try {
+            setFilterLoading(true);
+            const values = filterForm.getFieldsValue();
+            let filteredResults = Array.isArray(originalProductDetails) ? [...originalProductDetails] : [];
+
+            const filters = [
+                { 
+                    key: 'productName', 
+                    value: values?.productName, 
+                    filter: (item, val) => {
+                        if (!item?.productName || !val) return true;
+                        return item.productName.toLowerCase().includes(val.toLowerCase());
+                    }
+                },
+                { key: 'brandName', value: values?.brandName },
+                { key: 'typeName', value: values?.typeName },
+                { key: 'colorName', value: values?.colorName },
+                { key: 'materialName', value: values?.materialName },
+                { key: 'sizeName', value: values?.sizeName },
+                { key: 'soleName', value: values?.soleName },
+                { key: 'genderName', value: values?.genderName },
+                { key: 'weight', value: values?.weight },
+            ];
+
+            filteredResults = filters.reduce((results, { key, value, filter }) => {
+                if (!value) return results;
+                return results.filter(item => {
+                    if (filter) return filter(item, value);
+                    return item?.[key] === value;
+                });
+            }, filteredResults);
+
+            setProductDetails(filteredResults);
+            message.success(`Tìm thấy ${filteredResults.length} sản phẩm phù hợp`);
+        } catch (error) {
+            console.error("Lỗi khi lọc sản phẩm:", error);
+            message.error("Đã xảy ra lỗi khi tìm kiếm sản phẩm!");
+            setProductDetails([]);
+        } finally {
+            setFilterLoading(false);
+        }
+    }, [filterForm, originalProductDetails]);
+
+    const debouncedFilterSearch = useCallback(
+        _.debounce((value) => {
+            if (!value) {
+                handleFilterSearch();
+            } else {
+                filterForm.setFieldsValue({ productName: value });
+                handleFilterSearch();
+            }
+        }, 500),
+        [filterForm, handleFilterSearch]
+    );
+
+    // Sửa lại handleClearFilter để khôi phục danh sách ban đầu
+    const handleClearFilter = useCallback(() => {
+        try {
+            setFilterLoading(true);
+            filterForm.resetFields();
+            if (Array.isArray(originalProductDetails) && originalProductDetails.length > 0) {
+                setProductDetails([...originalProductDetails]);
+                message.success('Đã xóa bộ lọc và khôi phục danh sách ban đầu');
+            } else {
+                message.warning('Không tìm thấy danh sách ban đầu');
+            }
+        } catch (error) {
+            console.error("Lỗi khi xóa bộ lọc:", error);
+            message.error("Đã xảy ra lỗi khi xóa bộ lọc!");
+        } finally {
+            setFilterLoading(false);
+        }
+    }, [filterForm, originalProductDetails]);
+
+    const filterOption = useCallback((input, option) => {
+        if (!option?.children || !input) return false;
+        return option.children.toLowerCase().includes(input.toLowerCase());
+    }, []);
+
+    const renderSelect = useCallback((name, label, options) => {
+        const safeOptions = Array.isArray(options) ? options : [];
+        return (
+            <Col xs={24} sm={12} md={8} lg={6}>
+                <Form.Item 
+                    name={name} 
+                    label={
+                        <Space>
+                            {label}
+                            <Tooltip title={`Lọc theo ${label.toLowerCase()}`}>
+                                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                            </Tooltip>
+                        </Space>
+                    }
+                    rules={[
+                        {
+                            validator: (_, value) => {
+                                if (value && value.length > 50) {
+                                    return Promise.reject(`${label} không được vượt quá 50 ký tự`);
+                                }
+                                return Promise.resolve();
+                            },
+                        },
+                    ]}
+                >
+                    <Select
+                        placeholder={`Chọn ${label.toLowerCase()}`}
+                        allowClear
+                        showSearch
+                        filterOption={filterOption}
+                        onChange={(value) => !value && handleFilterSearch()}
+                        loading={filterLoading}
+                        optionFilterProp="children"
+                        notFoundContent={filterLoading ? <Spin size="small" /> : "Không tìm thấy"}
+                    >
+                        {safeOptions.map(item => (
+                            <Option key={item} value={item}>
+                                {item}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+            </Col>
+        );
+    }, [filterOption, handleFilterSearch, filterLoading]);
 
     //xử lí nút add
     const handleAddPromotion = async () => {
@@ -34,15 +245,15 @@ const AddPromotion = () => {
             console.log("Form values:", values);
             console.log("Selected products:", selectedProducts);
             console.log("Selected product details:", selectedProductDetails);
-              // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
-        if (selectedProducts.length === 0) {
-            message.error("Vui lòng chọn ít nhất một sản phẩm!");
-            return;
-        }
-        if (selectedProductDetails.length === 0) {
-            message.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
-            return;
-        }
+            // 🛑 Kiểm tra nếu chưa chọn sản phẩm nào
+            if (selectedProducts.length === 0) {
+                toast.error("Vui lòng chọn ít nhất một sản phẩm!");
+                return;
+            }
+            if (selectedProductDetails.length === 0) {
+                toast.error("Vui lòng chọn ít nhất một sản phẩm chi tiết!");
+                return;
+            }
             const requestData = {
                 ...values,
                 discountType: "PERCENT",
@@ -62,7 +273,7 @@ const AddPromotion = () => {
             // ✅ In ra phản hồi từ backend để kiểm tra
             console.log("Phản hồi từ backend:", response.data.data);
 
-            message.success("Thêm chương trình khuyến mãi thành công!");
+            toast.success("Thêm chương trình khuyến mãi thành công!");
 
             form.resetFields();
             setSelectedProducts([]);
@@ -73,7 +284,7 @@ const AddPromotion = () => {
 
 
         } catch (error) {
-            message.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm chương trình khuyến mãi!");
+            toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm chương trình khuyến mãi!");
             console.error("Lỗi:", error.response?.data || error.message);
         }
     };
@@ -84,7 +295,7 @@ const AddPromotion = () => {
             content: "Bạn có chắc chắn muốn thêm chương trình khuyến mãi này không?",
             onOk: handleAddPromotion, // Nếu OK, thì gọi hàm xử lý add
             onCancel() {
-                message.info("Hủy thêm chương trình khuyến mãi.");
+                toast.info("Hủy thêm chương trình khuyến mãi.");
             },
         });
     };
@@ -102,7 +313,7 @@ const AddPromotion = () => {
 
             setProducts(filteredProducts);
         } catch (error) {
-            message.error("Có lỗi xảy ra khi tải dữ liệu.");
+            toast.error("Có lỗi xảy ra khi tải dữ liệu.");
         } finally {
             setLoading(false);
         }
@@ -140,11 +351,22 @@ const AddPromotion = () => {
             }
         } catch (error) {
             console.error("Lỗi khi tìm kiếm sản phẩm:", error);
-            message.error("Có lỗi xảy ra khi tìm kiếm.");
+            toast.error("Có lỗi xảy ra khi tìm kiếm.");
         } finally {
             setLoading(false);
         }
     };
+    //tìm kiếm sản phẩm chi tiết
+    const handleFilterResults = (filteredProducts) => {
+        const selectedIds = selectedProductDetails.map((item) => item.id);
+        setProductDetails(filteredProducts);
+      
+
+      };
+    
+
+
+    //tìm kiếm sản phẩm chi tiết
     /**
      * 🟢 Xử lý khi người dùng nhập vào ô tìm kiếm
      */
@@ -165,36 +387,46 @@ const AddPromotion = () => {
     };
     const handleCheckboxChange = async (e, record) => {
         if (e.target.checked) {
-            try {
-                const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
-
-                if (response.data?.data) {
-                    const newDetails = response.data.data.filter(detail =>
-                        !productDetails.some(item => item.id === detail.id)
-                    );
-
-                    setProductDetails(prevDetails => [...prevDetails, ...newDetails]);
-                    setSelectedProducts(prevSelected => [...prevSelected, record]);
-                }
-            } catch (error) {
-                message.error("Lỗi khi tải chi tiết sản phẩm.");
+          try {
+            const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
+      
+            if (response.data?.data) {
+              const newDetails = response.data.data.filter(
+                (detail) => !productDetails.some((item) => item.id === detail.id)
+              );
+      
+              const updatedDetails = [...productDetails, ...newDetails];
+              setProductDetails(updatedDetails);
+              setSelectedProducts((prevSelected) => [...prevSelected, record]);
+              //
+              setOriginalProductDetails((prev) => [...prev, ...newDetails]); // Lưu dữ liệu gốc
             }
+          } catch (error) {
+            toast.error("Lỗi khi tải chi tiết sản phẩm.");
+          }
         } else {
-            // ✅ Xóa sản phẩm khỏi danh sách đã chọn
-            const updatedSelectedProducts = selectedProducts.filter(p => p.id !== record.id);
-            setSelectedProducts(updatedSelectedProducts);
+          // Remove the product from selected products
+          const updatedSelectedProducts = selectedProducts.filter((p) => p.id !== record.id);
+          setSelectedProducts(updatedSelectedProducts);
+      
+          // Remove related product details
+          const updatedDetails = productDetails.filter((detail) => detail.productId !== record.id);
+          setProductDetails(updatedDetails);
+          setOriginalProductDetails((prev) => prev.filter((detail) => detail.productId !== record.id)); // Cập nhật dữ liệu gốc
+          setSelectedProductDetails((prevSelected) =>
+            prevSelected.filter((detail) => detail.productId !== record.id)
+          );
+      
 
-            // ✅ Xóa chi tiết sản phẩm liên quan
-            setProductDetails(prevDetails => prevDetails.filter(detail => detail.productId !== record.id));
-            setSelectedProductDetails(prevSelected => prevSelected.filter(detail => detail.productId !== record.id));
-
-            // ✅ Nếu không còn sản phẩm nào được chọn, xóa hết danh sách chi tiết
-            if (updatedSelectedProducts.length === 0) {
-                setProductDetails([]);
-                setSelectedProductDetails([]);
-            }
+      
+          // If no products are selected, clear everything
+          if (updatedSelectedProducts.length === 0) {
+            setProductDetails([]);
+            setSelectedProductDetails([]);
+            setOriginalProductDetails([]); // Reset dữ liệu gốc khi không còn sản phẩm nào được chọn
+          }
         }
-    };
+      };
     useEffect(() => {
         fetchProductsData();
     }, []);
@@ -216,7 +448,7 @@ const AddPromotion = () => {
                                         setProductDetails(prev => [...prev, ...response.data.data]);
                                     }
                                 } catch (error) {
-                                    message.error("Lỗi khi tải chi tiết sản phẩm.");
+                                    toast.error("Lỗi khi tải chi tiết sản phẩm.");
                                 }
                             });
                         } else {
@@ -302,22 +534,22 @@ const AddPromotion = () => {
             <Col span={8}>
                 <Card>
                     <Form form={form} layout="vertical">
-                    <Form.Item
-    name="promotionName"
-    label={`Tên đợt giảm giá (${nameLength}/100)`}
-    style={{ marginBottom: "12px" }}
-    rules={[
-        { required: true, message: "Không được bỏ trống" },
-        { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
-    ]}
->
-    <Input 
-        placeholder="Nhập tên đợt giảm giá"
-        style={{ width: "100%" }}
-        maxLength={100}
-        onChange={(e) => setNameLength(e.target.value.length)}
-    />
-</Form.Item>
+                        <Form.Item
+                            name="promotionName"
+                            label={`Tên đợt giảm giá (${nameLength}/100)`}
+                            style={{ marginBottom: "12px" }}
+                            rules={[
+                                { required: true, message: "Không được bỏ trống" },
+                                { min: 1, max: 100, message: "Tên đợt giảm giá phải từ 1 đến 100 ký tự" }
+                            ]}
+                        >
+                            <Input
+                                placeholder="Nhập tên đợt giảm giá"
+                                style={{ width: "100%" }}
+                                maxLength={100}
+                                onChange={(e) => setNameLength(e.target.value.length)}
+                            />
+                        </Form.Item>
 
                         <Form.Item
                             name="discountValue"
@@ -442,24 +674,95 @@ const AddPromotion = () => {
                     />
                 </Card>
             </Col>
-            <Card style={{ marginTop: "30px" }}>
+            <Card style={{ marginTop: "30px", width: "100%" }}>
                 <Title level={2}>Sản Phẩm Chi Tiết</Title>
+                
+                {/* Bộ lọc sản phẩm chi tiết */}
+                <Card style={{ marginBottom: '10px' }}>
+                    <Title level={4}><FilterOutlined /> Bộ lọc sản phẩm chi tiết</Title>
+                    <Form form={filterForm} layout="vertical">
+                        <Row gutter={[16, 16]}>
+                            <Col xs={24} sm={12} md={8} lg={6}>
+                                <Form.Item 
+                                    name="productName" 
+                                    label={
+                                        <Space>
+                                            Tên Sản Phẩm
+                                            <Tooltip title="Tìm kiếm theo tên sản phẩm">
+                                                <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                                            </Tooltip>
+                                        </Space>
+                                    }
+                                    rules={[
+                                        {
+                                            validator: (_, value) => {
+                                                if (value && value.length > 100) {
+                                                    return Promise.reject('Tên sản phẩm không được vượt quá 100 ký tự');
+                                                }
+                                                return Promise.resolve();
+                                            },
+                                        },
+                                    ]}
+                                >
+                                    <Input 
+                                        placeholder="Nhập tên sản phẩm" 
+                                        allowClear 
+                                        onChange={(e) => debouncedFilterSearch(e.target.value)}
+                                        suffix={filterLoading ? <Spin size="small" /> : null}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24}>
+                                <Collapse defaultActiveKey={['1']} expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}>
+                                    <Panel header="Bộ lọc nâng cao" key="1">
+                                        <Row gutter={[8, 0]}>
+                                            {renderSelect('brandName', 'Thương Hiệu', filterOptions?.brands || [])}
+                                            {renderSelect('typeName', 'Loại', filterOptions?.types || [])}
+                                            {renderSelect('colorName', 'Màu Sắc', filterOptions?.colors || [])}
+                                            {renderSelect('materialName', 'Chất Liệu', filterOptions?.materials || [])}
+                                            {renderSelect('sizeName', 'Kích Cỡ', filterOptions?.sizes || [])}
+                                            {renderSelect('soleName', 'Đế Giày', filterOptions?.soles || [])}
+                                            {renderSelect('genderName', 'Giới Tính', filterOptions?.genders || [])}
+                                            {renderSelect('weight', 'Trọng lượng', filterOptions?.weights || [])}
+                                        </Row>
+                                    </Panel>
+                                </Collapse>
+                            </Col>
+                        </Row>
+                        <Row justify="end">
+                            <Space>
+                                <Button 
+                                    icon={<ClearOutlined />} 
+                                    onClick={handleClearFilter}
+                                    disabled={filterLoading}
+                                >
+                                    Xóa bộ lọc
+                                </Button>
+                                <Button 
+                                    type="primary" 
+                                    icon={<SearchOutlined />} 
+                                    onClick={handleFilterSearch} 
+                                    loading={filterLoading}
+                                >
+                                    Tìm kiếm
+                                </Button>
+                            </Space>
+                        </Row>
+                    </Form>
+                </Card>
 
-             
                 <Table
                     columns={columnsDetail}
-                    dataSource={productDetails}  // ✅ Hiển thị danh sách chi tiết thay vì `products`
+                    dataSource={productDetails}
                     rowKey="id"
                     loading={loading}
                     pagination={{
                         current: currentPage1,
                         pageSize: pageSize1,
-                        total: productDetails.length, // ✅ Sử dụng độ dài của productDetails
-                        onChange: (page) => setCurrentPage1(page), // ✅ Cập nhật currentPage1
+                        total: productDetails.length,
+                        onChange: (page) => setCurrentPage1(page),
                     }}
-
                 />
-
             </Card>
         </Row>
     );
