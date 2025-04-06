@@ -256,9 +256,10 @@ function HeaderNav() {
   const menuItems = [
     { key: "home", label: "TRANG CHỦ", path: "/" },
     { key: "products", label: "SẢN PHẨM", path: "/products" },
-    { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/test" },
+    { key: "bestseller", label: "SẢN PHẨM BÁN CHẠY", path: "/products/bestseller" },
+    // { key: "about", label: "VỀ CHÚNG TÔI", path: "/about" },
     { key: "contact", label: "LIÊN HỆ", path: "/contact" },
-    { key: "support", label: "HỖ TRỢ", path: "/contact" },
+    // { key: "support", label: "HỖ TRỢ", path: "/contact" },
     { key: "order-tracking", label: "TRA CỨU ĐƠN HÀNG", path: "/searchbill" },
   ];
 
