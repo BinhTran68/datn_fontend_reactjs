@@ -145,10 +145,10 @@ const AddPromotion = () => {
             }, filteredResults);
 
             setProductDetails(filteredResults);
-            message.success(`Tìm thấy ${filteredResults.length} sản phẩm phù hợp`);
+            toast.success(`Tìm thấy ${filteredResults.length} sản phẩm phù hợp`);
         } catch (error) {
             console.error("Lỗi khi lọc sản phẩm:", error);
-            message.error("Đã xảy ra lỗi khi tìm kiếm sản phẩm!");
+            toast.error("Đã xảy ra lỗi khi tìm kiếm sản phẩm!");
             setProductDetails([]);
         } finally {
             setFilterLoading(false);
@@ -167,24 +167,35 @@ const AddPromotion = () => {
         [filterForm, handleFilterSearch]
     );
 
-    // Sửa lại handleClearFilter để khôi phục danh sách ban đầu
-    const handleClearFilter = useCallback(() => {
+    // Sửa lại handleClearFilter để gọi API lấy lại danh sách gốc
+    const handleClearFilter = useCallback(async () => {
         try {
             setFilterLoading(true);
             filterForm.resetFields();
-            if (Array.isArray(originalProductDetails) && originalProductDetails.length > 0) {
-                setProductDetails([...originalProductDetails]);
-                message.success('Đã xóa bộ lọc và khôi phục danh sách ban đầu');
+            
+            if (selectedProducts.length > 0) {
+                const allDetails = [];
+                for (const product of selectedProducts) {
+                    const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${product.id}`);
+                    if (response.data?.data) {
+                        allDetails.push(...response.data.data);
+                    }
+                }
+                setProductDetails(allDetails);
+                setOriginalProductDetails(allDetails);
+                toast.success('Đã xóa bộ lọc và khôi phục danh sách gốc');
             } else {
-                message.warning('Không tìm thấy danh sách ban đầu');
+                setProductDetails([]);
+                setOriginalProductDetails([]);
+                toast.warning('Không có sản phẩm nào được chọn');
             }
         } catch (error) {
             console.error("Lỗi khi xóa bộ lọc:", error);
-            message.error("Đã xảy ra lỗi khi xóa bộ lọc!");
+            toast.error("Đã xảy ra lỗi khi xóa bộ lọc!");
         } finally {
             setFilterLoading(false);
         }
-    }, [filterForm, originalProductDetails]);
+    }, [filterForm, selectedProducts]);
 
     const filterOption = useCallback((input, option) => {
         if (!option?.children || !input) return false;
@@ -387,46 +398,55 @@ const AddPromotion = () => {
     };
     const handleCheckboxChange = async (e, record) => {
         if (e.target.checked) {
-          try {
-            const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
-      
-            if (response.data?.data) {
-              const newDetails = response.data.data.filter(
-                (detail) => !productDetails.some((item) => item.id === detail.id)
-              );
-      
-              const updatedDetails = [...productDetails, ...newDetails];
-              setProductDetails(updatedDetails);
-              setSelectedProducts((prevSelected) => [...prevSelected, record]);
-              //
-              setOriginalProductDetails((prev) => [...prev, ...newDetails]); // Lưu dữ liệu gốc
+            try {
+                const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${record.id}`);
+        
+                if (response.data?.data) {
+                    const newDetails = response.data.data.filter(
+                        (detail) => !productDetails.some((item) => item.id === detail.id)
+                    );
+        
+                    const updatedDetails = [...productDetails, ...newDetails];
+                    setProductDetails(updatedDetails);
+                    setSelectedProducts((prevSelected) => [...prevSelected, record]);
+                    // Lưu danh sách gốc khi thêm sản phẩm mới
+                    setOriginalProductDetails(updatedDetails);
+                }
+            } catch (error) {
+                toast.error("Lỗi khi tải chi tiết sản phẩm.");
             }
-          } catch (error) {
-            toast.error("Lỗi khi tải chi tiết sản phẩm.");
-          }
         } else {
-          // Remove the product from selected products
-          const updatedSelectedProducts = selectedProducts.filter((p) => p.id !== record.id);
-          setSelectedProducts(updatedSelectedProducts);
-      
-          // Remove related product details
-          const updatedDetails = productDetails.filter((detail) => detail.productId !== record.id);
-          setProductDetails(updatedDetails);
-          setOriginalProductDetails((prev) => prev.filter((detail) => detail.productId !== record.id)); // Cập nhật dữ liệu gốc
-          setSelectedProductDetails((prevSelected) =>
-            prevSelected.filter((detail) => detail.productId !== record.id)
-          );
-      
-
-      
-          // If no products are selected, clear everything
-          if (updatedSelectedProducts.length === 0) {
-            setProductDetails([]);
-            setSelectedProductDetails([]);
-            setOriginalProductDetails([]); // Reset dữ liệu gốc khi không còn sản phẩm nào được chọn
-          }
+            // Remove the product from selected products
+            const updatedSelectedProducts = selectedProducts.filter((p) => p.id !== record.id);
+            setSelectedProducts(updatedSelectedProducts);
+            
+            // Nếu vẫn còn sản phẩm được chọn, gọi API lấy lại danh sách biến thể
+            if (updatedSelectedProducts.length > 0) {
+                try {
+                    const allDetails = [];
+                    for (const product of updatedSelectedProducts) {
+                        const response = await axios.get(`http://localhost:8080/api/admin/productdetail/product/${product.id}`);
+                        if (response.data?.data) {
+                            allDetails.push(...response.data.data);
+                        }
+                    }
+                    setProductDetails(allDetails);
+                    setOriginalProductDetails(allDetails);
+                } catch (error) {
+                    toast.error("Lỗi khi tải chi tiết sản phẩm.");
+                }
+            } else {
+                // Nếu không còn sản phẩm nào được chọn, xóa toàn bộ dữ liệu
+                setProductDetails([]);
+                setOriginalProductDetails([]);
+            }
+            
+            // Xóa các biến thể đã chọn của sản phẩm vừa bỏ chọn
+            setSelectedProductDetails((prevSelected) =>
+                prevSelected.filter((detail) => detail.productId !== record.id)
+            );
         }
-      };
+    };
     useEffect(() => {
         fetchProductsData();
     }, []);
@@ -713,7 +733,9 @@ const AddPromotion = () => {
                                 </Form.Item>
                             </Col>
                             <Col xs={24}>
-                                <Collapse defaultActiveKey={['1']} expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}>
+                                <Collapse  style={{background:"white",border:"none"}} defaultActiveKey={[]} expandIcon={({ isActive })  =>
+                                    
+                                    <DownOutlined rotate={isActive ? 180 : 0} />}>
                                     <Panel header="Bộ lọc nâng cao" key="1">
                                         <Row gutter={[8, 0]}>
                                             {renderSelect('brandName', 'Thương Hiệu', filterOptions?.brands || [])}
@@ -729,7 +751,7 @@ const AddPromotion = () => {
                                 </Collapse>
                             </Col>
                         </Row>
-                        <Row justify="end">
+                        <Row justify="flex">
                             <Space>
                                 <Button 
                                     icon={<ClearOutlined />} 
