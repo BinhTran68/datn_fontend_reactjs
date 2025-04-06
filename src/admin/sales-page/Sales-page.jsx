@@ -721,6 +721,12 @@ const SalesPage = () => {
                         ...item,
                         isCOD: isChecked,
                         isShipping: true,
+                        payInfo: {
+                            ...item.payInfo,
+                            customerMoney: 0,
+                            cashCustomerMoney: 0,
+                            bankCustomerMoney: 0,
+                        }
                     };
                 }
                 return item;
@@ -811,7 +817,7 @@ const SalesPage = () => {
                 shipMoney: bill.isShipping ? bill.shippingFee || 0 : 0,
                 totalMoney: bill.payInfo?.amount || 0, // Tiền
                 moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
-                moneyBeforeDiscount: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0), // Tiền trước giảm giá
+                moneyBeforeDiscount: (bill.payInfo?.amount || 0) + (bill.payInfo?.discount || 0),
                 completeDate: null,
                 confirmDate: new Date().toISOString(),
                 desiredDateOfReceipt: null,
@@ -856,7 +862,7 @@ const SalesPage = () => {
                     })
                 );
                 toast.success("Tạo hóa đơn thành công!");
-
+                getAllVoucher();
                 // Show modal with options
                 setIsPaymentModalVisible(true);
             } else {

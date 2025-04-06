@@ -10,7 +10,10 @@ import {toast} from "react-toastify";
 
 const { Option } = Select;
 
-const AddCustomer = () => {
+const AddCustomer = ({
+                        isSalePage = false,
+                        OnAddCustomerOk
+                     }) => {
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);
     const navigate = useNavigate();
@@ -287,10 +290,14 @@ const AddCustomer = () => {
             form.resetFields();
             setFileList([]);
             
-            setTimeout(() => {
-                setLoading(false);
-                navigate("/admin/customer");
-            }, 2000);
+            if(isSalePage) {
+                OnAddCustomerOk()
+            }else {
+                setTimeout(() => {
+                    setLoading(false);
+                    navigate("/admin/customer");
+                }, 1000);
+            }
         } catch (error) {
             setLoading(false);
             console.error('Lỗi thêm khách hàng:', error);

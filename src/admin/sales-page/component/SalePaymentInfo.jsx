@@ -309,6 +309,7 @@ const SalePaymentInfo = ({
                                 <Input
                                     type="number"
                                     min={0}
+                                    disabled={isCOD}
                                     placeholder="Nhập số tiền"
                                     onChange={handleCashCustomerMoneyChange}
                                     value={parseInt(cashCustomerMoney)}

@@ -546,17 +546,17 @@ const BillDetail = () => {
             },
             {
                 key: '4',
-                label: 'Tổng tiền thanh toán',
+                label: 'Tổng tiền khách hàng cần thanh toán',
                 span: 2,
                 children: <div style={{
                     color: "blue"
                 }}>
-                    {formatVND(currentBill?.totalMoney)}
+                    {formatVND(currentBill?.moneyAfter)}
                 </div>,
             },
             {
                 key: '5',
-                label: 'Tiền khách đưa',
+                label: 'Tiền khách đã thanh toán',
                 span: 2,
                 children: <div style={{
                     color: "blue"
@@ -1237,7 +1237,7 @@ const BillDetail = () => {
                     <div className={"row"}>
                         <div className={"col-md-8"}>
                         </div>
-                        <div className={"col-md-4"}>
+                        <div className={"col-md-4 mb-5"}>
                             <Descriptions
                                 column={1}
                                 labelStyle={{

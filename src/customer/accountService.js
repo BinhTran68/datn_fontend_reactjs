@@ -1,11 +1,11 @@
 export const genStringAccountStatus = (status) => {
-    if (status === 1) {
+    if (status === 0) {
         return "Hoạt động"
     }
-    if (status === 2) {
+    if (status === 1) {
         return "Đã khóa"
     }
-    if (status === 3) {
+    if (status === 2) {
         return "Chưa kích hoạt"
     }
     return "Chưa kích hoạt"

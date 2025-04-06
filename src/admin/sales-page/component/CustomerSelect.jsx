@@ -1,15 +1,18 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import { Button, Card, Select, Row, Col, Descriptions, Avatar, Tag } from "antd";
+import {Button, Card, Select, Row, Col, Descriptions, Avatar, Tag, Modal} from "antd";
 import { UserAddOutlined, PhoneOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
 import {toast} from "react-toastify";
 import axiosInstance from "../../../utils/axiosInstance.js";
 import {debounce} from "lodash";
 import {convertDate, convertDateFullYear} from "../../../helpers/Helpers.js";
+import AddCustomer from "../../../customer/AddCustomer.jsx";
+import {genStringAccountStatus} from "../../../customer/accountService.js";
 
 const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
 
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isShowAddCustomer, setIsShowAddCustomer] = useState(false)
 
     // Sử dụng useCallback để không tạo lại hàm debounce mỗi lần component render
     const handleSearch = useCallback(
@@ -39,13 +42,18 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                     <Avatar src={c.avatar} size="small">{c.fullName?.charAt(0)}</Avatar>
                     <div>
                         <div>{c.fullName}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>{c.phoneNumber} | {c.email}</div>
-                        <div>Trạng thái : {c.status === 1 ? 'Đang hoạt động' : 'Đã khóa'}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>{c.phoneNumber} </div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>{c.email} </div>
+                        <div>Trạng thái : {genStringAccountStatus(c.status)}</div>
                     </div>
                 </div>
             ),
         })));
     }, [searchResults]);
+
+    const OnAddCustomerOk = () => {
+        setIsShowAddCustomer(false);
+    }
 
     return (
         <Card>
@@ -68,8 +76,8 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                         options={options} // Dùng options từ state
                         onSelect={(value) => {
                             const selectedCustomer = searchResults.find(c => c.id === value);
-                            if (selectedCustomer?.status !== 1) {
-                                toast.warning("Tài khoản khách hàng đã bị khóa");
+                            if (selectedCustomer?.status !== 0) {
+                                toast.warning("Tài khoản khách hàng đã ngừng hoạt động!");
                                 return;
                             }
                             onCustomerSelect(selectedCustomer);
@@ -77,7 +85,9 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                     />
 
 
-                    <Button type="primary" icon={<UserAddOutlined />}>
+                    <Button type="primary"
+                            onClick={() => setIsShowAddCustomer(true)}
+                            icon={<UserAddOutlined />}>
                         Thêm mới khách hàng
                     </Button>
                 </div>
@@ -98,8 +108,8 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                                   </Avatar>
                                   <div>
                                       <h2 style={{ margin: 0 }}>{customer.fullName}</h2>
-                                      <Tag color={customer.status === 1 ? 'green' : 'red'}>
-                                          {customer.status === 1 ? 'Đang hoạt động' : 'Đã khóa'}
+                                      <Tag color={customer.status === 0 ? 'green' : 'red'}>
+                                          {genStringAccountStatus(customer.status)}
                                       </Tag>
                                   </div>
                               </div>
@@ -143,6 +153,19 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                     </div>
                 )}
             </div>
+
+            <Modal
+                visible={isShowAddCustomer}
+                footer={null}
+                closable={true}
+                maskClosable={false}
+                width={"75%"}
+            >
+                <AddCustomer
+                    isSalePage={true}
+                    OnAddCustomerOk={OnAddCustomerOk}
+                />
+            </Modal>
         </Card>
     );
 };
