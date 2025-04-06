@@ -146,7 +146,7 @@ console.log("dây la use nè ",user);
                 >
                   <Avatar 
                     size={40} 
-                    src={user.avatar || "https://placehold.co/500x550?text=No+Image"} 
+                    src={user.avatar ?? "https://t4.ftcdn.net/jpg/02/27/45/09/360_F_227450952_KQCMShHPOPebUXklULsKsROk5AvN6H1H.jpg"}
                     style={{ cursor: "pointer" }}
                   />
                 </Popover>

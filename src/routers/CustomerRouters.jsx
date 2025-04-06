@@ -43,6 +43,7 @@ import UserLogin from "../client/UserLogin.jsx";
 import React from "react";
 import {getRole} from "../helpers/Helpers.js";
 import PdfPrint from "../admin/PdfPrint.jsx";
+import ForgotPassword from "../auth/auth/ForgotPassword.jsx";
 
 
 
@@ -161,6 +162,8 @@ const CustomerRouters = {
       path: "chat",
       element: <RoleRedirect element={<Chat />} />,
     },
+
+
  
  
  
