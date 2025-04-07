@@ -39,6 +39,7 @@ import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
 import {getRole} from "../helpers/Helpers.js";
 import Comments from "../admin/comments/Comments.jsx";
+import FreeShipSetting from "../admin/FreeShipSetting.jsx";
 // import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
@@ -220,6 +221,10 @@ const AdminRouters = {
         {
             path: "comments",
             element: <PrivateRoute element={<Comments/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+        },
+        {
+            path: "freeship-setting",
+            element: <PrivateRoute element={<FreeShipSetting/>} allowedRoles={["ROLE_ADMIN"]}/>,
         },
     
 

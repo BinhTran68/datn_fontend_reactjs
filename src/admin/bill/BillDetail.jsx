@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Link, useParams} from "react-router-dom";
-import {Badge, Button, Card, Collapse, Descriptions, Image, List, Modal, Steps, Table, Tag} from "antd";
+import {Badge, Button, Card, Collapse, Descriptions, Form, Image, List, Modal, Select, Steps, Table, Tag} from "antd";
 
 import axios from "axios";
 import {
@@ -41,6 +41,7 @@ import {FaCheckCircle, FaTicketAlt} from "react-icons/fa";
 import {COLORS} from "../../constants/constants.js";
 import voucher_image from "../../../public/img/voucher_image.png";
 import {updateProductBill} from "./services/billDetailService.js";
+import TextArea from "antd/es/input/TextArea.js";
 
 const {Step} = Steps;
 
@@ -73,6 +74,11 @@ const BillDetail = () => {
         const [selectedVouchers, setSelectedVouchers] = useState()
         const [discount, setDiscount] = useState(0);
         const [currentVoucher, setCurrentVoucher] = useState();
+
+        const [isShowModalBackCash, setIsShowModalBackCash] = useState()
+
+
+
 
 
         useEffect(() => {
@@ -532,7 +538,9 @@ const BillDetail = () => {
             {
                 key: '2',
                 label: 'Phí vận chuyển',
-                children: formatVND(currentBill?.shipMoney),
+                children:  (<div className={currentBill?.isFreeShip ? "text-decoration-line-through" : ""}>
+                    {   formatVND(currentBill?.shipMoney)}
+                </div>),
             },
             {
                 key: '3',
@@ -579,14 +587,43 @@ const BillDetail = () => {
         };
 
 
+         const [formHoanTien] = Form.useForm();
 
+         const handleOnBackCash = async () => {
+             const values = await formHoanTien.validateFields();
 
-        const handleCancelBill = () => {
-            setOpen(true);
-            setWidthModal("40%");
-            setModalType(modalUpdateStatusBillType);
-            setIsCancelBill(true)
-            setConfirmNotes('');
+             const payload = {
+                 status: "DA_HUY",
+                 note: values.note,
+                 transactionCode: values.transactionCode,
+                 paymentMethodEnum: values.paymentMethodEnum, // hoặc đổi key theo BE yêu cầu
+                 refund: true, // nếu BE cần flag để biết đây là hoàn tiền
+             };
+
+             try {
+                 await axiosInstance.put(`/api/admin/bill/${id}/update`, payload);
+                 getCurrentBill()
+                 getBillHistory()
+                 getPaymentsBill()
+                 setIsShowModalBackCash(false)
+
+             }catch (e) {
+                 toast.error("Hủy đơn không thành công! Vui lòng thử lại")
+             }
+         }
+
+        const handleCancelBill = async () => {
+            const isPayment = billHistory.find((item) => item.status === "DA_THANH_TOAN")
+            if(isPayment) {
+                setIsShowModalBackCash(true);
+            } else {
+                // Hủy đơn bình thường
+                setOpen(true);
+                setWidthModal("40%");
+                setModalType(modalUpdateStatusBillType);
+                setIsCancelBill(true)
+                setConfirmNotes('');
+            }
         };
 
 
@@ -856,6 +893,15 @@ const BillDetail = () => {
             }
         }
 
+        const handleOnShowCancelBill = () => {
+            const isPayment = billHistory.find((item) => item.status === "DA_THANH_TOAN")
+            if(isPayment) {
+                return "Xác nhận đã hoàn tiền và hủy đơn!"
+            }
+            return 'Hủy đơn'
+        }
+
+
         return (
             <div className={"flex-column d-flex gap-3"}>
                 {pdfUrl ?
@@ -865,6 +911,49 @@ const BillDetail = () => {
                         />
                     </div>
                     : <p></p>}
+
+                <Modal
+                    title="Hoàn tiền đơn hàng"
+                    open={isShowModalBackCash}
+                    onCancel={() => {
+                        formHoanTien.resetFields();
+                        onCancel();
+                    }}
+                    onOk={handleOnBackCash}
+                    okText="Hoàn tiền"
+                    cancelText="Hủy"
+                >
+                    <Form form={formHoanTien} layout="vertical">
+                        <Form.Item
+                            label="Ghi chú"
+                            name="note"
+                            rules={[{ required: true, message: 'Vui lòng nhập ghi chú' }]}
+                        >
+                            <TextArea rows={3} placeholder="Nhập ghi chú hoàn tiền..." />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Mã giao dịch hoàn tiền"
+                            name="transactionCode"
+                        >
+                            <Input placeholder="VD: REF123456789" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Phương thức hoàn tiền"
+                            name="paymentMethodEnum"
+                            rules={[{ required: true, message: 'Vui lòng chọn phương thức hoàn tiền' }]}
+                        >
+                            <Select placeholder="Chọn phương thức hoàn tiền">
+                                    <Option key={"TIEN_MAT"} value={"TIEN_MAT"}>Tiền mặt</Option>
+                                    <Option key={"CHUYEN_KHOAN"} value={"CHUYEN_KHOAN"}>Chuyển khoản</Option>
+                                    <Option key={"VN_PAY"} value={"VN_PAY"}>VN PAY</Option>
+                                    <Option key={"MOMO"} value={"MOMO"}>MOMO</Option>
+                                    <Option key={"ZALO_PAY"} value={"ZALO_PAY"}>ZALO PAY</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
 
                 <Modal
                     width={widthModal}
@@ -909,7 +998,7 @@ const BillDetail = () => {
                                     {handleButtonConfirm(currentBill?.status)}
                                 </Button>
                             )}
-                            {!["CHO_XAC_NHAN", "DANG_XAC_MINH", "TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                            {!["CHO_XAC_NHAN", "DA_XAC_NHAN", "DANG_XAC_MINH", "TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
                                 <Button onClick={handleOnRollbackStatus} color={"danger"} type={""}>
                                     Quay lại
                                 </Button>
@@ -917,13 +1006,13 @@ const BillDetail = () => {
 
                             {["CHO_XAC_NHAN"].includes(currentBill?.status) && (
                                 <Button onClick={handleCancelBill} type="default">
-                                    Hủy đơn
+                                    {handleOnShowCancelBill()}
                                 </Button>
                             )}
 
                         </div>
                         <div className={"d-flex gap-2"}>
-                            {currentBill?.status !== "CHO_XAC_NHAN" && (
+                            {!["CHO_XAC_NHAN", "DA_HUY"].includes(currentBill?.status) && (
                                 <Button
                                     type={"primary"}
                                     onClick={handleOnPrintBill}

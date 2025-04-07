@@ -192,7 +192,7 @@ const MenuList = ({ darkTheme }) => {
             title="Cài đặt"
         >
           <Menu.Item key="setting-feeship" icon={<FaShippingFast size={iconSize} />}>
-            <Link to={"VoucheList"}>Cài đặt phí ship</Link>
+            <Link to={"freeship-setting"}>Cài đặt phí ship</Link>
           </Menu.Item>
 
         </Menu.SubMenu>
