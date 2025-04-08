@@ -178,6 +178,47 @@ const AddVoucher = () => {
         }
     };
 
+    const handleTableChange = (pagination) => {
+        setPagination(pagination);
+        const params = {
+            searchText: searchText || null,
+            status: status === 'null' ? null : status,
+            startDate: dobRange && dobRange[0] ? dobRange[0].format('YYYY-MM-DD') : null,
+            endDate: dobRange && dobRange[1] ? dobRange[1].format('YYYY-MM-DD') : null,
+            minAge: ageRange[0] === 0 ? null : ageRange[0],
+            maxAge: ageRange[1] === 100 ? null : ageRange[1],
+            page: pagination.current - 1,
+            size: pagination.pageSize
+        };
+
+        axiosInstance.get('/api/admin/customers/index', {params})
+            .then((response) => {
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status,
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setCustomers(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
+            })
+            .catch((error) => {
+                console.error('Error fetching filtered data:', error);
+                toast.error('Có lỗi xảy ra khi tải dữ liệu!');
+            });
+    };
 
 
     const handleSearchCustomer = () => {
@@ -192,7 +233,7 @@ const AddVoucher = () => {
             size: pagination.pageSize
         };
 
-        axios.get('http://localhost:8080/api/admin/customers/index', {params})
+        axiosInstance.get('/api/admin/customers/index', {params})
             .then((response) => {
                 const { content, totalElements } = response.data;
                 const fetchedData = content.map((item, index) => ({
@@ -601,6 +642,7 @@ const AddVoucher = () => {
                                 </div>
                             </Card>
                             <Table
+                                onChange={handleTableChange}
                                 pagination={pagination}
                                 rowSelection={rowSelection} columns={columnsCustomers}
                                 dataSource={customers} rowKey="id" style={{ marginTop: 20 }} />
