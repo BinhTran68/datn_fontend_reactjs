@@ -248,7 +248,7 @@ const CustomerTest = () => {
     const handleReset = () => {
         setSearchText('');
         setStatus('null');
-        setDobRange([]);
+    z        setDobRange([]);
         setAgeRange([0, 100]);
         setPagination(prev => ({
             ...prev,

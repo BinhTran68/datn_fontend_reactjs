@@ -212,11 +212,6 @@ const AddCustomer = ({
     };
 
     const checkPhoneNumberAvailability = async (phoneNumber) => {
-        // Don't make unnecessary API calls if field is empty
-        if (!phoneNumber || !phoneNumber.trim()) {
-             toast.error('Vui lòng nhập số điện thoại!');
-             return false
-        }
 
         // Basic phone format validation before API call
         const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
@@ -452,12 +447,13 @@ const AddCustomer = ({
                                             name="phoneNumber"
                                             label="Số điện thoại"
                                             rules={[
-
+                                                {
+                                                    pattern: /^0\d{9}$/,
+                                                    message: 'Số điện thoại không hợp lệ! (Phải bắt đầu bằng 0 và đủ 10 số)',
+                                                },
                                             ]}
-
                                         >
                                             <Input
-                                                onBlur={(e) => checkPhoneNumberAvailability(e.target.value)}
                                                 onChange={() => phoneError && setPhoneError(null)} // Reset error when user types
                                             />
                                         </Form.Item>
