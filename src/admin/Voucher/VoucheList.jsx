@@ -202,6 +202,13 @@ const VoucherList = () => {
                                     content: `Bạn có chắc chắn muốn ${checked ? "bật" : "tắt"} voucher này không?`,
                                     okText: "Xác nhận",
                                     cancelText: "Hủy",
+                                     okButtonProps: {
+                                                    style: {
+                                                        backgroundColor: '#ff974d', // Nền cam
+                                                        borderColor: '#ff974d', // Viền cam
+                                                        color: '#fff', // Chữ trắng để dễ nhìn
+                                                    },
+                                                },
                                     onOk: async () => {
                                         try {
                                             const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";

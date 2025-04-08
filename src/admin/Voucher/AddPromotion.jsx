@@ -305,6 +305,15 @@ const AddPromotion = () => {
             title: "Xác nhận thêm chương trình khuyến mãi",
             content: "Bạn có chắc chắn muốn thêm chương trình khuyến mãi này không?",
             onOk: handleAddPromotion, // Nếu OK, thì gọi hàm xử lý add
+            okText: "Xác nhận",
+
+             okButtonProps: {
+                            style: {
+                                backgroundColor: '#ff974d', // Nền cam
+                                borderColor: '#ff974d', // Viền cam
+                                color: '#fff', // Chữ trắng để dễ nhìn
+                            },
+                        },
             onCancel() {
                 toast.info("Hủy thêm chương trình khuyến mãi.");
             },
