@@ -51,7 +51,6 @@ const AddStaff = () => {
     }, [cleanUpImage, qrModalVisible]);
 
 
-    //Hàm Upload Ảnh Lên Cloudinary
     const cloudinaryUpload = async (file) => {
         try {
             const formData = new FormData();
@@ -169,41 +168,23 @@ const AddStaff = () => {
     };
 
     const checkPhoneNumberAvailability = async (phoneNumber) => {
-        // Don't make unnecessary API calls if field is empty
         if (!phoneNumber || !phoneNumber.trim()) {
-            setPhoneError(null);
-            return Promise.reject('Vui lòng nhập số điện thoại!');
+            form.setFields([{ name: 'phoneNumber', errors: ['Vui lòng nhập số điện thoại!'] }]);
+            return Promise.reject();
         }
 
-        // Basic phone format validation before API call
         const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
         if (!phoneRegex.test(phoneNumber)) {
-            setPhoneError('Số điện thoại không hợp lệ!');
-            return Promise.reject('Số điện thoại không hợp lệ!');
-        }
-
-        try {
-            const response = await axios.get(`http://localhost:8080/api/admin/staff/check-phone?phoneNumber=${encodeURIComponent(phoneNumber)}`);
-            if (response.data && response.data.exists) {
-                setPhoneError('Số điện thoại này đã được sử dụng.');
-                return Promise.reject('Số điện thoại đã tồn tại');
-            } else {
-                setPhoneError(null);
-                return Promise.resolve();
-            }
-        } catch (error) {
-            console.error('Lỗi khi kiểm tra số điện thoại:', error);
-            setPhoneError('Số điện thoại đã tồn tại.');
-            return Promise.reject('Lỗi khi kiểm tra số điện thoại');
+            form.setFields([{ name: 'phoneNumber', errors: ['Số điện thoại không hợp lệ!'] }]);
+            return Promise.reject();
         }
     };
+
 
     // Hàm validate CCCD
     const validateCitizenId = (_, value) => {
         const citizenIdRegex = /^([0-9]{12})$/;
-        if (!value) {
-            return Promise.reject('Vui lòng nhập CCCD!');
-        }
+
         if (!citizenIdRegex.test(value)) {
             return Promise.reject('CCCD không hợp lệ! Phải có 12 chữ số.');
         }
@@ -237,33 +218,17 @@ const AddStaff = () => {
     };
 
     const checkEmailAvailability = async (email) => {
-        // Don't make unnecessary API calls if field is empty
         if (!email || !email.trim()) {
-            setEmailError(null);
-            return Promise.reject('Vui lòng nhập email!');
+            form.setFields([{ name: 'email', errors: ['Vui lòng nhập email!'] }]);
+            return Promise.reject();
         }
 
-        // Basic email format validation before API call
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setEmailError('Email không hợp lệ!');
-            return Promise.reject('Email không hợp lệ!');
+            form.setFields([{ name: 'email', errors: ['Email không hợp lệ!'] }]);
+            return Promise.reject();
         }
 
-        try {
-            const response = await axios.get(`http://localhost:8080/api/admin/staff/check-email?email=${encodeURIComponent(email)}`);
-            if (response.data && response.data.exists) {
-                setEmailError('Email này đã được sử dụng.');
-                return Promise.reject('Email đã tồn tại');
-            } else {
-                setEmailError(null);
-                return Promise.resolve();
-            }
-        } catch (error) {
-            console.error('Lỗi khi kiểm tra email:', error);
-            setEmailError('Email đã tồn tại.');
-            return Promise.reject('Lỗi khi kiểm tra email');
-        }
     };
 
     const handleFinish = async (values) => {
@@ -416,7 +381,7 @@ const AddStaff = () => {
                                             name="citizenId"
                                             label="CCCD"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập CCCD!' },
+                                                { required: true, message: 'Vui lòng nhập căn cước công dân!' },
                                                 { validator: validateCitizenId }
                                             ]}
                                         >
@@ -451,8 +416,6 @@ const AddStaff = () => {
                                                     },
                                                 }),
                                             ]}
-                                            validateStatus={emailError ? 'error' : ''}
-                                            help={emailError || ''}
                                         >
                                             <Input
                                                 onBlur={(e) => checkEmailAvailability(e.target.value)}
@@ -472,8 +435,7 @@ const AddStaff = () => {
                                                     },
                                                 }),
                                             ]}
-                                            validateStatus={phoneError ? 'error' : ''}
-                                            help={phoneError || ''}
+
                                         >
                                             <Input
                                                 onBlur={(e) => checkPhoneNumberAvailability(e.target.value)}
@@ -496,8 +458,6 @@ const AddStaff = () => {
                         </Card>
                     </Col>
                 </Row>
-
-                {/* Modal Quét mã QR */}
                 <Modal
                     title="Quét mã QR CCCD"
                     open={qrModalVisible} // Changed from 'visible' to 'open' for newer Antd versions

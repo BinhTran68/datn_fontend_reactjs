@@ -102,11 +102,11 @@ const EditStaff = () => {
     const beforeUpload = (file) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isJpgOrPng) {
-            message.error('You can only upload JPG/PNG file!');
+            toast.error('You can only upload JPG/PNG file!');
         }
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Image must smaller than 2MB!');
+            toast.error('Image must smaller than 2MB!');
         }
         return isJpgOrPng && isLt2M;
     };
@@ -135,7 +135,7 @@ const EditStaff = () => {
             })
             .catch((error) => {
                 console.error('Error fetching staff details:', error);
-                message.error('Lỗi tải dữ liệu nhân viên!');
+                toast.error('Lỗi tải dữ liệu nhân viên!');
                 setLoading(false);
             });
     }, [location.pathname, form]);
@@ -159,11 +159,11 @@ const EditStaff = () => {
 
         try {
             await axios.put(`http://localhost:8080/api/admin/staff/update/${staff.id}`, updatedData);
-            message.success('Cập nhật nhân viên thành công!');
+            toast.success('Cập nhật nhân viên thành công!');
             navigate('/admin/staff');
         } catch (error) {
             console.error('Error updating staff:', error);
-            message.error('Cập nhật nhân viên thất bại!');
+            toast.error('Cập nhật nhân viên thất bại!');
         }
     };
 

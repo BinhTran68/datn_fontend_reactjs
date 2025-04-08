@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
-import { Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio, Modal, Spin } from 'antd';
-import { UploadOutlined , UserOutlined  } from '@ant-design/icons';
+import {Form, Input, Select, DatePicker, Button, Upload, message, Row, Col, Card, Radio, Modal, Spin} from 'antd';
+import {UploadOutlined, UserOutlined} from '@ant-design/icons';
 import moment from 'moment';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
-import { useNavigate } from "react-router";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import {useNavigate} from "react-router";
+import {BrowserMultiFormatReader} from "@zxing/library";
 import {toast} from "react-toastify";
 
-const { Option } = Select;
+const {Option} = Select;
 
 const AddCustomer = ({
-                        isSalePage = false,
-                        OnAddCustomerOk
+                         isSalePage = false,
+                         OnAddCustomerOk
                      }) => {
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);
@@ -55,7 +55,7 @@ const AddCustomer = ({
                     message.error('Quét mã QR thất bại!');
                 });
         }
-        
+
         return () => {
             codeReader.reset();
         };
@@ -70,22 +70,22 @@ const AddCustomer = ({
             const formData = new FormData();
             formData.append("file", file);
             formData.append("upload_preset", "uploaddatn"); // Use your preset
-          
+
             const res = await fetch(
-              `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
-              { method: "POST", body: formData }
+                `https://api.cloudinary.com/v1_1/dieyhvcou/image/upload`,
+                {method: "POST", body: formData}
             );
-            
+
             if (!res.ok) {
                 throw new Error(`Cloudinary upload failed with status: ${res.status}`);
             }
-            
+
             const data = await res.json();
             setCleanUpImage((prev) => [...prev, data.public_id]);
-            
+
             return {
-              url: data.secure_url,
-              public_id: data.public_id,
+                url: data.secure_url,
+                public_id: data.public_id,
             };
         } catch (error) {
             console.error("Error uploading to Cloudinary:", error);
@@ -97,49 +97,49 @@ const AddCustomer = ({
     // Delete Images from Cloudinary
     const deleteImages = async (publicIds) => {
         if (!publicIds || publicIds.length === 0) return;
-      
+
         try {
-          const deleteRequests = publicIds.map((id) =>
-            fetch("http://localhost:8080/cloudinary/delete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ public_id: id }),
-            })
-          );
-          await Promise.all(deleteRequests);
+            const deleteRequests = publicIds.map((id) =>
+                fetch("http://localhost:8080/cloudinary/delete", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({public_id: id}),
+                })
+            );
+            await Promise.all(deleteRequests);
         } catch (error) {
-          console.error("Lỗi khi xóa ảnh hàng loạt:", error);
+            console.error("Lỗi khi xóa ảnh hàng loạt:", error);
         }
     };
 
     // Custom Request and Upload Handling
-    const handleAvatarChange = ({ fileList }) => {
+    const handleAvatarChange = ({fileList}) => {
         setFileList(fileList);
     };
-      
-    const customRequest = async ({ file, onSuccess, onError }) => {
+
+    const customRequest = async ({file, onSuccess, onError}) => {
         try {
-          const result = await cloudinaryUpload(file);
-          onSuccess(result, file);
+            const result = await cloudinaryUpload(file);
+            onSuccess(result, file);
         } catch (error) {
-          console.error("Custom request error:", error);
-          onError(error);
+            console.error("Custom request error:", error);
+            onError(error);
         }
     };
     const handleRemove = async (file) => {
         if (file.response?.public_id) {
-          try {
-            await fetch("http://localhost:8080/cloudinary/delete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ public_id: file.response.public_id }),
-            });
-            setCleanUpImage((prev) => 
-              prev.filter(id => id !== file.response.public_id)
-            );
-          } catch (error) {
-            console.error("Lỗi khi xóa ảnh:", error);
-          }
+            try {
+                await fetch("http://localhost:8080/cloudinary/delete", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({public_id: file.response.public_id}),
+                });
+                setCleanUpImage((prev) =>
+                    prev.filter(id => id !== file.response.public_id)
+                );
+            } catch (error) {
+                console.error("Lỗi khi xóa ảnh:", error);
+            }
         }
     };
     const beforeUpload = (file) => {
@@ -173,7 +173,7 @@ const AddCustomer = ({
             const numericValue = result.text.replace(/\D/g, '').slice(0, 12);
 
             if (numericValue.length === 12) {
-                form.setFieldsValue({ CitizenId: numericValue });
+                form.setFieldsValue({CitizenId: numericValue});
                 message.success(`Quét thành công: ${numericValue}`);
             } else {
                 message.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
@@ -204,7 +204,7 @@ const AddCustomer = ({
                 toast.error('Email này đã được sử dụng!');
                 return false;
             } else {
-               return true;
+                return true;
             }
         } catch (error) {
             console.log(error)
@@ -227,7 +227,7 @@ const AddCustomer = ({
                 return false;
             } else {
                 setPhoneError(null);
-              return true
+                return true
             }
         } catch (error) {
             return false
@@ -236,18 +236,18 @@ const AddCustomer = ({
 
     const handleFinish = async (values) => {
         setLoading(true);
-        
+
         try {
             // Get avatarUrl from Cloudinary
             let avatarUrl = '';
-            
+
             if (fileList.length > 0 && fileList[0].response && fileList[0].response.url) {
                 // Get URL from Cloudinary response
                 avatarUrl = fileList[0].response.url;
             }
-            
+
             const newPassword = generateRandomPassword();
-            
+
             const newData = {
                 fullName: values.fullName,
                 citizenId: values.CitizenId,
@@ -263,15 +263,15 @@ const AddCustomer = ({
                 wardId: address.wardId,
                 specificAddress: address.specificAddress,
             };
-            
+
             await axios.post('http://localhost:8080/api/admin/customers/add', newData);
             toast.success("Thêm khách hàng thành công! Mật khẩu tạm thời đã được gửi đến email của khách hàng.");
             form.resetFields();
             setFileList([]);
-            
-            if(isSalePage) {
+
+            if (isSalePage) {
                 OnAddCustomerOk()
-            }else {
+            } else {
                 setTimeout(() => {
                     setLoading(false);
                     navigate("/admin/customer");
@@ -280,9 +280,9 @@ const AddCustomer = ({
         } catch (error) {
             setLoading(false);
             console.error('Lỗi thêm khách hàng:', error);
-            
+
             if (error.response && error.response.status === 409) {
-                form.setFields([{ name: 'email', errors: ['Email này đã được sử dụng.'] }]);
+                form.setFields([{name: 'email', errors: ['Email này đã được sử dụng.']}]);
             } else {
                 toast.error('Thêm khách hàng thất bại! ' + (error.response?.data?.message || error.message));
             }
@@ -299,7 +299,7 @@ const AddCustomer = ({
         });
     };
 
-    
+
     const uploadButton = (
         <div className="ant-upload-btn">
             <div style={{
@@ -313,9 +313,9 @@ const AddCustomer = ({
                 border: '1px dashed #d9d9d9'
             }}>
                 {fileList.length === 0 ? (
-                    <div style={{ textAlign: 'center' }}>
-                        <UserOutlined style={{ fontSize: '32px', color: '#bfbfbf' }} />
-                        <div style={{ marginTop: '8px', color: '#8c8c8c' }}>+ Upload</div>
+                    <div style={{textAlign: 'center'}}>
+                        <UserOutlined style={{fontSize: '32px', color: '#bfbfbf'}}/>
+                        <div style={{marginTop: '8px', color: '#8c8c8c'}}>+ Upload</div>
                     </div>
                 ) : null}
             </div>
@@ -324,12 +324,12 @@ const AddCustomer = ({
 
     return (
         <Spin spinning={loading} tip="Đang xử lý...">
-            <div style={{ padding: '20px' }}>
-                <h2 style={{ marginBottom: '20px' }}>Thêm mới khách hàng</h2>
+            <div style={{padding: '20px'}}>
+                <h2 style={{marginBottom: '20px'}}>Thêm mới khách hàng</h2>
                 <Row gutter={16}>
                     <Col span={6}>
                         <Card>
-                        <Form.Item label="Ảnh đại diện" style={{ textAlign: 'center' }}>
+                            <Form.Item label="Ảnh đại diện" style={{textAlign: 'center'}}>
                                 <Upload
                                     customRequest={customRequest}
                                     fileList={fileList}
@@ -338,7 +338,7 @@ const AddCustomer = ({
                                     beforeUpload={beforeUpload}
                                     maxCount={1}
                                     showUploadList={false}
-                                    style={{ display: 'flex', justifyContent: 'center' }}
+                                    style={{display: 'flex', justifyContent: 'center'}}
                                 >
                                     {fileList.length > 0 ? (
                                         <div style={{
@@ -373,9 +373,9 @@ const AddCustomer = ({
                                         <Form.Item
                                             name="fullName"
                                             label="Tên khách hàng"
-                                            rules={[{ required: true, message: 'Vui lòng nhập tên khách hàng!' }]}
+                                            rules={[{required: true, message: 'Vui lòng nhập tên khách hàng!'}]}
                                         >
-                                            <Input />
+                                            <Input/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -396,7 +396,7 @@ const AddCustomer = ({
                                         >
                                             <DatePicker
                                                 format="DD/MM/YYYY"
-                                                style={{ width: "100%" }}
+                                                style={{width: "100%"}}
                                                 disabledDate={disableFutureDates}
                                             />
                                         </Form.Item>
@@ -409,7 +409,7 @@ const AddCustomer = ({
                                             name="CitizenId"
                                             label="Căn cước công dân"
                                         >
-                                            <Input placeholder="Nhập hoặc quét mã QR" />
+                                            <Input placeholder="Nhập hoặc quét mã QR"/>
                                         </Form.Item>
                                     </Col>
                                     <Col span={12}>
@@ -431,8 +431,8 @@ const AddCustomer = ({
                                             name="email"
                                             label="Email"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập email!' },
-                                                { type: 'email', message: 'Email không hợp lệ!' },
+                                                {required: true, message: 'Vui lòng nhập email!'},
+                                                {type: 'email', message: 'Email không hợp lệ!'},
                                             ]}
 
                                         >
@@ -471,22 +471,22 @@ const AddCustomer = ({
                                 </Form.Item>
 
                                 <Form.Item>
-                                    <Button 
-                                        type="primary" 
-                                        htmlType="submit" 
-                                        style={{ marginRight: '10px' }} 
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        style={{marginRight: '10px'}}
                                         disabled={!!emailError || !!phoneError}
                                     >
                                         Thêm mới
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => navigate('/admin/customer')}
-                                        style={{ marginRight: '10px' }}
+                                        style={{marginRight: '10px'}}
                                     >
                                         Hủy
                                     </Button>
-                                    <Button 
-                                        type="dashed" 
+                                    <Button
+                                        type="dashed"
                                         onClick={() => setQrModalVisible(true)}
                                     >
                                         Quét QR
@@ -509,7 +509,7 @@ const AddCustomer = ({
                             ref={videoRef}
                             id="video"
                             width="100%"
-                            style={{ display: 'block', margin: '0 auto' }}
+                            style={{display: 'block', margin: '0 auto'}}
                         ></video>
                     </div>
                 </Modal>
