@@ -88,6 +88,15 @@ const PromotionList = () => {
                                 Modal.confirm({
                                     title: "Xác nhận thay đổi trạng thái",
                                     content: `Bạn có chắc chắn muốn ${checked ? "bật" : "tắt"} promotion này không?`,
+                                    okText: "Xác nhận",
+
+                                     okButtonProps: {
+                                                    style: {
+                                                        backgroundColor: '#ff974d', // Nền cam
+                                                        borderColor: '#ff974d', // Viền cam
+                                                        color: '#fff', // Chữ trắng để dễ nhìn
+                                                    },
+                                                },
                                     onOk: async () => {
                                         try {
                                             const newStatus = checked ? "dang_kich_hoat" : "ngung_kich_hoat";
@@ -102,6 +111,7 @@ const PromotionList = () => {
                                             console.error(error);
                                         }
                                     }
+                                    
                                 });
                             }}
                         />

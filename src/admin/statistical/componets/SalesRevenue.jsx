@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Button, DatePicker, Tooltip } from "antd";
+import { Row, Col, Card, Button, DatePicker, Tooltip, message } from "antd";
 import { FileExcelOutlined } from "@ant-design/icons";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { MailOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
+
 //#2e95dd
 const { RangePicker } = DatePicker;
 
@@ -103,7 +106,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
 
 
             <Row gutter={[16, 16]} justify="center">
-   
+
                 {cards.map((item, index) => (
                     <Col xs={24} sm={12} md={12} lg={6} key={index}>
                         <Card title={item.title} hoverable style={cardStyles} headStyle={item.headStyle}>
@@ -142,31 +145,31 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                     </Col>
                 ))}
             </Row>
-            <Row gutter={[16, 16]} style={{paddingTop:"10px"}}>
-    <Col span={24} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <div style={{ 
-            borderRadius: '8px', 
-            padding: '16px', 
-            background: '#ffffff', 
-            width: '280px', 
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            textAlign: 'left'
-        }}>
-            <span style={{ fontSize: '14px', fontWeight: '600' }}>Chú thích</span>
-            <hr style={{ width: '100%', margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' }} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                <span style={{ color: "#007bff", fontSize: "12px", fontWeight: "500" }}>● Số lượng đơn</span>
-                <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
-                <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
-                <span style={{ color: "#dc3545", fontSize: "12px", fontWeight: "500" }}>● Đơn hủy</span>
-                <span style={{ color: "#6c757d", fontSize: "12px", fontWeight: "500" }}>● Đơn hoàn</span>
-            </div>
-        </div>
-    </Col>
-</Row>
+            <Row gutter={[16, 16]} style={{ paddingTop: "10px" }}>
+                <Col span={24} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{
+                        borderRadius: '8px',
+                        padding: '16px',
+                        background: '#ffffff',
+                        width: '280px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        textAlign: 'left'
+                    }}>
+                        <span style={{ fontSize: '14px', fontWeight: '600' }}>Chú thích</span>
+                        <hr style={{ width: '100%', margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' }} />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                            <span style={{ color: "#007bff", fontSize: "12px", fontWeight: "500" }}>● Số lượng đơn</span>
+                            <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
+                            <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
+                            <span style={{ color: "#dc3545", fontSize: "12px", fontWeight: "500" }}>● Đơn hủy</span>
+                            <span style={{ color: "#6c757d", fontSize: "12px", fontWeight: "500" }}>● Đơn hoàn</span>
+                        </div>
+                    </div>
+                </Col>
+            </Row>
 
 
             {customData && (
@@ -213,7 +216,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
 
     );
 };
-
+// gửi báo cáo ngày
 const DateFilter = ({ onSetCustomData, customData }) => {
     const [dateRange, setDateRange] = useState(null);
 
@@ -231,19 +234,51 @@ const DateFilter = ({ onSetCustomData, customData }) => {
             }
         }
     };
+    const sendDailyReportEmail = async () => {
+        try {
+            await axios.post(`http://localhost:8080/api/admin/statistical/send-daily-report-email`);
+            toast.success('Báo cáo doanh thu ngày đã được gửi thành công qua email!');
+        } catch (error) {
+            console.error("Lỗi khi gửi email báo cáo:", error);
+            toast.error('Không thể gửi báo cáo. Vui lòng thử lại sau!');
+        }
+    };
 
     return (
-        <Card style={{ textAlign: "left", marginBottom: 5, background: "white", color: "black", border: "none" }}>
-            <h5 style={{ margin: -22 }}>Doanh thu</h5>
-            <div style={{ display: "flex", justifyContent: "flex-end", color: "black" }}>
+        <>
+            <Card size="small" style={{ border: 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        icon={<MailOutlined />}
+                        onClick={sendDailyReportEmail}
+                        size="small"
+                    >
+                        Gửi báo cáo doanh thu hôm nay
+                    </Button>
+                </div>
+            </Card>
+            <Card style={{ border: 'none' }}>
+                <div style={{ fontSize: '30px' }}>
+                    Doanh thu
+                </div>
 
-                <RangePicker onChange={handleDateChange}
-                    style={{ width: "250px", height: "25px" }}
-                />
-            </div>
-           
-        </Card>
+            </Card>
+
+            <Card style={{ textAlign: "left", marginBottom: 5, background: "white", color: "black", border: "none" }}>
+
+
+                <div style={{ display: "flex", justifyContent: "flex-end", color: "black", gap: '10px' }}>
+
+                    <RangePicker onChange={handleDateChange}
+                        style={{ width: "250px", height: "25px" }}
+                        format="DD/MM/YYYY"
+                    />
+                </div>
+            </Card>
+        </>
+
     );
+
 };
 
 

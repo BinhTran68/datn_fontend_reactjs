@@ -5,9 +5,12 @@ import { CalendarOutlined, RiseOutlined, FallOutlined } from "@ant-design/icons"
 const Dashboard = () => {
   return (
     <>
-        <h5 style={{ color: "black", marginBottom: 10,marginTop:20,marginLeft:20 }}>
-        Thống kê số lượng sản phẩm sắp hết và tốc độ tăng trưởng của cửa hàng
-    </h5>
+
+    <Card style={{ border: 'none',marginTop:'50px' ,marginBottom:'20px'}}>
+                <div style={{ fontSize: '30px' }}>
+Thống kê sản phẩm sắp hết hàng và tốc độ tăng trưởng của cửa hàng
+ </div>
+            </Card>
     <div style={{ padding: "20px" }}>
       <Row gutter={[16, 16]}>
         <Col span={12}>
