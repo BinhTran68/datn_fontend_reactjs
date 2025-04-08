@@ -917,7 +917,7 @@ const BillDetail = () => {
                     open={isShowModalBackCash}
                     onCancel={() => {
                         formHoanTien.resetFields();
-                        onCancel();
+                        setIsShowModalBackCash(false)
                     }}
                     onOk={handleOnBackCash}
                     okText="Hoàn tiền"

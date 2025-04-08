@@ -188,71 +188,55 @@ const AddCustomer = ({
     const checkEmail = async (rule, value) => {
         if (!value || !value.trim()) {
             setEmailError(null);
-            return Promise.reject('Vui lòng nhập email!');
+            return false;
         }
 
         // Basic email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
-            setEmailError('Email không hợp lệ!');
-            return Promise.reject('Email không hợp lệ!');
+            toast.error('Email không hợp lệ!');
+            return false;
         }
 
         try {
             const response = await axios.get(`http://localhost:8080/api/admin/customers/check-email?email=${encodeURIComponent(value)}`);
             if (response.data && response.data.exists) {
-                setEmailError('Email này đã được sử dụng!');
-                return Promise.reject('Email đã tồn tại');
+                toast.error('Email này đã được sử dụng!');
+                return false;
             } else {
-                setEmailError(null);
-                return Promise.resolve();
+               return true;
             }
         } catch (error) {
-            console.error('Lỗi khi kiểm tra email:', error);
-            setEmailError('Email đã tồn tại.');
-            return Promise.reject('Lỗi khi kiểm tra email');
+            console.log(error)
         }
     };
 
     const checkPhoneNumberAvailability = async (phoneNumber) => {
         // Don't make unnecessary API calls if field is empty
         if (!phoneNumber || !phoneNumber.trim()) {
-            setPhoneError(null);
-            return Promise.reject('Vui lòng nhập số điện thoại!');
+             toast.error('Vui lòng nhập số điện thoại!');
+             return false
         }
 
         // Basic phone format validation before API call
         const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
         if (!phoneRegex.test(phoneNumber)) {
-            setPhoneError('Số điện thoại không hợp lệ!');
-            return Promise.reject('Số điện thoại không hợp lệ!');
+            toast.error('Số điện thoại không hợp lệ!');
+            return false;
         }
 
         try {
             const response = await axios.get(`http://localhost:8080/api/admin/customers/check-phone?phoneNumber=${encodeURIComponent(phoneNumber)}`);
             if (response.data && response.data.exists) {
-                setPhoneError('Số điện thoại này đã được sử dụng.');
-                return Promise.reject('Số điện thoại đã tồn tại');
+                toast.error('Số điện thoại này đã được sử dụng.');
+                return false;
             } else {
                 setPhoneError(null);
-                return Promise.resolve();
+              return true
             }
         } catch (error) {
-            console.error('Lỗi khi kiểm tra số điện thoại:', error);
-            setPhoneError('Số điện thoại đã tồn tại.');
-            return Promise.reject('Lỗi khi kiểm tra số điện thoại');
+            return false
         }
-    };
-
-    const validateCitizenId = (_, value) => {
-        const citizenIdRegex = /^([0-9]{12})$/;
-        if (!value) {
-            return Promise.reject('Vui lòng nhập CCCD!');
-        }
-        if (!citizenIdRegex.test(value)) {
-            return Promise.reject('CCCD không hợp lệ! Phải có 12 chữ số.');
-        }
-        return Promise.resolve();
     };
 
     const handleFinish = async (values) => {
@@ -303,10 +287,9 @@ const AddCustomer = ({
             console.error('Lỗi thêm khách hàng:', error);
             
             if (error.response && error.response.status === 409) {
-                setEmailError('Email này đã được sử dụng.');
                 form.setFields([{ name: 'email', errors: ['Email này đã được sử dụng.'] }]);
             } else {
-                message.error('Thêm khách hàng thất bại! ' + (error.response?.data?.message || error.message));
+                toast.error('Thêm khách hàng thất bại! ' + (error.response?.data?.message || error.message));
             }
         }
     };
@@ -438,7 +421,6 @@ const AddCustomer = ({
                                         <Form.Item
                                             name="gender"
                                             label="Giới tính"
-                                            rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                         >
                                             <Radio.Group>
                                                 <Radio value="true">Nam</Radio>
@@ -456,14 +438,8 @@ const AddCustomer = ({
                                             rules={[
                                                 { required: true, message: 'Vui lòng nhập email!' },
                                                 { type: 'email', message: 'Email không hợp lệ!' },
-                                                () => ({
-                                                    validator(_, value) {
-                                                        return checkEmail(_, value);
-                                                    },
-                                                }),
                                             ]}
-                                            validateStatus={emailError ? 'error' : ''}
-                                            help={emailError || ''}
+
                                         >
                                             <Input
                                                 onBlur={(e) => checkEmail(null, e.target.value)}
@@ -476,15 +452,9 @@ const AddCustomer = ({
                                             name="phoneNumber"
                                             label="Số điện thoại"
                                             rules={[
-                                                { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                                                () => ({
-                                                    async validator(_, value) {
-                                                        return checkPhoneNumberAvailability(value);
-                                                    },
-                                                }),
+
                                             ]}
-                                            validateStatus={phoneError ? 'error' : ''}
-                                            help={phoneError || ''}
+
                                         >
                                             <Input
                                                 onBlur={(e) => checkPhoneNumberAvailability(e.target.value)}

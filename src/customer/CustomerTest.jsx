@@ -18,18 +18,19 @@ import {Tooltip} from 'antd';
 import * as XLSX from 'xlsx';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
 import {genStringAccountStatus} from "./accountService.js";
+import {toast} from "react-toastify";
 
 const {Option} = Select;
 const {RangePicker} = DatePicker;
 
 const CustomerTest = () => {
     const [searchText, setSearchText] = useState('');
-    const [status, setStatus] = useState('Tất cả');
+    const [status, setStatus] = useState('null');
     const [dobRange, setDobRange] = useState([]);
     const [ageRange, setAgeRange] = useState([0, 100]);
     const [data, setData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for drawer visibility
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [recordSelected, setRecordSelected] = useState(null);
     const [addresses, setAddresses] = useState([]);
     const [newAddress, setNewAddress] = useState({
@@ -38,8 +39,13 @@ const CustomerTest = () => {
         wardId: null,
         specificAddress: null
     });
-    const [isEditing, setIsEditing] = useState(false); // Flag to indicate if we are editing an address
-    const [editingAddressId, setEditingAddressId] = useState(null); // ID of the address being edited
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingAddressId, setEditingAddressId] = useState(null);
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0
+    });
 
     useEffect(() => {
         fetchData();
@@ -123,10 +129,16 @@ const CustomerTest = () => {
         return name.charAt(0).toUpperCase();
     };
 
-    const fetchData = () => {
-        axios.get('http://localhost:8080/api/admin/customers/')
+    const fetchData = (page = 0, size = 10) => {
+        const params = {
+            page: page,
+            size: size
+        };
+        
+        axios.get('http://localhost:8080/api/admin/customers/index', {params})
             .then((response) => {
-                const fetchedData = response.data.map((item, index) => ({
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
                     key: index + 1,
                     id: item.id,
                     avatar: item.avatar,
@@ -141,28 +153,31 @@ const CustomerTest = () => {
                     password: item.password
                 }));
                 
-                // Log for debugging
-                console.log("Customer data with avatars:", fetchedData);
-                
                 setData(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
             })
             .catch((error) => console.error('Error fetching data:', error));
     };
 
-    
     const handleSearch = () => {
         const params = {
-            searchText: searchText,
-            status: status,
-            startDate: dobRange[0] ? dobRange[0].format('YYYY-MM-DDTHH:mm:ss') : null,
-            endDate: dobRange[1] ? dobRange[1].format('YYYY-MM-DDTHH:mm:ss') : null,
-            minAge: ageRange[0],
-            maxAge: ageRange[1],
+            searchText: searchText || null,
+            status: status === 'null' ? null : status,
+            startDate: dobRange && dobRange[0] ? dobRange[0].format('YYYY-MM-DDTHH:mm:ss') : null,
+            endDate: dobRange && dobRange[1] ? dobRange[1].format('YYYY-MM-DDTHH:mm:ss') : null,
+            minAge: ageRange[0] === 0 ? null : ageRange[0],
+            maxAge: ageRange[1] === 100 ? null : ageRange[1],
+            page: pagination.current - 1,
+            size: pagination.pageSize
         };
 
-        axios.get('http://localhost:8080/api/admin/customers/filter', {params})
+        axios.get('http://localhost:8080/api/admin/customers/index', {params})
             .then((response) => {
-                const fetchedData = response.data.map((item, index) => ({
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
                     key: index + 1,
                     id: item.id,
                     avatar: item.avatar,
@@ -174,28 +189,73 @@ const CustomerTest = () => {
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
                     addresses: item.addresses,
-                    password: item.password,
-                    
-                    //
-                    productsPurchased: 0,
-                    totalSpent: 0
-                    //
+                    password: item.password
                 }));
                 setData(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
             })
-            .catch((error) => console.error('Error fetching filtered data:', error));
+            .catch((error) => {
+                console.error('Error fetching filtered data:', error);
+                toast.error('Có lỗi xảy ra khi tìm kiếm!');
+            });
     };
 
+    const handleTableChange = (pagination) => {
+        setPagination(pagination);
+        const params = {
+            searchText: searchText || null,
+            status: status === 'null' ? null : status,
+            startDate: dobRange && dobRange[0] ? dobRange[0].format('YYYY-MM-DD') : null,
+            endDate: dobRange && dobRange[1] ? dobRange[1].format('YYYY-MM-DD') : null,
+            minAge: ageRange[0] === 0 ? null : ageRange[0],
+            maxAge: ageRange[1] === 100 ? null : ageRange[1],
+            page: pagination.current - 1,
+            size: pagination.pageSize
+        };
 
+        axios.get('http://localhost:8080/api/admin/customers/index', {params})
+            .then((response) => {
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status,
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setData(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
+            })
+            .catch((error) => {
+                console.error('Error fetching filtered data:', error);
+                toast.error('Có lỗi xảy ra khi tải dữ liệu!');
+            });
+    };
 
     const handleReset = () => {
         setSearchText('');
-        setStatus('Tất cả');
+        setStatus('null');
         setDobRange([]);
         setAgeRange([0, 100]);
-        fetchData();
+        setPagination(prev => ({
+            ...prev,
+            current: 1
+        }));
+        fetchData(0, pagination.pageSize);
     };
-
 
     const showModalAddress = (record) => {
         setIsModalOpen(true);
@@ -249,7 +309,7 @@ const CustomerTest = () => {
                 newAddress
             );
             console.log(newAddress)
-            message.success('Thêm địa chỉ thành công!');
+            toast.success('Thêm địa chỉ thành công!');
             // Cập nhật lại danh sách addresses
             const provinceId = String(response.data.provinceId);
             const districtId = String(response.data.districtId);
@@ -276,7 +336,7 @@ const CustomerTest = () => {
             fetchData();
         } catch (error) {
             console.error('Error adding address:', error);
-            message.error('Thêm địa chỉ thất bại!');
+            toast.error('Thêm địa chỉ thất bại!');
         }
     };
     const handleEditAddress = async (addressId) => {
@@ -286,7 +346,7 @@ const CustomerTest = () => {
                 newAddress
             );
 
-            message.success('Cập nhật địa chỉ thành công!');
+            toast.success('Cập nhật địa chỉ thành công!');
 
             const provinceId = String(response.data.provinceId);
             const districtId = String(response.data.districtId);
@@ -317,14 +377,14 @@ const CustomerTest = () => {
             fetchData();
         } catch (error) {
             console.error('Error updating address:', error);
-            message.error('Cập nhật địa chỉ thất bại!');
+            toast.error('Cập nhật địa chỉ thất bại!');
         }
     };
     const handleSetDefaultAddress = (addressId) => {
         axios
             .put(`http://localhost:8080/api/admin/customers/set-default-address/${addressId}`)
             .then(() => {
-                message.success('Đặt làm mặc định thành công!');
+                toast.success('Đặt làm mặc định thành công!');
 
                 // Cập nhật lại state addresses (di chuyển địa chỉ mặc định lên đầu)
                 setAddresses((prevAddresses) => {
@@ -333,7 +393,7 @@ const CustomerTest = () => {
                         isDefault: addr.id === addressId,
                     }));
                     // Di chuyển địa chỉ mặc định lên đầu (nếu muốn)
-                    return updatedAddresses.sort((a, b) => b.isDefault - a.isDefault);
+                    return updatedAddresses;
                 });
 
                 // Fetch lại danh sách khách hàng
@@ -341,7 +401,7 @@ const CustomerTest = () => {
             })
             .catch((error) => {
                 console.error('Error setting default address:', error);
-                message.error('Đặt làm mặc định thất bại!');
+                toast.error('Đặt làm mặc định thất bại!');
             });
     };
 
@@ -584,7 +644,7 @@ const CustomerTest = () => {
                             provinceId={newAddress.provinceId}
                             districtId={newAddress?.districtId}
                             wardId={newAddress?.wardId}
-                            specificAddress={newAddress?.specificAddress}
+                            specificAddressDefault={newAddress?.specificAddress}
                             onAddressChange={onAddressChange}/>
                     </Form.Item>
 
@@ -616,7 +676,7 @@ const CustomerTest = () => {
 
                     <label style={{marginRight: '10px', fontWeight: '500'}}>Ngày sinh:</label>
                     <RangePicker
-                        format="YYYY-MM-DD HH:mm:ss"
+                        format="YYYY-MM-DD"
                         showTime
                         value={dobRange}
                         onChange={(dates) => setDobRange(dates)}
@@ -630,9 +690,10 @@ const CustomerTest = () => {
                         onChange={(value) => setStatus(value)}
                         style={{width: '250px', marginRight: "20px", borderRadius: '10px'}}
                     >
-                        <Option value="Tất cả">Tất cả</Option>
-                        <Option value="Hoạt Động">Hoạt Động</Option>
-                        <Option value="Khóa">Khóa</Option>
+                        <Option value="null">Tất cả</Option>
+                        <Option value="HOAT_DONG">Hoạt Động</Option>
+                        <Option value="NGUNG_HOAT_DONG">Ngưng hoạt động</Option>
+                        <Option value="CHUA_KICH_HOAT">Chưa kích hoạt</Option>
                     </Select>
 
                     <label style={{marginRight: '10px', fontWeight: '500'}}>Khoảng tuổi:</label>
@@ -680,6 +741,8 @@ const CustomerTest = () => {
                         dataSource={data} 
                         style={{marginTop: '20px'}}
                         scroll={{ x: 1100 }}
+                        pagination={pagination}
+                        onChange={handleTableChange}
                     />
                 </div>
             </Card>

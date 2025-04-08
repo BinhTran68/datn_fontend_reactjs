@@ -7,6 +7,7 @@ import { UploadOutlined, UserOutlined  } from '@ant-design/icons';
 import moment from 'moment';
 import { useParams, useNavigate } from 'react-router-dom';
 import AddressSelectorAntd from "../admin/utils/AddressSelectorAntd.jsx";
+import {toast} from "react-toastify";
 
 const { Option } = Select;
 const { Password } = Input;
@@ -93,7 +94,7 @@ const UpdateCustomer = () => {
                     url: url,
                 }]);
             } catch (error) {
-                message.error('Upload ảnh thất bại!');
+                toast.error('Upload ảnh thất bại!');
             }
         } else {
             setFileList(newFileList);
@@ -116,11 +117,11 @@ const UpdateCustomer = () => {
     const beforeUpload = (file) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isJpgOrPng) {
-            message.error('You can only upload JPG/PNG file!');
+            toast.error('You can only upload JPG/PNG file!');
         }
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Image must smaller than 2MB!');
+            toast.error('Image must smaller than 2MB!');
         }
         return isJpgOrPng && isLt2M;
     };
@@ -170,7 +171,7 @@ const UpdateCustomer = () => {
             }
         } catch (error) {
             console.error('Error fetching customer:', error);
-            message.error('Không thể tải thông tin khách hàng');
+            toast.error('Không thể tải thông tin khách hàng');
         }
     };
 
@@ -225,11 +226,11 @@ const UpdateCustomer = () => {
                 await axios.post(`http://localhost:8080/api/admin/customers/add-address/${id}`, addressData);
             }
 
-            message.success('Cập nhật khách hàng thành công!');
+            toast.success('Cập nhật khách hàng thành công!');
             navigate("/admin/customer");
         } catch (error) {
             console.error('Error updating customer:', error);
-            message.error('Cập nhật khách hàng thất bại!');
+            toast.error('Cập nhật khách hàng thất bại!');
         }
     };
 
@@ -350,7 +351,6 @@ const UpdateCustomer = () => {
                                         name="dateBirth"
                                         label="Ngày sinh"
                                         rules={[
-                                            { required: true, message: 'Vui lòng chọn ngày sinh!' },
                                             () => ({
                                                 validator(_, value) {
                                                     if (!value || value <= moment()) {
@@ -376,7 +376,6 @@ const UpdateCustomer = () => {
                                         name="CitizenId"
                                         label="Căn cước công dân"
                                         rules={[
-                                            { required: true, message: 'Vui lòng nhập CCCD!' },
                                             { pattern: citizenIdPattern, message: 'CCCD phải có 9 hoặc 12 số!' }
                                         ]}
                                     >
@@ -416,7 +415,6 @@ const UpdateCustomer = () => {
                                         name="phoneNumber"
                                         label="Số điện thoại"
                                         rules={[
-                                            { required: true, message: 'Vui lòng nhập số điện thoại!' },
                                             { pattern: phonePattern, message: 'Số điện thoại không hợp lệ! (Phải bắt đầu bằng 0 hoặc +84, tiếp theo là 3,5,7,8,9 và 8 số tiếp theo)' }
                                         ]}
                                     >
