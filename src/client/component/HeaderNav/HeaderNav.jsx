@@ -234,6 +234,7 @@ function HeaderNav() {
 
   useEffect(() => {
     fetchCart();
+    fetchNotifications();
   }, []);
 
   useEffect(() => {

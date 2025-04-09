@@ -41,12 +41,7 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
   }, [isChatOpen, customerId, staffId, senderType, anou]);
   
   const fetchData = async () => {
-    console.log("dsufdsufdsfusdudsf 1");
 
-    // if (!customerId) return;
-    console.log("dsufdsufdsfusdudsf 2");
-
-    
     try {
       if (senderType === "STAFF") {
         const response = await axios.get(
