@@ -38,7 +38,7 @@ import { clearVoucher, getVoucher } from "./voucher";
 import { COLORS } from "../../../constants/constants";
 import { removeBillFromCart } from "./cart";
 import { FaLocationDot } from "react-icons/fa6";
-import { apiGetAddressDefaut } from "./apiPayment";
+import { apiGetAddressDefaut, apiGetFreeShip } from "./apiPayment";
 import { FaMoneyBill } from "react-icons/fa6";
 import { DollarOutlined } from "@ant-design/icons";
 
@@ -82,6 +82,7 @@ const PayMent = () => {
   const [voucher, setVoucher] = useState(getVoucher()); // 1 mảng các sản phẩm
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [moneyBeforeDiscount, setMoneyBeforeDiscount] = useState(null);
+  const [minOrderValue, setMinOrderValue] = useState(0);
 
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
@@ -143,7 +144,11 @@ const PayMent = () => {
     console.log("🛒 vocher:", getVoucher());
 
     console.log("🛒 Đây là user hiện tại:", user || []);
-
+   
+    apiGetFreeShip().then((res) => {
+      setMinOrderValue(res);
+    });
+    console.log("🛒 Đây là minOrderValue:", minOrderValue);
     return () => {
       clearBill();
       clearVoucher();
@@ -151,6 +156,7 @@ const PayMent = () => {
   }, []);
 
   useEffect(() => {
+ 
     if (user) {
       getAddressDf(user?.id);
     }
@@ -169,10 +175,6 @@ const PayMent = () => {
       const res = await apiGetAddressDefaut({ customerId: id });
       console.log("✅ Dữ liệu địa chỉ mặc định:", res);
 
-      if (!res.data) {
-        message.warning("Không tìm thấy địa chỉ mặc định!");
-        return;
-      }
       const newAddress = {
         provinceId: res.data?.provinceId || "",
         districtId: res.data?.districtId || "",
@@ -181,7 +183,7 @@ const PayMent = () => {
       };
 
       setSelectedAddress(newAddress);
-      const totalFee = caculamoneyBeforeDiscount >= 3000000 ? 0 : await calculateShippingFee({
+      const totalFee = caculamoneyBeforeDiscount >=await apiGetFreeShip() ? 0 : await calculateShippingFee({
         toWardCode: String(newAddress?.wardId),
         toDistrictId: Number(newAddress?.districtId),
       });
@@ -202,7 +204,7 @@ const PayMent = () => {
       console.log("📌 Địa chỉ mặc định sau khi cập nhật:", newAddress);
     } catch (error) {
       console.error("❌ Lỗi khi lấy địa chỉ mặc định:", error);
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      // message.warning("Không tìm thấy địa chỉ mặc định!");
     }
   };
 
@@ -555,9 +557,9 @@ const PayMent = () => {
           </Flex>
           <Flex justify="space-between">
             <Col>
-              <FcShipped size={27} /> Phí vận chuyển (GHN): {caculamoneyBeforeDiscount >= 3000000 ? <span style={{color: "green"}}>(Miễn phí vận chuyển đơn hàng trên 2 triệu)</span> : ""}
+              <FcShipped size={27} /> Phí vận chuyển (GHN): {caculamoneyBeforeDiscount >= minOrderValue ? <span style={{color: "green"}}>(Miễn phí vận chuyển đơn hàng trên {formatVND(minOrderValue)}  )</span> : ""}
             </Col>
-            {caculamoneyBeforeDiscount >= 3000000 ? 0 : "+"+ formatVND(parseInt(bill?.shipMoney) || 0)}
+            {caculamoneyBeforeDiscount >= minOrderValue ? 0 : "+"+ formatVND(parseInt(bill?.shipMoney) || 0)}
           </Flex>
 
           {voucher.length > 0 && voucher[0].note && (

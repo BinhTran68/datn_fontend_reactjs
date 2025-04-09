@@ -25,3 +25,16 @@ export const apiGetAddressDefaut = async (req) => {
     throw error;
   }
 };
+export const apiGetFreeShip = async (req) => {
+
+
+  try {
+    const response = await api.get("/free-ship");
+    return response.data.data.minOrderValue;
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};

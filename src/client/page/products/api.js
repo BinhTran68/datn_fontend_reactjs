@@ -151,7 +151,19 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
-
+  export const apiHasBought = async (customerId,productId) => {
+    try {
+      const response = await api.get("/has-bought", {
+        params: { customerId: customerId, productId: productId },
+      });
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+      console.error(errorMessage);
+      throw error;
+    }
+  };
 
   export const apiFilter = async (requestFilter) => {
     try {
