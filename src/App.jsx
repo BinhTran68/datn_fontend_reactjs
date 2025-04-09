@@ -9,7 +9,8 @@ import CustomerRouters from "./routers/CustomerRouters.jsx";
 import AuthRouters from "./routers/AuthRouter.jsx";
 import { Bounce, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ConfigProvider } from "antd"; // Import CSS của react-toastify
+import { ConfigProvider } from "antd";
+import {GoogleOAuthProvider} from "@react-oauth/google"; // Import CSS của react-toastify
 {
   /* <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"></link> proppins */
 }
@@ -23,8 +24,13 @@ const router = createBrowserRouter([
     element: <ForbiddenPage />,
   },
 ]);
+
+
 const App = () => {
-  return (
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_KEY; // Thay thế với client ID của bạn
+
+
+    return (
     <>
       {/* ToastContainer được đặt ở đây */}
       <ToastContainer
@@ -53,7 +59,10 @@ const App = () => {
         },
         }}
       >
+          <GoogleOAuthProvider clientId={clientId}>
+
         <RouterProvider router={router} />
+          </GoogleOAuthProvider>
       </ConfigProvider>
     </>
   );

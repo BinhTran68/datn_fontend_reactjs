@@ -119,7 +119,8 @@ export const convertBillStatusToString = (status) => {
 export const paymentTypeConvert = {
     "COD":"CoD",
     "THANH_TOAN_TRUOC": "Thanh toán trước",
-    "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng"
+    "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng",
+    "HOAN_TIEN" : "Hoàn tiền"
 };
 
 export const paymentMethodConvert = {
@@ -189,7 +190,7 @@ export async function generateAddressString(provinceId, districtId, wardId, spec
 }
 
 export function formatVND(number) {
-    console.log("formatVND(number)", number)
+
     if (typeof number !== "number") {
         return '0 VND' // Kiểm tra nếu không phải là số
     }

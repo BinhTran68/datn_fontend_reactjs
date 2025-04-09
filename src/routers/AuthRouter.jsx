@@ -7,6 +7,7 @@ import LoginAdmin from "../auth/auth/LoginAdmin.jsx";
 import ForgotPasswordAdmin from "../auth/auth/ForgotPasswordAdmin.jsx";
 import PdfPrint from "../admin/PdfPrint.jsx";
 import React from "react";
+import ActiveAccount from "../auth/auth/ActiveAccount.jsx";
 
 
 const AuthRouters = {
@@ -44,6 +45,20 @@ const AuthRouters = {
         path: "forgot-password-admin",
         element: <ForgotPasswordAdmin />,
       },
+      {
+        path: "activate/:token",
+        element: <ActiveAccount />,
+      },
+
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPassword />,
+      },
+
     ],
 };
 

@@ -72,7 +72,8 @@ const SalesPage = () => {
             recipientPhoneNumber: '', // Tên ngươi nhận
             shippingFee: 0,
             isCOD: false,
-            vouchers: []
+            vouchers: [],
+            isFreeShip: false
         },
     ]);
 
@@ -98,14 +99,26 @@ const SalesPage = () => {
     const [isScanQr, setIsScanQr] = useState(false)
     const [currentBillData, setCurrentBillData] = useState(null)
     const [isDocumentLoaded, setIsDocumentLoaded] = useState(false);
+    const [freeShipData, setFreeShipData] = useState()
 
     const currentBillDataMemo =
         useMemo(() => items.find(item => item.key === currentBill) || {}, [items, currentBill]);
 
+    const fetchFreeShipOrder = async () => {
+        try {
+            const res = await axiosInstance.get('/api/admin/freeship-order');
+            setFreeShipData(res.data);
+
+        } catch (error) {
+            toast.error('Không thể tải dữ liệu freeship');
+        } finally {
+
+        }
+    };
+
 
     useEffect(() => {
         setCurrentBillData(currentBillDataMemo)
-        console.log(currentBillData)
     }, [currentBillDataMemo])
 
     const showModal = () => {
@@ -122,6 +135,7 @@ const SalesPage = () => {
         setCurrentBill(defaultKey)
         getAllVoucher()
         getCurrentUserLogin()
+        fetchFreeShipOrder()
     }, []);
 
     const getCurrentUserLogin = async () => {
@@ -148,44 +162,98 @@ const SalesPage = () => {
     };
 
 
-    const handleCashCustomerMoneyChange = (e) => {
-        const value = parseFloat(e.target.value) || 0;
-        setItems(prevItems =>
-            prevItems.map(item =>
-                item.key === currentBill
-                    ? {
-                        ...item,
-                        payInfo: {
-                            ...item.payInfo,
-                            cashCustomerMoney: value,
-                            customerMoney: value + (item.payInfo?.bankCustomerMoney || 0),
-                            change: (value + (item.payInfo?.bankCustomerMoney || 0)) - (item.payInfo?.amount || 0) - (item.shippingFee || 0)
-                        }
-                    }
-                    : item
-            )
-        );
-    };
 
+    // const handleCashCustomerMoneyChange = (e) => {
+    //     const value = parseInt(e.target.value) || 0;
+    //     setItems(prevItems =>
+    //         prevItems.map(item => {
+    //             if (  item.key === currentBill) {
+    //                 console.log("cashCustomerMoney", value + (item.payInfo?.bankCustomerMoney || 0))
+    //                 return {
+    //                     ...item,
+    //                     payInfo: {
+    //                         ...item.payInfo,
+    //                         cashCustomerMoney: value,
+    //                         customerMoney: value + (item.payInfo?.bankCustomerMoney || 0),
+    //                         change: (value + (item.payInfo?.bankCustomerMoney || 0)) - (item.payInfo?.amount || 0) - (item.shippingFee || 0)
+    //                     }
+    //                 }
+    //             }
+    //             return item
+    //         }
+    //         )
+    //     );
+    // };
+    //
+    //
+    // const handleBankCustomerMoneyChange = (value, transactionCode) => {
+    //
+    //     setItems(prevItems =>
+    //         prevItems.map(item => {
+    //             if(  item.key === currentBill) {
+    //                 console.log("item.payInfo.cashCustomerMoney", value + (item.payInfo?.bankCustomerMoney || 0))
+    //                 console.log("item.payInfo.cashCustomerMoney", value + (item.payInfo?.customerMoney || 0))
+    //                 return {
+    //                     ...item,
+    //                     payInfo: {
+    //                         ...item.payInfo,
+    //                         bankCustomerMoney: value,
+    //                         transactionCode: transactionCode ?? null,
+    //                         customerMoney: value + (item.payInfo?.cashCustomerMoney || 0),
+    //                         change: (value + (item.payInfo?.cashCustomerMoney || 0)) -
+    //                             (item.payInfo?.amount || 0) -
+    //                             (item.payInfo?.discount || 0)
+    //                     }
+    //                 }
+    //             }
+    //             return item;
+    //         }
+    //         )
+    //     );
+    // };
+
+    const handleCashCustomerMoneyChange = (e) => {
+        const value = parseInt(e.target.value) || 0;
+        updatePayInfo({ cash: value });
+    };
 
     const handleBankCustomerMoneyChange = (value, transactionCode) => {
+        updatePayInfo({ bank: value, transactionCode });
+    };
+
+
+
+    const updatePayInfo = ({ cash = null, bank = null, transactionCode = null }) => {
         setItems(prevItems =>
-            prevItems.map(item =>
-                item.key === currentBill
-                    ? {
-                        ...item,
-                        payInfo: {
-                            ...item.payInfo,
-                            bankCustomerMoney: value,
-                            transactionCode: transactionCode ?? null,
-                            customerMoney: value + (item.payInfo?.cashCustomerMoney || 0),
-                            change: (value + (item.payInfo?.cashCustomerMoney || 0)) - (item.payInfo?.amount || 0) + (item.payInfo?.discount || 0)
-                        }
+            prevItems.map(item => {
+                if (item.key !== currentBill) return item;
+
+                const prevPayInfo = item.payInfo || {};
+                const cashCustomerMoney = cash !== null ? cash : (prevPayInfo.cashCustomerMoney || 0);
+                const bankCustomerMoney = bank !== null ? bank : (prevPayInfo.bankCustomerMoney || 0);
+
+                const customerMoney = Number(cashCustomerMoney) + Number(bankCustomerMoney);
+                const amount = prevPayInfo.amount || 0;
+                const discount = prevPayInfo.discount || 0;
+                const shippingFee = item.shippingFee ? parseInt(item.shippingFee) : 0;
+                const isFreeShip = item.isFreeShip
+
+
+                return {
+                    ...item,
+                    payInfo: {
+                        ...prevPayInfo,
+                        cashCustomerMoney,
+                        bankCustomerMoney,
+                        customerMoney,
+                        transactionCode: transactionCode ?? prevPayInfo.transactionCode ?? null,
+                        change: customerMoney - amount - (isFreeShip ? 0 : shippingFee)
                     }
-                    : item
-            )
+                };
+            })
         );
     };
+
 
 
     useEffect(() => {
@@ -375,6 +443,11 @@ const SalesPage = () => {
                     // Tính tổng số lượng sản phẩm trong giỏ
                     const count = updatedProductList.reduce((total, p) => total + (p.quantityInCart || 0), 0);
 
+                    let isFreeShip = false;
+                    if(freeShipData != null) {
+                        isFreeShip =  newTotalAmount > freeShipData?.minOrderValue
+                    }
+
                     return {
                         ...item,
                         label: (
@@ -383,6 +456,7 @@ const SalesPage = () => {
                         </span>
                         ),
                         productList: updatedProductList,
+                        isFreeShip: isFreeShip,
                         payInfo: {
                             ...item.payInfo,
                             amount: newTotalAfterDiscount,
@@ -721,6 +795,12 @@ const SalesPage = () => {
                         ...item,
                         isCOD: isChecked,
                         isShipping: true,
+                        payInfo: {
+                            ...item.payInfo,
+                            customerMoney: 0,
+                            cashCustomerMoney: 0,
+                            bankCustomerMoney: 0,
+                        }
                     };
                 }
                 return item;
@@ -811,7 +891,7 @@ const SalesPage = () => {
                 shipMoney: bill.isShipping ? bill.shippingFee || 0 : 0,
                 totalMoney: bill.payInfo?.amount || 0, // Tiền
                 moneyAfter: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0),
-                moneyBeforeDiscount: (bill.payInfo?.amount || 0) - (bill.payInfo?.discount || 0), // Tiền trước giảm giá
+                moneyBeforeDiscount: (bill.payInfo?.amount || 0) + (bill.payInfo?.discount || 0),
                 completeDate: null,
                 confirmDate: new Date().toISOString(),
                 desiredDateOfReceipt: null,
@@ -828,6 +908,8 @@ const SalesPage = () => {
                 recipientPhoneNumber: bill.recipientPhoneNumber || "",
                 shippingFee: bill.shippingFee || 0,
                 isCOD: bill.isCOD ?? false,
+                transactionCode: bill.payInfo.transactionCode || "",
+                isFreeShip: bill.isFreeShip,
                 address: {
                     provinceId: bill.detailAddressShipping?.provinceId || null,
                     districtId: bill.detailAddressShipping?.districtId || null,
@@ -856,7 +938,7 @@ const SalesPage = () => {
                     })
                 );
                 toast.success("Tạo hóa đơn thành công!");
-
+                getAllVoucher();
                 // Show modal with options
                 setIsPaymentModalVisible(true);
             } else {
@@ -1253,6 +1335,7 @@ const SalesPage = () => {
                 detailAddressShipping={currentBillData?.detailAddressShipping}
                 customerInfo={currentBillData?.customerInfo}
                 shippingFee={currentBillData?.shippingFee}
+                isFreeShip={currentBillData?.isFreeShip}
                 handleOnChangeShippingFee={handleOnChangeShippingFee}
                 handleOnChangerRecipientName={handleOnChangerRecipientName}
                 handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}
@@ -1260,6 +1343,7 @@ const SalesPage = () => {
                 isCOD={currentBillData?.isCOD}
                 handleCheckIsCOD={handleCheckIsCOD}
                 showAllCustomerAddresses={showAllCustomerAddresses}
+                freeShipData={freeShipData}
             />
             {pdfUrl ?
                 <div >

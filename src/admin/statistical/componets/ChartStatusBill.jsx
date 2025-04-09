@@ -154,7 +154,7 @@ const ChartStatusBill = () => {
 
   const columns = [
     //thiếu ảnh 
-    { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://res.cloudinary.com/dieyhvcou/image/upload/v1742293066/5f47e7da60955df9310650bde6001777_bqij6b.webp"}  style={{ width: 50 }} /> },
+    { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQKanIMPiEvON96i3FghI3bmA5It_yxPA011xHLSTvpmbA2sicQ-MNOlawFLVIfhoPdedAtw8ft-30zbKjBJOoPNwpOmQkQPsbv7VqmaXX8fR0Ep0O6xrgbIfNNaSDTMjX37w&usqp=CAc"} style={{ width: 50 }} /> },
 
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName", align: "center" },
     { title: "Loại giày", dataIndex: "typeName", key: "typeName", align: "center" },
@@ -171,8 +171,15 @@ const ChartStatusBill = () => {
     <>
       <Row gutter={[16, 16]} >
         {/* Nút lọc thời gian dạng Radio */}
+        <Card style={{ border: 'none', marginLeft: '20px' }}>
+          <div style={{ fontSize: '30px' }}>
+            Tốc độ kinh doanh
+          </div>
 
+        </Card>
         <Col span={24}>
+
+
           <Card
             style={{
               marginBottom: -10,
@@ -182,21 +189,30 @@ const ChartStatusBill = () => {
               justifyContent: "space-between",
               alignItems: "center",
               border: "none",
-              display: "flex", 
+              display: "flex",
               justifyContent: "flex-end",
-              marginTop:-10,
+              marginTop: -10,
 
             }}
           >
-        <h5 style={{ margin: 0, flexGrow: 1,marginLeft:-835 }}>Tốc độ kinh doanh</h5>
 
             {/* Bộ lọc thời gian */}
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <Radio.Group
-                onChange={(e) => handleFilterChange(e.target.value)}
+                onChange={(e) => {
+                  const selectedOption = [
+                    { label: "Hôm nay", value: "day" },
+                    { label: "Tuần", value: "week" },
+                    { label: "Tháng", value: "month" },
+                    { label: "Năm", value: "year" },
+                  ].find((item) => item.value === e.target.value);
+
+                  handleFilterChange(e.target.value, selectedOption.label);
+                }}
                 value={timeFilter}
                 style={{ display: "flex", gap: "12px" }}
               >
+
                 {[
                   { label: "Hôm nay", value: "day" },
                   { label: "Tuần", value: "week" },
@@ -218,8 +234,9 @@ const ChartStatusBill = () => {
 
             {/* RangePicker hiển thị luôn */}
             <RangePicker
-              style={{ marginLeft: 75 , width: "250px", height: "25px",marginTop:10}}
+              style={{ marginLeft: 75, width: "250px", height: "25px", marginTop: 10 }}
               value={customRange}
+              format="DD/MM/YYYY"
               onChange={handleCustomRangeChange}
             />
           </Card>

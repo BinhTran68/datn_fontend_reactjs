@@ -131,7 +131,15 @@ const UpdatePromotion = () => {
         Modal.confirm({
             title: "Xác nhận sửa chương trình khuyến mãi",
             content: "Bạn có chắc chắn muốn sửa chương trình khuyến mãi này không?",
+            okText: "Xác nhận",
             onOk: handleupdatePromotion, // Nếu OK, thì gọi hàm xử lý update
+             okButtonProps: {
+                            style: {
+                                backgroundColor: '#ff974d', // Nền cam
+                                borderColor: '#ff974d', // Viền cam
+                                color: '#fff', // Chữ trắng để dễ nhìn
+                            },
+                        },
             onCancel() {
                 toast.info("Hủy sửa chương trình khuyến mãi.");
             },

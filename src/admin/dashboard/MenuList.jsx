@@ -22,7 +22,7 @@ import { TbBrand4Chan } from "react-icons/tb";
 import { TbBrandDenodo } from "react-icons/tb";
 import { SlSizeFullscreen } from "react-icons/sl";
 import { LiaShoePrintsSolid } from "react-icons/lia";
-import { FaRegUser } from "react-icons/fa";
+import {FaRegUser, FaShippingFast} from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
 import { BiSolidDiscount } from "react-icons/bi";
 import { CiDiscount1 } from "react-icons/ci";
@@ -184,6 +184,17 @@ const MenuList = ({ darkTheme }) => {
           <Menu.Item key="sub3-t2" icon={<CiDiscount1 size={iconSize} />}>
             <Link to={"PromotionList"}>Đợt giảm giá</Link>
           </Menu.Item>
+        </Menu.SubMenu>
+
+        <Menu.SubMenu
+            key="setting"
+            icon={<SettingOutlined size={iconSize} />}
+            title="Cài đặt"
+        >
+          <Menu.Item key="setting-feeship" icon={<FaShippingFast size={iconSize} />}>
+            <Link to={"freeship-setting"}>Cài đặt phí ship</Link>
+          </Menu.Item>
+
         </Menu.SubMenu>
 
         <Menu.Item

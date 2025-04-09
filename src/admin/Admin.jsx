@@ -1,4 +1,4 @@
-import { Button, Layout, theme, Card, Badge, Avatar, Popover, List } from "antd";
+import {Button, Layout, theme, Card, Input, Avatar, Popover, List, Modal, Form} from "antd";
 
 // import MenuList from "../component/sidebar/MenuList";
 import { useEffect, useState } from "react";
@@ -11,6 +11,9 @@ import img from "./../../public/img/thehands.png";
 import { COLORS } from "../constants/constants.js";
 import ChatWidget from "../client/component/Chat/ChatWidget.jsx";
 import { useWebSocket } from "../client/componetC/Socket.js";
+import {toast} from "react-toastify";
+import axios from "axios";
+import axiosInstance from "../utils/axiosInstance.js";
 
 const { Header, Sider } = Layout;
 
@@ -63,7 +66,38 @@ console.log("dây la use nè ",user);
       disconnectWS(); // Ngắt kết nối khi component unmount
     };
   }, []);
-  return (
+
+    const [openChangePassword, setOpenChangePassword] = useState(false);
+    const [form] = Form.useForm();
+
+    const handleChangePassword = async (values) => {
+        if (values.newPassword !== values.confirmPassword) {
+            toast.error("Mật khẩu xác nhận không khớp");
+            return;
+        }
+
+        try {
+            const res = await axiosInstance.put("/api/admin/auth/change-password", {
+                oldPassword: values.oldPassword,
+                newPassword: values.newPassword,
+            });
+            if (res.status === 200) {
+                toast.success("Đổi mật khẩu thành công");
+                setOpenChangePassword(false);
+                form.resetFields();
+            } else {
+                const data = await res.json();
+                toast.error(data.message || "Đổi mật khẩu thất bại");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Lỗi kết nối máy chủ");
+        }
+    };
+
+
+
+    return (
     <Layout>
       <Sider
         width={230}
@@ -137,6 +171,42 @@ console.log("dây la use nè ",user);
                 <Popover 
                   content={
                     <List>
+                        <Modal
+                            title="Đổi mật khẩu"
+                            open={openChangePassword}
+                            onCancel={() => setOpenChangePassword(false)}
+                            onOk={() => form.submit()}
+                            okText="Xác nhận"
+                            cancelText="Hủy"
+                        >
+                            <Form layout="vertical" form={form} onFinish={handleChangePassword}>
+                                <Form.Item
+                                    label="Mật khẩu hiện tại"
+                                    name="oldPassword"
+                                    rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
+                                >
+                                    <Input.Password />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Mật khẩu mới"
+                                    name="newPassword"
+                                    rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới" }]}
+                                >
+                                    <Input.Password />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Xác nhận mật khẩu mới"
+                                    name="confirmPassword"
+                                    rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu" }]}
+                                >
+                                    <Input.Password />
+                                </Form.Item>
+                            </Form>
+                        </Modal>
+
+                        <List.Item onClick={() => setOpenChangePassword(true)} style={{ cursor: "pointer" }}>
+                            Đổi mật khẩu
+                        </List.Item>
                       <List.Item onClick={handleLogout} style={{ cursor: "pointer" }}>
                         Đăng xuất
                       </List.Item>
@@ -146,7 +216,7 @@ console.log("dây la use nè ",user);
                 >
                   <Avatar 
                     size={40} 
-                    src={user.avatar || "https://placehold.co/500x550?text=No+Image"} 
+                    src={user.avatar ?? "https://t4.ftcdn.net/jpg/02/27/45/09/360_F_227450952_KQCMShHPOPebUXklULsKsROk5AvN6H1H.jpg"}
                     style={{ cursor: "pointer" }}
                   />
                 </Popover>

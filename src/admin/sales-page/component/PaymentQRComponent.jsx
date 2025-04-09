@@ -5,9 +5,6 @@ import axios from "axios";
 import {toast} from "react-toastify";
 
 const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCustomerMoneyChange}) => {
-    console.log("PaymentQrComponent:", amount, currentBill, transactionCode);
-    console.log("Dược render")
-
     const tokenSePay = import.meta.env.VITE_SE_PAY_API_KEY;
     const [qrUrl, setQrUrl] = useState("");
     const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -53,24 +50,25 @@ const PaymentQrComponent = ({amount, currentBill, transactionCode, handleBankCus
             const tomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
             const formatDate = (date) => date.toISOString().split("T")[0];
-            // const response = await axios.get("/userapi/transactions/list", {
-            //     params: {
-            //         transaction_date_min: formatDate(today),
-            //         transaction_date_max: formatDate(tomorrow),
-            //     },
-            //     headers: {
-            //         Authorization: `Bearer ${tokenSePay}`,
-            //     },
-            // });
+            const response = await axios.get("/userapi/transactions/list", {
+                params: {
+                    transaction_date_min: formatDate(today),
+                    transaction_date_max: formatDate(tomorrow),
+                },
+                headers: {
+                    Authorization: `Bearer ${tokenSePay}`,
+                },
+            });
 
-            // const billTransaction = response.data.transactions.find(t => t.transaction_content.split(" ")[0] === currentBill);
+            const billTransaction = response.data.transactions.find(t => t.transaction_content.split(" ")[0] === currentBill);
 
-            const billTransaction = {
-                amount_in  : amount,
-                reference_number : "ok 1321323"
-            }
+            // const billTransaction = {
+            //     amount_in  : amount,
+            //     reference_number : "ok 1321323"
+            // }
 
             if (billTransaction) {
+                console.log("billTransaction",amount)
                 handleBankCustomerMoneyChange(billTransaction.amount_in, billTransaction.reference_number);
                 setPaymentSuccess(true);
                 toast.success("Thanh toán thành công!");

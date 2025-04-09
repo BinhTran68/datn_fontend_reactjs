@@ -39,6 +39,7 @@ import EditStaff from "../admin/staff/EditStaff.jsx";
 import AddProductDetail from "../admin/product/ProductDetail/AddProductDetail.jsx";
 import {getRole} from "../helpers/Helpers.js";
 import Comments from "../admin/comments/Comments.jsx";
+import FreeShipSetting from "../admin/FreeShipSetting.jsx";
 // import AddPromotion from "../admin/Voucher/AddPromotion.jsx";
 
 
@@ -46,7 +47,7 @@ import Comments from "../admin/comments/Comments.jsx";
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
     console.log(role)
-    if (role === "ROLE_ADMIN" || role === "ROLE_STAFF") {
+    if (role === "ROLE_ADMIN" || role === "ROLE_STAFF" || "ROLE_MANAGER" || "ROLE_STAFF_SALE") {
         if (allowedRoles.includes(role)) {
             return element;
         }
@@ -57,169 +58,173 @@ const PrivateRoute = ({element, allowedRoles}) => {
 
 const AdminRouters = {
     path: "/admin",
-    element: <PrivateRoute element={<Admin/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+    element: <PrivateRoute element={<Admin/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER", "ROLE_STAFF"]}/>,
     children: [
         {
             path: "dashboard",
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER"]}/>,
         },
         {
             path: "sales-page",
-            element: <PrivateRoute element={<SalesPage/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<SalesPage/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "statistical",
-            element: <PrivateRoute element={<Statistical/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Statistical/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "category",
-            element: <PrivateRoute element={<Category/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Category/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "brand",
-            element: <PrivateRoute element={<Brand/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Brand/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "color",
-            element: <PrivateRoute element={<Color/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Color/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "material",
-            element: <PrivateRoute element={<Material/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Material/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "type",
-            element: <PrivateRoute element={<Type/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Type/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "product",
-            element: <PrivateRoute element={<Product/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Product/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "size",
-            element: <PrivateRoute element={<Size/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Size/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "sole",
-            element: <PrivateRoute element={<Sole/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Sole/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "gender",
-            element: <PrivateRoute element={<Gender/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Gender/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "productdetail",
-            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "product/productdetail",
-            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<ProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "product/productdetail/:id",
-            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "product/get-product-detail/:id/:id",
-            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Detail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         
         {
             path: "product/get-product-detail/:id",
-            element: <PrivateRoute element={<GetProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<GetProductDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "product/add",
-            element: <PrivateRoute element={<AddComponet/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddComponet/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
 
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
 
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         }, {
 
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         }, {
 
-            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
 
         // {
         //   index: true,
-        //   element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]} />,
+        //   element: <PrivateRoute element={<BillList />} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]} />,
         // },
 
         {
             path: "bill",
-            element: <PrivateRoute element={<BillList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<BillList/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "bill/bill-detail/:id",
-            element: <PrivateRoute element={<BillDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<BillDetail/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "vouchelist",
-            element: <PrivateRoute element={<VoucheList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<VoucheList/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "PromotionList",
-            element: <PrivateRoute element={<PromotionList/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<PromotionList/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "promotion/add",
-            element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "promotion/update/:id",
-            element: <PrivateRoute element={<UpdatePromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<UpdatePromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "promotion/detail/:id",
-            element: <PrivateRoute element={<DetailPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<DetailPromotion/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "voucher/add",
-            element: <PrivateRoute element={<AddVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "voucher/update/:id",
-            element: <PrivateRoute element={<UpdateVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<UpdateVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "voucher/detail/:id",
-            element: <PrivateRoute element={<DetailVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<DetailVoucher/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "staff",
-            element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Staff/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "customer",
-            element: <PrivateRoute element={<CustomerTest/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<CustomerTest/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "customer-create",
-            element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "customer-update/:id",
-            element: <PrivateRoute element={<UpdateCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<UpdateCustomer/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "add-staff",
-            element: <PrivateRoute element={<AddStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<AddStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
         {
             path: "edit-staff/:id",
-            element: <PrivateRoute element={<EditStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<EditStaff/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
         },
 
         {
             path: "comments",
-            element: <PrivateRoute element={<Comments/>} allowedRoles={["ROLE_ADMIN", "ROLE_STAFF"]}/>,
+            element: <PrivateRoute element={<Comments/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER","ROLE_STAFF"]}/>,
+        },
+        {
+            path: "freeship-setting",
+            element: <PrivateRoute element={<FreeShipSetting/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER"]}/>,
         },
     
 

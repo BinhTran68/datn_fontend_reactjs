@@ -1,5 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, DatePicker, Select, Card, Form, Spin, Alert, Col, Row, Radio, Button, Flex, Modal, message, InputNumber } from 'antd';
+import {
+    Table,
+    Input,
+    DatePicker,
+    Select,
+    Card,
+    Form,
+    Spin,
+    Alert,
+    Col,
+    Row,
+    Radio,
+    Button,
+    Flex,
+    Modal,
+    message,
+    InputNumber,
+    Slider
+} from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { color } from 'framer-motion';
@@ -8,6 +26,9 @@ import { baseUrl, convertStatusVoucher, ConvertvoucherType, ConvertdiscountType 
 import dayjs from 'dayjs';
 import { useWatch } from 'antd/es/form/Form';
 import {toast} from "react-toastify";
+import axiosInstance from "../../utils/axiosInstance.js";
+import moment from "moment/moment.js";
+import {DownloadOutlined, PlusOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
 
 
 
@@ -60,6 +81,19 @@ const AddVoucher = () => {
     const [loading, setLoading] = useState(false);
     const [selectedCustomers, setSelectedCustomers] = useState([]);
     const navigate = useNavigate(); // Khởi tạo navigate
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0
+    });
+
+    const [status, setStatus] = useState('null');
+    const [dobRange, setDobRange] = useState([]);
+    const [ageRange, setAgeRange] = useState([0, 100]);
+    const [searchText, setSearchText] = useState('');
+
+    const {RangePicker} = DatePicker;
+
 
     const showConfirm = () => {
         Modal.confirm({
@@ -80,14 +114,6 @@ const AddVoucher = () => {
 
         });
     }
-
-
-
-    // const [editingVoucher, setEditingVoucher] = useState(null);
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [isDetail, setIsDeatil] = useState(false);
-
-
     const start = () => {
         setLoading(true);
         setTimeout(() => {
@@ -136,18 +162,6 @@ const AddVoucher = () => {
 
     const hasSelected = selectedRowKeys.length > 0;
 
-    // Gọi API lấy danh sách khách hàng
-    const fetchCustomers = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await axios.get("http://localhost:8080/api/admin/customers/");
-            setCustomers(response.data);
-        } catch (err) {
-            setError("Lỗi khi tải danh sách khách hàng!");
-        }
-        setLoading(false);
-    };
 
     // Xử lý khi chọn loại phiếu giảm giá
     const onChange = (e) => {
@@ -156,7 +170,7 @@ const AddVoucher = () => {
 
         if (selectedValue === "PRIVATE") {
             setShowTable(true); // Hiển thị bảng khi chọn "Riêng tư"
-            fetchCustomers(); // Gọi API để lấy danh sách khách hàng
+            handleSearchCustomer()
         } else {
             setShowTable(false); // Ẩn bảng nếu chọn "Công khai"
             setSelectedRowKeys([]); // Reset danh sách đã chọn khi chuyển sang công khai
@@ -164,7 +178,101 @@ const AddVoucher = () => {
         }
     };
 
+    const handleTableChange = (pagination) => {
+        setPagination(pagination);
+        const params = {
+            searchText: searchText || null,
+            status: status === 'null' ? null : status,
+            startDate: dobRange && dobRange[0] ? dobRange[0].format('YYYY-MM-DD') : null,
+            endDate: dobRange && dobRange[1] ? dobRange[1].format('YYYY-MM-DD') : null,
+            minAge: ageRange[0] === 0 ? null : ageRange[0],
+            maxAge: ageRange[1] === 100 ? null : ageRange[1],
+            page: pagination.current - 1,
+            size: pagination.pageSize
+        };
 
+        axiosInstance.get('/api/admin/customers/index', {params})
+            .then((response) => {
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status,
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setCustomers(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
+            })
+            .catch((error) => {
+                console.error('Error fetching filtered data:', error);
+                toast.error('Có lỗi xảy ra khi tải dữ liệu!');
+            });
+    };
+
+
+    const handleSearchCustomer = () => {
+        const params = {
+            searchText: searchText || null,
+            status: status === 'null' ? null : status,
+            startDate: dobRange && dobRange[0] ? dobRange[0].format('YYYY-MM-DDTHH:mm:ss') : null,
+            endDate: dobRange && dobRange[1] ? dobRange[1].format('YYYY-MM-DDTHH:mm:ss') : null,
+            minAge: ageRange[0] === 0 ? null : ageRange[0],
+            maxAge: ageRange[1] === 100 ? null : ageRange[1],
+            page: pagination.current - 1,
+            size: pagination.pageSize
+        };
+
+        axiosInstance.get('/api/admin/customers/index', {params})
+            .then((response) => {
+                const { content, totalElements } = response.data;
+                const fetchedData = content.map((item, index) => ({
+                    key: index + 1,
+                    id: item.id,
+                    avatar: item.avatar,
+                    fullName: item.fullName,
+                    CitizenId: item.citizenId,
+                    phoneNumber: item.phoneNumber,
+                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    status: item.status,
+                    email: item.email,
+                    gender: item.gender === 1 ? 'Nam' : 'Nữ',
+                    addresses: item.addresses,
+                    password: item.password
+                }));
+                setCustomers(fetchedData);
+                setPagination(prev => ({
+                    ...prev,
+                    total: totalElements
+                }));
+            })
+            .catch((error) => {
+                console.error('Error fetching filtered data:', error);
+                toast.error('Có lỗi xảy ra khi tìm kiếm!');
+            });
+    };
+
+    const handleReset = () => {
+        setSearchText('');
+        setStatus('null');
+        setDobRange([]);
+        setAgeRange([0, 100]);
+        setPagination(prev => ({
+            ...prev,
+            current: 1
+        }));
+        handleSearchCustomer()
+    };
 
 
     const handleOk = async () => {
@@ -445,16 +553,98 @@ const AddVoucher = () => {
                                 <Button type="primary"
                                     onClick={() => {
                                         setSelectedRowKeys([]); // Xóa các ô đã tích
-                                        fetchCustomers(); // Gọi API lấy lại danh sách khách hàng
+                                        handleSearchCustomer()
                                     }}
                                     disabled={loading}
                                     loading={loading}
                                 >
                                     Tải lại danh sách khách hàng
                                 </Button>
+
+
                                 {hasSelected ? `Đã chọn ${selectedRowKeys.length} khách hàng` : null}
                             </Flex>
-                            <Table rowSelection={rowSelection} columns={columnsCustomers}
+
+
+                            <Card>
+                                <h3>Bộ lọc</h3>
+                                <hr/>
+                                <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
+                                    <label style={{marginRight: '10px', fontWeight: '500'}}>Tìm kiếm:</label>
+                                    <Input
+                                        placeholder="Tìm kiếm tên và sdt..."
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        style={{width: '250px', marginRight: '20px', borderRadius: '10px'}}
+                                    />
+
+                                    <label style={{marginRight: '10px', fontWeight: '500'}}>Ngày sinh:</label>
+                                    <RangePicker
+                                        format="YYYY-MM-DD"
+                                        showTime
+                                        value={dobRange}
+                                        onChange={(dates) => setDobRange(dates)}
+                                        style={{marginRight: '20px', borderRadius: '10px'}}
+                                    />
+                                </div>
+                                <div style={{display: 'flex', alignItems: 'center'}}>
+                                    <label style={{marginRight: '10px', fontWeight: '500'}}>Trạng thái:</label>
+                                    <Select
+                                        value={status}
+                                        onChange={(value) => setStatus(value)}
+                                        style={{width: '250px', marginRight: "20px", borderRadius: '10px'}}
+                                    >
+                                        <Option value="null">Tất cả</Option>
+                                        <Option value="HOAT_DONG">Hoạt Động</Option>
+                                        <Option value="NGUNG_HOAT_DONG">Ngưng hoạt động</Option>
+                                        <Option value="CHUA_KICH_HOAT">Chưa kích hoạt</Option>
+                                    </Select>
+
+                                    <label style={{marginRight: '10px', fontWeight: '500'}}>Khoảng tuổi:</label>
+                                    <Slider
+                                        range
+                                        min={0}
+                                        max={100}
+                                        value={ageRange}
+                                        onChange={(value) => setAgeRange(value)}
+                                        style={{width: '250px'}}
+                                    />
+                                </div>
+                                <div style={{marginTop: '20px'}}>
+                                    <Button
+                                        type="primary"
+                                        icon={<SearchOutlined/>}
+                                        onClick={handleSearchCustomer}
+                                        style={{marginRight: "10px"}}
+                                    >
+                                        Tìm kiếm
+                                    </Button>
+                                    <Button
+                                        type="default"
+                                        icon={<ReloadOutlined/>}
+                                        onClick={handleReset}
+                                        style={{marginRight: "10px"}}
+                                    >
+                                        Làm mới bộ lọc
+                                    </Button>
+
+                                    <Link to="/admin/customer-create">
+                                        <Button
+                                            type="primary"
+                                            icon={<PlusOutlined/>}
+                                            style={{marginRight: "10px"}}
+                                        >
+                                            Thêm mới
+                                        </Button>
+                                    </Link>
+
+
+                                </div>
+                            </Card>
+                            <Table
+                                onChange={handleTableChange}
+                                pagination={pagination}
+                                rowSelection={rowSelection} columns={columnsCustomers}
                                 dataSource={customers} rowKey="id" style={{ marginTop: 20 }} />
                         </Flex>
                     </>

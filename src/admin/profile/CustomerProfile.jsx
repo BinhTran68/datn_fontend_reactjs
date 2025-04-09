@@ -174,7 +174,7 @@ const CustomerProfile = () => {
         address: defaultAddressString, // Hiển thị chuỗi địa chỉ mặc định ở đây
         phone: customerData.phoneNumber || "",
         email: customerData.email || "",
-        status: customerData.status === 1 ? "Kích hoạt" : "Ngừng hoạt động",
+        status: customerData.status === 0 ? "Kích hoạt" : "Ngừng hoạt động",
         // addresses: processedAddresses // Giữ tất cả địa chỉ có sẵn nếu cần ở nơi khác, nhưng formData.address là hiển thị chính
       };
       setFormData(formattedData);

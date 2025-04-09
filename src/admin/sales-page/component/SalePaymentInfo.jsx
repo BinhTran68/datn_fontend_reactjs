@@ -1,5 +1,5 @@
 import React from 'react';
-import {Avatar, Button, Card, Checkbox, Col, Collapse, Form, Image, Input, List, Row, Select, Space} from "antd";
+import {Avatar, Button, Card, Checkbox, Col, Collapse, Form, Image, Input, List, Row, Select, Space, Tag} from "antd";
 import {FaCheck, FaCheckCircle, FaTicketAlt} from "react-icons/fa";
 import {MdOutlineDonutLarge} from "react-icons/md";
 import {AiFillCreditCard} from "react-icons/ai";
@@ -50,7 +50,7 @@ const SalePaymentInfo = ({
                              recipientPhoneNumber,
                              isNewShippingInfo,
                              detailAddressShipping,
-                            customerInfo,
+                             customerInfo,
                              handleOnChangerRecipientPhoneNumber,
                              handleOnChangerRecipientName,
                              shippingFee,
@@ -59,20 +59,29 @@ const SalePaymentInfo = ({
                              transactionCode,
                              isCOD,
                              handleCheckIsCOD,
-                             showAllCustomerAddresses
+                             showAllCustomerAddresses,
+                            isFreeShip,
+                             freeShipData
                          }) => {
-    const missingAmount = Math.max(0, amount+(parseInt(shippingFee)) - customerMoney); // Không cộng cho discount nữa
-
-    console.log("shippingFee", shippingFee)
+    const missingAmount = Math.max(0, parseInt(amount)+(parseInt(isFreeShip ? 0 : shippingFee)) - parseInt(customerMoney)); // Không cộng cho discount nữa
     return (
         <>
             <Checkbox checked={isShipping} value={isShipping} onChange={handleCheckIsShipping}>
                 Giao hàng
             </Checkbox>
 
-            <Card>
+            <Card hidden={!isShipping}>
                 <div className={"d-flex gap-5 align-items-center justify-content-between"}>
-                    <h3 style={{marginBottom: '16px'}}>Thông tin giao hàng</h3>
+                    <div>
+                        <h3 style={{marginBottom: '16px'}}>Thông tin giao hàng</h3>
+                        {
+                            isFreeShip  ?
+                                ( <Tag color="green">Đơn hàng đã được miễn phí ship!</Tag> )  :
+                                <Tag color="blue">Mua thêm tối thiểu {
+                                    formatVND(freeShipData?.minOrderValue - (amount + discount) )
+                                } để được miễn phí vận chuyển</Tag>
+                        }
+                    </div>
                     {
                         isShipping &&  customerInfo &&   <Button type={"primary"} onClick={
                             () =>   showAllCustomerAddresses(customerInfo)
@@ -91,8 +100,6 @@ const SalePaymentInfo = ({
                                 value={addressShipping}
                                 options={customerAddresses}
                             />
-
-
                         </Form.Item>
 
 
@@ -280,10 +287,14 @@ const SalePaymentInfo = ({
                                 <Text strong>{formatVND(discount)}</Text>
                             </Form.Item>
                             <Form.Item label="Phí vận chuyển">
-                                <Text strong>{formatVND(shippingFee ? parseInt(shippingFee) : 0)}</Text>
+                                <Text
+                                    className={isFreeShip ? "text-decoration-line-through" : ""}
+
+                                    strong>{formatVND(shippingFee ? parseInt(shippingFee) : 0)}</Text>
                             </Form.Item>
                             <Form.Item label="Tổng tiền cần thanh toán">
-                                <Text strong style={{color: "red"}}>{formatVND(amount + parseInt(shippingFee))}</Text>
+                                <Text strong style={{color: "red"}}>{formatVND(amount
+                                    + parseInt(!isFreeShip ? shippingFee : 0 ))}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
@@ -309,6 +320,7 @@ const SalePaymentInfo = ({
                                 <Input
                                     type="number"
                                     min={0}
+                                    disabled={isCOD}
                                     placeholder="Nhập số tiền"
                                     onChange={handleCashCustomerMoneyChange}
                                     value={parseInt(cashCustomerMoney)}
@@ -338,7 +350,8 @@ const SalePaymentInfo = ({
                             {(paymentMethods === "bank" || paymentMethods === "cashAndBank" ) && (
                                 <Form.Item label="Quét mã QR để thanh toán">
                                     <PaymentQRComponent
-                                        amount={paymentMethods === "cashAndBank"  ? missingAmount :  amount}
+                                        key={currentBill}
+                                        amount={missingAmount}
                                         handleBankCustomerMoneyChange={handleBankCustomerMoneyChange}
                                         currentBill={currentBill}
                                         transactionCode={transactionCode}
