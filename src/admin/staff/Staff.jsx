@@ -10,6 +10,7 @@ import {COLORS} from "../../constants/constants.js";
 import * as XLSX from 'xlsx';
 import {toast} from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance.js";
+import {genStringAccountStatus} from "../../customer/accountService.js";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -38,7 +39,7 @@ const Staff = () => {
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
                     dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),  
-                    status: item.status === 0 ? 'Kích hoạt' : 'Khóa',
+                    status: item.status,
                     email: item.email,
                     gender: item.gender,
                 }));
@@ -215,23 +216,49 @@ const Staff = () => {
             title: 'Trạng Thái',
             dataIndex: 'status',
             key: 'status',
-            render: (text) => (
-                <Button
-                type={text === 'Kích hoạt' ? 'primary' : 'danger'}
-                style={{
-                    borderRadius: '5px',
-                    padding: '2px 15px',
-                    height: '30px',
-                    textAlign: 'center',
-                    fontWeight: 'normal',
-                    backgroundColor: text === 'Kích hoạt' ? '#f6ffed' : '#fff1f0',
-                    color: text === 'Kích hoạt' ? '#52c41a' : '#ff4d4f',
-                    border: text === 'Kích hoạt' ? '1px solid #b7eb8f' : '1px solid #ffa39e'
-                }}
-            >
-                {text }
-            </Button>
-            ),
+            render: (status) => {
+                let bgColor = '';
+                let color = '';
+                let border = '';
+                let label = genStringAccountStatus(status);
+
+                switch (status) {
+                    case 0: // Hoạt động
+                        bgColor = '#f6ffed';
+                        color = '#52c41a';
+                        border = '1px solid #b7eb8f';
+                        break;
+                    case 1: // Đã khóa
+                        bgColor = '#fff1f0';
+                        color = '#ff4d4f';
+                        border = '1px solid #ffa39e';
+                        break;
+                    case 2: // Chưa kích hoạt
+                    default:
+                        bgColor = '#fffbe6';
+                        color = '#faad14';
+                        border = '1px solid #ffe58f';
+                        break;
+                }
+
+                return (
+                    <Button
+                        type="default"
+                        style={{
+                            borderRadius: '5px',
+                            padding: '2px 15px',
+                            height: '30px',
+                            textAlign: 'center',
+                            fontWeight: 'normal',
+                            backgroundColor: bgColor,
+                            color: color,
+                            border: border,
+                        }}
+                    >
+                        {label}
+                    </Button>
+                );
+            },
         },
         {
             title: 'Hành động',
@@ -299,8 +326,9 @@ const Staff = () => {
                     <label style={{ marginRight: '10px' }}>Trạng thái:</label>
                     <Select value={status} onChange={(value) => setStatus(value)} style={{ width: '250px', marginRight: "20px" }}>
                         <Option value="Tất cả">Tất cả</Option>
-                        <Option value="Kích hoạt">Kích hoạt</Option>
-                        <Option value="Khóa">Khóa</Option>
+                        <Option value="HOAT_DONG">Hoạt động</Option>
+                        <Option value="CHO_KICH_HOAT">Chờ kích hoạt</Option>
+                        <Option value="NGUNG_HOAT_DONG">Ngừng hoạt động</Option>
                     </Select>
 
                     <label style={{ marginRight: '10px' }}>Khoảng tuổi:</label>

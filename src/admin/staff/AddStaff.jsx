@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Radio, DatePicker, Upload, message, Row, Col, Card, Spin, Modal } from 'antd';
+import {Form, Input, Button, Radio, DatePicker, Upload, message, Row, Col, Card, Spin, Modal, Select} from 'antd';
 import { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
@@ -443,6 +443,20 @@ const AddStaff = () => {
                                             />
                                         </Form.Item>
                                     </Col>
+                                    <Col span={12}>
+                                        <Form.Item
+                                            name="roleName"
+                                            label="Vai trò"
+                                            rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
+                                        >
+                                            <Select placeholder="Chọn vai trò">
+                                                <Select.Option value="ROLE_MANAGER">Quản lý</Select.Option>
+                                                <Select.Option value="ROLE_STAFF">Nhân viên</Select.Option>
+                                                <Select.Option value="ROLE_STAFF_SALE">Nhân viên bán hàng</Select.Option>
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+
                                 </Row>
 
                                 <Form.Item>

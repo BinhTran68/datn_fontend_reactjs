@@ -387,8 +387,22 @@ const EditStaff = () => {
                                         rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
                                     >
                                         <Select>
-                                            <Option value={0}>Kích hoạt</Option>
-                                            <Option value={1}>Khóa</Option>
+                                            <Option value={0}>Hoạt động</Option>
+                                            <Option value={1}>Ngừng hoạt động</Option>
+                                            <Option value={2}>Chờ kích hoạt</Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="roleName"
+                                        label="Vai trò"
+                                        rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}
+                                    >
+                                        <Select placeholder="Chọn vai trò">
+                                            <Select.Option value="ROLE_MANAGER">Quản lý</Select.Option>
+                                            <Select.Option value="ROLE_STAFF">Nhân viên</Select.Option>
+                                            <Select.Option value="ROLE_STAFF_SALE">Nhân viên bán hàng</Select.Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
