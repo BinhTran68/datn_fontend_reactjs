@@ -303,7 +303,7 @@ const BillDetail = () => {
                 );
             } catch (error) {
                 console.log(error)
-                toast.error("Có lỗi xảy ra khi cập nhật trạng thái");
+                toast.error( error.response?.data?.message ||  "Có lỗi xảy ra khi cập nhật trạng thái");
             } finally {
                 setIsCancelBill(false)
             }
