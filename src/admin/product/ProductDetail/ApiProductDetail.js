@@ -1,5 +1,6 @@
 import { message } from "antd";
 import axios from "axios";
+import {toast} from "react-toastify";
 
 const token = localStorage.getItem("token");
 
@@ -81,7 +82,7 @@ export const fetchDataSelectBrand = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -94,7 +95,7 @@ export const fetchDataSelectBrandHD = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -108,7 +109,7 @@ export const fetchDataSelectColor = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -121,7 +122,7 @@ export const fetchDataSelectColorHD = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -134,7 +135,7 @@ export const fetchDataSelectGender = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -147,7 +148,7 @@ export const fetchDataSelectGenderHD = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -160,7 +161,7 @@ export const fetchDataSelectMaterial = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -173,7 +174,7 @@ export const fetchDataSelectMaterialhd = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -186,7 +187,7 @@ export const fetchDataSelectProduct = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -199,7 +200,7 @@ export const fetchDataSelectProducthd = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -212,7 +213,7 @@ export const fetchDataSelectSize = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -225,7 +226,7 @@ export const fetchDataSelectSizehd = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -238,7 +239,7 @@ export const fetchDataSelectSole = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -251,7 +252,7 @@ export const fetchDataSelectSolehd = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -264,7 +265,7 @@ export const fetchDataSelectType = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -277,7 +278,7 @@ export const fetchDataSelectTypehd = async () => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -314,7 +315,7 @@ export const createProductDetail = async (request) => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };
@@ -326,7 +327,7 @@ export const createProductDetailList = async (request) => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message);
+    toast.error(error.response?.data?.message);
     throw error;
   }
 };

@@ -5,6 +5,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/library';
+import {toast} from "react-toastify";
 
 const AddStaff = () => {
     const [form] = Form.useForm();
@@ -33,15 +34,15 @@ const AddStaff = () => {
                             })
                             .catch(err => {
                                 console.error('QR Scan Error:', err);
-                                message.error('Quét mã QR thất bại!');
+                                toast.error('Quét mã QR thất bại!');
                             });
                     } else {
-                        message.error('Không tìm thấy thiết bị quét mã QR!');
+                        toast.error('Không tìm thấy thiết bị quét mã QR!');
                     }
                 })
                 .catch(err => {
                     console.error('QR Scan Error:', err);
-                    message.error('Quét mã QR thất bại!');
+                    toast.error('Quét mã QR thất bại!');
                 });
         }
 
@@ -75,7 +76,7 @@ const AddStaff = () => {
             };
         } catch (error) {
             console.error("Error uploading to Cloudinary:", error);
-            message.error("Lỗi khi tải ảnh lên Cloudinary!");
+            toast.error("Lỗi khi tải ảnh lên Cloudinary!");
             throw error;
         }
     };
@@ -113,13 +114,13 @@ const AddStaff = () => {
             const numericValue = result.text.replace(/\D/g, '').slice(0, 12);
             if (numericValue.length === 12) {
                 form.setFieldsValue({ citizenId: numericValue });
-                message.success(`Quét thành công: ${numericValue}`);
+                toast.success(`Quét thành công: ${numericValue}`);
             } else {
-                message.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
+                toast.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
             }
             setQrModalVisible(false);
         } else {
-            message.error('Không tìm thấy dữ liệu CCCD từ mã QR!');
+            toast.error('Không tìm thấy dữ liệu CCCD từ mã QR!');
         }
     };
 
@@ -158,11 +159,11 @@ const AddStaff = () => {
     const beforeUpload = (file) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isJpgOrPng) {
-            message.error('Chỉ được tải lên file JPG/PNG!');
+            toast.error('Chỉ được tải lên file JPG/PNG!');
         }
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Ảnh phải nhỏ hơn 2MB!');
+            toast.error('Ảnh phải nhỏ hơn 2MB!');
         }
         return isJpgOrPng && isLt2M;
     };
@@ -255,7 +256,7 @@ const AddStaff = () => {
             };
 
             await axios.post('http://localhost:8080/api/admin/staff/add', newData);
-            message.success("Thêm nhân viên thành công! Mật khẩu tạm thời đã được gửi đến email của nhân viên.");
+            toast.success("Thêm nhân viên thành công! Mật khẩu tạm thời đã được gửi đến email của nhân viên.");
             form.resetFields();
             setFileList([]);
             setTimeout(() => {
@@ -270,7 +271,7 @@ const AddStaff = () => {
                 setEmailError('Email này đã được sử dụng.');
                 form.setFields([{ name: 'email', errors: ['Email này đã được sử dụng.'] }]);
             } else {
-                message.error('Thêm nhân viên thất bại! ' + (error.response?.data?.message || error.message));
+                toast.error('Thêm nhân viên thất bại! ' + (error.response?.data?.message || error.message));
             }
         }
     };

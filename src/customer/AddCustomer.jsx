@@ -44,15 +44,15 @@ const AddCustomer = ({
                             })
                             .catch(err => {
                                 console.error('QR Scan Error:', err);
-                                message.error('Quét mã QR thất bại!');
+                                toast.error('Quét mã QR thất bại!');
                             });
                     } else {
-                        message.error('Không tìm thấy thiết bị quét mã QR!');
+                        toast.error('Không tìm thấy thiết bị quét mã QR!');
                     }
                 })
                 .catch(err => {
                     console.error('QR Scan Error:', err);
-                    message.error('Quét mã QR thất bại!');
+                    toast.error('Quét mã QR thất bại!');
                 });
         }
 
@@ -89,7 +89,7 @@ const AddCustomer = ({
             };
         } catch (error) {
             console.error("Error uploading to Cloudinary:", error);
-            message.error("Lỗi khi tải ảnh lên Cloudinary!");
+            toast.error("Lỗi khi tải ảnh lên Cloudinary!");
             throw error;
         }
     };
@@ -145,11 +145,11 @@ const AddCustomer = ({
     const beforeUpload = (file) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isJpgOrPng) {
-            message.error('Chỉ được tải lên file JPG/PNG!');
+            toast.error('Chỉ được tải lên file JPG/PNG!');
         }
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Ảnh phải nhỏ hơn 2MB!');
+            toast.error('Ảnh phải nhỏ hơn 2MB!');
         }
         return isJpgOrPng && isLt2M;
     };
@@ -174,14 +174,14 @@ const AddCustomer = ({
 
             if (numericValue.length === 12) {
                 form.setFieldsValue({CitizenId: numericValue});
-                message.success(`Quét thành công: ${numericValue}`);
+                toast.success(`Quét thành công: ${numericValue}`);
             } else {
-                message.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
+                toast.error('Dữ liệu quét không hợp lệ! Chỉ nhận số CCCD hợp lệ gồm 12 chữ số.');
             }
 
             setQrModalVisible(false);
         } else {
-            message.error('Không tìm thấy dữ liệu CCCD từ mã QR!');
+            toast.error('Không tìm thấy dữ liệu CCCD từ mã QR!');
         }
     };
 

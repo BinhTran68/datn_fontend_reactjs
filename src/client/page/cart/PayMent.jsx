@@ -41,6 +41,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { apiGetAddressDefaut, apiGetFreeShip } from "./apiPayment";
 import { FaMoneyBill } from "react-icons/fa6";
 import { DollarOutlined } from "@ant-design/icons";
+import {toast} from "react-toastify";
 
 
 const { Option } = Select;
@@ -366,7 +367,7 @@ const PayMent = () => {
       !selectedAddress.districtId ||
       !selectedAddress.wardId
     ) {
-      message.error("Vui lòng chọn địa chỉ giao hàng trước khi đặt hàng!");
+      toast.error("Vui lòng chọn địa chỉ giao hàng trước khi đặt hàng!");
       return;
     }
     setbill((prev) => ({
@@ -394,7 +395,7 @@ const PayMent = () => {
           case "ZALO_PAY": {
             console.log("✅ Bill sau khi cập nhật:", bill);
             setIsSubmitting(false); // Reset lại
-            message.success("Đặt hàng thành công!");
+            toast.success("Đặt hàng thành công!");
 
             try {
               const data = await createBillClient();
@@ -409,7 +410,7 @@ const PayMent = () => {
               }
             } catch (error) {
               console.error("Lỗi khi tạo đơn hàng:", error);
-              message.error("Đặt hàng thất bại!");
+              toast.error("Đặt hàng thất bại!");
             }
             break;
           }
@@ -420,7 +421,7 @@ const PayMent = () => {
             removeBillFromCart(productData);
             createBillClient();
             if (user) {
-              message.success("Đặt hàng thành công!");
+              toast.success("Đặt hàng thành công!");
               navigate(
                 `/success?status=1&&amount=${bill.moneyAfter}&&apptransid=ShipCod`
               );
@@ -429,7 +430,7 @@ const PayMent = () => {
             }
         }
       } else if (productData.length <= 0 && isSubmitting) {
-        message.warning("Không có sản phẩm!");
+        toast.warning("Không có sản phẩm!");
       }
     };
 

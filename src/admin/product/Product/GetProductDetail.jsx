@@ -65,6 +65,7 @@ import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
 import { Link, useParams } from "react-router-dom";
 import { FiEye } from "react-icons/fi";
+import {toast} from "react-toastify";
 
 const GetProductDetail = () => {
   const { id } = useParams(); // Lấy id từ URL
@@ -180,7 +181,7 @@ const GetProductDetail = () => {
       setProducts(response.data);
       setTotalProducts(response.total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,7 @@ const GetProductDetail = () => {
       setProducts(response.data);
       setTotalProducts(response.total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -205,7 +206,7 @@ const GetProductDetail = () => {
       console.log("Response from API brand:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectBrand(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -217,7 +218,7 @@ const GetProductDetail = () => {
       console.log("Response from API color:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectColor(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -229,7 +230,7 @@ const GetProductDetail = () => {
       console.log("Response from API gender:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectGender(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -242,7 +243,7 @@ const GetProductDetail = () => {
       console.log("Response from API product:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectProduct(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -254,7 +255,7 @@ const GetProductDetail = () => {
       console.log("Response from API material:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectMaterial(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -267,7 +268,7 @@ const GetProductDetail = () => {
       console.log("Response from API size:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSize(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -280,7 +281,7 @@ const GetProductDetail = () => {
       console.log("Response from API Sole:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSole(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -293,7 +294,7 @@ const GetProductDetail = () => {
       console.log("Response from API type:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectType(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -708,10 +709,10 @@ const GetProductDetail = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchfilterData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />
