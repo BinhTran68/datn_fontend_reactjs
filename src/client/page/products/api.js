@@ -191,3 +191,17 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
+
+/**
+ * Lấy danh sách sản phẩm
+ * @returns {Promise<Array>} Danh sách sản phẩm
+ */
+export const getProducts = async () => {
+  try {
+    const response = await api.get("/product-full");
+    return response.data.data || []; // Trả về mảng sản phẩm
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+};

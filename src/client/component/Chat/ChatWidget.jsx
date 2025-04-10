@@ -39,9 +39,8 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
     if (conversationId != null && showMessages) return;
     fetchData();
   }, [isChatOpen, customerId, staffId, senderType, anou]);
-  
-  const fetchData = async () => {
 
+  const fetchData = async () => {
     try {
       if (senderType === "STAFF") {
         const response = await axios.get(
@@ -271,6 +270,8 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
 
       {/* Modal */}
       <Modal
+        // height={550}
+        width={400}
         title={
           showMessages ? (
             <Space>
@@ -342,7 +343,9 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
                       <br />
                       {senderType === "STAFF" && (
                         <Text type="secondary" style={{ fontSize: "12px" }}>
-                          {item?.lastMessage?.senderType === senderType ? "tôi:  " : ""}
+                          {item?.lastMessage?.senderType === senderType
+                            ? "tôi:  "
+                            : ""}
                           {item?.lastMessage?.lastMesage || "Chưa có tin nhắn"}
                         </Text>
                       )}
