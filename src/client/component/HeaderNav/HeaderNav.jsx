@@ -334,24 +334,24 @@ function HeaderNav() {
 
 
   return (
-    <div className="header-container">
+    <div className="header-container mh">
       {/* Top bar */}
-      <div className="top-bar" style={{ backgroundColor: "#F37021" }}>
-        <div className="container-fluid px-4 py-0 d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center gap-3">
+      <div className="top-bar" style={{ backgroundColor: "#F37021" ,height:'1.6rem'}}>
+        <div className="container-fluid px-4 py-0 d-flex justify-content-between align-items-center" >
+          <div className="d-flex align-items-center gap-3 ">
             <Link
               to="/store-system"
               className="text-white text-decoration-none"
             >
-              <i className="fas fa-store me-1"></i> Hệ thống cửa hàng
+              <i className="fas fa-store me-1" ></i> Hệ thống cửa hàng
             </Link>
             <span className="text-white">|</span>
-            <Link to="/contact" className="text-white text-decoration-none">
+            <Link to="/contact" className="text-white text-decoration-none " >
               Tư vấn: 1800 6928
             </Link>
           </div>
           <div>
-            <Button type="link" className="text-white">
+            <Button type="link" className="text-white"  >
               Tải ứng dụng
             </Button>
           </div>
@@ -359,7 +359,7 @@ function HeaderNav() {
       </div>
 
       {/* Main Header */}
-      <div className="main-header py-1" style={{ backgroundColor: "white" }}>
+      <div className="main-header " style={{ backgroundColor: "white" }}>
         <div className="container-fluid px-4">
           <Row align="middle" gutter={16}>
             <Col xs={24} md={4}>
@@ -486,7 +486,7 @@ function HeaderNav() {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="category-nav py-1 border-top border-bottom">
+      <nav className="category-nav border-top border-bottom">
         <div className="container-fluid px-4">
           <Menu
             mode="horizontal"

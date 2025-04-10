@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Client } from "@stomp/stompjs";
-import { Input, Button, List, Card, Space, Typography, Avatar, Col, Row, message, Select } from "antd";
+import { Input, Button, List, Card, Space, Typography, Avatar, Col, Row, Select } from "antd";
 import { Rate } from "antd";
 import { EditOutlined, FilterOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
@@ -161,125 +161,6 @@ const CommentSection = ({ id }) => {
     }
   }, [user?.id, productId]);
 
-  // Tối ưu hàm sendComment
-  const sendComment = useCallback(async () => {
-    if (!user) {
-      toast.error("Vui lòng đăng nhập để bình luận!");
-      return;
-    }
-
-    if (isCheckingPurchase) {
-      toast.error("Đang kiểm tra thông tin mua hàng...");
-      return;
-    }
-
-    if (!hasBought) {
-      toast.error("Bạn cần mua sản phẩm trước khi bình luận!");
-      return;
-    }
-
-    if (!comment.trim()) {
-      toast.error("Vui lòng nhập nội dung bình luận!");
-      return;
-    }
-
-    if (!stompClient.current?.connected) {
-      toast.error("Không thể kết nối đến máy chủ bình luận. Vui lòng thử lại sau.");
-      return;
-    }
-
-    const commentText = comment;
-    const rateValue = rate;
-    const newCommentId = Date.now();
-
-    setComment("");
-    setRate(5);
-    setIsSubmitting(true);
-
-    const optimisticComment = {
-      id: newCommentId,
-      fullName: user.fullName,
-      comment: commentText,
-      productId: productId,
-      customerEmail: user.email,
-      createdAt: new Date().toISOString(),
-      rate: rateValue,
-      adminReply: "",
-      avatar: user.avatar || 'https://via.placeholder.com/40',
-      isPending: true
-    };
-
-    setComments(prev => [...prev, optimisticComment]);
-    setHasCommented(true);
-
-    try {
-      await stompClient.current.publish({
-        destination: `/app/comment/${productId}`,
-        body: JSON.stringify({
-          customerId: user.id,
-          comment: commentText,
-          rate: rateValue,
-          createdAt: new Date().toISOString(),
-        }),
-      });
-
-      setIsSubmitting(false);
-      toast.success("Bình luận đã được gửi thành công!");
-      setComments(prev =>
-        prev.map(c => c.id === newCommentId ? { ...c, isPending: false } : c)
-      );
-      
-    } catch (error) {
-      console.error("Lỗi khi gửi bình luận:", error);
-      setComments(prev => prev.filter(c => c.id !== newCommentId));
-      setHasCommented(false);
-      toast.error("Không thể gửi bình luận: " + error.message);
-      setIsSubmitting(false);
-    }
-  }, [user, isCheckingPurchase, hasBought, comment, rate, productId]);
-
-  // Tối ưu hàm saveEditedComment
-  const saveEditedComment = useCallback(async () => {
-    if (!editText.trim()) {
-      toast.error("Vui lòng nhập nội dung bình luận!");
-      return;
-    }
-
-    if (!stompClient.current?.connected) {
-      toast.error("Kết nối WebSocket không ổn định!");
-      return;
-    }
-
-    try {
-      await stompClient.current.publish({
-        destination: `/app/comment/update/${productId}`,
-        body: JSON.stringify({
-          customerId,
-          comment: editText,
-          rate: editRate,
-          parentId: editingComment,
-          updatedAt: null
-        }),
-      });
-
-      setComments(prevComments =>
-        prevComments.map(comment =>
-          comment.id === editingComment
-            ? { ...comment, comment: editText, rate: editRate }
-            : comment
-        )
-      );
-
-      setEditingComment(null);
-      setEditText("");
-      setEditRate(5);
-      toast.success("Bình luận đã được cập nhật thành công!");
-    } catch (error) {
-      console.error("Lỗi khi gửi cập nhật:", error);
-      toast.error("Không thể cập nhật bình luận: " + error.message);
-    }
-  }, [customerId, editText, editRate, editingComment, productId]);
-
   // Tối ưu hàm fetchComments
   const fetchComments = useCallback(async () => {
     try {
@@ -325,106 +206,160 @@ const CommentSection = ({ id }) => {
     }
   }, [productId, customerId, user?.email]);
 
+  // Tối ưu hàm sendComment
+  const sendComment = useCallback(async () => {
+    if (!user || isCheckingPurchase || !hasBought || !comment.trim() || !stompClient.current?.connected) {
+      toast.error("Vui lòng kiểm tra điều kiện trước khi gửi bình luận!");
+      return;
+    }
+
+    const commentText = comment;
+    const rateValue = rate;
+    const newCommentId = Date.now();
+
+    setComment("");
+    setRate(5);
+    setIsSubmitting(true);
+
+    const optimisticComment = {
+      id: newCommentId,
+      fullName: user.fullName,
+      comment: commentText,
+      productId: productId,
+      customerEmail: user.email,
+      createdAt: new Date().toISOString(),
+      rate: rateValue,
+      adminReply: "",
+      avatar: user.avatar || 'https://via.placeholder.com/40',
+      isPending: true
+    };
+
+    setComments(prev => [...prev, optimisticComment]);
+    setHasCommented(true);
+
+    try {
+      await stompClient.current.publish({
+        destination: `/app/comment/${productId}`,
+        body: JSON.stringify({
+          action: "create",
+          customerId: user.id,
+          comment: commentText,
+          rate: rateValue,
+          createdAt: new Date().toISOString(),
+        }),
+      });
+
+      setIsSubmitting(false);
+      toast.success("Bình luận đã được gửi thành công!");
+      setComments(prev =>
+        prev.map(c => c.id === newCommentId ? { ...c, isPending: false } : c)
+      );
+    } catch (error) {
+      console.error("Lỗi khi gửi bình luận:", error);
+      setComments(prev => prev.filter(c => c.id !== newCommentId));
+      setHasCommented(false);
+      toast.error("Không thể gửi bình luận: " + error.message);
+      setIsSubmitting(false);
+    }
+  }, [user, isCheckingPurchase, hasBought, comment, rate, productId]);
+
+  // Tối ưu hàm saveEditedComment
+  const saveEditedComment = useCallback(async () => {
+    if (!editText.trim()) {
+      toast.error("Vui lòng nhập nội dung bình luận!");
+      return;
+    }
+
+    if (!stompClient.current?.connected) {
+      toast.error("Kết nối WebSocket không ổn định!");
+      return;
+    }
+
+    try {
+      await stompClient.current.publish({
+        destination: `/app/comment/${productId}`,
+        body: JSON.stringify({
+          action: "update",
+          customerId,
+          comment: editText,
+          rate: editRate,
+          parentId: editingComment,
+          updatedAt: null
+        }),
+      });
+
+      setComments(prevComments =>
+        prevComments.map(comment =>
+          comment.id === editingComment
+            ? { ...comment, comment: editText, rate: editRate }
+            : comment
+        )
+      );
+
+      setEditingComment(null);
+      setEditText("");
+      setEditRate(5);
+      toast.success("Bình luận đã được cập nhật thành công!");
+    } catch (error) {
+      console.error("Lỗi khi gửi cập nhật:", error);
+      toast.error("Không thể cập nhật bình luận: " + error.message);
+    }
+  }, [customerId, editText, editRate, editingComment, productId]);
+
   // Tối ưu hàm connectWebSocket
-  const connectWebSocket = useCallback(() => {
-    const socket = new WebSocket("ws://localhost:8080/ws");
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        client.subscribe(`/topic/comments/${productId}`, (message) => {
-          const updatedComment = JSON.parse(message.body);
-          setComments(prevComments =>
-            prevComments.map(c =>
-              c.id === updatedComment.id
-                ? { ...c, comment: updatedComment.comment, rate: updatedComment.rate }
-                : c
-            )
-          );
-        });
-
-        client.subscribe(`/topic/comments`, (message) => {
-          try {
-            const data = JSON.parse(message.body);
-            if (data.parentId && data.comment) {
-              setComments(prevComments =>
-                prevComments.map(comment =>
-                  comment.id === data.parentId
-                    ? { ...comment, adminReply: data.comment }
-                    : comment
-                )
-              );
-            }
-            if (data.action === "delete" && data.commentId) {
-              setComments(prevComments =>
-                prevComments.filter(comment => comment.id !== data.commentId)
-              );
-            }
-          } catch (error) {
-            console.error("Lỗi khi xử lý WebSocket message:", error);
+// Tối ưu hàm connectWebSocket
+const connectWebSocket = useCallback(() => {
+  const socket = new WebSocket("ws://localhost:8080/ws");
+  const client = new Client({
+    webSocketFactory: () => socket,
+    reconnectDelay: 5000,
+    onConnect: () => {
+      client.subscribe(`/topic/comments/${productId}`, (message) => {
+        try {
+          // Kiểm tra xem message.body có phải chuỗi hợp lệ không
+          if (!message.body || typeof message.body !== 'string') {
+            console.error("Invalid WebSocket message body:", message.body);
+            return;
           }
-        });
 
-        client.subscribe(`/topic/admin-replies/${productId}`, (message) => {
-          try {
-            const replyData = JSON.parse(message.body);
-            if ((replyData.parentId || replyData.commentId) && replyData.productId === productId) {
-              const commentId = replyData.parentId || replyData.commentId;
-              const replyContent = replyData.comment || replyData.content || replyData.text || replyData.reply || "";
+          // Thử parse JSON
+          const data = JSON.parse(message.body);
+          console.log("WebSocket message received:", data);
 
-              setComments(prevComments =>
-                prevComments.map(comment =>
-                  comment.id === commentId
-                    ? { ...comment, adminReply: replyContent }
-                    : comment
-                )
-              );
-            }
-          } catch (error) {
-            console.error("Lỗi khi xử lý phản hồi admin:", error);
+          // Xử lý dữ liệu JSON hợp lệ
+          if (data.customerId && data.customerId !== user?.id||data?.parentId) {
+            console.log("Fetching comments for update from another user");
+            fetchComments();
+          } else {
+            console.log("Skipping fetch - comment from current user or invalid data");
           }
-        });
-
-        client.subscribe(`/topic/new-comments/${productId}`, (message) => {
-          try {
-            const newComment = JSON.parse(message.body);
-            if (isSubmitting) {
-              toast.success("Bình luận đã được gửi thành công!");
-              setIsSubmitting(false);
-              if (newComment.productId === productId) {
-                const commentToAdd = {
-                  id: newComment.id || Date.now(),
-                  fullName: user?.fullName || "Khách hàng ẩn danh",
-                  comment: newComment.comment,
-                  productId: productId,
-                  customerEmail: user?.email || "anonymous@example.com",
-                  createdAt: newComment.createdAt || new Date().toISOString(),
-                  rate: newComment.rate,
-                  adminReply: "",
-                  replies: [],
-                };
-                setComments(prev => [...prev, commentToAdd]);
-                setHasCommented(true);
-              }
-            }
-          } catch (error) {
-            console.error("Lỗi khi xử lý bình luận mới:", error);
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+          // Xử lý trường hợp đặc biệt như "deleted:81"
+          if (message.body.startsWith("deleted:")) {
+            const deletedId = message.body.split(":")[1];
+            console.log(`Comment with ID ${deletedId} was deleted`);
+            // setComments(prev => prev.filter(comment => comment.id !== parseInt(deletedId)));
+            fetchComments();
+          } else {
+            toast.error("Dữ liệu từ server không hợp lệ!");
           }
-        });
-      },
-      onStompError: (frame) => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
-        toast.error("Có lỗi kết nối với máy chủ bình luận!");
-        if (isSubmitting) {
-          setIsSubmitting(false);
         }
+      });
+    },
+    onStompError: (frame) => {
+      console.error('Broker reported error: ' + frame.headers['message']);
+      console.error('Additional details: ' + frame.body);
+      toast.error("Có lỗi kết nối với máy chủ bình luận!");
+      if (isSubmitting) {
+        setIsSubmitting(false);
       }
-    });
+    }
+  });
 
-    client.activate();
-    stompClient.current = client;
-  }, [productId, isSubmitting, user?.fullName, user?.email]);
+  client.activate();
+  stompClient.current = client;
+}, [productId, user?.id, fetchComments]);
 
   // Tối ưu các useEffect
   useEffect(() => {
@@ -432,12 +367,12 @@ const CommentSection = ({ id }) => {
   }, [id]);
 
   useEffect(() => {
-    fetchComments();
+    fetchComments(); // Chỉ gọi một lần khi component mount hoặc productId thay đổi
     connectWebSocket();
     return () => {
       if (stompClient.current) stompClient.current.deactivate();
     };
-  }, [productId, fetchComments, connectWebSocket]);
+  }, [productId, connectWebSocket, fetchComments]);
 
   useEffect(() => {
     checkUserPurchase();
@@ -501,7 +436,6 @@ const CommentSection = ({ id }) => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-      
     });
   }, []);
 
@@ -595,7 +529,7 @@ const CommentSection = ({ id }) => {
                       type="link"
                       icon={<EditOutlined />}
                       onClick={() => editComment(item)}
-                      style={{ float: "right",color:'orange', marginBottom: "130px" }}
+                      style={{ float: "right", color:'orange', marginBottom: "130px" }}
                     />
                   )}
                 </List.Item>
