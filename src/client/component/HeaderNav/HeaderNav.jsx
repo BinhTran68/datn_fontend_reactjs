@@ -19,7 +19,7 @@ import {
   Avatar,
   Modal,
   Space,
-  Tooltip,
+  Tooltip, Form,
 } from "antd";
 import { SearchOutlined, RobotOutlined } from "@ant-design/icons";
 import { getCart } from "../../page/cart/cart";
@@ -31,6 +31,8 @@ import { apiGetNoti } from "./header.js";
 import SockJS from "sockjs-client";
 import { fetchDataSelectBrand } from "../../../admin/product/ProductDetail/ApiProductDetail.js";
 import { askAI } from "../../utils/aiAssistant";
+import {toast} from "react-toastify";
+import axiosInstance from "../../../utils/axiosInstance.js";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -39,12 +41,7 @@ function HeaderNav() {
   const [cartCount, setCartCount] = useState(getCart().length);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const navigate = useNavigate();
-
-
   const [aiResponse, setAiResponse] = useState("");
-
-
-
   // Notification state
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -269,10 +266,42 @@ function HeaderNav() {
       ];
 
   const handleMenuClick = (key) => {
-    if (key === "logout") handleLogout();
+    if(key === "change-password") {
+      setOpenChangePassword(true)
+    }else if (key === "logout") handleLogout();
     else navigate(`/${key}`);
     setDrawerVisible(false);
   };
+
+
+  const [openChangePassword, setOpenChangePassword] = useState(false);
+  const [form] = Form.useForm();
+
+  const handleChangePassword = async (values) => {
+    if (values.newPassword !== values.confirmPassword) {
+      toast.error("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    try {
+      const res = await axiosInstance.put("/api/user/auth/change-password", {
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      });
+      if (res.status === 200) {
+        toast.success("Đổi mật khẩu thành công");
+        setOpenChangePassword(false);
+        form.resetFields();
+      } else {
+        const data = await res.json();
+        toast.error(data.message || "Đổi mật khẩu thất bại");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi kết nối máy chủ");
+    }
+  };
+
 
   const notificationContent = (
     <div style={{ width: 300, maxHeight: 400, overflowY: "auto" }}>
@@ -637,6 +666,40 @@ function HeaderNav() {
           </Button>
         </div>
       </Drawer>
+
+
+      <Modal
+          title="Đổi mật khẩu"
+          open={openChangePassword}
+          onCancel={() => setOpenChangePassword(false)}
+          onOk={() => form.submit()}
+          okText="Xác nhận"
+          cancelText="Hủy"
+      >
+        <Form layout="vertical" form={form} onFinish={handleChangePassword}>
+          <Form.Item
+              label="Mật khẩu hiện tại"
+              name="oldPassword"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+              label="Mật khẩu mới"
+              name="newPassword"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+              label="Xác nhận mật khẩu mới"
+              name="confirmPassword"
+              rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+        </Form>
+      </Modal>
 
     </div>
   );

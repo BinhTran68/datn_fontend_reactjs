@@ -293,6 +293,7 @@ const BillDetail = () => {
 
                 setCurrentBill(result.bill);
                 setBillHistory(result.billHistory);
+                getPaymentsBill()
 
                 toast.success(modalType === "modalConfirmCancelBill"
                     ? "Đơn hàng đã bị hủy thành công"

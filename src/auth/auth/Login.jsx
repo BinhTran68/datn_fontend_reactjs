@@ -95,7 +95,7 @@ const Login = () => {
                 toast.success("Đăng nhập thành công!");
             }
         } catch (error) {
-            setErrorMessage("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
+            setErrorMessage("Đăng nhập bằng Google thất bại. Vui lòng thử lại!");
             console.error("Google login error: ", error);
         }
     };

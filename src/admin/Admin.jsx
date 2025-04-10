@@ -59,6 +59,7 @@ console.log("dây la use nè ",user);
     handleNewMessage
   );
 
+
   useEffect(() => {
     connectWS(); // Kết nối WebSocket khi component mount
 
@@ -95,6 +96,14 @@ console.log("dây la use nè ",user);
         }
     };
 
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            console.log("jheolele")
+            await axiosInstance.put('/api/admin/staff/ping');
+        }, 10000); // Ping mỗi 10s
+        return () => clearInterval(interval);
+    }, [])
+
 
 
     return (
@@ -108,13 +117,13 @@ console.log("dây la use nè ",user);
         className="sidebar min-vh-100"
       >
         <div className={"d-flex justify-content-center mt-5"}>
-          <img 
+          <img
             width={collapse ? 50 : 200}
-            src={img} 
-            alt="" 
-            style={{ 
+            src={img}
+            alt=""
+            style={{
               transition: 'width 0.3s ease',
-              objectFit: 'contain' 
+              objectFit: 'contain'
             }}
           />
         </div>
@@ -159,16 +168,16 @@ console.log("dây la use nè ",user);
                     {user.fullName}
                   </span>
                   <span style={{ color: "#888", fontSize: "14px" }}>
-                    {user.role === "ROLE_ADMIN" 
-                      ? "Chủ cửa hàng" 
-                      : user.role === "ROLE_MANAGER" 
-                      ? "Quản lý" 
-                      : user.role === "ROLE_STAFF_SALE" 
+                    {user.role === "ROLE_ADMIN"
+                      ? "Chủ cửa hàng"
+                      : user.role === "ROLE_MANAGER"
+                      ? "Quản lý"
+                      : user.role === "ROLE_STAFF_SALE"
                       ? "Nhân viên bán hàng"
                       : "Nhân viên"}
                   </span>
                 </div>
-                <Popover 
+                <Popover
                   content={
                     <List>
                         <Modal
@@ -211,11 +220,11 @@ console.log("dây la use nè ",user);
                         Đăng xuất
                       </List.Item>
                     </List>
-                  } 
+                  }
                   trigger="click"
                 >
-                  <Avatar 
-                    size={40} 
+                  <Avatar
+                    size={40}
                     src={user.avatar ?? "https://t4.ftcdn.net/jpg/02/27/45/09/360_F_227450952_KQCMShHPOPebUXklULsKsROk5AvN6H1H.jpg"}
                     style={{ cursor: "pointer" }}
                   />

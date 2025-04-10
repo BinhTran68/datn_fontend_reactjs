@@ -340,7 +340,6 @@ const UpdateCustomer = () => {
                                             { required: true, message: 'Vui lòng nhập tên khách hàng!' },
                                             { min: 2, message: 'Tên phải có ít nhất 2 ký tự!' },
                                             { max: 50, message: 'Tên không được vượt quá 50 ký tự!' },
-                                            { pattern: /^[a-zA-ZÀ-ỹ\s]+$/, message: 'Tên chỉ được chứa chữ cái và khoảng trắng!' }
                                         ]}
                                     >
                                         <Input />
@@ -386,7 +385,6 @@ const UpdateCustomer = () => {
                                     <Form.Item
                                         name="gender"
                                         label="Giới tính"
-                                        rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
                                     >
                                         <Radio.Group>
                                             <Radio value={true}>Nam</Radio>

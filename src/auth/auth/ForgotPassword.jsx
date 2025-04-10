@@ -21,7 +21,7 @@ const ForgotPassword = () => {
           `http://localhost:8080/api/authentication/forgot-password/${encodeURIComponent(values.email)}`
       );
       console.log('Password reset request response:', response.data);
-      toast.success('Password reset link sent to your email!');
+      toast.success('Vui lòng kiểm tra email để khôi phục mật khẩu!');
       setIsSubmitted(true);
     } catch (error) {
       console.error('Password reset request error:', error);
