@@ -21,7 +21,7 @@ import {
   InstagramOutlined,
   TwitterOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PropProduct from "../products/PropProduct";
 import { COLORS } from "../../../constants/constants";
 import { apiAddViewProduct, getAllProducthadSoldDesc } from "../products/api";
@@ -30,6 +30,7 @@ import HomeCarousel from "./HomeCarousel";
 const { Title, Text, Paragraph } = Typography;
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -215,7 +216,7 @@ const HomePage = () => {
                             ? "translateY(0)"
                             : "translateY(20px)",
                       }}
-                      href="/collections/men"
+                      onClick={() => navigate("/products?genderName=Nam")}
                     >
                       Xem thêm
                     </Button>
@@ -268,7 +269,8 @@ const HomePage = () => {
                             ? "translateY(0)"
                             : "translateY(20px)",
                       }}
-                      href="/collections/women"
+                      onClick={() => navigate("/products?genderName=Nữ")}
+                      // href="/products?genderName=Nữ"
                     >
                       Xem thêm
                     </Button>

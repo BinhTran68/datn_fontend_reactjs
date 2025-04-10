@@ -151,7 +151,19 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
-
+  export const apiHasBought = async (customerId,productId) => {
+    try {
+      const response = await api.get("/has-bought", {
+        params: { customerId: customerId, productId: productId },
+      });
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+      console.error(errorMessage);
+      throw error;
+    }
+  };
 
   export const apiFilter = async (requestFilter) => {
     try {
@@ -179,3 +191,17 @@ export const apiGetSizesOfProduct = async (productId) => {
       throw error;
     }
   };
+
+/**
+ * Lấy danh sách sản phẩm
+ * @returns {Promise<Array>} Danh sách sản phẩm
+ */
+export const getProducts = async () => {
+  try {
+    const response = await api.get("/product-full");
+    return response.data.data || []; // Trả về mảng sản phẩm
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+};

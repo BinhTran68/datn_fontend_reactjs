@@ -29,6 +29,8 @@ import {FaUserAstronaut} from "react-icons/fa";
 import { Client } from "@stomp/stompjs";
 import { apiGetNoti } from "./header.js";
 import SockJS from "sockjs-client";
+import { fetchDataSelectBrand } from "../../../admin/product/ProductDetail/ApiProductDetail.js";
+import { askAI } from "../../utils/aiAssistant";
 
 function HeaderNav() {
   const [user, setUser] = useState(() =>
@@ -50,6 +52,7 @@ function HeaderNav() {
 
 
   const [isAIModalVisible, setIsAIModalVisible] = useState(false);
+  const [brands, setBrands] = useState([]);
 
   const [aiQuestion, setAiQuestion] = useState("");
   const vitegeminiurl = import.meta.env.VITE_GEMINI_URL;
@@ -63,32 +66,20 @@ function HeaderNav() {
   const handleAskAI = async () => {
     if (!aiQuestion.trim()) return;
 
-    // Thêm câu hỏi của người dùng vào lịch sử trò chuyện
+    // Thêm câu hỏi của người dùng vào lịch sử chat
     setChatHistory((prev) => [...prev, { sender: "user", text: aiQuestion }]);
     const userQuestion = aiQuestion;
     setAiQuestion(""); // Xóa ô nhập liệu
 
-    const aiQuestionPrev = aiQuestion;
-
-    setAiQuestion("")
     try {
-      const res = await axios.post(
-          vitegeminiurl,
-          {
-            contents: [{ parts: [{ text: userQuestion }] }],
-          },
-          { headers: { "Content-Type": "application/json" } }
-      );
-
-      const aiReply = res.data.candidates[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
-      setAiResponse(aiReply);
-
-      // Thêm phản hồi từ AI vào lịch sử trò chuyện
+      // Gọi AI assistant với câu hỏi và lịch sử chat
+      const aiReply = await askAI(userQuestion, chatHistory);
+      
+      // Thêm phản hồi từ AI vào lịch sử chat
       setChatHistory((prev) => [...prev, { sender: "ai", text: aiReply }]);
     } catch (error) {
-      console.error("Lỗi khi gọi Gemini API:", error);
+      console.error("Lỗi khi gọi AI:", error);
       const errorMessage = "Xin lỗi, AI đang gặp sự cố. Vui lòng thử lại sau!";
-      setAiResponse(errorMessage);
       setChatHistory((prev) => [...prev, { sender: "ai", text: errorMessage }]);
     }
   };
@@ -233,6 +224,7 @@ function HeaderNav() {
   }, [user?.id]);
 
   useEffect(() => {
+    fetchDataSelectBrand().then(res => setBrands(res.data));
     fetchCart();
     fetchNotifications();
   }, []);
@@ -334,24 +326,24 @@ function HeaderNav() {
 
 
   return (
-    <div className="header-container">
+    <div className="header-container mh">
       {/* Top bar */}
-      <div className="top-bar" style={{ backgroundColor: "#F37021" }}>
-        <div className="container-fluid px-4 py-0 d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center gap-3">
+      <div className="top-bar" style={{ backgroundColor: "#F37021" ,height:'1.6rem'}}>
+        <div className="container-fluid px-4 py-0 d-flex justify-content-between align-items-center" >
+          <div className="d-flex align-items-center gap-3 ">
             <Link
               to="/store-system"
               className="text-white text-decoration-none"
             >
-              <i className="fas fa-store me-1"></i> Hệ thống cửa hàng
+              <i className="fas fa-store me-1" ></i> Hệ thống cửa hàng
             </Link>
             <span className="text-white">|</span>
-            <Link to="/contact" className="text-white text-decoration-none">
+            <Link to="/contact" className="text-white text-decoration-none " >
               Tư vấn: 1800 6928
             </Link>
           </div>
           <div>
-            <Button type="link" className="text-white">
+            <Button type="link" className="text-white"  >
               Tải ứng dụng
             </Button>
           </div>
@@ -359,7 +351,7 @@ function HeaderNav() {
       </div>
 
       {/* Main Header */}
-      <div className="main-header py-1" style={{ backgroundColor: "white" }}>
+      <div className="main-header " style={{ backgroundColor: "white" }}>
         <div className="container-fluid px-4">
           <Row align="middle" gutter={16}>
             <Col xs={24} md={4}>
@@ -389,18 +381,16 @@ function HeaderNav() {
                 className="search-input"
               />
               <div className="quick-links mt-2 d-none d-md-flex gap-3">
-                {["Giày Nike", "Giày Adidas", "Giày Puma", "Giày thể thao"].map(
-                  (tag) => (
-                    <Link
-                      key={tag}
-                      to={`/search?q=${tag}`}
-                      className="quick-link"
-                      style={{ color: "#666", fontSize: "13px" }}
-                    >
-                      {tag}
-                    </Link>
-                  )
-                )}
+                {brands.map((brand) => (
+                  <Link
+                    key={brand.id}
+                    to={`/products?brandName=${encodeURIComponent(brand.brandName)}`}
+                    className="quick-link"
+                    style={{ color: "#666", fontSize: "13px" }}
+                  >
+                    {brand.brandName}
+                  </Link>
+                ))}
               </div>
             </Col>
             <Col xs={24} md={6}>
@@ -486,7 +476,7 @@ function HeaderNav() {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="category-nav py-1 border-top border-bottom">
+      <nav className="category-nav border-top border-bottom">
         <div className="container-fluid px-4">
           <Menu
             mode="horizontal"
@@ -577,7 +567,8 @@ function HeaderNav() {
         onClose={handleOnCloseAskAI}
         open={isAIModalVisible}
         mask={false}
-        height={430}
+        height={550}
+        width={400}
         extra={
           <Space>
             <Button onClick={handleOnCloseAskAI}>

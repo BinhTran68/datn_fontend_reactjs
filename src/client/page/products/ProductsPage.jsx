@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import style from "../TestComponent/TestComponent.module.css";
 import clsx from "clsx";
 import styles from "./Product.module.css";
@@ -34,7 +34,7 @@ import {
 } from "./api.js";
 import { FaFilter } from "react-icons/fa";
 import { FiFilter } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import FilterSelect from "./FilterSelect.jsx";
 import {
   fetchDataSelectBrand,
@@ -49,44 +49,7 @@ import {
 
 const url =
   "https://res.cloudinary.com/dieyhvcou/image/upload/v1742735758/5_1_b5fisz.png";
-const products = [
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: url,
-    statusSale: "Hot",
-    rate: 5,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: url,
-    statusSale: "Best Sale",
-    rate: 4,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: url,
-    statusSale: "Flash Sale",
-    rate: 3,
-  },
-  {
-    name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-    price: 50000,
-    promotion: "giảm 20%",
-    sale: "342",
-    url: url,
-    statusSale: "Flash Sale",
-    rate: 3,
-  },
-];
+
 
 const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
   (icon, index) => {
@@ -107,13 +70,25 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
 );
 
 function ProductsPage() {
+  const [searchParams] = useSearchParams();
+  
+  // Memoize URL parameters
+  const urlParams = useMemo(() => ({
+    productName: searchParams.get("productName"),
+    brandName: searchParams.get("brandName"),
+    typeName: searchParams.get("typeName"),
+    colorName: searchParams.get("colorName"),
+    materialName: searchParams.get("materialName"),
+    genderName: searchParams.get("genderName")
+  }), [searchParams]);
+
   const [filteredData, setFilteredData] = useState({
     products: [],
     pagination: {},
     filters: {},
   });
 
-  // State quản lý phân trang
+  // Memoize pagination state
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -121,6 +96,7 @@ function ProductsPage() {
     totalElements: 0,
   });
 
+  // Memoize data select states
   const [dataSelectBrand, setDataSelectBrand] = useState([]);
   const [dataSelectColor, setDataSelectColor] = useState([]);
   const [dataSelectGender, setDataSelectGender] = useState([]);
@@ -129,53 +105,38 @@ function ProductsPage() {
   const [dataSelectSize, setDataSelectSize] = useState([]);
   const [dataSelectSole, setDataSelectSole] = useState([]);
   const [dataSelectType, setDataSelectType] = useState([]);
-  const [requestSearch, setRequestSearch] = useState({
-    name: "",
-  });
-  const [range, setRange] = useState([]); // Giá trị mặc định
 
-  const [loading, setLoading] = useState(false);
-  const [productHadSolDescs, setProductHadSolDescs] = useState();
-  const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
-    current: 1,
-    pageSize: 8,
-  });
+  // Memoize filter handler
+  const handleFilter = useCallback((data) => {
+    setFilteredData(data);
+    if (
+      data?.pagination.totalPages !== pagination.totalPages ||
+      data?.pagination.totalElements !== pagination.totalElements
+    ) {
+      setPagination(prev => ({
+        ...prev,
+        totalPages: data?.pagination.totalPages || 0,
+        totalElements: data?.pagination.totalElements || 0,
+      }));
+    }
+  }, [pagination.totalPages, pagination.totalElements]);
 
-  // Sử dụng useRef để lưu giá trị pagination trước đó
-  const prevPaginationRef = useRef(pagination);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setDataSelectBrand((await fetchDataSelectBrand()).data);
-        setDataSelectProduct((await fetchDataSelectProduct()).data);
-        setDataSelectType((await fetchDataSelectType()).data);
-        setDataSelectColor((await fetchDataSelectColor()).data);
-        setDataSelectMaterial((await fetchDataSelectMaterial()).data);
-        setDataSelectSize((await fetchDataSelectSize()).data);
-        setDataSelectSole((await fetchDataSelectSole()).data);
-        setDataSelectGender((await fetchDataSelectGender()).data);
-      } catch (error) {
-        console.error("Error fetching filter data:", error);
-      }
-    };
-
-    fetchData();
+  // Memoize pagination handler
+  const handlePaginationChange = useCallback((newPagination) => {
+    setPagination(prev => ({
+      ...prev,
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    }));
   }, []);
 
-  // const getAllProductHadSoldDescs = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await getAllProducthadSoldDesc(pageProductHadSolDescs);
-  //     console.log("Response tất cả sản phẩm có lượt bán từ nhiều tới ít:", response);
-  //     setProductHadSolDescs(response.data);
-  //   } catch (error) {
-  //     message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  const formatFiltersToString = (filters) => {
+  // Memoize page change handler
+  const onPageChange = useCallback((page, pageSize) => {
+    handlePaginationChange({ current: page, pageSize });
+  }, [handlePaginationChange]);
+
+  // Memoize filter string formatter
+  const formatFiltersToString = useCallback((filters) => {
     const filterParts = [];
 
     if (filters.productId) {
@@ -218,47 +179,57 @@ function ProductsPage() {
     }
 
     return filterParts.length > 0 ? filterParts.join(", ") : "Chưa có dữ liệu lọc";
-  };
-  const addViewProduct = async (productId) => {
-    setLoading(true);
+  }, [dataSelectProduct, dataSelectBrand, dataSelectType, dataSelectColor, 
+      dataSelectMaterial, dataSelectSize, dataSelectSole, dataSelectGender]);
+
+  // Memoize add view handler
+  const addViewProduct = useCallback(async (productId) => {
     try {
-      const response = await apiAddViewProduct(productId);
+      await apiAddViewProduct(productId);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const handleFilter = useCallback((data) => {
-    setFilteredData(data);
-
-    // Chỉ cập nhật pagination nếu totalPages hoặc totalElements thay đổi
-    if (
-      data?.pagination.totalPages !== pagination.totalPages ||
-      data?.pagination.totalElements !== pagination.totalElements
-    ) {
-      setPagination((prev) => ({
-        ...prev,
-        totalPages: data?.pagination.totalPages || 0,
-        totalElements: data?.pagination.totalElements || 0,
-      }));
-    }
-
-    console.log("Dữ liệu lọc nhận được:", data);
-  }, [pagination.totalPages, pagination.totalElements]); // Chỉ phụ thuộc vào totalPages và totalElements
-
-  const handlePaginationChange = useCallback((newPagination) => {
-    setPagination((prev) => ({
-      ...prev,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-    }));
   }, []);
 
-  const onPageChange = (page, pageSize) => {
-    handlePaginationChange({ current: page, pageSize });
-  };
+  // Fetch data only once on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [
+          brandData,
+          productData,
+          typeData,
+          colorData,
+          materialData,
+          sizeData,
+          soleData,
+          genderData
+        ] = await Promise.all([
+          fetchDataSelectBrand(),
+          fetchDataSelectProduct(),
+          fetchDataSelectType(),
+          fetchDataSelectColor(),
+          fetchDataSelectMaterial(),
+          fetchDataSelectSize(),
+          fetchDataSelectSole(),
+          fetchDataSelectGender()
+        ]);
+
+        setDataSelectBrand(brandData.data);
+        setDataSelectProduct(productData.data);
+        setDataSelectType(typeData.data);
+        setDataSelectColor(colorData.data);
+        setDataSelectMaterial(materialData.data);
+        setDataSelectSize(sizeData.data);
+        setDataSelectSole(soleData.data);
+        setDataSelectGender(genderData.data);
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -278,6 +249,12 @@ function ProductsPage() {
                 dataSelectSize={dataSelectSize}
                 dataSelectSole={dataSelectSole}
                 dataSelectGender={dataSelectGender}
+                productName={urlParams.productName}
+                brandName={urlParams.brandName}
+                typeName={urlParams.typeName}
+                colorName={urlParams.colorName}
+                materialName={urlParams.materialName}
+                genderName={urlParams.genderName}
               />
             </Content>
           </Sider>

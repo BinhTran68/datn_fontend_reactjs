@@ -764,7 +764,7 @@ function ProductDetail() {
             ĐÁNH GIÁ SẢN PHẨM
           </Col>
           <Col span={24}>
-            <CommentSection id={getProductDetail.id} />
+            <CommentSection id={productId } />
           </Col>
         </Row>
       </Content>

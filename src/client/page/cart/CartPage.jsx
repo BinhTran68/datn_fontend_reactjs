@@ -35,6 +35,7 @@ import {
 } from "./apiCart";
 import { addToVoucher } from "./voucher";
 import { LuTicket } from "react-icons/lu";
+import { apiGetFreeShip } from "./apiPayment";
 
 const { Title, Text } = Typography;
 
@@ -52,6 +53,7 @@ const CartPage = () => {
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [products, setProducts] = useState(getCart());
   const [productsRealPrice, setProductsRealPrice] = useState([]);
+  const [minOrderValue, setMinOrderValue] = useState(0);
 
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("user"))
@@ -75,7 +77,9 @@ const CartPage = () => {
 
     // Fetch ngay khi component mount
     fetchCart();
-
+    apiGetFreeShip().then((res) => {
+      setMinOrderValue(res);
+    });
     return () => {
       window.removeEventListener("cartUpdated", handleCartUpdate);
 
@@ -557,7 +561,11 @@ const CartPage = () => {
                   {appliedDiscount || ""}
                 </Text>
               </p>
-
+              <p style={{ minHeight: "25px" }}>
+                <Text type={minOrderValue ? "success" : undefined}>
+                  {minOrderValue ? "Miễn phí vận chuyển đơn hàng trên " + minOrderValue.toLocaleString() + "đ" : ""}
+                </Text>
+              </p>
               <Space direction="vertical" style={{ width: "100%" }}>
                 <Button
                   type="primary"

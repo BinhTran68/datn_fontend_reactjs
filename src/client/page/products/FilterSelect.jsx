@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { Row, Col, Select, InputNumber, Button, Space } from "antd";
 import { apiFilter } from "./api";
 import Title from "antd/es/typography/Title";
 import { COLORS } from "../../../constants/constants";
+
 
 const FilterSelect = ({
   onFilter,
@@ -16,8 +17,17 @@ const FilterSelect = ({
   dataSelectSize = [],
   dataSelectSole = [],
   dataSelectGender = [],
+  productName,
+  brandName,
+  typeName,
+  colorName,
+  materialName,
+  genderName,
+  sizeName,
+  soleName,
 }) => {
-  const [requestFilter, setRequestFilter] = useState({
+  // Khởi tạo state filter ban đầu và memoize để tránh tạo lại object mỗi lần render
+  const initialFilterState = useMemo(() => ({
     productId: null,
     brandId: null,
     typeId: null,
@@ -26,14 +36,136 @@ const FilterSelect = ({
     sizeId: null,
     soleId: null,
     genderId: null,
-    minPrice:null,
-    maxPrice:null,
+    minPrice: null,
+    maxPrice: null,
+  }), []);
 
-  });
+  // State quản lý các filter hiện tại
+  const [requestFilter, setRequestFilter] = useState(initialFilterState);
 
-  // Sử dụng useRef để lưu giá trị pagination trước đó
+  // Memoize các options cho các Select component để tránh tạo lại mỗi lần render
+  const selectOptions = useMemo(() => ({
+    product: [
+      { value: null, label: "Tất cả sản phẩm" },
+      ...dataSelectProduct.map((p) => ({
+        value: p.id,
+        label: p.productName,
+      })),
+    ],
+    brand: [
+      { value: null, label: "Tất cả thương hiệu" },
+      ...dataSelectBrand.map((b) => ({
+        value: b.id,
+        label: b.brandName,
+      })),
+    ],
+    type: [
+      { value: null, label: "Tất cả loại giày" },
+      ...dataSelectType.map((t) => ({
+        value: t.id,
+        label: t.typeName,
+      })),
+    ],
+    color: [
+      { value: null, label: "Tất cả màu sắc" },
+      ...dataSelectColor.map((c) => ({
+        value: c.id,
+        label: (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                width: "1.2rem",
+                height: "1.2rem",
+                backgroundColor: c.code,
+                borderRadius: "50%",
+                border: "1px solid #ccc",
+              }}
+            />
+            {c.colorName}
+          </div>
+        ),
+        title: c.colorName,
+      })),
+    ],
+    material: [
+      { value: null, label: "Tất cả chất liệu" },
+      ...dataSelectMaterial.map((m) => ({
+        value: m.id,
+        label: m.materialName,
+      })),
+    ],
+    gender: [
+      { value: null, label: "Tất cả giới tính" },
+      ...dataSelectGender.map((g) => ({
+        value: g.id,
+        label: g.genderName,
+      })),
+    ],
+  }), [dataSelectProduct, dataSelectBrand, dataSelectType, dataSelectColor, 
+       dataSelectMaterial, dataSelectGender]);
+
+  // Effect để cập nhật filter khi URL parameters thay đổi
+  useEffect(() => {
+    const newRequestFilter = {
+      productId: dataSelectProduct.find(p => p.productName === productName)?.id || null,
+      brandId: dataSelectBrand.find(b => b.brandName === brandName)?.id || null,
+      typeId: dataSelectType.find(t => t.typeName === typeName)?.id || null,
+      colorId: dataSelectColor.find(c => c.colorName === colorName)?.id || null,
+      materialId: dataSelectMaterial.find(m => m.materialName === materialName)?.id || null,
+      sizeId: dataSelectSize.find(s => s.sizeName === sizeName)?.id || null,
+      soleId: dataSelectSole.find(s => s.soleName === soleName)?.id || null,
+      genderId: dataSelectGender.find(g => g.genderName === genderName)?.id || null,
+      minPrice: null,
+      maxPrice: null,
+    };
+
+    setRequestFilter(newRequestFilter);
+  }, [productName, brandName, typeName, colorName, materialName, genderName,
+      dataSelectProduct, dataSelectBrand, dataSelectType, dataSelectColor,
+      dataSelectMaterial, dataSelectGender]);
+
+  // Handler xử lý thay đổi filter, được memoize để tránh tạo lại mỗi lần render
+  const handleFilterChange = useCallback((key, value) => {
+    // Kiểm tra giá trị minPrice và maxPrice hợp lệ
+    if (
+      key === "maxPrice" &&
+      value !== null &&
+      requestFilter.minPrice !== null &&
+      value < requestFilter.minPrice
+    ) {
+      return;
+    }
+    if (
+      key === "minPrice" &&
+      value !== null &&
+      requestFilter.maxPrice !== null &&
+      value > requestFilter.maxPrice
+    ) {
+      return;
+    }
+    // Reset về trang đầu tiên khi filter thay đổi
+    onPaginationChange({
+      current: 1,
+      pageSize: pagination?.pageSize || 10,
+    });
+    // Cập nhật filter
+    setRequestFilter(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  }, [requestFilter, onPaginationChange, pagination]);
+
+  // Handler xử lý reset filter, được memoize để tránh tạo lại mỗi lần render
+  const handleResetFilter = useCallback(() => {
+    setRequestFilter(initialFilterState);
+    onPaginationChange({
+      current: 1,
+      pageSize: pagination?.pageSize || 10,
+    });
+  }, [initialFilterState, onPaginationChange, pagination]);
+
+  // Effect để fetch dữ liệu khi filter hoặc pagination thay đổi
   const prevPaginationRef = useRef(pagination);
-
   useEffect(() => {
     const fetchFilteredProducts = async () => {
       try {
@@ -67,7 +199,7 @@ const FilterSelect = ({
       }
     };
 
-    // Chỉ gọi API nếu pagination thực sự thay đổi
+    // Chỉ gọi API khi pagination hoặc filter thay đổi
     const paginationChanged =
       JSON.stringify(prevPaginationRef.current) !== JSON.stringify(pagination);
 
@@ -75,42 +207,16 @@ const FilterSelect = ({
       fetchFilteredProducts();
     }
 
-    // Cập nhật giá trị pagination trước đó
+    // Lưu lại giá trị pagination hiện tại
     prevPaginationRef.current = pagination;
   }, [requestFilter, pagination, onFilter]);
-
-  const handleFilterChange = (key, value) => {
-    if (
-      key === "maxPrice" &&
-      value !== null &&
-      requestFilter.minPrice !== null &&
-      value < requestFilter.minPrice
-    ) {
-      return; // Prevent setting maxPrice less than minPrice
-    }
-    if (
-      key === "minPrice" &&
-      value !== null &&
-      requestFilter.maxPrice !== null &&
-      value > requestFilter.maxPrice
-    ) {
-      return; // Prevent setting minPrice greater than maxPrice
-    }
-    onPaginationChange({
-      current: 1,
-      pageSize: pagination?.pageSize || 10,
-    });
-    setRequestFilter((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
 
   return (
     <Row gutter={[16, 16]}>
       <h5 className="p-2" style={{ color: `${COLORS.primary}` }}>
         Bộ Lọc tìm Kiếm
       </h5>
+      {/* Select sản phẩm */}
       <Col>
         <Select
           showSearch
@@ -119,15 +225,10 @@ const FilterSelect = ({
           optionFilterProp="label"
           value={requestFilter.productId}
           onChange={(value) => handleFilterChange("productId", value)}
-          options={[
-            { value: null, label: "Tất cả sản phẩm" },
-            ...dataSelectProduct.map((p) => ({
-              value: p.id,
-              label: p.productName,
-            })),
-          ]}
+          options={selectOptions.product}
         />
       </Col>
+      {/* Select thương hiệu */}
       <Col>
         <Select
           showSearch
@@ -136,15 +237,10 @@ const FilterSelect = ({
           optionFilterProp="label"
           value={requestFilter.brandId}
           onChange={(value) => handleFilterChange("brandId", value)}
-          options={[
-            { value: null, label: "Tất cả thương hiệu" },
-            ...dataSelectBrand.map((b) => ({
-              value: b.id,
-              label: b.brandName,
-            })),
-          ]}
+          options={selectOptions.brand}
         />
       </Col>
+      {/* Select loại giày */}
       <Col>
         <Select
           showSearch
@@ -153,15 +249,10 @@ const FilterSelect = ({
           optionFilterProp="label"
           value={requestFilter.typeId}
           onChange={(value) => handleFilterChange("typeId", value)}
-          options={[
-            { value: null, label: "Tất cả loại giày" },
-            ...dataSelectType.map((t) => ({
-              value: t.id,
-              label: t.typeName,
-            })),
-          ]}
+          options={selectOptions.type}
         />
       </Col>
+      {/* Select màu sắc */}
       <Col>
         <Select
           showSearch
@@ -170,31 +261,10 @@ const FilterSelect = ({
           optionFilterProp="title"
           value={requestFilter.colorId}
           onChange={(value) => handleFilterChange("colorId", value)}
-          options={[
-            { value: null, label: "Tất cả màu sắc" },
-            ...dataSelectColor.map((c) => ({
-              value: c.id,
-              label: (
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <div
-                    style={{
-                      width: "1.2rem",
-                      height: "1.2rem",
-                      backgroundColor: c.code,
-                      borderRadius: "50%",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                  {c.colorName}
-                </div>
-              ),
-              title: c.colorName,
-            })),
-          ]}
+          options={selectOptions.color}
         />
       </Col>
+      {/* Select chất liệu */}
       <Col>
         <Select
           showSearch
@@ -203,49 +273,10 @@ const FilterSelect = ({
           optionFilterProp="label"
           value={requestFilter.materialId}
           onChange={(value) => handleFilterChange("materialId", value)}
-          options={[
-            { value: null, label: "Tất cả chất liệu" },
-            ...dataSelectMaterial.map((m) => ({
-              value: m.id,
-              label: m.materialName,
-            })),
-          ]}
+          options={selectOptions.material}
         />
       </Col>
-      {/* <Col>
-        <Select
-          showSearch
-          style={{ width: "10rem" }}
-          placeholder="Tất cả kích cỡ"
-          optionFilterProp="label"
-          value={requestFilter.sizeId}
-          onChange={(value) => handleFilterChange("sizeId", value)}
-          options={[
-            { value: null, label: "Tất cả kích cỡ" },
-            ...dataSelectSize.map((s) => ({
-              value: s.id,
-              label: s.sizeName,
-            })),
-          ]}
-        />
-      </Col>
-      <Col>
-        <Select
-          showSearch
-          style={{ width: "10rem" }}
-          placeholder="Tất cả loại đế giày"
-          optionFilterProp="label"
-          value={requestFilter.soleId}
-          onChange={(value) => handleFilterChange("soleId", value)}
-          options={[
-            { value: null, label: "Tất cả loại đế giày" },
-            ...dataSelectSole.map((s) => ({
-              value: s.id,
-              label: s.soleName,
-            })),
-          ]}
-        />
-      </Col> */}
+      {/* Select giới tính */}
       <Col>
         <Select
           showSearch
@@ -254,15 +285,10 @@ const FilterSelect = ({
           optionFilterProp="label"
           value={requestFilter.genderId}
           onChange={(value) => handleFilterChange("genderId", value)}
-          options={[
-            { value: null, label: "Tất cả giới tính" },
-            ...dataSelectGender.map((g) => ({
-              value: g.id,
-              label: g.genderName,
-            })),
-          ]}
+          options={selectOptions.gender}
         />
       </Col>
+      {/* Input giá tối thiểu */}
       <Col>
         <InputNumber
           style={{ width: "10rem" }}
@@ -270,15 +296,13 @@ const FilterSelect = ({
           min={0}
           value={requestFilter.minPrice}
           onChange={(value) => handleFilterChange("minPrice", value)}
-          formatter={(value) =>
-            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          }
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
           suffix="VND"
           step={10000}
-
         />
       </Col>
+      {/* Input giá tối đa */}
       <Col>
         <InputNumber
           style={{ width: "10rem" }}
@@ -286,37 +310,15 @@ const FilterSelect = ({
           min={0}
           value={requestFilter.maxPrice}
           onChange={(value) => handleFilterChange("maxPrice", value)}
-          formatter={(value) =>
-            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-          }
+          formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
           parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
           suffix="VND"
           step={10000}
         />
       </Col>
+      {/* Button reset filter */}
       <Col>
-        <Button
-          onClick={() => {
-            const resetState = {
-              productId: null,
-              brandId: null,
-              typeId: null,
-              colorId: null,
-              materialId: null,
-              sizeId: null,
-              soleId: null,
-              genderId: null,
-              minPrice: null,
-              maxPrice: null,
-            };
-            setRequestFilter(resetState);
-            onPaginationChange({
-              current: 1,
-              pageSize: pagination?.pageSize || 10,
-            }); // Reset pagination
-          }}
-          type="primary"
-        >
+        <Button onClick={handleResetFilter} type="primary">
           Xóa Bộ lọc
         </Button>
       </Col>
@@ -324,4 +326,5 @@ const FilterSelect = ({
   );
 };
 
-export default FilterSelect;
+// Sử dụng React.memo để tránh render lại khi props không thay đổi
+export default React.memo(FilterSelect);
