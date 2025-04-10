@@ -127,6 +127,7 @@ export const paymentMethodConvert = {
     "COD":"CoD",
     "ZALO_PAY":"Zalo pay",
     "TIEN_MAT": "Tiền mặt",
+    "VN_PAY": "VN Pay",
     "CHUYEN_KHOAN": "Chuyển khoản",
     "TIEN_MAT_AND_CHUYEN_KHOAN": "Tiền mặt và Chuyển khoản"
 };

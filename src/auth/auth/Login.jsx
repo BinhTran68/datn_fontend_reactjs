@@ -179,7 +179,7 @@ const Login = () => {
                     </GoogleLogin>
 
                     <div className={styles.forgotPassword}>
-                        <Link to="/auth/forgot-password">
+                        <Link to="/forgot-password">
                             Quên mật khẩu?
                         </Link>
                     </div>

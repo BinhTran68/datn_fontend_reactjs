@@ -27,7 +27,7 @@ import {
   fetchDataSelectType,
   filterData,
   getAllProductDetailExportData,
-  switchStatus, filterDataWithPromotion,
+  switchStatus, filterDataWithPromotion, searchNameProduct,
 } from "../../product/ProductDetail/ApiProductDetail.js";
 import {productTableColumn} from "../columns/productTableColumn.jsx";
 import {Client} from "@stomp/stompjs";
@@ -58,6 +58,7 @@ const ProductDetailModal = ({
 
   const [totalProducts, setTotalProducts] = useState(0);
   const [requestFilter, setRequestFilter] = useState({});
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5
@@ -73,7 +74,11 @@ const ProductDetailModal = ({
 
   // Effect cho filter và phân trang
   useEffect(() => {
-    if (filterActive && Object.keys(requestFilter).length > 0) {
+    if(requestSearch.name.trim() === "") {
+      loadProducts();
+    }else if(requestSearch.name.trim() !== "") {
+      return
+    }else if (filterActive && Object.keys(requestFilter).length > 0) {
       loadFilteredData();
     } else {
       loadProducts();
@@ -186,6 +191,28 @@ const ProductDetailModal = ({
     { key: 'genders', placeholder: 'Tất cả giới tính', valueKey: 'genderName' }
   ];
 
+  const [requestSearch, setRequestSearch] = useState({
+    name: "",
+  });
+
+  const searchName = async () => {
+    setLoading(true);
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    try {
+      const { data, total } = await searchNameProduct(
+          pagination,
+          requestSearch
+      );
+
+      setProducts(data);
+      setTotalProducts(total);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <h3>Danh sách sản phẩm</h3>
@@ -193,20 +220,27 @@ const ProductDetailModal = ({
         <div className="d-flex justify-content-center gap-4 flex-column">
           {/* Search Input */}
           <Row gutter={[16, 16]}>
-            <Col span={24}>
+            <Col className={"d-flex gap-3"} span={24}>
               <Input
                 placeholder="Tìm kiếm sản phẩm..."
                 prefix={<SearchOutlined />}
                 allowClear
+                value={requestSearch.name}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  setFilterActive(!!value);
-                  setRequestFilter(prev => ({
+                  setRequestSearch((prev) => ({
                     ...prev,
-                    keyword: value || undefined
+                    name: e.target.value, // Cập nhật giá trị nhập vào
                   }));
                 }}
               />
+              <Button
+                  type="primary"
+                  icon={<SearchOutlined />}
+                  onClick={searchName}
+                  style={{}}
+              >
+                Tìm kiếm
+              </Button>
             </Col>
           </Row>
 

@@ -7,14 +7,13 @@ import {
     baseUrl,
     convertBillStatusToString, convertDate,
     convertLongTimestampToDate, formatVND,
-    generateAddressString, paymentMethodConvert, paymentTypeConvert
+    generateAddressString
 } from "../../helpers/Helpers.js";
 import StepProgress from "./componets/StepProgress.jsx";
 import {FaFileCircleCheck} from "react-icons/fa6";
 
 import {Input, InputNumber} from 'antd';
 import ModalConfirmUpdateStatusBill from "./componets/ModalConfirmUpdateStatusBill.jsx";
-import {GrDrag} from "react-icons/gr";
 import {MdCancel, MdDelete} from "react-icons/md";
 import {IoAdd} from "react-icons/io5";
 import ModalEditBillInfo from "./componets/ModalEditBillInfo.jsx";
