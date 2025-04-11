@@ -291,9 +291,9 @@ const BillDetail = () => {
                 const response = await axiosInstance.put(`/api/admin/bill/${id}/update`, data);
                 const result = response.data.data;
 
-                setCurrentBill(result.bill);
+                getPaymentsBill();
                 setBillHistory(result.billHistory);
-                getPaymentsBill()
+                getCurrentBill()
 
                 toast.success(modalType === "modalConfirmCancelBill"
                     ? "Đơn hàng đã bị hủy thành công"
@@ -998,13 +998,13 @@ const BillDetail = () => {
                                     {handleButtonConfirm(currentBill?.status)}
                                 </Button>
                             )}
-                            {!["CHO_XAC_NHAN", "DA_XAC_NHAN", "DANG_XAC_MINH", "TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
+                            {!["CHO_XAC_NHAN", "DA_XAC_NHAN", "DANG_VAN_CHUYEN" ,"DANG_XAC_MINH", "TAO_DON_HANG", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
                                 <Button onClick={handleOnRollbackStatus} color={"danger"} type={""}>
                                     Quay lại
                                 </Button>
                             )}
 
-                            {["CHO_XAC_NHAN"].includes(currentBill?.status) && (
+                            {["CHO_XAC_NHAN", "DA_XAC_NHAN"].includes(currentBill?.status) && (
                                 <Button onClick={handleCancelBill} type="default">
                                     {handleOnShowCancelBill()}
                                 </Button>

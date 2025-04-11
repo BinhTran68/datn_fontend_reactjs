@@ -26,6 +26,7 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         dataIndex: "image",
         key: "image",
         render: (images) => {
+
             if (images && Array.isArray(images) && images.length > 0) {
                 return (
                     <img 
