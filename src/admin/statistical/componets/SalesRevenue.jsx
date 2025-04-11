@@ -35,7 +35,6 @@ const exportToExcel = (data, dateRange, fileName = "RevenueReport.xlsx") => {
             "Số sản phẩm đã bán",
             "Đơn thành công",
             "Đơn hủy",
-            "Đơn hoàn",
         ], // Hàng tiêu đề chi tiết
         [
             data.totalRevenue || 0,
@@ -43,7 +42,6 @@ const exportToExcel = (data, dateRange, fileName = "RevenueReport.xlsx") => {
             data.totalProductsSold || 0,
             data.successfulOrders || 0,
             data.cancelledOrders || 0,
-            data.returnedOrders || 0,
         ], // Dữ liệu thực tế
     ];
 
@@ -134,11 +132,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                                         • {item?.data?.cancelledOrders || 0}
                                     </Tooltip>
                                 </Col>
-                                <Col span={4} style={{ color: "#6c757d" }}>
-                                    <Tooltip title="Đơn hoàn">
-                                        • {item?.data?.returnedOrders || 0}
-                                    </Tooltip>
-                                </Col>
+
                             </Row>
 
                         </Card>
@@ -165,7 +159,6 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                             <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
                             <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
                             <span style={{ color: "#dc3545", fontSize: "12px", fontWeight: "500" }}>● Đơn hủy</span>
-                            <span style={{ color: "#6c757d", fontSize: "12px", fontWeight: "500" }}>● Đơn hoàn</span>
                         </div>
                     </div>
                 </Col>
