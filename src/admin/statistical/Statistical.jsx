@@ -12,7 +12,6 @@ const Statistical = () => {
                 <div style={{ fontSize: '30px', fontWeight: 'bold',textAlign:'center' }}>
                     TỔNG QUAN CỬA HÀNG
                 </div>
-
             </Card>
            <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
             {/* Thống kê doanh thu */}

@@ -24,7 +24,8 @@ import {
 } from "@ant-design/icons";
 import AddressSelectorAntd from "../utils/AddressSelectorAntd"; // Đảm bảo đúng đường dẫn
 import { FaMapMarkedAlt } from "react-icons/fa"; // Import icon
-import { generateAddressString } from "../../helpers/Helpers.js"; // Đảm bảo đúng đường dẫn
+import { generateAddressString } from "../../helpers/Helpers.js";
+import {toast} from "react-toastify"; // Đảm bảo đúng đường dẫn
 
 const { Option } = Select;
 
@@ -382,7 +383,7 @@ const CustomerProfile = () => {
         `http://localhost:8080/api/admin/customers/set-default-address/${addressId}`
       )
       .then(() => {
-        message.success("Đặt làm mặc định thành công!");
+        toast.success("Đặt làm mặc định thành công!");
         // Không cần cập nhật state thủ công ở đây, fetchCustomerData sẽ xử lý
         fetchCustomerData(customerId); // Tải lại TẤT CẢ dữ liệu
       })
@@ -391,7 +392,7 @@ const CustomerProfile = () => {
           "Error setting default address:",
           error.response?.data || error.message
         );
-        message.error(
+        toast.error(
           `Đặt làm mặc định thất bại! ${error.response?.data?.message || ""}`
         );
         setLoading(false); // Đảm bảo dừng tải khi có lỗi
@@ -1085,9 +1086,9 @@ const CustomerProfile = () => {
                   ? formData.fullName.charAt(0).toUpperCase()
                   : null}
               </Avatar>
-              <div className={`${styles.statusBadge} ${getStatusBadge()}`}>
-                {formData.status || "N/A"}
-              </div>
+              {/*<div className={`${styles.statusBadge} ${getStatusBadge()}`}>*/}
+              {/*  {formData.status || "N/A"}*/}
+              {/*</div>*/}
             </div>
 
             <div className={styles.customerInfo}>
@@ -1099,22 +1100,22 @@ const CustomerProfile = () => {
             <div className={styles.menuItems}>
               {[
                 "personal",
-                "financial",
+                // "financial",
                 "history",
-                "feedback",
-                "marketing",
-                "preferences",
-                "category",
+                // "feedback",
+                // "marketing",
+                // "preferences",
+                // "category",
               ].map((item) => {
                 // Bạn có thể muốn có icon và nhãn phù hợp ở đây
                 const labels = {
                   personal: "Thông tin cá nhân",
-                  financial: "Thông tin tài chính",
+                  // financial: "Thông tin tài chính",
                   history: "Lịch sử mua hàng",
-                  feedback: "Đánh giá & Phản hồi",
-                  marketing: "Thông tin tiếp thị",
-                  preferences: "Sở thích & Nhu cầu",
-                  category: "Phân loại khách hàng",
+                  // feedback: "Đánh giá & Phản hồi",
+                  // marketing: "Thông tin tiếp thị",
+                  // preferences: "Sở thích & Nhu cầu",
+                  // category: "Phân loại khách hàng",
                 };
                 // Thêm icon tương tự nếu cần
                 return (

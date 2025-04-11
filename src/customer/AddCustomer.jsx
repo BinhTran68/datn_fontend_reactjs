@@ -479,12 +479,14 @@ const AddCustomer = ({
                                     >
                                         Thêm mới
                                     </Button>
-                                    <Button
-                                        onClick={() => navigate('/admin/customer')}
-                                        style={{marginRight: '10px'}}
-                                    >
-                                        Hủy
-                                    </Button>
+                                    {
+                                        !isSalePage && <Button
+                                            onClick={() => navigate('/admin/customer')}
+                                            style={{marginRight: '10px'}}
+                                        >
+                                            Hủy
+                                        </Button>
+                                    }
                                     <Button
                                         type="dashed"
                                         onClick={() => setQrModalVisible(true)}

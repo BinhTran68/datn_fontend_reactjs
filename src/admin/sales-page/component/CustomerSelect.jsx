@@ -159,6 +159,7 @@ const CustomerSelect = ({ customer, onCustomerSelect, setBillVouchers }) => {
                 footer={null}
                 closable={true}
                 maskClosable={false}
+                onCancel={() => setIsShowAddCustomer(false)}
                 width={"75%"}
             >
                 <AddCustomer
