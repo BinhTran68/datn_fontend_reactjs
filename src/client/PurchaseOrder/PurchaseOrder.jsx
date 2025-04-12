@@ -9,14 +9,15 @@ import { Modal, Radio, Input, Button, Space, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { addToCart, getCart } from "../page/cart/cart";
 import { toast } from "react-toastify";
+import { COLORS } from "../../constants/constants";
 
 const { TextArea } = Input;
 
 const PurchaseOrder = () => {
   const navigate = useNavigate();
-   const [user, setUser] = useState(() =>
-      JSON.parse(localStorage.getItem("user"))
-    );
+  const [user, setUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
   const [activeTab, setActiveTab] = useState("all");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,11 +92,11 @@ const PurchaseOrder = () => {
       label: "Đã hủy",
       actions: ["buy_again", "delete"],
     },
-    HOAN_TRA: {
-      id: "return_refund",
-      label: "Trả hàng/Hoàn tiền",
-      actions: ["view_details"],
-    },
+    // HOAN_TRA: {
+    //   id: "return_refund",
+    //   label: "Trả hàng/Hoàn tiền",
+    //   actions: ["view_details"],
+    // },
     DA_THANH_TOAN: {
       id: "paid",
       label: "Đã thanh toán",
@@ -114,10 +115,8 @@ const PurchaseOrder = () => {
     { id: "Shiping", label: "Đang giao hàng" },
     { id: "completed", label: "Hoàn thành" },
     { id: "cancelled", label: "Đã hủy" },
-    { id: "return_refund", label: "Trả hàng/Hoàn tiền" },
+    // { id: "return_refund", label: "Trả hàng/Hoàn tiền" },
   ];
-
-
 
   // Fetch orders from API
   useEffect(() => {
@@ -446,7 +445,6 @@ const PurchaseOrder = () => {
     await buyBack(billId);
     toast.success("Đã thêm sản phẩm vào giỏ hàng");
     window.dispatchEvent(new Event("cartUpdated"));
-
   };
 
   const handleContactSeller = (orderId) => {
@@ -494,7 +492,7 @@ const PurchaseOrder = () => {
   const buyBack = async (billId) => {
     try {
       setLoading(true);
-      const res = await apiBuyBack(billId,user?.id );
+      const res = await apiBuyBack(billId, user?.id);
       console.log("Cancel response:", res?.data);
       fetchOrders();
     } catch (error) {
@@ -558,7 +556,7 @@ const PurchaseOrder = () => {
       </Modal>
 
       <div className={styles.header}>
-        <h1>Đơn Mua</h1>
+        <h1 style={{ color: `${COLORS.primary}` }}>Đơn Mua</h1>
       </div>
 
       <div className={styles.tabContainer}>
@@ -613,10 +611,16 @@ const PurchaseOrder = () => {
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id} className={styles.orderCard}>
+            <div
+              key={order.id}
+              className={styles.orderCard}
+              style={{ borderLeft: `4px solid ${COLORS.primary}` }}
+            >
               <div className={styles.orderHeader}>
                 <div className={styles.shopInfo}>
-                  <span className={styles.shopName}>Shop TheHands</span>
+                  <span className={styles.shopName}>
+                    Mã đơn hàng: {order.billCode}- Ngày đặt hàng: {order.date}
+                  </span>
                 </div>
                 <div className={styles.orderStatus}>
                   <span className={styles.orderStatusText}>
@@ -654,20 +658,12 @@ const PurchaseOrder = () => {
               <div className={styles.divider}></div>
 
               <div className={styles.orderFooter}>
-                <div className={styles.orderMeta}>
-                  <span className={styles.orderDate}>
-                    Ngày đặt hàng: {order.date}
-                  </span>
-                  <span className={styles.orderId}>
-                    Mã đơn hàng: {order.billCode}
-                  </span>
-                </div>
-                <div className={styles.orderTotal}>
+                <span className={styles.orderTotal}>
                   <span className={styles.totalLabel}>Tiền ship:</span>
                   <span className={styles.totalPrice}>
                     {formatPrice(order.shipMoney)}
                   </span>
-                </div>
+                </span>
                 <div className={styles.orderTotal}>
                   <span className={styles.totalLabel}>Tổng số tiền:</span>
                   <span className={styles.totalPrice}>

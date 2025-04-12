@@ -164,7 +164,9 @@ const HomePage = () => {
 
   // Use local state to track hover state for each category card
   const [hoveredCategory, setHoveredCategory] = useState(null);
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  },[])
   return (
     <Card bodyStyle={{ padding: 0 }}>
       {/* Banner Carousel */}

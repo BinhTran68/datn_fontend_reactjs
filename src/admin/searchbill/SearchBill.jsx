@@ -373,7 +373,7 @@ const SearchBill = () => {
                         {billData.voucher}
                       </span>
                       <span className={styles.voucherDiscount}>
-                        -{billData.discountMoney.toLocaleString()}đ
+                        {billData.discountMoney?.toLocaleString()}đ
                       </span>
                     </span>
                   </div>
@@ -442,17 +442,17 @@ const SearchBill = () => {
               <div className={styles.summaryRow}>
                 <span>Giảm giá:</span>
                 <span className={styles.discountAmount}>
-                  -{billData.discountMoney.toLocaleString()}đ
+                  -{billData.discountMoney?.toLocaleString()}đ
                 </span>
               </div>
             )}
             <div className={styles.summaryRow}>
               <span>Tổng tiền hàng:</span>
-              <span>{billData.totalMoney.toLocaleString()}đ</span>
+              <span>{billData.totalMoney?.toLocaleString()}đ</span>
             </div>
             <div className={styles.summaryRow}>
               <span>Phí vận chuyển:</span>
-              <span>{billData.shipMoney.toLocaleString()}đ</span>
+              <span>{billData.shipMoney?.toLocaleString()}đ</span>
             </div>
 
             <div className={`${styles.summaryRow} ${styles.totalRow}`}>
@@ -468,7 +468,7 @@ const SearchBill = () => {
                   color: `${COLORS.primary}`,
                 }}
               >
-                {billData.moneyAfter.toLocaleString()}đ
+                {billData.moneyAfter?.toLocaleString()}đ
               </span>
             </div>
           </div>

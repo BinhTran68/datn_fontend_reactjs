@@ -13,6 +13,7 @@ import {
   Space,
   Switch,
   Flex,
+  Typography,
 } from "antd";
 import { LuTicket } from "react-icons/lu";
 import { useForm, Controller, get, useWatch } from "react-hook-form";
@@ -42,7 +43,9 @@ import { apiGetAddressDefaut, apiGetFreeShip } from "./apiPayment";
 import { FaMoneyBill } from "react-icons/fa6";
 import { DollarOutlined } from "@ant-design/icons";
 import {toast} from "react-toastify";
+import { apiFindVoucherValid, apiVoucherBest } from "./apiCart";
 
+const { Text } = Typography;
 
 const { Option } = Select;
 
@@ -116,6 +119,77 @@ const PayMent = () => {
       image: item.image,
     })),
   });
+  const [discountCode, setDiscountCode] = useState();
+  const [voucherValid, setVoucherValid] = useState([]);
+  const [voucherBests, setVoucherBest] = useState([]);
+  const [discount, setDiscount] = useState(0);
+  const [appliedDiscount, setAppliedDiscount] = useState("");
+  const vouchersValid = async () => {
+    try {
+      const res = await apiFindVoucherValid({ customerId: user?.id });
+      setVoucherValid(res.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
+  };
+  const voucherBest = async () => {
+    try {
+      const res = await apiVoucherBest({
+        customerId: user?.id,
+        totalBillMoney: caculamoneyBeforeDiscount,
+      });
+      if(voucher[0]?.voucherId==null){
+        setDiscountCode(res.data?.voucher?.id);
+      }else{
+        setDiscountCode(voucher[0]?.voucherId);
+        setDiscount(voucher[0]?.discountValue);
+      }
+      setVoucherBest(res.data);
+
+      // setDiscount(0);
+      // setAppliedDiscount("");
+      console.log("vocher", res.data?.voucher?.id);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    }
+  };
+  const applyDiscount = () => {
+    const selectedVoucher = voucherValid.find((v) => v.id === discountCode);
+    if (!selectedVoucher) {
+      setDiscount(0);
+      setAppliedDiscount(null);
+      message.error("Mã giảm giá không hợp lệ!");
+      return;
+    }
+
+    const {
+      voucherCode,
+      discountValue,
+      discountType,
+      discountMaxValue,
+      billMinValue,
+    } = selectedVoucher;
+    if (caculamoneyBeforeDiscount < billMinValue) {
+      message.error(
+        "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng voucher!"
+      );
+      return;
+    }
+
+    let discountAmount = 0;
+    if (discountType === "PERCENT") {
+      discountAmount = (caculamoneyBeforeDiscount * discountValue) / 100;
+      discountAmount = Math.min(discountAmount, discountMaxValue);
+    } else if (discountType === "MONEY") {
+      discountAmount = Math.min(discountValue, caculamoneyBeforeDiscount);
+    }
+
+    setDiscount(discountAmount);
+    setAppliedDiscount(
+      `Mã ${voucherCode} - Giảm ${discountAmount.toLocaleString()} đ`
+    );
+    message.success("Mã giảm giá đã được áp dụng!");
+  };
   useEffect(() => {
     console.log("🏠 Địa chỉ đã chọn:", selectedAddress);
   }, [selectedAddress]);
@@ -164,6 +238,8 @@ const PayMent = () => {
   }, [user]);
 
   useEffect(() => {
+    vouchersValid();
+    voucherBest();
     setbill((prev) => ({
       ...prev,
       totalMoney: totalAmountNoship,
@@ -281,9 +357,9 @@ const PayMent = () => {
     sum =
       sum +
       parseFloat(bill?.shipMoney) -
-      parseFloat(voucher[0]?.discountValue || 0);
+      parseFloat(discount|| 0);
     return sum;
-  }, [productData, bill?.shipMoney]);
+  }, [productData, bill?.shipMoney,discount]);
 
   const totalAmountNoship = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
@@ -293,9 +369,10 @@ const PayMent = () => {
         sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
-    sum = sum - parseFloat(voucher[0]?.discountValue || 0);
+    sum = sum - parseFloat(discount|| 0);
     return sum;
-  }, [productData, bill?.shipMoney]);
+  }, [productData, bill?.shipMoney,discount]);
+
   const caculamoneyBeforeDiscount = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
 
@@ -378,9 +455,12 @@ const PayMent = () => {
       notes: data.notes,
       paymentMethodsType: paymentMethod, // Thêm phương thức thanh toán vào dữ liệu gửi đi
       customerId: user?.id || null,
-      voucherId: voucher[0]?.voucherId,
-      discountMoney: voucher[0]?.discountValue,
-      moneyBeforeDiscount: caculamoneyBeforeDiscount
+      voucherId: discountCode,
+      discountMoney: discount,
+      moneyBeforeDiscount: caculamoneyBeforeDiscount,
+      moneyAfter: totalAmount,
+      totalMoney: totalAmountNoship,
+
       // discountMoney: voucher[0]?.totalAfterDiscount,
     }));
 
@@ -529,6 +609,7 @@ const PayMent = () => {
               )}
             />
           </Form.Item>
+         
         </Col>
 
         {/* Thông tin đơn hàng */}
@@ -563,13 +644,13 @@ const PayMent = () => {
             {caculamoneyBeforeDiscount >= minOrderValue ? 0 : "+"+ formatVND(parseInt(bill?.shipMoney) || 0)}
           </Flex>
 
-          {voucher.length > 0 && voucher[0].note && (
+          {discountCode && (
             <Flex justify="space-between">
               <Col>
                 <LuTicket size={27} style={{ color: `${COLORS.primary}` }} />
-                Voucher: {voucher[0].note}
+                Voucher: {appliedDiscount===""?voucher[0]?.note:appliedDiscount} 
               </Col>
-              - {voucher[0].discountValue?.toLocaleString("vi-VN")} đ
+              - {discount?.toLocaleString("vi-VN")} đ
               </Flex>
           )}
           <Divider />
@@ -577,6 +658,123 @@ const PayMent = () => {
             Tổng hóa đơn: {totalAmount?.toLocaleString()} ₫
           </h3>
           <Divider />
+          <Row>
+            <Col>
+            <Content
+                title="Mã ưu đãi"
+                style={{
+                  marginTop: "1rem",
+                }}
+              >
+                <Row gutter={1} justify={"space-between"}>
+                  <Col>
+                    {" "}
+                    <LuTicket
+                      size={29}
+                      style={{ color: `${COLORS.primary}` }}
+                    />
+                  </Col>
+                  <Col>
+                    {" "}
+                    <Select
+                      showSearch
+                      style={{ width: "100%", minWidth: 200 }} // Mở rộng ô chọn
+                      placeholder="Chọn voucher"
+                      optionLabelProp="label"
+                      value={discountCode}
+                      dropdownStyle={{ width: "auto", minWidth: 400 }} // Mở rộng dropdown
+                      onChange={(value) => {
+                        setDiscountCode(value);
+                        console.log("diacadiecode", discountCode);
+                      }}
+                    >
+                      {voucherValid?.map((item) => (
+                        <Select.Option
+                          key={item.id}
+                          value={item.id}
+                          label={item.voucherCode}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              height: "90px",
+                            }}
+                          >
+                            {/* Ảnh thương hiệu */}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '70px',
+                              height: '70px',
+                              border: '1px solid #ddd',
+                              borderRadius: '4px',
+                              overflow: 'hidden',
+                              backgroundColor: "#e74c3c"
+
+                            }}>
+                              <img
+                                src={
+                                  item.image ||
+                                  "https://down-vn.img.susercontent.com/file/vn-11134004-7ras8-m4re2imocx9s72.webp"
+                                }
+                                alt={item.voucherCode}
+                                style={{ width: "70px" }}
+                              />
+                            </div>
+
+                            {/* Thông tin voucher */}
+                            <div>
+                              <strong>{item.voucherCode}</strong>
+                              <span
+                                style={{
+                                  margin: 0,
+                                  fontSize: 12,
+                                  color: "#888",
+                                }}
+                              >
+                                - Giảm{" "}
+                                {item.discountType === "MONEY"
+                                  ? item.discountValue.toLocaleString() + "đ"
+                                  : item.discountValue + "%"}{" "}
+                                {item.discountType === "MONEY"
+                                  ? ""
+                                  : `Tối đa ${item.discountMaxValue.toLocaleString()}đ`}
+                              </span>
+                              <div>
+                                <Text type="success">
+                                  Đơn tối thiểu{" "}
+                                  {item.billMinValue.toLocaleString()} đ
+                                </Text>
+                              </div>
+                              <span>{item.endDate}</span>
+                              <div>
+                                <Text type="danger">
+                                  {item.voucherType=="PRIVATE"? "Số lượng 1": "Số lượng "+item.quantity}
+                                </Text>
+                              </div>
+                            </div>
+                          </div>
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Col>
+
+                  <Button type="primary" onClick={applyDiscount}>
+                    Áp dụng
+                  </Button>
+                </Row>
+                <div>
+                  {" "}
+                  <Text type="success" className="pt-10">
+                    {voucherBests.note}
+                  </Text>
+                </div>
+              </Content>
+            </Col>
+          </Row>
           <Radio.Group
             onChange={handlePaymentMethodChange}
             value={paymentMethod}

@@ -45,7 +45,9 @@ function Product() {
 
   // --- Sản phẩm nhiều lượt xem ---
   const [productHadViewsDescs, setProductHadViewsDescs] = useState([]);
-
+useEffect(() => {
+  window.scrollTo(0, 0);
+},[])
   // Fetch: Bán chạy
   useEffect(() => {
     const fetchSoldDesc = async () => {

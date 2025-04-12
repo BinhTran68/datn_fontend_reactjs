@@ -13,13 +13,13 @@ const contentStyle = {
 
 // Dữ liệu mẫu banners
 const banners = [
-  {
-    id: 1,
-    title: "Hot Nhất Hè 2025",
-    subtitle: "Khám phá ưu đãi mùa hè cực hot!",
-    link: "#",
-    image: "https://salt.tikicdn.com/ts/tmp/59/24/36/cea1f55d81620d5767ca2b8c09794a95.jpg",
-  },
+  // {
+  //   id: 1,
+  //   title: "Hot Nhất Hè 2025",
+  //   subtitle: "Khám phá ưu đãi mùa hè cực hot!",
+  //   link: "#",
+  //   image: "https://salt.tikicdn.com/ts/tmp/59/24/36/cea1f55d81620d5767ca2b8c09794a95.jpg",
+  // },
   {
     id: 2,
     title: "Khuyến Mãi Đặc Biệt",

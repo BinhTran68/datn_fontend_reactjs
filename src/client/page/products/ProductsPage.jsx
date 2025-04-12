@@ -105,7 +105,9 @@ function ProductsPage() {
   const [dataSelectSize, setDataSelectSize] = useState([]);
   const [dataSelectSole, setDataSelectSole] = useState([]);
   const [dataSelectType, setDataSelectType] = useState([]);
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  },[])
   // Memoize filter handler
   const handleFilter = useCallback((data) => {
     setFilteredData(data);

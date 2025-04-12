@@ -1,15 +1,16 @@
 /* PurchaseOrder.module.css - Updated with logo-inspired colors */
 .container {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: #333;
-  background-color: #f8f4f0; /* Subtle cream background */
+  /* background-color: #f8f4f0; Subtle cream background */
+  background-color: #f8f4f0;
 }
 
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .header h1 {
@@ -23,7 +24,7 @@
   display: flex;
   background-color: #fff;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
 }
@@ -122,14 +123,14 @@
   margin-bottom: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  border-left: 4px solid #1a5fb4; /* Blue accent from the sneaker */
+  /* border-left: 4px solid ${COLORS.primary}; Blue accent from the sneaker */
 }
 
 .orderHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 10px;
 }
 
 .shopInfo {
@@ -216,7 +217,7 @@
 }
 
 .orderFooter {
-  padding: 16px;
+  padding: 0 20px 5px 0;
   background-color: #f9f9f9;
 }
 
@@ -236,7 +237,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .totalLabel {

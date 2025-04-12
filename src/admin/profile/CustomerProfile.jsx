@@ -26,6 +26,7 @@ import AddressSelectorAntd from "../utils/AddressSelectorAntd"; // Đảm bảo 
 import { FaMapMarkedAlt } from "react-icons/fa"; // Import icon
 import { generateAddressString } from "../../helpers/Helpers.js";
 import {toast} from "react-toastify"; // Đảm bảo đúng đường dẫn
+import PurchaseOrder from "../../client/PurchaseOrder/PurchaseOrder.jsx";
 
 const { Option } = Select;
 
@@ -78,7 +79,9 @@ const CustomerProfile = () => {
   // --- Trạng thái mới ---
   const [isAddressListModalVisible, setIsAddressListModalVisible] =
     useState(false); // Cho Modal Danh sách Địa chỉ
-
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    },[])
   useEffect(() => {
     const id = user?.id;
     setCustomerId(id);
@@ -752,7 +755,7 @@ const CustomerProfile = () => {
               <h2>Lịch sử mua hàng</h2>
             </div>
             <div className={styles.infoCard}>
-              <p>Nội dung lịch sử mua hàng...</p>
+             <PurchaseOrder/>
             </div>
           </>
         );
@@ -1064,14 +1067,14 @@ const CustomerProfile = () => {
 
   // --- JSX Return ---
   return (
-    <div className={styles.container}>
+    <div className={styles.container} >
       <div className={styles.pageHeader}>
         <h1 className={styles.title}>Hồ Sơ Khách Hàng</h1>
       </div>
 
       <div className={styles.content}>
         {/* Sidebar giữ nguyên */}
-        <div className={styles.sidebar}>
+        <div className={styles.sidebar} >
           <div className={styles.profileCard}>
             <div className={styles.avatarSection}>
               {/* Hiển thị Avatar */}
@@ -1097,7 +1100,7 @@ const CustomerProfile = () => {
             </div>
 
             {/* Mục Menu - cấu trúc đơn giản hóa */}
-            <div className={styles.menuItems}>
+            <div className={styles.menuItems} style={{minHeight: "30rem"}}>
               {[
                 "personal",
                 // "financial",

@@ -730,7 +730,7 @@ const CartPage = () => {
                               <span>{item.endDate}</span>
                               <div>
                                 <Text type="danger">
-                                  Số lượng {item.quantity}
+                                  {item.voucherType=="PRIVATE"? "Số lượng 1": "Số lượng "+item.quantity}
                                 </Text>
                               </div>
                             </div>
