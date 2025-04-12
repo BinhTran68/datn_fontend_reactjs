@@ -690,7 +690,7 @@ const PayMent = () => {
                   marginTop: "1rem",
                 }}
               >
-                <Row gutter={1} justify={"space-between"}>
+                <Row gutter={1} >
                   <Col>
                     {" "}
                     <LuTicket
