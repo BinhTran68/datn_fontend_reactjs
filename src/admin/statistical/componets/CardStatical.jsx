@@ -58,7 +58,7 @@ const LowStockProducts = () => {
   }, [quantity]); // Dependency array đảm bảo fetch lại khi quantity thay đổi
 
   const columns = [
-    { title: "Ảnh", dataIndex: "id", key: "id",  align: "center", render: (url) => <img src={"https://res.cloudinary.com/dieyhvcou/image/upload/v1742293066/5f47e7da60955df9310650bde6001777_bqij6b.webp"} alt="Product" style={{ width: 50 }} /> },
+    // { title: "Ảnh", dataIndex: "id", key: "id",  align: "center", render: (url) => <img src={"https://res.cloudinary.com/dieyhvcou/image/upload/v1742293066/5f47e7da60955df9310650bde6001777_bqij6b.webp"} alt="Product" style={{ width: 50 }} /> },
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName" ,  align: "center"},
     { title: "Loại giày", dataIndex: "typeName", key: "typeName",  align: "center" },
     { title: "Màu sắc", dataIndex: "colorName",  align: "center", key: "colorName" },
@@ -66,7 +66,7 @@ const LowStockProducts = () => {
     { title: "Đế giày", dataIndex: "soleName",  align: "center", key: "soleName" },
     { title: "Giới tính", dataIndex: "genderName",  align: "center", key: "genderName" },
     { title: "Giá bán", dataIndex: "price",  align: "center", key: "price" },
-    { title: "Số lượng bán", dataIndex: "quantity",  align: "center", key: "quantity" },
+    { title: "Số lượng còn lại", dataIndex: "quantity",  align: "center", key: "quantity" },
   ];
 
   return (   
@@ -238,7 +238,7 @@ const StatisticsSummary = () => {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
-                        <span>Sản phẩm bán theo năm</span>
+                        <span>Sản phẩmn đã bán trong năm</span>
                       </div>
                       <span>{statistics.yearPro?.quantityYear.toLocaleString()} ĐƠN</span>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -256,7 +256,7 @@ const StatisticsSummary = () => {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <CalendarOutlined style={{ fontSize: "18px",color:"orange" }} />
-                        <span>Sản phẩm bán theo tháng</span>
+                        <span>Sản phẩm đã bán trong tháng</span>
                       </div>
                       <span>{statistics.monthPro?.quantityMonth.toLocaleString()} ĐƠN</span>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

@@ -115,7 +115,6 @@ const ChartStatusBill = () => {
       "DATHANHTOAN": "gold",
       "DAHOANTHANH": "orange",
       "DAHUY": "#ff8042",
-      "TRAHANG": "#ff0000",
     };
     return colorMap[status] || "#ccc"; // Mặc định màu xám nếu không có trong danh sách
   };
@@ -127,7 +126,6 @@ const ChartStatusBill = () => {
     "DATHANHTOAN": "Đã thanh toán",
     "DAHOANTHANH": "Đã hoàn thành",
     "DAHUY": "Đã hủy",
-    "TRAHANG": "Trả hàng",
   };
 
   const handleCustomRangeChange = (dates) => {
@@ -154,7 +152,7 @@ const ChartStatusBill = () => {
 
   const columns = [
     //thiếu ảnh 
-    { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQKanIMPiEvON96i3FghI3bmA5It_yxPA011xHLSTvpmbA2sicQ-MNOlawFLVIfhoPdedAtw8ft-30zbKjBJOoPNwpOmQkQPsbv7VqmaXX8fR0Ep0O6xrgbIfNNaSDTMjX37w&usqp=CAc"} style={{ width: 50 }} /> },
+    // { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQKanIMPiEvON96i3FghI3bmA5It_yxPA011xHLSTvpmbA2sicQ-MNOlawFLVIfhoPdedAtw8ft-30zbKjBJOoPNwpOmQkQPsbv7VqmaXX8fR0Ep0O6xrgbIfNNaSDTMjX37w&usqp=CAc"} style={{ width: 50 }} /> },
 
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName", align: "center" },
     { title: "Loại giày", dataIndex: "typeName", key: "typeName", align: "center" },
