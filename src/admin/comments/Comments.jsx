@@ -193,7 +193,7 @@ const Comments = () => {
       title: "Bình luận",
       dataIndex: "comment",
       ellipsis: true,
-    //   width: 200,
+      //   width: 200,
       render: (text) => <span style={{ whiteSpace: "normal" }}>{text}</span>,
     },
     {
@@ -213,7 +213,7 @@ const Comments = () => {
       title: "Phản hồi",
       dataIndex: "adminReply",
       ellipsis: true,
-    //   width: 200,
+      //   width: 200,
       render: (adminReply) =>
         adminReply && adminReply.trim() ? (
           <span style={{ color: "orange", whiteSpace: "normal" }}>
@@ -384,7 +384,11 @@ const Comments = () => {
             label="Phản hồi"
             rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
           >
-            <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
+            <TextArea
+              onPressEnter={handleSubmitReply}
+              rows={4}
+              placeholder="Nhập nội dung phản hồi..."
+            />
           </Form.Item>
         </Form>
       </Modal>

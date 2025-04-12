@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Client } from "@stomp/stompjs";
-import { Input, Button, List, Card, Space, Typography, Avatar, Col, Row, Select } from "antd";
+import { Input, Button, List, Card, Space, Typography, Avatar, Col, Row, Select, Tooltip } from "antd";
 import { Rate } from "antd";
 import { EditOutlined, FilterOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import { apiHasBought } from "./api";
 import axios from "axios";
+import { COLORS } from "../../../constants/constants";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -71,6 +72,8 @@ const CommentForm = React.memo(({
         rows={3}
         style={{ minWidth: "400px" }}
         disabled={!hasBought || isCheckingPurchase}
+        onPressEnter={onSubmit}
+
       />
       <Button
         type="primary"
@@ -525,12 +528,15 @@ const connectWebSocket = useCallback(() => {
                     }
                   />
                   {item.customerEmail === user?.email && (
-                    <Button
+                   <Tooltip title="Chỉnh sửa bình luận">
+                     <Button
                       type="link"
                       icon={<EditOutlined />}
                       onClick={() => editComment(item)}
-                      style={{ float: "right", color:'orange', marginBottom: "130px" }}
+                      style={{ float: "right", color:'white', marginBottom: "130px" ,backgroundColor:`${COLORS.primary}` }}
+                      
                     />
+                   </Tooltip>
                   )}
                 </List.Item>
               )}

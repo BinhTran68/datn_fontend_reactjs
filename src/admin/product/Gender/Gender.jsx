@@ -407,7 +407,7 @@ const Color = () => {
             >
               Tìm kiếm
             </Button>
-            <Button
+            {/* <Button
               type="primary"
               onClick={() => {
                 setRequestSearch({ name: "" });
@@ -416,7 +416,7 @@ const Color = () => {
               style={{ marginLeft: "2rem" }}
             >
               Làm mới
-            </Button>
+            </Button> */}
           </Col>
         </Row>
 

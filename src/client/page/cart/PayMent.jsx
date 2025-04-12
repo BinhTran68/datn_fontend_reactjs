@@ -27,6 +27,7 @@ import AddressSelectorGHN from "../../componetC/AddressSelectorGHN";
 import {
   calculateShippingFee,
   generateAddressString,
+  tinhThoiGianGiaoHang,
 } from "../../componetC/apiGHN";
 import moment from "moment/moment";
 import { useProduct } from "../../../store/ProductContext";
@@ -87,7 +88,7 @@ const PayMent = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [moneyBeforeDiscount, setMoneyBeforeDiscount] = useState(null);
   const [minOrderValue, setMinOrderValue] = useState(0);
-
+  const [timeGiaoHang, setTimeGiaoHang] = useState(null);
   const [bill, setbill] = useState({
     paymentMethodsType: "COD",
     customerId: null,
@@ -277,6 +278,16 @@ const PayMent = () => {
       ).then((address) => {
         setFullAddress(address);
       });
+      tinhThoiGianGiaoHang({
+        fromDistrictId: newAddress?.districtId,
+        fromWardCode: newAddress?.wardId,
+        toDistrictId: newAddress?.districtId,
+        toWardCode: newAddress?.wardId,
+        serviceId: 1,
+      }).then((res) => {
+        console.log("🔍 Thời gian giao hàng:", res);
+        setTimeGiaoHang(res);
+      });
 
       console.log("📌 Địa chỉ mặc định sau khi cập nhật:", newAddress);
     } catch (error) {
@@ -320,6 +331,16 @@ const PayMent = () => {
       specificAddress ?? ""
     ).then((address) => {
       setFullAddress(address);
+    });
+    tinhThoiGianGiaoHang({
+      fromDistrictId: newAddress?.districtId,
+      fromWardCode: newAddress?.wardId,
+      toDistrictId: newAddress?.districtId,
+      toWardCode: newAddress?.wardId,
+      serviceId: 1,
+    }).then((res) => {
+      console.log("🔍 Thời gian giao hàng:", res);
+      setTimeGiaoHang(res);
     });
   };
 
@@ -622,6 +643,9 @@ const PayMent = () => {
           <p>
             <FaLocationDot size={25} style={{ color: "#bd1727" }} />
             Địa chỉ nhận hàng: {fullAddress}{" "}
+          </p>
+          <p>
+            Thời gian giao hàng dự kiến: {timeGiaoHang?.thoiGianGiaoHang}
           </p>
           <Table
             columns={columns}

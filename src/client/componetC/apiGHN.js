@@ -131,3 +131,72 @@ export const calculateShippingFee = async ({
     throw new Error("Failed to calculate shipping fee");
   }
 };
+
+/**
+ * Hàm chuyển đổi timestamp thành chuỗi ngày giờ
+ * @param {number} timestamp - Timestamp cần chuyển đổi (tính bằng giây)
+ * @returns {string} Chuỗi ngày giờ định dạng dd/MM/yyyy HH:mm
+ */
+const formatDateTime = (timestamp) => {
+  if (!timestamp) return "Không xác định";
+  // Chuyển đổi timestamp từ giây sang mili giây
+  const date = new Date(timestamp * 1000);
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
+/**
+ * Hàm tính thời gian dự kiến giao hàng GHN
+ * @param {Object} params - Thông tin cần thiết để tính thời gian giao hàng
+ * @param {number|string} params.fromDistrictId - ID quận/huyện gửi hàng
+ * @param {string} params.fromWardCode - Mã phường/xã gửi hàng
+ * @param {number|string} params.toDistrictId - ID quận/huyện nhận hàng
+ * @param {string} params.toWardCode - Mã phường/xã nhận hàng
+ * @param {number|string} params.serviceId - ID dịch vụ vận chuyển
+ * @returns {Object} - Thông tin thời gian giao hàng đã được format
+ */
+export const tinhThoiGianGiaoHang = async ({
+  fromDistrictId,
+  fromWardCode,
+  toDistrictId,
+  toWardCode,
+  serviceId,
+}) => {
+  try {
+    const tokenGHN = TOKEN;
+    const response = await axios.post(
+      `${GHN_API_URL}/v2/shipping-order/leadtime`,
+      {
+        from_district_id: 3440,
+        from_ward_code:'13008',
+        to_district_id: parseInt(toDistrictId),
+        to_ward_code: toWardCode,
+        service_id: parseInt(serviceId),
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: tokenGHN,
+          ShopId: SHOP_ID,
+        },
+      }
+    );
+
+    return {
+      thoiGianGiaoHang: formatDateTime(response.data.data.leadtime),
+      ngayTaoDon: formatDateTime(response.data.data.order_date),
+    };
+  } catch (error) {
+    console.error(
+      "Lỗi khi tính thời gian giao hàng:",
+      error.response?.data || error.message
+    );
+    throw new Error("Không thể tính thời gian giao hàng");
+  }
+};

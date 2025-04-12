@@ -413,6 +413,7 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Nhập tin nhắn của bạn"
                   onPressEnter={sendMessage}
+                  
                   style={{ width: "100%" }}
                 />
                 <Button type="primary" onClick={sendMessage}>
