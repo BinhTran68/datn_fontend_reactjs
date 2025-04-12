@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Table,
-  Tag,
-  Button,
-  Space,
-  Select,
-  DatePicker,
-  Input,
-  Modal,
-  Form,
-  Row,
-  Col,
-  Checkbox,
-  Collapse,
+  Table, Tag, Button, Space, Select, DatePicker, Input, Modal, Form, Row, Col, Checkbox, Collapse,
 } from "antd";
 import { CommentOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
@@ -38,7 +26,12 @@ const Comments = () => {
   const [stompClient, setStompClient] = useState(null);
   const [starFilter, setStarFilter] = useState(null);
   const [notRepliedOnly, setNotRepliedOnly] = useState(false);
-
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
   const groupCommentsByProduct = (comments) => {
     const grouped = {};
     comments.forEach((comment) => {
@@ -87,9 +80,9 @@ const Comments = () => {
   };
 
   useEffect(() => {
-    fetchComments();
+    fetchComments(pagination.current - 1, pagination.pageSize);
     const client = connectWebSocket(
-      () => fetchComments(),
+      () => fetchComments(pagination.current - 1, pagination.pageSize),
       (data) => console.log("WebSocket message:", data)
     );
     setStompClient(client);
@@ -98,14 +91,15 @@ const Comments = () => {
 
   useEffect(() => applyFilters(), [starFilter, notRepliedOnly, comments]);
 
-  const fetchComments = async () => {
+  const fetchComments = async (page = 0, pageSize = 10) => {
+    setLoading(true);
     try {
-      const commentsData = await fetchAllComments();
-      if (!Array.isArray(commentsData)) {
+      const result = await fetchAllComments(page, pageSize);
+      if (!Array.isArray(result.content)) {
         toast.error("Dữ liệu API không đúng định dạng!");
         return;
       }
-      const formattedData = commentsData.map((item) => ({
+      const formattedData = result.content.map((item) => ({
         id: item.id,
         fullName: item.fullName || "Khách hàng ẩn danh",
         comment: item.comment || "Không có bình luận",
@@ -118,15 +112,22 @@ const Comments = () => {
           typeof item.adminReply === "string"
             ? item.adminReply
             : Array.isArray(item.adminReply) && item.adminReply.length > 0
-            ? typeof item.adminReply[0] === "object"
-              ? item.adminReply[0].comment
-              : item.adminReply[0]
-            : "",
+              ? typeof item.adminReply[0] === "object"
+                ? item.adminReply[0].comment
+                : item.adminReply[0]
+              : "",
       }));
       setComments(formattedData);
       setGroupedComments(groupCommentsByProduct(formattedData));
+      setPagination({
+        current: result.currentPage + 1,
+        pageSize: result.pageSize,
+        total: result.totalElements,
+      });
     } catch (error) {
       toast.error(`Không thể tải dữ liệu: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,7 +152,7 @@ const Comments = () => {
       );
       setReplyModalVisible(false);
       toast.success("Phản hồi đã được gửi!");
-      fetchComments();
+      fetchComments(pagination.current - 1, pagination.pageSize);
     } catch (error) {
       toast.error(error.message || "Không thể gửi phản hồi!");
     }
@@ -170,8 +171,8 @@ const Comments = () => {
   const convertToVietnamTime = (utcDate) => {
     return utcDate
       ? new Date(utcDate).toLocaleString("vi-VN", {
-          timeZone: "Asia/Ho_Chi_Minh",
-        })
+        timeZone: "Asia/Ho_Chi_Minh",
+      })
       : "Không có dữ liệu";
   };
 
@@ -193,7 +194,7 @@ const Comments = () => {
       title: "Bình luận",
       dataIndex: "comment",
       ellipsis: true,
-    //   width: 200,
+      //   width: 200,
       render: (text) => <span style={{ whiteSpace: "normal" }}>{text}</span>,
     },
     {
@@ -213,7 +214,7 @@ const Comments = () => {
       title: "Phản hồi",
       dataIndex: "adminReply",
       ellipsis: true,
-    //   width: 200,
+      //   width: 200,
       render: (adminReply) =>
         adminReply && adminReply.trim() ? (
           <span style={{ color: "orange", whiteSpace: "normal" }}>
@@ -233,17 +234,20 @@ const Comments = () => {
             icon={<CommentOutlined />}
             onClick={() => handleReply(record)}
           />
-          <Button
+          {/* <Button
             type="primary"
             danger
             onClick={() => handleDeleteComment(record.id)}
           >
             Xóa
-          </Button>
+          </Button> */}
         </Space>
       ),
     },
   ];
+  const handleTableChange = (pagination) => {
+    fetchComments(pagination.current - 1, pagination.pageSize);
+  };
 
   const renderStars = (count) =>
     Array(count)
@@ -348,7 +352,9 @@ const Comments = () => {
               dataSource={product.comments}
               columns={commentColumns}
               rowKey="id"
-              pagination={false}
+              pagination={pagination}
+              loading={loading}
+              onChange={handleTableChange}
             />
           </Panel>
         ))}
