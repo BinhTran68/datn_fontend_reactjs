@@ -99,12 +99,12 @@ const Staff = () => {
             onOk() {
                 axios.delete(`http://localhost:8080/api/admin/staff/delete/${record.id}`)
                     .then(() => {
-                        message.success('Xóa nhân viên thành công!');
+                        toast.success('Xóa nhân viên thành công!');
                         fetchData();
                     })
                     .catch((error) => {
                         console.error('Error deleting staff:', error);
-                        message.error('Xóa nhân viên thất bại!');
+                        toast.error('Xóa nhân viên thất bại!');
                     });
             }
         });

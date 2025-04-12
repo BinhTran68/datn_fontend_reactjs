@@ -45,6 +45,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
+import {toast} from "react-toastify";
 
 const Category = () => {
   const { Title } = Typography;
@@ -135,7 +136,7 @@ const Category = () => {
       setBrands(data);
       setTotalBrands(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ const Category = () => {
       setBrands(data);
       setTotalBrands(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -165,7 +166,7 @@ const Category = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchBrandsData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -180,11 +181,11 @@ const Category = () => {
 
       await updateBrand(selectedBrand.data.id, brandData);
       setOpenUpdate(false);
-      message.success("Cập nhật Hãng thành công");
+      toast.success("Cập nhật Hãng thành công");
       fetchBrandsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -196,10 +197,10 @@ const Category = () => {
       setLoading(true);
       await deleteBrand(brandId);
       fetchBrandsData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -219,7 +220,7 @@ const Category = () => {
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
-        message.error(
+        toast.error(
           error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
         );
       } finally {
@@ -314,10 +315,10 @@ const Category = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchBrandsData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />

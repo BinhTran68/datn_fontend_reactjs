@@ -160,7 +160,6 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                             <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
                             <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
                             <span style={{ color: "#dc3545", fontSize: "12px", fontWeight: "500" }}>● Đơn hủy</span>
-                            <span style={{ color: "#6c757d", fontSize: "12px", fontWeight: "500" }}>● Đơn hoàn</span>
                         </div>
                     </div>
                 </Col>

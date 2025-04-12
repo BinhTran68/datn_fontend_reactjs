@@ -204,7 +204,7 @@ export function formatVND(number) {
 
 
 const GHN_API_URL = 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee';
-const SERVICE_TYPE_ID = 5; // Loại dịch vụ: Giao hàng tiêu chuẩn
+const SERVICE_TYPE_ID = 2; // Loại dịch vụ: Giao hàng tiêu chuẩn
 
 export const calculateShippingFee = async ({
                                                shopId = 5638683 ,
@@ -212,9 +212,9 @@ export const calculateShippingFee = async ({
                                                fromWardCode,
                                                toDistrictId,
                                                toWardCode,
-                                               length = 30,
-                                               width = 40,
-                                               height = 20,
+                                               length = 10,
+                                               width = 10,
+                                               height = 10,
                                                weight = 1,
                                                insuranceValue = 0,
                                                coupon = null,

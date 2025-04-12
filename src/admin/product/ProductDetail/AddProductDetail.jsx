@@ -56,6 +56,7 @@ import Breadcrumb from "../BreadCrumb";
 import { COLORS } from "../../../constants/constants";
 import ModalAddNew from "./ModalAddNew";
 import ModalAddNewSize from "./ModalAddNewSize";
+import {toast} from "react-toastify";
 
 const { TextArea } = Input;
 
@@ -588,7 +589,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API brand:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectBrand(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -600,7 +601,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API color:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectColor(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -612,7 +613,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API gender:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectGender(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -625,7 +626,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API product:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectProduct(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -637,7 +638,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API material:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectMaterial(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -650,7 +651,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API size:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSize(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -663,7 +664,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API Sole:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectSole(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -676,7 +677,7 @@ const ProductDetailDrawer = () => {
       console.log("Response from API type:", response); // Log response để kiểm tra dữ liệu trả về
       setDataSelectType(response.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }

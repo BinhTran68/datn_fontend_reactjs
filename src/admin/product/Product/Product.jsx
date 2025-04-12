@@ -48,6 +48,7 @@ import { FaEdit, FaRegListAlt } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
 import { Link } from "react-router-dom";
 import { CiBoxList, CiViewList } from "react-icons/ci";
+import {toast} from "react-toastify";
 
 const Product = () => {
   const [formUpdate] = Form.useForm();
@@ -119,7 +120,7 @@ const Product = () => {
       setTotalProducts(total);
       console.log(requestSearch.name + "đây là search");
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
       console.log(products);
@@ -137,7 +138,7 @@ const Product = () => {
       setProducts(data);
       setTotalProducts(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -153,7 +154,7 @@ const Product = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchProductsData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -171,11 +172,11 @@ const Product = () => {
       console.log(selectedProduct.data.id);
       setSelectedProduct(null);
       setOpenUpdate(false);
-      message.success("Cập nhật Sản phẩmthành công");
+      toast.success("Cập nhật Sản phẩmthành công");
       fetchProductsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -187,10 +188,10 @@ const Product = () => {
       setLoading(true);
       await deleteProduct(productId);
       fetchProductsData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -209,7 +210,7 @@ const Product = () => {
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
-        message.error(
+        toast.error(
           error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
         );
       } finally {
@@ -365,10 +366,10 @@ const Product = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchProductsData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />

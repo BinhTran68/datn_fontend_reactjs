@@ -9,7 +9,8 @@ import { FaEye, FaTrash } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { debounce } from "lodash"; // Thêm debounce để tránh gọi API liên tục
+import { debounce } from "lodash";
+import {toast} from "react-toastify"; // Thêm debounce để tránh gọi API liên tục
 
 const { Option } = Select;
 
@@ -207,9 +208,9 @@ const VoucherList = () => {
 
                                             await switchVoucherStatus(record.id, { status: newStatus });
                                             getPageVoucher();
-                                            message.success("Cập nhật trạng thái thành công");
+                                            toast.success("Cập nhật trạng thái thành công");
                                         } catch (error) {
-                                            message.error("Cập nhật trạng thái không thành công");
+                                            toast.error("Cập nhật trạng thái không thành công");
                                         }
                                     }
                                 });
@@ -327,10 +328,10 @@ const VoucherList = () => {
     const handleDelete = async (id) => {
         try {
             await axios.delete(`${baseUrl}/api/admin/voucher/delete/${id}`);
-            message.success('Xóa phiếu giảm giá thành công!');
+            toast.success('Xóa phiếu giảm giá thành công!');
             getPageVoucher();  // Fetch updated list
         } catch (error) {
-            message.error('Lỗi khi xóa phiếu giảm giá!');
+            toast.error('Lỗi khi xóa phiếu giảm giá!');
         }
     };
     const [isDetail, setIsDeatil] = useState(false);
@@ -414,7 +415,7 @@ const VoucherList = () => {
 
         } catch (error) {
             console.error("Lỗi khi tìm kiếm phiếu giảm giá:", error);
-            message.error("Có lỗi xảy ra khi tìm kiếm.");
+            toast.error("Có lỗi xảy ra khi tìm kiếm.");
         } finally {
             setLoading(false);
         }
