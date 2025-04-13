@@ -482,27 +482,36 @@ const SalesPage = () => {
     };
 
     const handleQuantityChange = async (value, productBill) => {
-        // gọi hàm
-
         const product = await fetchProductDetailLatest(productBill.id);
 
+        if (value < productBill.quantityInCart) {
+            const soLuongRestore = productBill.quantityInCart - value;
+            updateProductList(currentBill, productBill, soLuongRestore, true);
+            handleOnChangeQuantityProduct(product, soLuongRestore, true);
+            return;
+        }
+
         if (value > product.quantity) {
-            toast.warning(`Số lượng sản phẩm không đủ, tối đa ${product.quantity}`);
+            if((value  ) < product.quantity + productBill.quantityInCart) {
+                const soLuongTru = value - productBill.quantityInCart;
+                updateProductList(currentBill, product, soLuongTru);
+                handleOnChangeQuantityProduct(product, soLuongTru, false);
+                return
+            }
             handleOnChangeQuantityProduct(product, product.quantity, false);
             updateProductList(currentBill, product, product.quantity);
+            toast.warning(`Số lượng sản phẩm đạt tôi đa!`);
+            return;
         }
 
         if (value > productBill.quantityInCart) {
             const soLuongTru = value - productBill.quantityInCart;
             updateProductList(currentBill, product, soLuongTru);
             handleOnChangeQuantityProduct(product, soLuongTru, false);
-        }
-        if (value < productBill.quantityInCart) {
-            const soLuongRestore = productBill.quantityInCart - value;
-            updateProductList(currentBill, productBill, soLuongRestore, true);
-            handleOnChangeQuantityProduct(product, soLuongRestore, true);
+            return;
         }
     };
+
 
     const handleRemoveProduct = async (product) => {
         const restoreQuantityPayload = [
@@ -874,6 +883,11 @@ const SalesPage = () => {
                 return;
             }
 
+            if (bill?.phoneError !== "") {
+                toast.error("Số điện thoại không hợp lệ!");
+                return
+            }
+
             if (!recipientName || !recipientPhoneNumber) {
                 toast.error("Vui lòng nhập tên và số điện thoại người nhận.");
                 return;
@@ -1057,18 +1071,29 @@ const SalesPage = () => {
     }
 
     const handleOnChangerRecipientPhoneNumber = (e) => {
+        const value = e.target.value;
+        const numericValue = value.replace(/\D/g, ""); // Chỉ giữ lại số
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
+                    // Validate: phải bắt đầu bằng 0 và có đúng 10 chữ số
+                    const isValidPhone = /^0\d{9}$/.test(numericValue);
+                    const errorMsg = isValidPhone
+                        ? ""
+                        : "Số điện thoại không hợp lệ!";
+
                     return {
                         ...item,
-                        recipientPhoneNumber: e.target.value
+                        recipientPhoneNumber: numericValue,
+                        phoneError: errorMsg
                     };
                 }
                 return item;
             })
         );
-    }
+    };
+
 
     const handleOnChangerRecipientName = (e) => {
         setItems(prevItems =>
@@ -1257,13 +1282,13 @@ const SalesPage = () => {
                     Tạo hóa đơn
                 </Button>
 
-                <Button
-                    onClick={() => {
-                        resetCurrentBill();
-                        setIsPaymentModalVisible(false);
-                    }}>
-                    Hóa đơn mới
-                </Button>
+                {/*<Button*/}
+                {/*    onClick={() => {*/}
+                {/*        resetCurrentBill();*/}
+                {/*        setIsPaymentModalVisible(false);*/}
+                {/*    }}>*/}
+                {/*    Hóa đơn mới*/}
+                {/*</Button>*/}
             </div>
 
             <Card>
@@ -1336,6 +1361,7 @@ const SalesPage = () => {
                 customerInfo={currentBillData?.customerInfo}
                 shippingFee={currentBillData?.shippingFee}
                 isFreeShip={currentBillData?.isFreeShip}
+                phoneError={currentBillData?.phoneError}
                 handleOnChangeShippingFee={handleOnChangeShippingFee}
                 handleOnChangerRecipientName={handleOnChangerRecipientName}
                 handleOnChangerRecipientPhoneNumber={handleOnChangerRecipientPhoneNumber}

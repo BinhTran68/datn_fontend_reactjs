@@ -61,7 +61,8 @@ const SalePaymentInfo = ({
                              handleCheckIsCOD,
                              showAllCustomerAddresses,
                             isFreeShip,
-                             freeShipData
+                             freeShipData,
+                             phoneError
                          }) => {
     const missingAmount = Math.max(0, parseInt(amount)+(parseInt(isFreeShip ? 0 : shippingFee)) - parseInt(customerMoney)); // Không cộng cho discount nữa
     return (
@@ -110,17 +111,27 @@ const SalePaymentInfo = ({
                             <Col span={12}>
                                 <Form.Item label="Tên người nhận">
                                     <Input value={recipientName}
+                                           maxLength={50}
                                            onChange={handleOnChangerRecipientName}
                                            placeholder="Nhập tên người nhận" />
                                 </Form.Item>
                             </Col>
 
                             <Col span={12}>
-                                <Form.Item label="Số điện thoại người nhận">
-                                    <Input value={recipientPhoneNumber}
-                                           onChange={handleOnChangerRecipientPhoneNumber}
-                                           type="text" placeholder="Nhập số điện thoại" />
+                                <Form.Item
+                                    label="Số điện thoại người nhận"
+                                    validateStatus={phoneError ? "error" : ""}
+                                    help={phoneError}
+                                >
+                                    <Input
+                                        value={recipientPhoneNumber}
+                                        onChange={handleOnChangerRecipientPhoneNumber}
+                                        type="text"
+                                        placeholder="Nhập số điện thoại"
+                                        maxLength={10}
+                                    />
                                 </Form.Item>
+
                             </Col>
                         </Row>
                     )}
