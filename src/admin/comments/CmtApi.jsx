@@ -1,377 +1,433 @@
 import { useState, useEffect } from "react";
-import { Table, Tag, Button, Space, message, Select, DatePicker, Input, Modal, Form, Row, Col, Checkbox } from "antd";
-import { CommentOutlined } from "@ant-design/icons";
-import axios from "axios";
+import {
+  Table, Tag, Button, Space, Select, Input, Modal, Form, Row, Col, Checkbox, Collapse,
+} from "antd";
+import { CommentOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
+import {
+  fetchAllComments,
+  submitReply,
+  deleteComment,
+  connectWebSocket,
+  publishWebSocketMessage,
+} from "./commentService";
 
 const { Option } = Select;
 const { TextArea } = Input;
-
-// Sử dụng URL API cụ thể cho từng endpoint
-const COMMENTS_API_URL_ALL = "http://localhost:8080/api/admin/comments/all";
-const PRODUCTS_API_URL = "http://localhost:8080/api/products/unique";
-const REPLY_API_URL = "http://localhost:8080/api/comments";
+const { Panel } = Collapse;
 
 const Comments = () => {
-    // State cho dữ liệu và loading
-    const [allComments, setAllComments] = useState([]); // Lưu trữ tất cả comment từ API
-    const [displayedComments, setDisplayedComments] = useState([]); // Comments đã được lọc
-    const [loading, setLoading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [groupedComments, setGroupedComments] = useState({});
+  const [expandedProducts, setExpandedProducts] = useState([]);
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
+  const [currentComment, setCurrentComment] = useState(null);
+  const [replyForm] = Form.useForm();
+  const [stompClient, setStompClient] = useState(null);
+  const [starFilter, setStarFilter] = useState(null);
+  const [notRepliedOnly, setNotRepliedOnly] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  const groupCommentsByProduct = (comments) => {
+    const grouped = {};
+    comments.forEach((comment) => {
+      if (!grouped[comment.productId]) {
+        grouped[comment.productId] = {
+          productId: comment.productId,
+          productName: comment.productName,
+          comments: [],
+          totalComments: 0,
+          averageRating: 0,
+          unrepliedCount: 0,
+        };
+      }
+      grouped[comment.productId].comments.push(comment);
+      grouped[comment.productId].totalComments++;
+      if (!comment.adminReply) grouped[comment.productId].unrepliedCount++;
+    });
+
+    Object.keys(grouped).forEach((productId) => {
+      const product = grouped[productId];
+      product.averageRating =
+        product.comments.reduce((sum, c) => sum + c.rate, 0) /
+        product.totalComments;
+    });
+
+    return grouped;
+  };
+
+  const applyFilters = () => {
+    let filteredComments = [...comments];
+
+    if (starFilter !== null) {
+      filteredComments = filteredComments.filter((c) => c.rate === starFilter);
+    }
+
+    if (notRepliedOnly) {
+      filteredComments = filteredComments.filter((c) => !c.adminReply);
+    }
+
+    const filteredGroups = groupCommentsByProduct(filteredComments);
+    setGroupedComments(filteredGroups);
+  };
+
+  const fetchComments = async (page = 0, pageSize = 5) => {
+    setLoading(true);
+    try {
+      const result = await fetchAllComments(page, pageSize, sortOrder);
+      if (!Array.isArray(result.content)) {
+        toast.error("Dữ liệu API không đúng định dạng!");
+        return;
+      }
+
+      const formattedData = formatCommentsData(result.content);
+      setComments(formattedData);
+      setGroupedComments(groupCommentsByProduct(formattedData));
+      setPagination({
+        current: result.currentPage + 1,
+        pageSize: result.pageSize,
+        total: result.totalElements,
+      });
+    } catch (error) {
+      toast.error(`Không thể tải dữ liệu: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments(pagination.current - 1, pagination.pageSize);
     
-    // State cho bộ lọc
-    const [statusFilter, setStatusFilter] = useState(null);
-    const [ratingFilter, setRatingFilter] = useState(null);
-    const [startDate, setStartDate] = useState(null);
-    const [productFilter, setProductFilter] = useState(null);
-    const [productSearch, setProductSearch] = useState("");
-    const [showUnrepliedOnly, setShowUnrepliedOnly] = useState(false);
-    
-    // State cho modal reply
-    const [replyModalVisible, setReplyModalVisible] = useState(false);
-    const [currentComment, setCurrentComment] = useState(null);
-    const [replyForm] = Form.useForm();
-    
-    // State cho danh sách sản phẩm
-    const [uniqueProducts, setUniqueProducts] = useState([]);
-
-    // Lấy dữ liệu khi component mount
-    useEffect(() => {
-        fetchAllComments();
-        fetchUniqueProducts();
-    }, []);
-
-    // Lấy tất cả comments từ API
-    const fetchAllComments = async () => {
-        setLoading(true);
-        try {
-            console.log("Đang gọi API lấy tất cả comments:", COMMENTS_API_URL_ALL);
-            const response = await axios.get(COMMENTS_API_URL_ALL);
-            
-            // Xử lý dữ liệu trả về
-            let commentsData = [];
-            if (Array.isArray(response.data)) {
-                commentsData = response.data;
-            } else if (response.data && typeof response.data === 'object') {
-                commentsData = Array.isArray(response.data.data) ? response.data.data : [];
-            }
-            
-            setAllComments(commentsData);
-            filterComments(commentsData);
-        } catch (error) {
-            console.error("Lỗi khi lấy danh sách bình luận:", error);
-            message.error("Không thể tải danh sách bình luận");
-            setAllComments([]);
-            setDisplayedComments([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Lấy danh sách sản phẩm từ API
-    const fetchUniqueProducts = async () => {
-        try {
-            console.log("Đang gọi API lấy danh sách sản phẩm:", PRODUCTS_API_URL);
-            const response = await axios.get(PRODUCTS_API_URL);
-            
-            // Xử lý dữ liệu trả về
-            let productsData = [];
-            if (Array.isArray(response.data)) {
-                productsData = response.data;
-            } else if (response.data && typeof response.data === 'object') {
-                productsData = Array.isArray(response.data.data) ? response.data.data : [];
-            }
-            
-            setUniqueProducts(productsData);
-        } catch (error) {
-            console.error("Lỗi khi lấy danh sách sản phẩm:", error);
-            setUniqueProducts([]);
-        }
-    };
-
-    // Lọc comments trên client-side
-    const filterComments = (comments = allComments) => {
-        const filtered = comments.filter(comment => {
-            // Lọc theo đánh giá sao
-            if (ratingFilter && comment.rate !== ratingFilter) {
-                return false;
-            }
-            
-            // Lọc theo tên sản phẩm
-            if (productFilter) {
-                let productName = '';
-                if (typeof comment.productName === 'string') {
-                    productName = comment.productName;
-                } else if (comment.product && typeof comment.product === 'object') {
-                    productName = comment.product.name || '';
-                }
-                
-                if (productName !== productFilter) {
-                    return false;
-                }
-            }
-            
-            // Lọc theo ngày
-            if (startDate) {
-                const commentDate = new Date(comment.commentDate);
-                const filterDate = new Date(startDate.format('YYYY-MM-DD'));
-                
-                if (commentDate < filterDate) {
-                    return false;
-                }
-            }
-            
-            // Lọc theo chưa trả lời
-            if (showUnrepliedOnly && comment.userReply) {
-                return false;
-            }
-            
-            return true;
-        });
-        
-        setDisplayedComments(filtered);
-    };
-
-    // Effect để tự động lọc khi các filter thay đổi
-    useEffect(() => {
-        filterComments();
-    }, [ratingFilter, productFilter, startDate, showUnrepliedOnly]);
-
-    // Xử lý trả lời bình luận
-    const handleReply = (comment) => {
-        setCurrentComment(comment);
-        setReplyModalVisible(true);
-        replyForm.resetFields();
-    };
-
-    // Gửi phản hồi đến API
-    const submitReply = async () => {
-        try {
-            await replyForm.validateFields();
-            const values = replyForm.getFieldsValue();
-            
-            setLoading(true);
-            console.log(`Đang gửi phản hồi cho comment id: ${currentComment.id}`);
-            
-            await axios.post(`${REPLY_API_URL}/${currentComment.id}/reply`, {
-                reply: values.reply
-            });
-            
-            // Cập nhật phản hồi trong state
-            const updatedComments = allComments.map(c => 
-                c.id === currentComment.id 
-                    ? { ...c, userReply: values.reply } 
-                    : c
-            );
-            
-            setAllComments(updatedComments);
-            filterComments(updatedComments);
-            
-            setReplyModalVisible(false);
-            message.success("Đã trả lời bình luận thành công!");
-        } catch (error) {
-            console.error("Lỗi khi trả lời bình luận:", error);
-            message.error("Không thể trả lời bình luận");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Xử lý tìm kiếm sản phẩm
-    const handleProductSearch = (value) => {
-        setProductSearch(value);
-    };
-
-    // Lọc danh sách sản phẩm theo từ khóa tìm kiếm
-    const getFilteredProducts = () => {
-        if (!Array.isArray(uniqueProducts)) return [];
-        
-        if (!productSearch) return uniqueProducts;
-        
-        return uniqueProducts.filter(product => {
-            if (typeof product === 'string') {
-                return product.toLowerCase().includes(productSearch.toLowerCase());
-            } else if (product && typeof product === 'object') {
-                const productName = product.name || product.productName || '';
-                return productName.toLowerCase().includes(productSearch.toLowerCase());
-            }
-            return false;
-        });
-    };
-
-    // Chuyển đổi thời gian
-    const convertToVietnamTime = (utcDate) => {
-        if (!utcDate) return "Không có dữ liệu";
-        try {
-            return new Date(utcDate).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
-        } catch (error) {
-            console.error("Lỗi chuyển đổi thời gian:", error);
-            return "Không có dữ liệu";
-        }
-    };
-    
-    // Cấu hình cột
-    const columns = [
-        { 
-            title: 'STT', 
-            align: 'center', 
-            render: (_, __, index) => index + 1,
-            width: 60
-        },
-        { 
-            title: "Bình luận", 
-            dataIndex: "comment",
-            ellipsis: { showTitle: false },
-            render: comment => comment || "Không có nội dung"
-        },
-        { 
-            title: "Sản phẩm", 
-            dataIndex: "productName",
-            ellipsis: { showTitle: false },
-            render: productName => productName || "Không xác định"
-        },
-        {
-            title: "Ngày bình luận",
-            dataIndex: "commentDate",
-            render: text => convertToVietnamTime(text),
-            width: 180
-        },
-        {
-            title: "Đánh giá",
-            dataIndex: "rate",
-            align: 'center',
-            render: rate => <Tag color="gold">{rate || 0} ⭐</Tag>,
-            width: 100
-        },
-        {
-            title: "Phản hồi",
-            align: 'center',
-            dataIndex: "userReply",
-            ellipsis: { showTitle: false },
-            render: reply => reply ? reply : <Tag color="blue">Chưa trả lời</Tag>,
-            width: 150
-        },
-        {
-            title: "Hành động",
-            align: 'center',
-            render: (_, record) => (
-                <Space>
-                    <Button
-                        type="default"
-                        icon={<CommentOutlined />}
-                        onClick={() => handleReply(record)}
-                        title="Trả lời"
-                    />
-                </Space>
-            ),
-            width: 100
-        },
-    ];
-
-    // Lọc sản phẩm cho dropdown
-    const filteredProducts = getFilteredProducts();
-
-    return (
-        <div>
-            <div style={{ marginBottom: 16 }}>
-                <Row gutter={[16, 16]}>
-                    <Col xs={24} sm={12} md={6}>
-                        <Select
-                            placeholder="Lọc theo đánh giá"
-                            onChange={setRatingFilter}
-                            allowClear
-                            style={{ width: '100%' }}
-                        >
-                            <Option value={5}>5 ⭐</Option>
-                            <Option value={4}>4 ⭐</Option>
-                            <Option value={3}>3 ⭐</Option>
-                            <Option value={2}>2 ⭐</Option>
-                            <Option value={1}>1 ⭐</Option>
-                        </Select>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <Select
-                            placeholder="Lọc theo sản phẩm"
-                            onChange={setProductFilter}
-                            allowClear
-                            showSearch
-                            onSearch={handleProductSearch}
-                            filterOption={false}
-                            style={{ width: '100%' }}
-                            notFoundContent="Không tìm thấy sản phẩm"
-                        >
-                            {filteredProducts.map((product, index) => {
-                                let productName, productValue;
-                                
-                                if (typeof product === 'string') {
-                                    productName = product;
-                                    productValue = product;
-                                } else if (product && typeof product === 'object') {
-                                    productName = product.name || product.productName || 'Không xác định';
-                                    productValue = product.id || product.productId || productName;
-                                } else {
-                                    return null;
-                                }
-                                
-                                return (
-                                    <Option key={`product-${index}`} value={productValue}>
-                                        {productName}
-                                    </Option>
-                                );
-                            })}
-                        </Select>
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <DatePicker 
-                            onChange={setStartDate}
-                            placeholder="Từ ngày"
-                            style={{ width: '100%' }}
-                            format="DD/MM/YYYY"
-                        />
-                    </Col>
-                    <Col xs={24} sm={12} md={6}>
-                        <Checkbox 
-                            checked={showUnrepliedOnly}
-                            onChange={(e) => setShowUnrepliedOnly(e.target.checked)}
-                        >
-                            Chỉ hiển thị bình luận chưa trả lời
-                        </Checkbox>
-                    </Col>
-                </Row>
-            </div>
-            <Table
-                loading={loading}
-                dataSource={displayedComments}
-                columns={columns}
-                rowKey={record => record.id || Math.random().toString(36).substr(2, 9)}
-                pagination={{ pageSize: 10 }}
-                locale={{ emptyText: 'Không có dữ liệu bình luận' }}
-            />
-
-            {/* Modal trả lời bình luận */}
-            <Modal
-                title={`Trả lời bình luận: ${currentComment?.productName || 'Không xác định'}`}
-                open={replyModalVisible}
-                onOk={submitReply}
-                onCancel={() => setReplyModalVisible(false)}
-                confirmLoading={loading}
-            >
-                {currentComment && (
-                    <div style={{ marginBottom: 16 }}>
-                        <p><strong>Bình luận:</strong> {currentComment.comment || 'Không có nội dung'}</p>
-                        <p><strong>Đánh giá:</strong> {currentComment.rate || 0} ⭐</p>
-                    </div>
-                )}
-                <Form form={replyForm}>
-                    <Form.Item
-                        name="reply"
-                        label="Phản hồi"
-                        rules={[{ required: true, message: 'Vui lòng nhập nội dung phản hồi' }]}
-                    >
-                        <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
-                    </Form.Item>
-                </Form>
-            </Modal>
-        </div>
+    const client = connectWebSocket(
+      () => {
+        console.log("Nhận thông báo comment mới");
+        fetchComments(pagination.current - 1, pagination.pageSize);
+      },
+      (data) => {
+        console.log("WebSocket message:", data);
+        fetchComments(pagination.current - 1, pagination.pageSize);
+      }
     );
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.deactivate();
+        console.log("WebSocket disconnected");
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    fetchComments(pagination.current - 1, pagination.pageSize);
+  }, [pagination.current, pagination.pageSize, sortOrder]);
+
+  useEffect(() => applyFilters(), [starFilter, notRepliedOnly, comments]);
+
+  const formatCommentsData = (commentsData) => {
+    return commentsData.map((item) => ({
+      id: item.id,
+      fullName: item.fullName || "Khách hàng ẩn danh",
+      comment: item.comment || "Không có bình luận",
+      productName: item.productName || "Không có sản phẩm",
+      productId: item.productId,
+      customerEmail: item.customerEmail || "Không có email",
+      createdAt: item.createdAt || new Date().toISOString(),
+      rate: item.rate || 0,
+      adminReply:
+        typeof item.adminReply === "string"
+          ? item.adminReply
+          : Array.isArray(item.adminReply) && item.adminReply.length > 0
+            ? typeof item.adminReply[0] === "object"
+              ? item.adminReply[0].comment
+              : item.adminReply[0]
+            : "",
+    }));
+  };
+
+  const handleReply = (comment) => {
+    setCurrentComment(comment);
+    setReplyModalVisible(true);
+    replyForm.resetFields();
+  };
+
+  const handleSubmitReply = async () => {
+    try {
+      const values = await replyForm.validateFields();
+      await submitReply(currentComment.id, values.adminReply);
+      publishWebSocketMessage(
+        stompClient,
+        `/topic/comments/${currentComment.productId}`,
+        {
+          parentId: currentComment.id,
+          comment: values.adminReply,
+          timestamp: new Date().toISOString(),
+        }
+      );
+      setReplyModalVisible(false);
+      toast.success("Phản hồi đã được gửi!");
+      fetchComments(pagination.current - 1, pagination.pageSize);
+    } catch (error) {
+      toast.error(error.message || "Không thể gửi phản hồi!");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteComment(commentId);
+      toast.success("Xóa bình luận thành công!");
+      fetchComments();
+    } catch (error) {
+      toast.error(error.message || "Không thể xóa bình luận!");
+    }
+  };
+
+  const convertToVietnamTime = (utcDate) => {
+    return utcDate
+      ? new Date(utcDate).toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+      })
+      : "Không có dữ liệu";
+  };
+
+  const commentColumns = [
+    { title: "STT", align: "center", width: 50, render: (_, __, i) => i + 1 },
+    {
+      title: "Khách hàng",
+      dataIndex: "fullName",
+      render: (text, record) => (
+        <div>
+          <div>{text}</div>
+          <div style={{ color: "#666", fontSize: "12px" }}>
+            {record.customerEmail}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Bình luận",
+      dataIndex: "comment",
+      ellipsis: true,
+      render: (text) => <span style={{ whiteSpace: "normal" }}>{text}</span>,
+    },
+    {
+      title: "Ngày bình luận",
+      dataIndex: "createdAt",
+      width: 130,
+      render: convertToVietnamTime,
+      sorter: true,
+    },
+    {
+      title: "Đánh giá",
+      dataIndex: "rate",
+      align: "center",
+      width: 100,
+      render: (rate) => <Tag color="gold">{rate} ⭐</Tag>,
+    },
+    {
+      title: "Phản hồi",
+      dataIndex: "adminReply",
+      ellipsis: true,
+      render: (adminReply) =>
+        adminReply && adminReply.trim() ? (
+          <span style={{ color: "orange", whiteSpace: "normal" }}>
+            {adminReply}
+          </span>
+        ) : (
+          <Tag color="blue">Chưa trả lời</Tag>
+        ),
+    },
+    {
+      title: "Hành động",
+      align: "center",
+      width: 100,
+      render: (_, record) => (
+        <Space>
+          <Button
+            icon={<CommentOutlined />}
+            onClick={() => handleReply(record)}
+          />
+        </Space>
+      ),
+    },
+  ];
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    if (sorter && sorter.field === "createdAt") {
+      const order = sorter.order === "descend" ? "desc" : "asc";
+      setSortOrder(order);
+    }
+    fetchComments(pagination.current - 1, pagination.pageSize);
+  };
+
+  const renderStars = (count) =>
+    Array(count)
+      .fill()
+      .map((_, i) => (
+        <span key={i} style={{ color: "gold" }}>
+          ⭐
+        </span>
+      ));
+
+  const starCounts = [0, 0, 0, 0, 0];
+  comments.forEach(
+    (c) => c.rate >= 1 && c.rate <= 5 && starCounts[c.rate - 1]++
+  );
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <div
+        style={{
+          marginBottom: 16,
+          backgroundColor: "white",
+          padding: "16px",
+          borderRadius: "8px",
+        }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Lọc theo đánh giá"
+              allowClear
+              style={{ width: "100%" }}
+              onChange={(value) =>
+                setStarFilter(value === "all" ? null : parseInt(value))
+              }
+              defaultValue="all"
+            >
+              <Option value="all">Tất cả ({comments.length})</Option>
+              {[5, 4, 3, 2, 1].map((r) => (
+                <Option key={r} value={r}>
+                  {renderStars(r)} ({starCounts[r - 1]})
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Sắp xếp theo ngày"
+              style={{ width: "100%" }}
+              value={sortOrder}
+              onChange={(value) => setSortOrder(value)}
+            >
+              <Option value="desc">Mới nhất trước</Option>
+              <Option value="asc">Cũ nhất trước</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Checkbox
+              checked={notRepliedOnly}
+              onChange={(e) => setNotRepliedOnly(e.target.checked)}
+            >
+              Chưa trả lời
+            </Checkbox>
+          </Col>
+        </Row>
+      </div>
+
+      {Object.keys(groupedComments).length > 0 ? (
+        <Collapse
+          activeKey={expandedProducts}
+          onChange={setExpandedProducts}
+          expandIcon={({ isActive }) =>
+            isActive ? <UpOutlined /> : <DownOutlined />
+          }
+          style={{
+            backgroundColor: "white",
+            padding: "16px",
+            borderRadius: "8px",
+          }}
+        >
+          {Object.values(groupedComments).map((product) => (
+            <Panel
+              key={product.productId}
+              header={
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span>
+                    <strong>{product.productName}</strong> (
+                    {product.totalComments} bình luận)
+                  </span>
+                  <span>
+                    <Tag color="gold">{product.averageRating.toFixed(1)} ⭐</Tag>
+                    {product.unrepliedCount > 0 && (
+                      <Tag color="blue">
+                        {product.unrepliedCount} chưa trả lời
+                      </Tag>
+                    )}
+                  </span>
+                </div>
+              }
+            >
+              <Table
+                dataSource={product.comments}
+                columns={commentColumns}
+                rowKey="id"
+                pagination={pagination}
+                loading={loading}
+                onChange={handleTableChange}
+              />
+            </Panel>
+          ))}
+        </Collapse>
+      ) : (
+        <div style={{
+          backgroundColor: "white",
+          padding: "16px",
+          borderRadius: "8px",
+          textAlign: "center"
+        }}>
+          <p>{loading ? "Đang tải..." : "Không có dữ liệu bình luận"}</p>
+        </div>
+      )}
+
+      <Modal
+        title={`Trả lời bình luận của: ${currentComment?.fullName}`}
+        open={replyModalVisible}
+        onOk={handleSubmitReply}
+        onCancel={() => setReplyModalVisible(false)}
+      >
+        {currentComment && (
+          <div style={{ marginBottom: 16 }}>
+            <p>
+              <strong>Email:</strong> {currentComment.customerEmail}
+            </p>
+            <p>
+              <strong>Bình luận:</strong> {currentComment.comment}
+            </p>
+            <p>
+              <strong>Đánh giá:</strong> {currentComment.rate} ⭐
+            </p>
+            {currentComment.adminReply && (
+              <p>
+                <strong>Phản hồi hiện tại:</strong> {currentComment.adminReply}
+              </p>
+            )}
+          </div>
+        )}
+        <Form form={replyForm}>
+          <Form.Item
+            name="adminReply"
+            label="Phản hồi"
+            rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
+          >
+            <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
 };
 
 export default Comments;
