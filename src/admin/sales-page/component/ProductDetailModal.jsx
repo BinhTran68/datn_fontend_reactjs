@@ -222,17 +222,20 @@ const ProductDetailModal = ({
           <Row gutter={[16, 16]}>
             <Col className={"d-flex gap-3"} span={24}>
               <Input
-                placeholder="Tìm kiếm sản phẩm..."
-                prefix={<SearchOutlined />}
-                allowClear
-                value={requestSearch.name}
-                onChange={(e) => {
-                  setRequestSearch((prev) => ({
-                    ...prev,
-                    name: e.target.value, // Cập nhật giá trị nhập vào
-                  }));
-                }}
+                  placeholder="Tìm kiếm sản phẩm..."
+                  prefix={<SearchOutlined />}
+                  showCount
+                  allowClear
+                  maxLength={50} // <-- Giới hạn ký tự tại đây
+                  value={requestSearch.name}
+                  onChange={(e) => {
+                    setRequestSearch((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }));
+                  }}
               />
+
               <Button
                   type="primary"
                   icon={<SearchOutlined />}

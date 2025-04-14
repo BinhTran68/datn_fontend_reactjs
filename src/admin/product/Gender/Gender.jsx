@@ -45,6 +45,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
+import {toast} from "react-toastify";
 
 const Color = () => {
   const { Title } = Typography;
@@ -128,7 +129,7 @@ const Color = () => {
       setTotalColors(total);
       console.log(requestSearch.name + "đây là search");
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -142,7 +143,7 @@ const Color = () => {
       setColors(data);
       setTotalColors(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -158,7 +159,7 @@ const Color = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchColorsData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -175,11 +176,11 @@ const Color = () => {
       console.log(selectedColor.data.id);
       setSelectedColor(null);
       setOpenUpdate(false);
-      message.success("Cập nhật Giới Tính thành công");
+      toast.success("Cập nhật Giới Tính thành công");
       fetchColorsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -191,10 +192,10 @@ const Color = () => {
       setLoading(true);
       await deleteColor(brandId);
       fetchColorsData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -213,7 +214,7 @@ const Color = () => {
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
-        message.error(
+        toast.error(
           error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
         );
       } finally {
@@ -308,10 +309,10 @@ const Color = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchColorsData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />

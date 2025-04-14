@@ -46,6 +46,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
+import {toast} from "react-toastify";
 
 const Type = () => {
   const { Title } = Typography;
@@ -169,7 +170,7 @@ const Type = () => {
       setTotalTypes(total);
       console.log(requestSearch.name + "đây là search");
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -183,7 +184,7 @@ const Type = () => {
       setTypes(data);
       setTotalTypes(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -199,10 +200,10 @@ const Type = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchTypesData(); // Refresh data after creation
-      // message.success("Thương hiệu đã được tạo thành công!");
+      // toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   toast.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -216,11 +217,11 @@ const Type = () => {
       console.log(selectedType.data.id);
       setSelectedType(null);
       setOpenUpdate(false);
-      message.success("Cập nhật Loạithành công");
+      toast.success("Cập nhật Loạithành công");
       fetchTypesData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -232,10 +233,10 @@ const Type = () => {
       setLoading(true);
       await deleteType(typeId);
       fetchTypesData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -254,7 +255,7 @@ const Type = () => {
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
-        message.error(
+        toast.error(
           error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
         );
       } finally {
@@ -349,10 +350,10 @@ const Type = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchTypesData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />

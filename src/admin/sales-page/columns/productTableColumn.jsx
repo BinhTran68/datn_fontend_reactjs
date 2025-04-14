@@ -25,41 +25,67 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         title: "Ảnh",
         dataIndex: "image",
         key: "image",
-        render: (images) => {
+        render: (images, record) => {
+            const hasPromotion = record.promotionResponse?.promotionName && record.promotionResponse?.discountValue;
+            const discountValue = record.promotionResponse?.discountValue || 0;
 
-            if (images && Array.isArray(images) && images.length > 0) {
-                return (
-                    <img 
-                        src={images[0].url} 
-                        alt="Sản phẩm"
-                        style={{
-                            width: '70px',
-                            height: '70px',
-                            objectFit: 'cover',
-                            borderRadius: '4px'
-                        }}
-                    />
-                );
-            }
             return (
-                <div 
-                    style={{
-                        width: '70px',
-                        height: '70px',
-                        backgroundColor: '#f5f5f5',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px'
-                    }}
-                >
-                    No image
+                <div style={{position: 'relative', width: '70px', height: '70px'}}>
+                    {images && Array.isArray(images) && images.length > 0 ? (
+                        <img
+                            src={images[0].url}
+                            alt="Sản phẩm"
+                            style={{
+                                width: '70px',
+                                height: '70px',
+                                objectFit: 'cover',
+                                borderRadius: '4px'
+                            }}
+                        />
+                    ) : (
+                        <div
+                            style={{
+                                width: '70px',
+                                height: '70px',
+                                backgroundColor: '#f5f5f5',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '4px'
+                            }}
+                        >
+                            No image
+                        </div>
+                    )}
+
+                    {hasPromotion && (
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '-5px',
+                                right: '-10px',
+                                width: '26px',
+                                height: '26px',
+                                backgroundColor: 'red',
+                                borderRadius: '50%',
+                                color: 'white',
+                                fontSize: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 'bold',
+                                boxShadow: '0 0 2px rgba(0,0,0,0.3)'
+                            }}
+                        >
+                            -{discountValue}%
+                        </div>
+                    )}
                 </div>
             );
         },
         onCell: () => ({
             style: {
-                width: "80px",
+                width: "90px",
                 height: "60px",
                 padding: "5px",
             },
@@ -70,12 +96,12 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
         dataIndex: "productName",
         key: "productName",
         render: (_, record) => {
-            const { productName, sizeName, colorName } = record;
+            const {productName, sizeName, colorName} = record;
             return (
-                <div style={{ textAlign: "center", whiteSpace: "normal" }}>
-                    <div style={{ fontWeight: "bold", fontSize: "14px" }}>{productName}</div>
-                    <div style={{ color: "#555", fontSize: "14px" }}>Size: {sizeName}</div>
-                    <div style={{ color: "#888", fontSize: "14px" }}>Màu: {colorName}</div>
+                <div style={{textAlign: "center", whiteSpace: "normal"}}>
+                    <div style={{fontWeight: "bold", fontSize: "14px"}}>{productName}</div>
+                    <div style={{color: "#555", fontSize: "14px"}}>Size: {sizeName}</div>
+                    <div style={{color: "#888", fontSize: "14px"}}>Màu: {colorName}</div>
                 </div>
             );
         },
@@ -191,11 +217,15 @@ export const productTableColumn = (pagination, handleOnAddProductToBill) => [
             return (
                 <div className="">
 
-                    <div style={{ fontWeight: "", fontSize: "14px", textDecoration: hasPromotion ? "line-through" : "none" }}>
+                    <div style={{
+                        fontWeight: "",
+                        fontSize: "14px",
+                        textDecoration: hasPromotion ? "line-through" : "none"
+                    }}>
                         {formattedPrice}
                     </div>
                     {hasPromotion && (
-                        <div style={{ color: "red", fontSize: "13px" }}>
+                        <div style={{color: "red", fontSize: "13px"}}>
                             Giảm {discountValue} %
                         </div>
                     )}

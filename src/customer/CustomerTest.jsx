@@ -99,11 +99,11 @@ const CustomerTest = () => {
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers');
             XLSX.writeFile(workbook, `customers_${moment().format('YYYYMMDDHHmmss')}.xlsx`);
-            message.success('Xuất file Excel thành công!');
+            toast.success('Xuất file Excel thành công!');
 
         } catch (error) {
             console.error('Error exporting to Excel:', error);
-            message.error('Xuất file Excel thất bại!');
+            toast.error('Xuất file Excel thất bại!');
         }
     };
 

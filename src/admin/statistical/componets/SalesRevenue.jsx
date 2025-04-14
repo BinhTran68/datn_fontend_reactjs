@@ -35,6 +35,7 @@ const exportToExcel = (data, dateRange, fileName = "RevenueReport.xlsx") => {
             "Số sản phẩm đã bán",
             "Đơn thành công",
             "Đơn hủy",
+            "Đơn hoàn",
         ], // Hàng tiêu đề chi tiết
         [
             data.totalRevenue || 0,
@@ -193,11 +194,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                                         <span>• {customData.cancelledOrders || 0}</span>
                                     </Tooltip>
                                 </Col>
-                                <Col span={4} style={{ color: "#6c757d" }}>
-                                    <Tooltip title="Đơn hoàn">
-                                        <span>• {customData.returnedOrders || 0}</span>
-                                    </Tooltip>
-                                </Col>
+
                             </Row>
 
                         </Card>

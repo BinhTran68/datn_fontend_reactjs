@@ -3,14 +3,20 @@ import { Client } from "@stomp/stompjs";
 const API_BASE_URL = "http://localhost:8080/api/admin/comments";
 
 // Hàm lấy tất cả comments
-export const fetchAllComments = async () => {
+export const fetchAllComments = async (page = 0, size = 5, sortOrder = "desc") => {
     try {
-        const response = await fetch(`${API_BASE_URL}/all`);
+        const response = await fetch(`${API_BASE_URL}/all?page=${page}&size=${size}&sortOrder=${sortOrder}`);
         if (!response.ok) {
             throw new Error(`Lỗi: ${response.status}`);
         }
         const result = await response.json();
-        return result.data || result;
+        return {
+        content: result.data.content || [],
+        totalElements: result.data.totalElements || 0,
+        totalPages: result.data.totalPages || 0,
+        currentPage: result.data.number || 0,
+        pageSize: result.data.size || size,
+        }
     } catch (error) {
         console.error("Lỗi khi tải dữ liệu bình luận:", error);
         throw error;

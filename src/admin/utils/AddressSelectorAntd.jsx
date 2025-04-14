@@ -160,11 +160,11 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
                             disabled={!selectedProvince}
                             showSearch
                             filterOption={(input, option) =>
-                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                (option?.children ?? '').toLowerCase().inclfudes(input.toLowerCase())
                             }
                             optionFilterProp="children"
                         >
-                            {districts.map((district) => (
+                            {districts?.map((district) => (
                                 <Option key={district.DistrictID} value={district.DistrictID}>
                                     {district.DistrictName}
                                 </Option>
@@ -199,6 +199,7 @@ function AddressSelector({ provinceId, districtId, wardId, specificAddressDefaul
                     <Form.Item label="Số nhà/ngõ đường">
                         <Input
                             value={specificAddress}
+                            maxLength={50}
                             onChange={handleSpecificAddressChange}
                             placeholder="Ngõ/tên đường ..."
                         />

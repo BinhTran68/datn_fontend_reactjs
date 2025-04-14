@@ -46,6 +46,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { color } from "framer-motion";
+import {toast} from "react-toastify";
 
 const Sole = () => {
   const { Title } = Typography;
@@ -131,7 +132,7 @@ const Sole = () => {
       setTotalSoles(total);
       console.log(requestSearch.name + "đây là search");
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -145,7 +146,7 @@ const Sole = () => {
       setSoles(data);
       setTotalSoles(total);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
       setLoading(false);
     }
@@ -161,7 +162,7 @@ const Sole = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchSolesData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -178,11 +179,11 @@ const Sole = () => {
       console.log(selectedSole.data.id);
       setSelectedSole(null);
       setOpenUpdate(false);
-      message.success("Cập nhật Đế giàythành công");
+      toast.success("Cập nhật Đế giàythành công");
       fetchSolesData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -194,10 +195,10 @@ const Sole = () => {
       setLoading(true);
       await deleteSole(soleId);
       fetchSolesData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -216,8 +217,8 @@ const Sole = () => {
 
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
-        message.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+        toast.error(
+          error.toast || "Có lỗi xảy ra khi tải thông tin thương hiệu."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -311,10 +312,10 @@ const Sole = () => {
                         await switchStatus(record.id, {
                           status: checked ? "HOAT_DONG" : "NGUNG_HOAT_DONG",
                         });
-                        message.success("Cập nhật trạng thái thành công!");
+                        toast.success("Cập nhật trạng thái thành công!");
                         fetchSolesData();
                       } catch (error) {
-                        message.error("Cập nhật trạng thái thất bại!");
+                        toast.error("Cập nhật trạng thái thất bại!");
                       }
                     }}
                   />
