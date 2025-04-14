@@ -334,8 +334,14 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
                         ? item.customer?.fullName?.charAt(0)
                         : item.fullName?.charAt(0) || "U"}
                     </Avatar>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {item.isOnline  ? (
+                        <div style={{padding: "5px", borderRadius: "50%",fontSize: "20px",backgroundColor: "green", marginRight: "5px" }} />
+                      ) : (
+                        <div style={{padding: "5px", borderRadius: "50%",fontSize: "20px",backgroundColor: "red", marginRight: "5px" }} />
+                      )}
                     <div>
-                      <Text strong>
+                    <Text strong>
                         {senderType === "STAFF"
                           ? item.customer?.fullName
                           : item.fullName || "Nhân viên"}
@@ -349,6 +355,7 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
                           {item?.lastMessage?.lastMesage || "Chưa có tin nhắn"}
                         </Text>
                       )}
+                    </div>
                     </div>
                     {(unreadCounts[item.id] || 0) > 0 && (
                       <Badge

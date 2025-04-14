@@ -53,15 +53,18 @@ const { Option } = Select;
 // Schema validation
 
 const schema = yup.object().shape({
-  fullName: yup.string().required("Vui lòng nhập họ và tên."),
+  fullName: yup.string().required("Vui lòng nhập họ và tên.")
+  .matches(/^[a-zA-ZÀ-ỹ\s]+$/, "Họ và tên không hợp lệ")
+  .max(50, "Họ và tên không được quá 50 ký tự"),
   phone: yup
     .string()
     .required("Vui lòng nhập số điện thoại.")
-    .matches(/^\d{10,11}$/, "Số điện thoại không hợp lệ"),
+    .matches(/^\d{10}$/, "Số điện thoại không hợp lệ"),
   email: yup
     .string()
     .email("Email không hợp lệ")
-    .required("Vui lòng nhập email."),
+    .required("Vui lòng nhập email.")
+    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Email không hợp lệ"),
   // city: yup.string().required("Vui lòng chọn tỉnh/thành phố."),
   // district: yup.string().required("Vui lòng chọn quận/huyện."),
   // notes: yup.string()("Vui lòng nhập lưu ý khi giao hàng."),
@@ -96,6 +99,7 @@ const PayMent = () => {
     discountMoney: 0,
     totalMoney: 0,
     moneyAfter: 0,
+    isFreeShip: false,
     moneyBeforeDiscount:0,
     desiredDateOfReceipt: null,
     shipDate: null,
@@ -304,7 +308,7 @@ const PayMent = () => {
   ) => {
     let totalFee = 0;
     if (selectedWard != null) {
-      totalFee = await calculateShippingFee({
+      totalFee = caculamoneyBeforeDiscount >=await apiGetFreeShip() ? 0 :  await calculateShippingFee({
         toWardCode: String(selectedWard),
         toDistrictId: selectedDistrict,
       });
@@ -481,7 +485,7 @@ const PayMent = () => {
       moneyBeforeDiscount: caculamoneyBeforeDiscount,
       moneyAfter: totalAmount,
       totalMoney: totalAmountNoship,
-
+      isFreeShip:  bill.shipMoney==0 ? true : false,
       // discountMoney: voucher[0]?.totalAfterDiscount,
     }));
 

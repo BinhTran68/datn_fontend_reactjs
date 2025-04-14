@@ -55,7 +55,7 @@ const LoginAdmin = () => {
         className={styles.formCard}
       >
         <img src="/img/thehands.png" alt="The Hands Logo" className={styles.logo} />
-        <h2 className={styles.title}>Admin Dashboard</h2>
+        <h2 className={styles.title}>Quản trị viên</h2>
 
         {errorMessage && (
           <div className={styles.errorMessage} role="alert">
@@ -82,7 +82,7 @@ const LoginAdmin = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="password" className={styles.label}>
-              Password
+              Mật khẩu
             </label>
             <input
               id="password"
@@ -104,13 +104,13 @@ const LoginAdmin = () => {
             {loading ? (
               <span className={styles.spinner} role="status" aria-hidden="true"></span>
             ) : (
-              "Log in"
+              "Đăng nhập"
             )}
           </button>
         </form>
 
         <Link to="/auth/forgot-password" className={styles.forgotPassword}>
-          Forgot Password?
+          Quên mật khẩu?
         </Link>
       </motion.div>
     </div>
