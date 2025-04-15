@@ -457,8 +457,7 @@ const VoucherList = () => {
                     <Button type="primary" icon={<PlusOutlined />}
                          style={{
                             marginBottom: '20px',
-                            border: 'none',
-                            backgroundColor: '#ff974d'
+                            border: 'none'
                         }}>
                         Thêm mới
                     </Button>

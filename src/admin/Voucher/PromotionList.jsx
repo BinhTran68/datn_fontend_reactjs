@@ -184,9 +184,9 @@ const PromotionList = () => {
                 <Form form={form} layout="vertical">
                     <Row gutter={24}>
                         <Col span={8}>
-                            <Form.Item label="Tên phiếu giảm giá">
+                            <Form.Item label="Tên đợt giảm giá">
                                 <Input
-                                    placeholder="Nhập tên phiếu giảm giá"
+                                    placeholder="Nhập tên đợt giảm giá"
                                     prefix={<SearchOutlined />}
                                     allowClear
                                     value={search}
@@ -200,6 +200,8 @@ const PromotionList = () => {
                                     placeholder="Nhập giá trị giảm"
                                     prefix={<SearchOutlined />}
                                     allowClear
+                                    suffix="%"
+
                                     value={discountValue}
                                     onChange={(e) => {
                                         const value = e.target.value;
@@ -241,7 +243,7 @@ const PromotionList = () => {
             <Card>
                 <Link to="/admin/promotion/add">
                     <Button type="primary" icon={<PlusOutlined />}
-                        style={{ marginBottom: '20px', border: 'none', backgroundColor: '#ff974d' }}>
+                        style={{ marginBottom: '20px', border: 'none' }}>
                         Thêm mới
                     </Button>
                 </Link>
