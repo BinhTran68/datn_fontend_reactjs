@@ -16,6 +16,7 @@ const ChartStatusBill = () => {
   const [chartTitle, setChartTitle] = useState("Biểu đồ trạng thái đơn hàng hôm nay");
   const pageSize = 5; // Số lượng sản phẩm mỗi trang
   const [currentPage, setCurrentPage] = useState(1); // State lưu trang hiện tại
+  
   const apiUrls = {
     day: "http://localhost:8080/api/admin/statistical/bestday",
     week: "http://localhost:8080/api/admin/statistical/bestweek",
@@ -153,7 +154,7 @@ const ChartStatusBill = () => {
   const columns = [
     //thiếu ảnh 
     // { title: "Ảnh", dataIndex: "id", key: "id", align: "center", render: (url) => <img src={"https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQKanIMPiEvON96i3FghI3bmA5It_yxPA011xHLSTvpmbA2sicQ-MNOlawFLVIfhoPdedAtw8ft-30zbKjBJOoPNwpOmQkQPsbv7VqmaXX8fR0Ep0O6xrgbIfNNaSDTMjX37w&usqp=CAc"} style={{ width: 50 }} /> },
-
+    {title: "STT",dataIndex: "stt",key: "stt",width: "3rem",  align: "center",render: (_, __, index) => (currentPage - 1) * pageSize + index + 1, },
     { title: "Tên sản phẩm", dataIndex: "productName", key: "productName", align: "center" },
     { title: "Loại giày", dataIndex: "typeName", key: "typeName", align: "center" },
     { title: "Màu sắc", dataIndex: "colorName", key: "colorName", align: "center" },

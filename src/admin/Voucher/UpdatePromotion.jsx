@@ -501,7 +501,7 @@ const UpdatePromotion = () => {
             <Card style={{ marginTop: "30px" }}>
                 <Title level={2}>Sản Phẩm Chi Tiết</Title>
 
-                <Row gutter={[16, 16]}>
+                {/* <Row gutter={[16, 16]}>
                     <Col span={20}>
                         <Input
                             placeholder="Nhập vào tên sản phẩm bạn muốn tìm!"
@@ -511,7 +511,7 @@ const UpdatePromotion = () => {
                         />
                     </Col>
 
-                </Row>
+                </Row> */}
 
                 <Table
                     columns={columnsDetail}

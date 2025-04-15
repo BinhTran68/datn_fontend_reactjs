@@ -105,6 +105,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
 
 
             <Row gutter={[16, 16]} justify="center">
+                
 
                 {cards.map((item, index) => (
                     <Col xs={24} sm={12} md={12} lg={6} key={index}>
@@ -247,6 +248,11 @@ const DateFilter = ({ onSetCustomData, customData }) => {
                     </Button>
                 </div>
             </Card>
+             <Card style={{ border: 'none' }}>
+                      <div style={{ fontSize: '30px' }}>
+Doanh thu                      </div>
+            
+                    </Card>
 
             <Card style={{ textAlign: "left", marginBottom: 5, background: "white", color: "black", border: "none" }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", color: "black", gap: '10px' }}>
