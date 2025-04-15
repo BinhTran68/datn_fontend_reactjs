@@ -25,9 +25,10 @@ export const columnsPaymentMethodTable = [
         title: 'Loại giao dịch',
         dataIndex: 'paymentMethodsType',
         key: 'paymentMethodsType',
-        render: (text) => <Tag style={{
-            fontSize: 16
-        }} color={"purple"}>{paymentTypeConvert[text]}</Tag>,
+        render: (text) => {
+            const paymentType = paymentTypeConvert[text] || { text: text, color: "blue" };
+            return <Tag style={{ fontSize: 16 }} color={paymentType.color}>{paymentType.text}</Tag>;
+        }
     },
     {
         title: 'Phương thức thanh toán',
@@ -36,15 +37,15 @@ export const columnsPaymentMethodTable = [
         render: (text) => <Tag style={{
             fontSize: 16
         }} color={"blue"}>{paymentMethodConvert[text]}</Tag>,
-
     },
     {
         title: 'Trạng thái thanh toán',
         dataIndex: 'paymentBillStatus',
         key: 'paymentBillStatus',
-        render: (text) => <Tag style={{
-            fontSize: 16
-        }} color={"blue"}>{paymentBillStatusConvert[text]}</Tag>,
+        render: (text) => {
+            const paymentStatus = paymentBillStatusConvert[text] || { text: text, color: "blue" };
+            return <Tag style={{ fontSize: 16 }} color={paymentStatus.color}>{paymentStatus.text}</Tag>;
+        }
 
     },
     {

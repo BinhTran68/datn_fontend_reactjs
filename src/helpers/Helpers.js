@@ -117,10 +117,10 @@ export const convertBillStatusToString = (status) => {
 
 
 export const paymentTypeConvert = {
-    "COD":"CoD",
-    "THANH_TOAN_TRUOC": "Thanh toán trước",
-    "THANH_TOAN_KHI_NHAN_HANG": "Thanh toán khi nhận hàng",
-    "HOAN_TIEN" : "Hoàn tiền"
+    "COD": { text: "CoD", color: "blue" },
+    "THANH_TOAN_TRUOC": { text: "Thanh toán trước", color: "green" },
+    "THANH_TOAN_KHI_NHAN_HANG": { text: "Thanh toán khi nhận hàng", color: "orange" },
+    "HOAN_TIEN": { text: "Hoàn tiền", color: "red" }
 };
 
 export const paymentMethodConvert = {
@@ -132,9 +132,9 @@ export const paymentMethodConvert = {
     "TIEN_MAT_AND_CHUYEN_KHOAN": "Tiền mặt và Chuyển khoản"
 };
 export const paymentBillStatusConvert = {
-    "CHUA_THANH_TOAN":"Chưa thanh toán",
-    "DA_THANH_TOAN":"Đã thanh toán",
-    "DA_HOAN_TIEN": "Đã hoàn tiền",
+    "CHUA_THANH_TOAN": { text: "Chưa thanh toán", color: "red" },
+    "DA_THANH_TOAN": { text: "Đã thanh toán", color: "green" },
+    "DA_HOAN_TIEN":  { text: "Đã hoàn tiền", color: "red" },
  
 };
 

@@ -617,7 +617,7 @@ const CartPage = () => {
                       addToBill(updatedSelectedRitem);
                       addToVoucher(vocher);
                       navigate("/payment");
-                      toast.success("xác nhận mua hàng");
+                      toast.warn("xác nhận mua hàng");
                     } else {
                       toast.warn("chưa chọn sản phẩm nào hoặc Tổng tiền bằng 0");
                     }
