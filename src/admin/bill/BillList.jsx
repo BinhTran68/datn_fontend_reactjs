@@ -28,7 +28,7 @@ const BillList = () => {
     const [searchParams, setSearchParams] = useState({
         search: '',
         typeBill: 'null',
-        startDate: null,
+        startDate: dayjs(), // 👈 default là hôm nay
         endDate: null,
     });
     const [loading, setLoading] = useState(false);
@@ -138,7 +138,9 @@ useEffect(() => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="search" label="Tìm kiếm">
-                                <Input />
+                                <Input
+                                    maxLength={100}
+                                />
                             </Form.Item>
                         </Col>
                         <Col span={12}>

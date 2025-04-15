@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Form, Input, Select, Button, message} from "antd";
 import axios from "axios";
-import {baseUrl} from "../../../helpers/Helpers.js";
+import {baseUrl, calculateShippingFee} from "../../../helpers/Helpers.js";
 import AddressSelectorAntd from "../../utils/AddressSelectorAntd.jsx";
 import {toast} from "react-toastify";
 import axiosInstance from "../../../utils/axiosInstance.js";
@@ -20,6 +20,7 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
 
     useEffect(() => {
         // Set các giá trị mặc định khi component render
+
         if (currentBill?.address) {
             form.setFieldsValue({
                 provinceId: currentBill?.address?.provinceId ?? null,
@@ -30,9 +31,26 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
         }
     }, [currentBill, form]);
 
+
     const onSubmit = async (values) => {
 
+        if (!address.provinceId || !address.districtId || !address.wardId || !address.specificAddress?.trim()) {
+            toast.error("Vui lòng nhập đầy đủ địa chỉ (tỉnh/thành, quận/huyện, xã/phường, số nhà/ngõ/đường)");
+            return;
+        }
+
         try {
+            // Tính shippig fee lại
+            let feeShipping = 0;
+            // Kiểm tra lại
+            if(address?.wardId && address?.districtId){
+                feeShipping = await calculateShippingFee({
+                    toWardCode: String(address?.wardId),
+                    toDistrictId: Number(address?.districtId)
+                })
+            }
+
+
 
             const payload = {
                 ...values,
@@ -40,10 +58,12 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
                 districtId: address.districtId,
                 wardId: address.wardId,
                 specificAddress: address.specificAddress,
-
+                feeShipping: feeShipping
             };
 
-            const response = await axiosInstance.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
+
+            const response =
+                await axiosInstance.put(`${baseUrl}/api/admin/bill/${currentBill.billCode}/update-info-bill`, payload);
             if (response.status === 200) {
                 toast.success("Cập nhật hóa đơn thành công")
                 handleOnEdit(response.data.data);
@@ -91,14 +111,25 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
                     <Option value="OFFLINE">Offline</Option>
                 </Select>
             </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Tên khách hàng</span>} name="customerName">
+            <Form.Item
+                label={<span className="fw-bold text-black">Tên khách hàng</span>}
+                name="customerName"
+                rules={[
+                    { required: true, message: 'Vui lòng nhập tên khách hàng!' },
+                    { max: 100, message: 'Tên không được vượt quá 100 ký tự!' }
+                ]}
+            >
                 <Input />
             </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Email khách hàng</span>} name="email">
+            <Form.Item
+                label={<span className="fw-bold text-black">Số điện thoại</span>}
+                name="customerPhone"
+                rules={[
+                    { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                    { pattern: /^\d{9,11}$/, message: 'Số điện thoại phải từ 9 đến 11 chữ số!' }
+                ]}
+            >
                 <Input />
-            </Form.Item>
-            <Form.Item label={<span className="fw-bold text-black">Số điện thoại</span>} name="customerPhone">
-                <Input/>
             </Form.Item>
             <Form.Item name="address">
                 <AddressSelectorAntd

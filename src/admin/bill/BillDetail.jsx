@@ -75,7 +75,8 @@ const BillDetail = () => {
         const [currentVoucher, setCurrentVoucher] = useState();
 
         const [isShowModalBackCash, setIsShowModalBackCash] = useState()
-
+        const [freeShipData, setFreeShipData] = useState()
+        const [newIsFreeShip, setNewIsFreeShip] = useState(false);
 
 
 
@@ -419,6 +420,7 @@ const BillDetail = () => {
             getCurrentBill();
             getBillHistory();
             getBillProductDetail();
+            fetchFreeShipOrder()
         }, [id]);
 
 
@@ -714,6 +716,18 @@ const BillDetail = () => {
 
 
 
+
+    const fetchFreeShipOrder = async () => {
+        try {
+            const res = await axiosInstance.get('/api/admin/freeship-order');
+            setFreeShipData(res.data);
+
+        } catch (error) {
+            toast.error('Không thể tải dữ liệu freeship');
+        }
+    };
+
+
     const calculateTotals = () => {
         const totalAmount = billEditProductDetails.reduce((total, product) => {
             const discountValue = product.promotionResponse?.discountValue || 0;
@@ -723,7 +737,8 @@ const BillDetail = () => {
 
         const shippingFee = currentBill?.shipMoney || 0;
         const discountValue = discount || 0;
-        const finalAmount = totalAmount + shippingFee - discountValue;
+        let finalAmount = totalAmount + shippingFee - discountValue;
+
 
         return {
             totalAmount,
@@ -751,6 +766,10 @@ const BillDetail = () => {
                 toast.warning("Sản phẩm đã ngừng bán!")
                 return
             }
+            if(record?.quantity > latestProduct.quantity) {
+                toast.warning(`Số lượng sản phẩm hiện tại không đủ! Chỉ còn : ${latestProduct.quantity} sản phẩm!`)
+            }
+
 
             const discountValue = latestProduct.promotionResponse?.discountValue || 0;
             const discountedPrice = latestProduct.price * (1 - discountValue / 100);
@@ -872,14 +891,22 @@ const BillDetail = () => {
 
 
         const handleSaveNewUpdateProduct = async () => {
+            let checkIsFreeShip = false;
+            if((totalAmount - shippingFee) > freeShipData?.minOrderValue) {
+                checkIsFreeShip = true
+            }else  {
+                checkIsFreeShip = false
+            }
             const payload = {
                 moneyBeforeDiscount: totalAmount,
                 shipMoney: shippingFee,
                 discountMoney: discount,
                 totalMoney: finalAmount, // Tiền sau giảm giá
                 productDetailRequestList: billEditProductDetails,
-                voucherCode: selectedVouchers?.voucherCode
+                voucherCode: selectedVouchers?.voucherCode,
+                isFreeShip: checkIsFreeShip
             };
+
             try {
                 const response = await updateProductBill(id, payload)
                 getCurrentBill();
@@ -958,9 +985,20 @@ const BillDetail = () => {
                 <Modal
                     width={widthModal}
                     open={open}
+
                     onOk={handleOkModal}
                     confirmLoading={confirmLoading}
                     onCancel={handleCancel}
+                    footer={
+                        modalType === modalEditForm ? null : [
+                            <Button key="cancel" onClick={handleCancel}>
+                                Hủy
+                            </Button>,
+                            <Button key="ok" type="primary" onClick={handleOkModal}>
+                                OK
+                            </Button>
+                        ]
+                    }
                 >
                     {modalType === modalBillHistoryType && modalBillHistoryTable()}
                     {modalType === modalListProduct && <ProductDetailModal
@@ -1296,10 +1334,12 @@ const BillDetail = () => {
                                 </div>
                                 <div className={"col-md-6"}>
                                     <div>Tổng tiền hàng dự kiến: {formatVND(totalAmount)}</div>
-                                    <div>Phí ship dự kiến: {formatVND(shippingFee)}</div>
+                                    <div >Phí ship dự kiến: <span className={((totalAmount - discount) >= freeShipData?.minOrderValue) ? "text-decoration-line-through" : ""}>
+                                         {formatVND(shippingFee)}
+                                    </span></div>
                                     <div>Số tiền được giảm dự kiến: {discount ? formatVND(discount) : 0}</div>
                                     <div>Số tiền cần thanh toán dự
-                                        kiến: {formatVND(totalAmount + shippingFee - (discount ? discount : 0))}</div>
+                                        kiến: {formatVND(totalAmount + (((totalAmount - discount) >= freeShipData?.minOrderValue) ? 0  : shippingFee) - (discount ? discount : 0))}</div>
 
                                     <hr/>
                                     {
