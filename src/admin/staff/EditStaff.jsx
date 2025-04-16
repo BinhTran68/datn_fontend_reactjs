@@ -402,7 +402,7 @@ const EditStaff = () => {
                                         <Select placeholder="Chọn vai trò">
                                             <Select.Option value="ROLE_MANAGER">Quản lý</Select.Option>
                                             <Select.Option value="ROLE_STAFF">Nhân viên</Select.Option>
-                                            <Select.Option value="ROLE_STAFF_SALE">Nhân viên bán hàng</Select.Option>
+                                            {/*<Select.Option value="ROLE_STAFF_SALE">Nhân viên bán hàng</Select.Option>*/}
                                         </Select>
                                     </Form.Item>
                                 </Col>

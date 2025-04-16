@@ -47,7 +47,7 @@ import FreeShipSetting from "../admin/FreeShipSetting.jsx";
 const PrivateRoute = ({element, allowedRoles}) => {
     const role = getRole();
     console.log(role)
-    if (role === "ROLE_ADMIN" || role === "ROLE_STAFF" || "ROLE_MANAGER" || "ROLE_STAFF_SALE") {
+    if (["ROLE_ADMIN", "ROLE_STAFF", "ROLE_MANAGER"].includes(role)) {
         if (allowedRoles.includes(role)) {
             return element;
         }
@@ -56,10 +56,29 @@ const PrivateRoute = ({element, allowedRoles}) => {
     return <Navigate to="/forbidden" replace/>;
 };
 
+const RoleRedirect = () => {
+    const role = getRole();
+    console.log("Có chạy vào đây", role)
+    if (role === "ROLE_ADMIN" || role === "ROLE_MANAGER") {
+        return <Navigate to="/admin/dashboard" replace />;
+    }
+
+    if (role === "ROLE_STAFF") {
+        return <Navigate to="/admin/sales-page" replace />;
+    }
+
+    return <Navigate to="/forbidden" replace />;
+};
+
+
 const AdminRouters = {
     path: "/admin",
     element: <PrivateRoute element={<Admin/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER", "ROLE_STAFF"]}/>,
     children: [
+        {
+            index: true,
+            element: <RoleRedirect />
+        },
         {
             path: "dashboard",
             element: <PrivateRoute element={<Dashboard/>} allowedRoles={["ROLE_ADMIN", "ROLE_MANAGER"]}/>,

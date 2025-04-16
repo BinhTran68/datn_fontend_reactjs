@@ -185,17 +185,20 @@ const MenuList = ({ darkTheme }) => {
             <Link to={"PromotionList"}>Đợt giảm giá</Link>
           </Menu.Item>
         </Menu.SubMenu>
+        {
+            ["ROLE_ADMIN", "ROLE_MANAGER"].includes(userInfo?.role) && (
+                <Menu.SubMenu
+                    key="setting"
+                    icon={<SettingOutlined size={iconSize} />}
+                    title="Cài đặt"
+                >
+                  <Menu.Item key="setting-feeship" icon={<FaShippingFast size={iconSize} />}>
+                    <Link to={"freeship-setting"}>Cài đặt phí ship</Link>
+                  </Menu.Item>
 
-        <Menu.SubMenu
-            key="setting"
-            icon={<SettingOutlined size={iconSize} />}
-            title="Cài đặt"
-        >
-          <Menu.Item key="setting-feeship" icon={<FaShippingFast size={iconSize} />}>
-            <Link to={"freeship-setting"}>Cài đặt phí ship</Link>
-          </Menu.Item>
-
-        </Menu.SubMenu>
+                </Menu.SubMenu>
+            )
+        }
 
         <Menu.Item
           key="exit"

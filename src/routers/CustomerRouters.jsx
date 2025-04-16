@@ -53,7 +53,7 @@ const RoleRedirect = ({ element, allowRole }) => {
   const role = getRole();
   console.log(role)
   if (role === "ROLE_ADMIN" || role === "ROLE_STAFF" || role === "ROLE_MANAGER") {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
   if(!allowRole) {
     return element;
