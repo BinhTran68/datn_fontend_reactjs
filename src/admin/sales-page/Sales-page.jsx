@@ -321,7 +321,9 @@ const SalesPage = () => {
             vouchers: vouchersPublic
         };
         setItems([...items, newItem]);
-        setCurrentBill(newKey);
+        if(items.length === 0) {
+            setCurrentBill(newKey);
+        }
         setPdfUrl(null); // Clear the blob URL when creating a new bill
     };
 
@@ -1169,7 +1171,8 @@ const SalesPage = () => {
     const resStoreQuantity = async (billRestore) => {
         const restoreQuantityPayload = billRestore.productList.map(product => ({
             id: product.id,
-            quantity: product.quantityInCart || 0
+            quantity: product.quantityInCart || 0,
+            isRestoreQuantity : true
         }));
         await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
     }
@@ -1182,18 +1185,18 @@ const SalesPage = () => {
 
             if (!closingBill.isSuccess && closingBill.productList?.length > 0) {
                 await resStoreQuantity(closingBill)
-                setProducts(prevProducts => 
-                    prevProducts.map(product => {
-                        const returnProduct = closingBill.productList.find(p => p.id === product.id);
-                        if (returnProduct) {
-                            return {
-                                ...product,
-                                quantity: product.quantity + (returnProduct.quantityInCart || 0)
-                            };
-                        }
-                        return product;
-                    })
-                );
+                // setProducts(prevProducts =>
+                //     prevProducts.map(product => {
+                //         const returnProduct = closingBill.productList.find(p => p.id === product.id);
+                //         if (returnProduct) {
+                //             return {
+                //                 ...product,
+                //                 quantity: product.quantity + (returnProduct.quantityInCart || 0)
+                //             };
+                //         }
+                //         return product;
+                //     })
+                // );
             }
 
             const updatedItems = items.filter(item => item.key !== targetKey);
@@ -1201,7 +1204,11 @@ const SalesPage = () => {
 
             // Cập nhật currentBill sau khi xóa
             if (updatedItems.length > 0) {
-                setCurrentBill(updatedItems[0].key);
+                if(updatedItems.length > 1) {
+                    setCurrentBill(updatedItems[(items.length - 2)].key);
+                }else {
+                    setCurrentBill(updatedItems[0].key);
+                }
             } else {
                 setCurrentBill(null); // Không còn hóa đơn nào
             }
