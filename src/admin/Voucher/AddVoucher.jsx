@@ -366,8 +366,8 @@ const AddVoucher = () => {
 
                                                 if (!value) return Promise.reject(new Error("Không được bỏ trống"));
 
-                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 100)) {
-                                                    return Promise.reject(new Error("Giá trị giảm (%) phải từ 1 đến 100"));
+                                                if (type === "PERCENT" && (!Number.isInteger(num) || num < 1 || num > 99)) {
+                                                    return Promise.reject(new Error("Giá trị giảm (%) phải từ 1 đến 99"));
                                                 }
 
                                                 if (num < 1) {
