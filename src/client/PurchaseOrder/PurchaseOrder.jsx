@@ -178,6 +178,9 @@ const PurchaseOrder = () => {
                 variation: item.size ? `size ${item.size}` : "Mặc định",
                 price: item.price,
                 quantity: item.quantity,
+                productId: item.productId,
+                colorId: item.colorId,
+                sizeId: item.sizeId
               }))
             : [];
 
@@ -318,7 +321,7 @@ const PurchaseOrder = () => {
   };
 
   // Action Button handler
-  const getActionButton = (action, orderId, billCode) => {
+  const getActionButton = (action, orderId, billCode,productId,colorId,sizeId) => {
     switch (action) {
       case "pay":
         return (
@@ -351,7 +354,7 @@ const PurchaseOrder = () => {
         return (
           <Button
             className={styles.rateButton}
-            onClick={() => handleRateOrder(orderId)}
+            onClick={() => handleRateOrder(productId, colorId, sizeId)}
           >
             Đánh giá
           </Button>
@@ -405,6 +408,11 @@ const PurchaseOrder = () => {
 
   // Modified Cancel Order handler to show antd modal
   const handleCancelOrder = (orderId) => {
+    // window.dispatchEvent(new Event("openChat"));
+    // navigate(`products/product-detail/${productId}?colorId=${colorId}&sizeId=${sizeId}`);
+    
+    // navigate(`/products/product-detail/${productId}?colorId=${colorId}&sizeId=${sizeId}`);
+
     setCancelOrderId(orderId);
     setCancelReason("");
     setCustomReason("");
@@ -450,10 +458,10 @@ const PurchaseOrder = () => {
     // showNotification("Đang theo dõi đơn hàng...");
   };
 
-  const handleRateOrder = (orderId) => {
+  const handleRateOrder = (productId,colorId,sizeId) => {
     console.log("Rating order:", orderId);
     // Implement rating logic here
-    showNotification("Đánh giá đã được gửi thành công");
+    navigate(`/products/product-detail/${productId}?colorId=${colorId}&sizeId=${sizeId}`);
   };
 
   const handleBuyAgain = async (billId) => {
@@ -693,7 +701,7 @@ const PurchaseOrder = () => {
                 <div className={styles.orderActions}>
                   {order.actions.map((action, index) => (
                     <span key={index} className={styles.actionButton}>
-                      {getActionButton(action, order.id, order.billCode)}
+                      {getActionButton(action, order.id, order.billCode, order.items[0].productId,order.items[0].colorId,order.items[0].sizeId)}
                     </span>
                   ))}
                 </div>

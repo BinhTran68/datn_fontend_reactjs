@@ -395,13 +395,18 @@ function HeaderNav() {
             <Col xs={24} md={14}>
               <Input.Search
                 placeholder="Tìm tên sản phẩm..."
-                size="large"
+                size="medium"
+                
                 enterButton={
                   <Button
                     type="primary"
                     style={{
                       backgroundColor: "#F37021",
                       borderColor: "#F37021",
+                    }}
+                    onClick={() => {
+                      const searchValue = document.querySelector(".search-input input").value;
+                      navigate(`/products?productName=${encodeURIComponent(searchValue)}`);
                     }}
                   >
                     <SearchOutlined />
