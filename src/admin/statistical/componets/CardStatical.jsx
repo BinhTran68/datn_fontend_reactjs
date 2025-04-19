@@ -6,12 +6,7 @@ const Dashboard = () => {
   return (
     <>
 
-    <Card style={{ border: 'none',marginTop:'50px' ,marginBottom:'20px'}}>
-                <div style={{ fontSize: '30px' }}>
-Thống kê sản phẩm sắp hết hàng và tốc độ tăng trưởng của cửa hàng
- </div>
-            </Card>
-    <div style={{ padding: "20px" }}>
+    <div >
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <LowStockProducts />

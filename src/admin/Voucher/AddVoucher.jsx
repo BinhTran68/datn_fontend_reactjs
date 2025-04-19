@@ -143,6 +143,8 @@ const AddVoucher = () => {
         if (discountType === "MONEY" && discountValue !== undefined) {
             form.setFieldsValue({ discountMaxValue: discountValue });
         }
+        form.setFieldsValue({ voucherType: "PUBLIC" });
+
     }, [form, form.getFieldValue("discountType"), form.getFieldValue("discountValue")]);
     const discountType = useWatch("discountType", form);
     useEffect(() => {
@@ -320,6 +322,7 @@ const AddVoucher = () => {
     return (
         <Row gutter={20}>
             <Col span={8}>
+                <h3>Thêm mới phiếu giảm giá</h3>
                 <Card>
                     <Form form={form} layout="vertical">
                         <Form.Item
@@ -521,7 +524,7 @@ const AddVoucher = () => {
                         </Form.Item>
                         <Form.Item name="voucherType" label="Loại phiếu giảm giá" rules={[{ required: true, message: 'Không được bỏ trống' }]}>
                             <Radio.Group onChange={onChange} value={value}>
-                                <Radio checked={true} value={"PUBLIC"}>Công khai</Radio>
+                                <Radio  value={"PUBLIC"}>Công khai</Radio>
                                 <Radio value={"PRIVATE"}>Riêng tư</Radio>
                             </Radio.Group>
                         </Form.Item>

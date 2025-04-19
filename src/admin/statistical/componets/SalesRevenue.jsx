@@ -105,8 +105,6 @@ const RevenueCards = ({ showCustomCard, customData }) => {
 
 
             <Row gutter={[16, 16]} justify="center">
-                
-
                 {cards.map((item, index) => (
                     <Col xs={24} sm={12} md={12} lg={6} key={index}>
                         <Card title={item.title} hoverable style={cardStyles} headStyle={item.headStyle}>
@@ -143,11 +141,12 @@ const RevenueCards = ({ showCustomCard, customData }) => {
             </Row>
             <Row gutter={[16, 16]} style={{ paddingTop: "10px" }}>
                 <Col span={24} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <div style={{
+                    <div
+                        className={"justify-content-center"}
+                        style={{
                         borderRadius: '8px',
                         padding: '16px',
                         background: '#ffffff',
-                        width: '280px',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                         display: 'flex',
                         flexDirection: 'column',
@@ -156,7 +155,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                     }}>
                         <span style={{ fontSize: '14px', fontWeight: '600' }}>Chú thích</span>
                         <hr style={{ width: '100%', margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' }} />
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        <div className={"gap-5"} style={{ display: 'flex', flexWrap: 'wrap'}}>
                             <span style={{ color: "#007bff", fontSize: "12px", fontWeight: "500" }}>● Số lượng đơn</span>
                             <span style={{ color: "#28a745", fontSize: "12px", fontWeight: "500" }}>● Số sản phẩm đã bán</span>
                             <span style={{ color: "#ffc107", fontSize: "12px", fontWeight: "500" }}>● Đơn thành công</span>
@@ -237,7 +236,6 @@ const DateFilter = ({ onSetCustomData, customData }) => {
 
     return (
         <>
-            <Card size="small" style={{ border: 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button
                         icon={<MailOutlined />}
@@ -247,21 +245,17 @@ const DateFilter = ({ onSetCustomData, customData }) => {
                         Gửi báo cáo doanh thu hôm nay
                     </Button>
                 </div>
-            </Card>
-             <Card style={{ border: 'none' }}>
                       <div style={{ fontSize: '30px' }}>
 Doanh thu                      </div>
-            
-                    </Card>
 
-            <Card style={{ textAlign: "left", marginBottom: 5, background: "white", color: "black", border: "none" }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", color: "black", gap: '10px' }}>
+
+
+                <div className={"mb-4"} style={{  display: "flex", justifyContent: "flex-end", color: "black", gap: '10px' }}>
                     <RangePicker onChange={handleDateChange}
                         style={{ width: "250px", height: "25px" }}
                         format="DD/MM/YYYY"
                     />
                 </div>
-            </Card>
         </>
 
     );

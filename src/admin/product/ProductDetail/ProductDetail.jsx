@@ -1216,7 +1216,7 @@ const Product = () => {
               Xuất File Excel
             </Button>
           </Popconfirm>
-          <Tooltip title="làm mới trang và bộ lọc">
+          <Tooltip title="Làm mới trang và bộ lọc">
             <Button
               type="primary"
               onClick={() => {
@@ -1238,7 +1238,7 @@ const Product = () => {
               }}
               style={{marginLeft:"2rem"}}
             >
-              làm mới
+              Làm mới
             </Button>
           </Tooltip>
           <ModalEditSanPham
