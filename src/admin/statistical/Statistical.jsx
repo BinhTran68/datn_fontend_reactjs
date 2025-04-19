@@ -8,20 +8,21 @@ import {Card} from 'antd';
 const Statistical = () => {
     return (
         <>
-         <Card style={{ border: 'none' }}>
                 <div style={{ fontSize: '30px', fontWeight: 'bold',textAlign:'center' }}>
                     TỔNG QUAN CỬA HÀNG
                 </div>
-            </Card>
-           <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
+           <div className={"d-flex flex-column gap-3"}>
             {/* Thống kê doanh thu */}
-            <SalesRevenue />
-
+            <Card>
+                <SalesRevenue />
+            </Card>
             {/* Thống kê sản phẩm bán chạy và biểu đồ tròn */}
             <ChartStatusBill />
 
             {/* Thống kê sản phẩm tồn kho */}
-            <CardStatical />
+            <Card>
+                <CardStatical />
+            </Card>
         </div>
         </>
 

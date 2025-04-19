@@ -269,16 +269,16 @@ const [showApp,setShowApp]= useState(false)
     };
 
 
-
+    const itemsRef = useRef([]);
     useEffect(() => {
         setItems(prevItems => {
             const newItems = prevItems.map(item => {
                 const totalAmount = item.payInfo?.amount || 0;
                 const customerMoney = item.payInfo?.customerMoney || 0;
                 const isShippingInfoComplete = item.isShipping
-                    ? item.detailAddressShipping?.provinceId && 
-                      item.detailAddressShipping?.districtId && 
-                      item.detailAddressShipping?.wardId && 
+                    ? item.detailAddressShipping?.provinceId &&
+                      item.detailAddressShipping?.districtId &&
+                      item.detailAddressShipping?.wardId &&
                       item.detailAddressShipping?.specificAddress
                     : true;
                 const canPay = totalAmount > 0 && customerMoney >= totalAmount && !item.isSuccess && isShippingInfoComplete;
@@ -291,7 +291,17 @@ const [showApp,setShowApp]= useState(false)
             const isSame = prevItems.every((item, index) => item.canPayment === newItems[index].canPayment);
             return isSame ? prevItems : newItems;
         });
+        itemsRef.current = items;
     }, [items]);
+
+    useEffect(() => {
+        return () => {
+            (async () => {
+                await restoreAllProducts(itemsRef.current);
+            })();
+        };
+    }, []);
+
 
     const handleOnCreateBill = () => {
         if (items?.length >= 10) {
@@ -349,7 +359,7 @@ const [showApp,setShowApp]= useState(false)
         let suggestions = [];
 
         // Lọc các voucher có thể áp dụng với đơn hàng hiện tại
-        const applicableVouchers = vouchers.filter(voucher => 
+        const applicableVouchers = vouchers.filter(voucher =>
             voucher.quantity > 0 && // Thêm điều kiện kiểm tra số lượng
             totalAmount >= (voucher.billMinValue || 0)
         );
@@ -1002,7 +1012,7 @@ const [showApp,setShowApp]= useState(false)
             const response = await axios.get(`http://localhost:8080/api/admin/bill/print-bill/${id}`, {
                 responseType: 'blob'
             });
-            
+
             // Tạo URL cho blob
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const blobUrl = URL.createObjectURL(blob);
@@ -1069,7 +1079,7 @@ const [showApp,setShowApp]= useState(false)
                 toDistrictId: Number(detailAddress?.districtId)
             })
         }
-        
+
         setItems(prevItems =>
             prevItems.map(item => {
                 if (item.key === currentBill) {
@@ -1191,26 +1201,80 @@ const [showApp,setShowApp]= useState(false)
         await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
     }
 
+
+
+    const restoreAllProducts = async (bills) => {
+        try {
+            for (const bill of bills) {
+                if (!bill.isSuccess && bill.productList?.length > 0) {
+                    const restoreQuantityPayload = bill.productList.map(product => ({
+                        id: product.id,
+                        quantity: product.quantityInCart || 0,
+                        isRestoreQuantity: true
+                    }));
+                    await axiosInstance.post('/api/admin/bill/restore-quantity', restoreQuantityPayload);
+                }
+            }
+        } catch (error) {
+            console.error("Error while restoring products on unmount:", error);
+        }
+    };
+
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            const bills = itemsRef.current;
+            const hasUnpaidBills = bills?.some(
+                bill => !bill.isSuccess && bill.productList?.length > 0
+            );
+
+            if (hasUnpaidBills) {
+                navigator.sendBeacon && restoreAllProductsWithBeacon();
+
+                // Ngăn người dùng thoát khi còn bill chưa thanh toán
+                event.preventDefault();
+                event.returnValue = ''; // Kích hoạt popup xác nhận trên một số trình duyệt
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
+
+
+    const restoreAllProductsWithBeacon = () => {
+        const bills = itemsRef.current;
+
+        for (const bill of bills) {
+            if (!bill.isSuccess && bill.productList?.length > 0) {
+                const restoreQuantityPayload = bill.productList.map(product => ({
+                    id: product.id,
+                    quantity: product.quantityInCart || 0,
+                    isRestoreQuantity: true
+                }));
+
+                const blob = new Blob([JSON.stringify(restoreQuantityPayload)], {
+                    type: 'application/json'
+                });
+
+                navigator.sendBeacon(`${baseUrl}/api/bill/restore-quantity`, blob);
+            }
+        }
+    };
+
+
+
     const handleCloseTab = async (targetKey) => {
         try {
             const closingBill = items.find(item => item.key === targetKey);
-            
+
             if (!closingBill) return;
 
             if (!closingBill.isSuccess && closingBill.productList?.length > 0) {
                 await resStoreQuantity(closingBill)
-                // setProducts(prevProducts =>
-                //     prevProducts.map(product => {
-                //         const returnProduct = closingBill.productList.find(p => p.id === product.id);
-                //         if (returnProduct) {
-                //             return {
-                //                 ...product,
-                //                 quantity: product.quantity + (returnProduct.quantityInCart || 0)
-                //             };
-                //         }
-                //         return product;
-                //     })
-                // );
             }
 
             const updatedItems = items.filter(item => item.key !== targetKey);
@@ -1324,7 +1388,7 @@ const [showApp,setShowApp]= useState(false)
                         </Button>
 
                         <Button
-                            type={"primary"} 
+                            type={"primary"}
                             onClick={showModal}>
                             Thêm sản phẩm
                         </Button>

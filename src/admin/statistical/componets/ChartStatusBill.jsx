@@ -167,25 +167,15 @@ const ChartStatusBill = () => {
 
 
   return (
-    <>
+    <Card>
       <Row gutter={[16, 16]} >
         {/* Nút lọc thời gian dạng Radio */}
-        <Card style={{ border: 'none', marginLeft: '20px' }}>
-          <div style={{ fontSize: '30px' }}>
-            Tốc độ kinh doanh
-          </div>
-
-        </Card>
         <Col span={24}>
-
-
           <Card
             style={{
               marginBottom: -10,
               background: "white",
               color: "black",
-              display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
               border: "none",
               display: "flex",
@@ -337,7 +327,7 @@ const ChartStatusBill = () => {
 
 
 
-    </>
+    </Card>
   );
 };
 

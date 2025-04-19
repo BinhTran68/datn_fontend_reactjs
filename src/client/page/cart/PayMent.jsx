@@ -134,7 +134,7 @@ const PayMent = () => {
       const res = await apiFindVoucherValid({ customerId: user?.id });
       setVoucherValid(res.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
   const voucherBest = async () => {
@@ -155,7 +155,7 @@ const PayMent = () => {
       // setAppliedDiscount("");
       console.log("vocher", res.data?.voucher?.id);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
   const applyDiscount = () => {
@@ -163,7 +163,7 @@ const PayMent = () => {
     if (!selectedVoucher) {
       setDiscount(0);
       setAppliedDiscount(null);
-      message.error("Mã giảm giá không hợp lệ!");
+      toast.error("Mã giảm giá không hợp lệ!");
       return;
     }
 
@@ -175,7 +175,7 @@ const PayMent = () => {
       billMinValue,
     } = selectedVoucher;
     if (caculamoneyBeforeDiscount < billMinValue) {
-      message.error(
+      toast.error(
         "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng voucher!"
       );
       return;
@@ -193,7 +193,7 @@ const PayMent = () => {
     setAppliedDiscount(
       `Mã ${voucherCode} - Giảm ${discountAmount.toLocaleString()} đ`
     );
-    message.success("Mã giảm giá đã được áp dụng!");
+    toast.success("Mã giảm giá đã được áp dụng!");
   };
   useEffect(() => {
     console.log("🏠 Địa chỉ đã chọn:", selectedAddress);
@@ -365,7 +365,7 @@ const PayMent = () => {
       setBillDone(response.data);
       return response.data;
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tạo hóa đơn.");
+      toast.error(error.message || "Có lỗi xảy ra khi tạo hóa đơn.");
     } finally {
       setLoading(false);
     }
