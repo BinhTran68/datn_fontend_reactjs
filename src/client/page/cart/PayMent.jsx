@@ -34,7 +34,7 @@ import { useProduct } from "../../../store/ProductContext";
 import { clearBill, getBill } from "./bill";
 import { formatVND } from "../../../helpers/Helpers";
 import { useNavigate } from "react-router-dom";
-import { FcAbout, FcShipped } from "react-icons/fc";
+import { FcAbout, FcPhone, FcShipped } from "react-icons/fc";
 import { apiCreateBillClient } from "./payment";
 import { clearVoucher, getVoucher } from "./voucher";
 import { COLORS } from "../../../constants/constants";
@@ -59,7 +59,7 @@ const schema = yup.object().shape({
   phone: yup
     .string()
     .required("Vui lòng nhập số điện thoại.")
-    .matches(/^\d{10}$/, "Số điện thoại không hợp lệ"),
+    .matches(/^(0)\d{9}$/, "Số điện thoại không hợp lệ"),
   email: yup
     .string()
     .email("Email không hợp lệ")
@@ -586,7 +586,7 @@ const PayMent = () => {
                 name="phone"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Nhập số điện thoại" />
+                  <Input {...field} maxLength={10} placeholder="Nhập số điện thoại" />
                 )}
               />
             </Form.Item>
@@ -641,8 +641,10 @@ const PayMent = () => {
         <Col span={12} style={{ padding: "1rem", border: "1px solid #ddd" }}>
           <Title level={5}>ĐƠN HÀNG CỦA BẠN</Title>
           <p>
-            <FcAbout size={25} /> Anh/Chị: {watch("fullName")} , sdt:{" "}
-            {watch("phone")}
+            <FcAbout size={25}/> Anh/Chị:  {watch("fullName")} 
+          </p>
+          <p>
+          <FcPhone size={25} /> số điện thoại: {watch("phone")}
           </p>
           <p>
             <FaLocationDot size={25} style={{ color: "#bd1727" }} />

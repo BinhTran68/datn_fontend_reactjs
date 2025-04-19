@@ -17,6 +17,7 @@ import { MessageOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { COLORS } from "../../../constants/constants";
 import { apiRead } from "./apiChat";
+import { toast } from "react-toastify";
 
 const { Text } = Typography;
 
@@ -30,10 +31,15 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
   const [staffList, setStaffList] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({}); // Count riêng cho từng cuộc trò chuyện hoặc nhân viên
   const [totalUnread, setTotalUnread] = useState(0); // Count tổng
+  const [user, setUser] = useState(localStorage.getItem("user"));
 
   const stompClient = useRef(null);
   const messagesRef = useRef(null);
-
+  useEffect(() => {
+    const handleCartChange = () => setIsChatOpen(true);
+    window.addEventListener("openChat", handleCartChange);
+    return () => window.removeEventListener("openChat", handleCartChange);
+  }, []);
   // Lấy danh sách cuộc trò chuyện hoặc staff và khởi tạo unread counts
   useEffect(() => {
     if (conversationId != null && showMessages) return;
@@ -261,7 +267,12 @@ const ChatWidget = ({ customerId, staffId, senderType, anou }) => {
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
           zIndex: 1000,
         }}
-        onClick={() => setIsChatOpen(true)}
+        onClick={() =>{
+          if(user){
+          setIsChatOpen(true)
+          }else{
+            toast.warn("Vui lòng đăng nhập để sử dụng chức năng chat")
+          } }}
       >
         <Badge count={totalUnread}>
           <MessageOutlined style={{ color: "white", fontSize: "24px" }} />

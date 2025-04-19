@@ -110,7 +110,9 @@ function ProductDetail() {
     pageSize: 6,
   });
   const navigate = useNavigate();
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  },[])
   useEffect(() => {
     // console.log(id);
     console.log(
@@ -488,10 +490,10 @@ function ProductDetail() {
                 </Row>
               </Col>
               <Col span={24}>
-                <Row>
+                {/* <Row>
                   <Col span={6}>Ưu đãi, giảm giá</Col>
                   <Col span={18}>Vocher, giảm giá</Col>
-                </Row>
+                </Row> */}
               </Col>
               <Col
                 style={{ position: "absolute", bottom: "0rem", width: "100%" }}
@@ -776,8 +778,9 @@ function ProductDetail() {
           <Col
             span={24}
             style={{
-              backgroundColor: "#FAFAFA",
+              backgroundColor: `${COLORS.backgroundcolor2}`,
               padding: "15px",
+              marginBottom: "1rem",
               color: `${COLORS.pending}`,
             }}
           >
@@ -797,20 +800,16 @@ function ProductDetail() {
                   style={{ cursor: "pointer" }}
                 >
                   <PropProduct
-                    product={{
-                      name:
-                        product.productName?.trim() || "Sản phẩm chưa có tên",
-                      price: product.price ?? 0,
-                      promotion:
-                        product.promotionName === "Không có khuyến mãi"
-                          ? null
-                          : product.promotionName,
-                      sale: product.sold ?? 0,
-                      url: product.imageUrl || "https://placehold.co/100",
-                      views: product.views ?? 0,
-                      rate: product.rate ?? 5,
-                    }}
-                  />
+                      product={{
+                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
+                        price: product.price ?? 0,
+                        promotionView: product.promotionView,
+                        sale: product.sold ?? 0,
+                        url: product.imageUrl || "https://placehold.co/50",
+                        views: product.views ?? 0,
+                        rate: product.rate ?? 5,
+                      }}
+                    />
                 </Col>
               ))}
             </Row>

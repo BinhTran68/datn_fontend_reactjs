@@ -467,20 +467,16 @@ const HomePage = () => {
                   onClick={() => addViewProduct(product.productId)}
                 >
                   <PropProduct
-                    product={{
-                      name:
-                        product.productName?.trim() || "Sản phẩm chưa có tên",
-                      price: product.price ?? 0,
-                      promotion:
-                        product.promotionName === "Không có khuyến mãi"
-                          ? null
-                          : product.promotionName,
-                      sale: product.sold ?? 0,
-                      url: product.imageUrl || "https://placehold.co/100",
-                      views: product.views ?? 0,
-                      rate: product.rate ?? 5,
-                    }}
-                  />
+                      product={{
+                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
+                        price: product.price ?? 0,
+                        promotionView: product.promotionView,
+                        sale: product.sold ?? 0,
+                        url: product.imageUrl || "https://placehold.co/50",
+                        views: product.views ?? 0,
+                        rate: product.rate ?? 5,
+                      }}
+                    />
                 </Link>
               </Col>
             ))}

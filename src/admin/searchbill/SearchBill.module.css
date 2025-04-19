@@ -464,13 +464,17 @@
 }
 
 .billSummary {
+  display: grid;
   padding: 30px;
   background-color: #fff9f4; /* Light orange background */
+    justify-content: end;
+
 }
 
 .summaryRow {
   display: flex;
   justify-content: space-between;
+
   margin-bottom: 12px;
   font-size: 15px;
   color: #64748b;

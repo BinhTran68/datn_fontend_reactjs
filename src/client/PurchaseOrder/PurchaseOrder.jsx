@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { addToCart, getCart } from "../page/cart/cart";
 import { toast } from "react-toastify";
 import { COLORS } from "../../constants/constants";
+import { generateAddressString } from "../../helpers/Helpers";
 
 const { TextArea } = Input;
 
@@ -124,7 +125,17 @@ const PurchaseOrder = () => {
 
     fetchOrders();
   }, [activeTab, searchText, dateFilter]);
-
+  const genAddress = async (address) => {
+    // console.log("address", address);
+    let addressString = await generateAddressString(
+      address?.provinceId, 
+      address?.districtId, 
+      address?.wardId,
+      address?.specificAddress
+    );  
+    // console.log("addressString", addressString);
+    return addressString;
+  };
   const fetchOrders = async () => {
     try {
       const pagination = {
@@ -143,7 +154,7 @@ const PurchaseOrder = () => {
       // Process the data correctly according to the API response format
       if (response && response.data) {
         // Transform API response to our order format
-        const transformedOrders = response.data.map((orderData) => {
+        const transformedOrders = await Promise.all(response.data.map(async (orderData) => {
           const statusInfo = statusMapping[orderData.status] || {
             id: "unknown",
             label: "Không xác định",
@@ -163,12 +174,15 @@ const PurchaseOrder = () => {
             ? orderData.billDetailResponse.map((item) => ({
                 id: item.productDetailId,
                 image: item.image || "https://via.placeholder.com/100",
-                name: `Sản phẩm #${item.productDetailId}`, // Use product ID since name is not in response
+                name: `Sản phẩm #${item.productDetailId} ${item.productDetailname}`, // Use product ID since name is not in response
                 variation: item.size ? `size ${item.size}` : "Mặc định",
                 price: item.price,
                 quantity: item.quantity,
               }))
             : [];
+
+          // Resolve the address
+          const address = await genAddress(orderData.addressRequest);
 
           return {
             id: orderData.id,
@@ -187,8 +201,9 @@ const PurchaseOrder = () => {
             voucher: orderData.voucher || null,
             items: items,
             actions: statusInfo.actions,
+            address: address,
           };
-        });
+        }));
 
         // Filter orders based on active tab
         let filteredOrders = transformedOrders;
@@ -451,6 +466,8 @@ const PurchaseOrder = () => {
     console.log("Contact seller for order:", orderId);
     // Implement contact seller logic here
     showNotification("Đang kết nối với người bán...");
+    window.dispatchEvent(new Event("openChat"));
+
   };
 
   const handleDeleteOrder = (orderId) => {
@@ -602,11 +619,11 @@ const PurchaseOrder = () => {
           <div className={styles.loading}>Đang tải đơn hàng...</div>
         ) : orders.length === 0 ? (
           <div className={styles.emptyState}>
-            <img
-              src="/api/placeholder/100/100"
+            {/* <img
+              src="https://placehold.co/100"
               alt="Empty"
               className={styles.emptyImg}
-            />
+            /> */}
             <p>Không tìm thấy đơn hàng nào</p>
           </div>
         ) : (
@@ -656,6 +673,9 @@ const PurchaseOrder = () => {
               ))}
 
               <div className={styles.divider}></div>
+              <div className={"px-2"}>
+               <b> Địa chỉ nhận hàng:</b> {order.address}
+              </div>
 
               <div className={styles.orderFooter}>
                 <span className={styles.orderTotal}>

@@ -103,7 +103,21 @@ const SalesPage = () => {
 
     const currentBillDataMemo =
         useMemo(() => items.find(item => item.key === currentBill) || {}, [items, currentBill]);
+// e cong soket
+const [showApp,setShowApp]= useState(false)
 
+  useEffect(() => {
+ 
+  
+
+     if(currentBillData) {
+        axiosInstance.post('/api/test-ws', currentBillData).then(res => {
+            console.log("res", res)
+        })
+     }
+
+  }, [currentBill, currentBillData]);
+  
     const fetchFreeShipOrder = async () => {
         try {
             const res = await axiosInstance.get('/api/admin/freeship-order');
@@ -1314,6 +1328,25 @@ const SalesPage = () => {
                             onClick={showModal}>
                             Thêm sản phẩm
                         </Button>
+                        {!showApp? <Button
+                            type={"primary"} 
+                            onClick={()=>{
+                                axiosInstance.post('/api/test-ws', true).then(res => {
+                                    setShowApp(true)
+                                })
+                            }}>
+                            Hiển thị app bật
+                        </Button>: <Button
+                            type={"primary"} 
+                            onClick={()=>{
+                                axiosInstance.post('/api/test-ws', false).then(res => {
+                                    setShowApp(false)
+                                })
+
+                            }}>
+                            Hiển thị app tắt
+                            </Button>}
+                       
                     </div>
 
                 </div>
