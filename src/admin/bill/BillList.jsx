@@ -37,30 +37,7 @@ const BillList = () => {
 
     // Sử dụng custom hook để tạo URL
     const url = useUrlBuilder(defaultURL, activeTab, pagination, searchParams);
-//em tú
-useEffect(() => {
-    const fetchCounts = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/admin/bill/hien`);
-            console.log("Dữ liệu API:", response.data.data);
 
-            // Xử lý dữ liệu đúng định dạng
-            const countsObj = {};
-            response.data.data.forEach(item => {
-                if (Array.isArray(item) && item.length === 2) {
-                    countsObj[item[0]] = item[1];
-                }
-            });
-
-            console.log("Dữ liệu đã chuyển đổi:", countsObj);
-            setBillCounts(countsObj);
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu bill counts:", error);
-        }
-    };
-
-    fetchCounts();
-}, []);
 
 
 //em tú hết
@@ -92,6 +69,12 @@ useEffect(() => {
             size: paginationTable.pageSize,   // Số mục mỗi trang
         });
     };
+    useEffect(() => {
+        form.setFieldsValue({
+            startDate: dayjs(), // hoặc bạn format nếu muốn
+        });
+    }, []);
+
 
     const handleSearch = () => {
         const values = form.getFieldsValue();
@@ -156,7 +139,7 @@ useEffect(() => {
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item name="startDate" label="Ngày bắt đầu">
-                                <DatePicker defaultValue={dayjs()}  format="DD/MM/YYYY" style={{ width: '100%' }} />
+                                <DatePicker  format="DD/MM/YYYY" style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
