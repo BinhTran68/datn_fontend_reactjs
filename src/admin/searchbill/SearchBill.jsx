@@ -416,6 +416,7 @@ const SearchBill = () => {
                   </div>
                   <div className={styles.productInfo}>
                     <h4>Sản phẩm ID: {product.productDetailId}</h4>
+                    <h6>Tên sản phẩm:{product.productDetailname}</h6>
                     <div className={styles.productPriceInfo}>
                       <span className={styles.productPrice}>
                         {product.price.toLocaleString()}đ

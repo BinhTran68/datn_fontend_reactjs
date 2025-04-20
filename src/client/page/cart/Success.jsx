@@ -29,7 +29,9 @@ function Success() {
   } catch (error) {
     console.error("Lỗi khi parse item:", error);
   }
+  
   useEffect(() => {
+    window.scrollTo(0, 0);
     window.dispatchEvent(new Event("cartUpdated"));
     apiStartCheck()
     clearBill()
@@ -39,13 +41,13 @@ function Success() {
   }, []);
   return (
     <Card style={{ backgroundColor: "white", padding: 20, minHeight: 600 }}>
-      <div>Mã đơn hàng: {billCode}</div>
+      {/* <div>Mã đơn hàng: {billCode}</div> */}
       <Result
         status={isSuccess ? "success" : "error"}
         title={isSuccess ? "Cảm ơn bạn đã mua hàng!" : "Thanh toán thất bại!"}
         subTitle={
           isSuccess
-            ? `Đơn hàng của bạn (Mã đơn hàng:  ${billCode}) đã được thanh toán thành công với số tiền ${amount} VND.`
+            ? `Đơn hàng của bạn đã được đặt thành công với số tiền ${amount} VND.`
             : "Có lỗi xảy ra trong quá trình thanh toán, vui lòng thử lại!"
         }
         extra={[
