@@ -68,11 +68,7 @@ const PurchaseOrder = () => {
       label: "Đang vận chuyển",
       actions: ["track"],
     },
-    // CHO_THANH_TOAN: {
-    //   id: "pending_payment",
-    //   label: "Chờ thanh toán",
-    //   actions: ["pay", "cancel"],
-    // },
+  
     // DANG_CHUAN_BI: {
     //   id: "preparing",
     //   label: "Đang chuẩn bị hàng",
@@ -81,6 +77,11 @@ const PurchaseOrder = () => {
     DANG_GIAO: {
       id: "to_receive",
       label: "Đang giao hàng",
+      actions: ["track"],
+    },
+    DA_GIAO_HANG: {
+      id: "received",
+      label: "Đã Giao hàng",
       actions: ["track"],
     },
     DA_HOAN_THANH: {
@@ -108,12 +109,13 @@ const PurchaseOrder = () => {
   const tabs = [
     { id: "all", label: "Tất cả" },
     { id: "pending_confirmation", label: "Chờ xác nhận" },
-    // { id: "pending_payment", label: "Chờ thanh toán" },
     // { id: "paid", label: "Đã thanh toán" },
     // { id: "preparing", label: "Chuẩn bị hàng" },
     { id: "Confirmed", label: "Đã xác nhận" },
     { id: "waiting_delivery", label: "Chờ giao hàng" },
     { id: "Shiping", label: "Đang giao hàng" },
+    { id: "received", label: "Đã giao hàng" },
+    { id: "paid", label: "Đã thanh toán" },
     { id: "completed", label: "Hoàn thành" },
     { id: "cancelled", label: "Đã hủy" },
     // { id: "return_refund", label: "Trả hàng/Hoàn tiền" },
@@ -459,7 +461,7 @@ const PurchaseOrder = () => {
   };
 
   const handleRateOrder = (productId,colorId,sizeId) => {
-    console.log("Rating order:", orderId);
+    // console.log("Rating order:", orderId);
     // Implement rating logic here
     navigate(`/products/product-detail/${productId}?colorId=${colorId}&sizeId=${sizeId}`);
   };
@@ -473,7 +475,7 @@ const PurchaseOrder = () => {
   const handleContactSeller = (orderId) => {
     console.log("Contact seller for order:", orderId);
     // Implement contact seller logic here
-    showNotification("Đang kết nối với người bán...");
+    // showNotification("Đang kết nối với người bán...");
     window.dispatchEvent(new Event("openChat"));
 
   };
