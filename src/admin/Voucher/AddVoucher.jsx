@@ -324,17 +324,17 @@ const AddVoucher = () => {
                     <Form form={form} layout="vertical">
                         <Form.Item
                             name="voucherName"
-                            label={`Tên phiếu giảm giá (${nameLength}/100)`}
+                            label={`Tên phiếu giảm giá (${nameLength}/50)`}
                             style={{ marginBottom: "12px" }}
                             rules={[
                                 { required: true, message: "Không được bỏ trống" },
-                                { min: 1, max: 100, message: "Tên phiếu giảm giá phải từ 1 đến 100 ký tự" }
+                                { min: 1, max: 50, message: "Tên phiếu giảm giá phải từ 1 đến 50 ký tự" }
                             ]}
                         >
                             <Input
                                 placeholder="Nhập tên đợt giảm giá"
                                 style={{ width: "100%" }}
-                                maxLength={100}
+                                maxLength={50}
                                 onChange={(e) => setNameLength(e.target.value.length)}
                             />
                         </Form.Item>
