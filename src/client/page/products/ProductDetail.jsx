@@ -513,7 +513,7 @@ function ProductDetail() {
                       const user = JSON.parse(localStorage.getItem(`user`));
                       if (quantityAddCart > getProductDetail.quantity) {
                         toast.warn(
-                          "số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
+                          "Số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
                         );
                         return;
                       }
@@ -576,7 +576,7 @@ function ProductDetail() {
                     onClick={() => {
                       if (quantityAddCart > getProductDetail.quantity) {
                         toast.warn(
-                          "số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
+                          "Số lượng thêm vào giỏ hàng phải nhỏ hơn số lượng sản phẩm có"
                         );
                         return;
                       }

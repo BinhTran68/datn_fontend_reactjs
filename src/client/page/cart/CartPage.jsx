@@ -121,7 +121,7 @@ const CartPage = () => {
       const res = await apiFindVoucherValid({ customerId: user?.id });
       setVoucherValid(res.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
   const voucherBest = async () => {
@@ -136,7 +136,7 @@ const CartPage = () => {
       setAppliedDiscount("");
       console.log("vocher", res.data?.voucher?.id);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
   const getRealPrice = async (listcart) => {
@@ -145,7 +145,7 @@ const CartPage = () => {
       setProductsRealPrice(res.data);
       console.log("real price", res.data);
     } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     }
   };
   const deleteItemInCart = async (cartDetailId) => {
@@ -183,7 +183,7 @@ const CartPage = () => {
   const handleQuantityChange = async (index, value, quantity) => {
     if (value < 1) return; // Đảm bảo không có số lượng nhỏ hơn 1
     if (value > quantity) {
-      toast.warn("số lượng mua ko được quá số lượng của của hàng");
+      toast.warn("Số lượng mua ko được quá số lượng của của hàng");
       return;
     }
     if (user) {
@@ -196,7 +196,7 @@ const CartPage = () => {
           console.log("số lượng ", res);
           fetchCart();
         } catch (error) {
-          message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+          toast.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
         }
       } catch (error) {}
     } else {
@@ -216,7 +216,7 @@ const CartPage = () => {
     if (!selectedVoucher) {
       setDiscount(0);
       setAppliedDiscount(null);
-      message.error("Mã giảm giá không hợp lệ!");
+      toast.error("Mã giảm giá không hợp lệ!");
       return;
     }
 
@@ -228,7 +228,7 @@ const CartPage = () => {
       billMinValue,
     } = selectedVoucher;
     if (totalSelectedPrice < billMinValue) {
-      message.error(
+      toast.error(
         "Giá trị đơn hàng chưa đạt mức tối thiểu để áp dụng voucher!"
       );
       return;
@@ -248,7 +248,7 @@ const CartPage = () => {
     setAppliedDiscount(
       `Mã ${voucherCode} - Giảm ${discountAmount.toLocaleString()} đ`
     );
-    message.success("Mã giảm giá đã được áp dụng!");
+    toast.success("Mã giảm giá đã được áp dụng!");
   };
 
   const totalSelectedPrice = selectedRowKeys.reduce((acc, index) => {
@@ -313,73 +313,75 @@ const CartPage = () => {
   };
   const columns = [
     {
-      title: "SẢN PHẨM",
-      dataIndex: "product",
+      title: "ẢNH",
+      dataIndex: "",
       key: "product",
       render: (_, record) => (
-        <Space>
-          <img
-            src={
-              record.image
-                ? record.image
-                : "https://placehold.co/10x10?text=No+Image"
-            }
-            alt={"anhsp"}
-            width={60}
-          />
-          <Text>
-            {record.colorName
-              ? `${record.productName}[${record.colorName}-${record.sizeName}]`
-              : `${record.productName}`}
-            <br />
-            {isProductDisabled(record.productDetailId) && (
-              <Text type="danger">Sản phẩm đã ngừng hoạt động</Text>
-            )}
-          </Text>
-        </Space>
+            <img
+                src={
+                  record.image
+                      ? record.image
+                      : "https://placehold.co/10x10?text=No+Image"
+                }
+                alt={"anhsp"}
+                width={70}
+            />
       ),
     },
     {
-      title: "GIÁ",
-      dataIndex: "price",
-      key: "price",
+      title: "THÔNG TIN SẢN PHẨM",
+      dataIndex: "product_price",
+      key: "product_price",
       render: (_, record) => {
-        if (!record) return <Text strong>0 đ</Text>;
-
         const realPriceItem = productsRealPrice.find(
-          (item) => item.productDetailId === record.productDetailId
+            (item) => item.productDetailId === record.productDetailId
         );
 
         const originalPrice = Number(record.price) || 0;
         const displayPrice = realPriceItem?.price
-          ? Number(realPriceItem.price)
-          : originalPrice;
+            ? Number(realPriceItem.price)
+            : originalPrice;
 
         const hasPriceChanged =
-          realPriceItem && Number(realPriceItem.price) !== originalPrice;
+            realPriceItem && Number(realPriceItem.price) !== originalPrice;
 
         return (
-          <Space direction="vertical">
-            <Text strong>
-              {typeof displayPrice === "number"
-                ? displayPrice.toLocaleString()
-                : 0}{" "}
-              đ
-            </Text>
-            {hasPriceChanged && (
+            <div className="d-flex flex-column">
+              {/* Hàng 1: Tên sản phẩm */}
               <>
-                <Text delete type="secondary">
-                  {typeof originalPrice === "number"
-                    ? originalPrice.toLocaleString()
-                    : 0}{" "}
-                  đ
-                </Text>
-                <Text type="success" style={{ fontSize: 12 }}>
-                  Giá đã thay đổi
-                </Text>
+                <Text strong>{record.productName}</Text>
+                {record.colorName && (
+                    <Text type="secondary">
+                      [{record.colorName} - {record.sizeName}]
+                    </Text>
+                )}
               </>
-            )}
-          </Space>
+
+              {/* Hàng 2: Giá & Trạng thái sản phẩm */}
+              <div>
+                <Text strong>{displayPrice.toLocaleString()} đ</Text>
+                {hasPriceChanged && (
+                    <>
+                      <br />
+                      <Text delete type="secondary">
+                        {originalPrice.toLocaleString()} đ
+                      </Text>
+                      <br />
+                      <Text type="success" style={{ fontSize: 12 }}>
+                        Giá đã thay đổi
+                      </Text>
+                    </>
+                )}
+                {isProductDisabled(record.productDetailId) && (
+                    <>
+                      <br />
+                      <Text type="danger">Sản phẩm đã ngừng hoạt động</Text>
+                    </>
+                )}
+              </div>
+
+
+            </div>
         );
       },
     },
@@ -388,124 +390,91 @@ const CartPage = () => {
       dataIndex: "quantity",
       key: "quantity",
       render: (_, record, index) => {
-        // Tìm giá thực tế
         const realPriceItem = productsRealPrice.find(
-          (item) => item.productDetailId === record.productDetailId
+            (item) => item.productDetailId === record.productDetailId
         );
 
+        const maxQuantity = realPriceItem?.quantity || 1;
+        const currentQty = Math.min(record.quantityAddCart, maxQuantity);
+
         return (
-          <Row>
-            <Flex gap={0.8}>
-              <Button
-                icon={<MinusOutlined />}
-                onClick={() =>
-                  handleQuantityChange(
-                    index,
-                    Math.max(1, record.quantityAddCart - 1),
-                    realPriceItem.quantity
-                  )
-                }
-              />
-              <InputNumber
-                min={1}
-                // max={100}
-                value={Math.min(
-                  record.quantityAddCart,
-                  realPriceItem?.quantity
-                )}
-                onChange={(value) =>
-                  handleQuantityChange(index, value, realPriceItem.quantity)
-                }
-                style={{ width: "100px" }}
-              />
-              <Button
-                icon={<PlusOutlined />}
-                onClick={() =>
-                  handleQuantityChange(
-                    index,
-                    record.quantityAddCart + 1,
-                    realPriceItem.quantity
-                  )
-                }
-              />
-            </Flex>
-            <Col span={24}>Số lượng còn: {realPriceItem?.quantity}</Col>
-          </Row>
+            <div>
+              <Flex>
+                <Button
+                    icon={<MinusOutlined />}
+                    onClick={() =>
+                        handleQuantityChange(index, Math.max(1, record.quantityAddCart - 1), maxQuantity)
+                    }
+                />
+                <InputNumber
+                    min={1}
+                    value={currentQty}
+                    onChange={(value) => handleQuantityChange(index, value, maxQuantity)}
+                    style={{ width: "60px" }}
+                />
+                <Button
+                    icon={<PlusOutlined />}
+                    onClick={() =>
+                        handleQuantityChange(index, record.quantityAddCart + 1, maxQuantity)
+                    }
+                />
+              </Flex>
+              <Col span={24}>Số lượng còn: {maxQuantity}</Col>
+            </div>
         );
       },
     },
-
     {
       title: "TẠM TÍNH",
       dataIndex: "total",
       key: "total",
-      render: (_, record, index) => {
-        // Kiểm tra record hợp lệ
+      render: (_, record) => {
         if (!record || !record.productDetailId || !record.quantityAddCart) {
           return <Text strong>0 đ</Text>;
         }
 
-        // Tìm giá thực tế
         const realPriceItem = productsRealPrice.find(
-          (item) => item.productDetailId === record.productDetailId
+            (item) => item.productDetailId === record.productDetailId
         );
 
-        // Đảm bảo giá gốc và giá thực tế là số
         const originalPrice = Number(record.price) || 0;
         const displayPrice = realPriceItem?.price
-          ? Number(realPriceItem.price)
-          : originalPrice;
+            ? Number(realPriceItem.price)
+            : originalPrice;
 
-        // Tạm tính dựa trên giá thực tế
-        // const subTotal = displayPrice * record.quantityAddCart;
-        const subTotal = displayPrice * Math.min(
-          record.quantityAddCart,
-          realPriceItem?.quantity
-        );
+        const validQty = Math.min(record.quantityAddCart, realPriceItem?.quantity || 0);
+        const subTotal = displayPrice * validQty;
 
-        // Kiểm tra nếu có sự thay đổi giá
         const hasPriceChanged =
-          realPriceItem && Number(realPriceItem.price) !== originalPrice;
-
-        // Debug để kiểm tra giá trị
-        console.log(
-          `Product: ${record.productName}, Original Price: ${originalPrice}, Real Price: ${realPriceItem?.price}, SubTotal: ${subTotal}, Has Changed: ${hasPriceChanged}`
-        );
+            realPriceItem && Number(realPriceItem.price) !== originalPrice;
 
         return (
-          <Space direction="vertical">
-            <Text strong>
-              {typeof subTotal === "number" ? subTotal.toLocaleString() : 0} đ
-            </Text>
-            {hasPriceChanged && (
-              <>
-                <Text delete type="secondary">
-                  {(originalPrice * record.quantityAddCart).toLocaleString()} đ
-                </Text>
-                <Text type="success" style={{ fontSize: 12 }}>
-                  Giá đã thay đổi
-                </Text>
-              </>
-            )}
-          </Space>
+            <div className={"d-flex flex-column"}>
+              <Text strong>{subTotal.toLocaleString()} đ</Text>
+              {hasPriceChanged && (
+                  <>
+                    <Text delete type="secondary">
+                      {(originalPrice * record.quantityAddCart).toLocaleString()} đ
+                    </Text>
+                    <Text type="success" style={{ fontSize: 12 }}>
+                      Giá đã thay đổi
+                    </Text>
+                  </>
+              )}
+            </div>
         );
       },
     },
     {
-      title: "#",
+      title: "HÀNH ĐỘNG",
       dataIndex: "actions",
       key: "actions",
-      render: (_, record) => {
-        // if (!record.id || Object.keys(record).length === 0) {
-        //   return null;
-        // }
-        return (
-          <>
-            <Row gutter={[16, 16]}>
-              <Col>
-                <Popconfirm
-                  title="Xóa Hãng"
-                  description="Bạn có muốn xóa Màu sắc này kh"
+      render: (_, record) => (
+          <Row gutter={[16, 16]}>
+            <Col>
+              <Popconfirm
+                  title="Xóa Sản phẩm"
+                  description="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?"
                   okText="Xác nhận"
                   cancelText="Hủy"
                   onConfirm={() => {
@@ -515,18 +484,17 @@ const CartPage = () => {
                       handleRemoveFromCart(record.productDetailId);
                     }
                   }}
-                >
-                  <Button>
-                    <FaRegTrashCan size={20} color="#FF4D4F" /> xóa
-                  </Button>
-                </Popconfirm>
-              </Col>
-            </Row>
-          </>
-        );
-      },
+              >
+                <Button icon={<FaRegTrashCan size={20} color="#FF4D4F" />}>
+                  Xóa
+                </Button>
+              </Popconfirm>
+            </Col>
+          </Row>
+      ),
     },
   ];
+
 
   return (
     <div>

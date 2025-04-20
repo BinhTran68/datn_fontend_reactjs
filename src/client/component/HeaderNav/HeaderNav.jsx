@@ -372,9 +372,9 @@ function HeaderNav() {
             </Link>
           </div>
           <div>
-            <Button type="link" className="text-white"  >
-              Tải ứng dụng
-            </Button>
+            {/*<Button type="link" className="text-white"  >*/}
+            {/*  Tải ứng dụng*/}
+            {/*</Button>*/}
           </div>
         </div>
       </div>
