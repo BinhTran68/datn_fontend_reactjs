@@ -37,9 +37,23 @@ export const convertLongTimestampToDate = (timestamp) => {
     if (timestamp == null) {
         return null;
     }
-    const date = new Date(timestamp); // Convert từ Long sang Date
-    return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()} `;
+
+    const date = new Date(timestamp);
+
+    // Convert sang múi giờ Việt Nam
+    const vietnamTime = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+
+    const pad = (n) => n.toString().padStart(2, '0');
+
+    const hours = pad(vietnamTime.getHours());
+    const minutes = pad(vietnamTime.getMinutes());
+    const day = pad(vietnamTime.getDate());
+    const month = pad(vietnamTime.getMonth() + 1);
+    const year = vietnamTime.getFullYear();
+
+    return `${hours}:${minutes} ${day}/${month}/${year}`;
 };
+
 export const convertStatusVoucher = (statusVoucher)=>{                     
     if(statusVoucher === "dang_kich_hoat"){
         return "Đang kích hoạt";
