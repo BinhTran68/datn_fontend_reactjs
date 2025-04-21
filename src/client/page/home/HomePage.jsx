@@ -32,13 +32,10 @@ const { Title, Text, Paragraph } = Typography;
 const HomePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [productHadSolDescs, setProductHadSolDescs] = useState([]);
   const [pageProductHadSolDescs, setPageProductHadSolDescs] = useState({
     current: 1,
-    pageSize: 8,
+    pageSize: 20,
   });
 
   useEffect(() => {
