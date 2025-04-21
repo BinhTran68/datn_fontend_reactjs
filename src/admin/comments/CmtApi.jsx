@@ -20,9 +20,9 @@ const Comments = () => {
   const [comments, setComments] = useState([]);
   const [groupedComments, setGroupedComments] = useState({});
   const [expandedProducts, setExpandedProducts] = useState([]);
-  const [replyModalVisible, setReplyModalVisible] = useState(false);
-  const [currentComment, setCurrentComment] = useState(null);
-  const [replyForm] = Form.useForm();
+    const [replyModalVisible, setReplyModalVisible] = useState(false);
+    const [currentComment, setCurrentComment] = useState(null);
+    const [replyForm] = Form.useForm();
   const [stompClient, setStompClient] = useState(null);
   const [starFilter, setStarFilter] = useState(null);
   const [notRepliedOnly, setNotRepliedOnly] = useState(false);
@@ -78,8 +78,8 @@ const Comments = () => {
   };
 
   const fetchComments = async (page = 0, pageSize = 5) => {
-    setLoading(true);
-    try {
+        setLoading(true);
+        try {
       const result = await fetchAllComments(page, pageSize, sortOrder);
       if (!Array.isArray(result.content)) {
         toast.error("Dữ liệu API không đúng định dạng!");
@@ -94,12 +94,12 @@ const Comments = () => {
         pageSize: result.pageSize,
         total: result.totalElements,
       });
-    } catch (error) {
+        } catch (error) {
       toast.error(`Không thể tải dữ liệu: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+        } finally {
+            setLoading(false);
+        }
+    };
 
   useEffect(() => {
     fetchComments(pagination.current - 1, pagination.pageSize);
@@ -151,11 +151,11 @@ const Comments = () => {
     }));
   };
 
-  const handleReply = (comment) => {
-    setCurrentComment(comment);
-    setReplyModalVisible(true);
-    replyForm.resetFields();
-  };
+    const handleReply = (comment) => {
+        setCurrentComment(comment);
+        setReplyModalVisible(true);
+        replyForm.resetFields();
+    };
 
   const handleSubmitReply = async () => {
     try {
@@ -170,10 +170,10 @@ const Comments = () => {
           timestamp: new Date().toISOString(),
         }
       );
-      setReplyModalVisible(false);
+            setReplyModalVisible(false);
       toast.success("Phản hồi đã được gửi!");
       fetchComments(pagination.current - 1, pagination.pageSize);
-    } catch (error) {
+        } catch (error) {
       toast.error(error.message || "Không thể gửi phản hồi!");
     }
   };
@@ -183,7 +183,7 @@ const Comments = () => {
       await deleteComment(commentId);
       toast.success("Xóa bình luận thành công!");
       fetchComments();
-    } catch (error) {
+        } catch (error) {
       toast.error(error.message || "Không thể xóa bình luận!");
     }
   };
@@ -209,29 +209,29 @@ const Comments = () => {
           </div>
         </div>
       ),
-    },
-    {
-      title: "Bình luận",
-      dataIndex: "comment",
+        },
+        { 
+            title: "Bình luận", 
+            dataIndex: "comment",
       ellipsis: true,
       render: (text) => <span style={{ whiteSpace: "normal" }}>{text}</span>,
-    },
-    {
-      title: "Ngày bình luận",
+        },
+        {
+            title: "Ngày bình luận",
       dataIndex: "createdAt",
       width: 130,
       render: convertToVietnamTime,
       sorter: true,
-    },
-    {
-      title: "Đánh giá",
-      dataIndex: "rate",
+        },
+        {
+            title: "Đánh giá",
+            dataIndex: "rate",
       align: "center",
       width: 100,
       render: (rate) => <Tag color="gold">{rate} ⭐</Tag>,
-    },
-    {
-      title: "Phản hồi",
+        },
+        {
+            title: "Phản hồi",
       dataIndex: "adminReply",
       ellipsis: true,
       render: (adminReply) =>
@@ -242,19 +242,19 @@ const Comments = () => {
         ) : (
           <Tag color="blue">Chưa trả lời</Tag>
         ),
-    },
-    {
-      title: "Hành động",
+        },
+        {
+            title: "Hành động",
       align: "center",
       width: 100,
-      render: (_, record) => (
-        <Space>
-          <Button
-            icon={<CommentOutlined />}
-            onClick={() => handleReply(record)}
-          />
-        </Space>
-      ),
+            render: (_, record) => (
+                <Space>
+                    <Button
+                        icon={<CommentOutlined />}
+                        onClick={() => handleReply(record)}
+                    />
+                </Space>
+            ),
     },
   ];
 
@@ -280,7 +280,7 @@ const Comments = () => {
     (c) => c.rate >= 1 && c.rate <= 5 && starCounts[c.rate - 1]++
   );
 
-  return (
+    return (
     <div style={{ padding: "20px" }}>
       <div
         style={{
@@ -290,11 +290,11 @@ const Comments = () => {
           borderRadius: "8px",
         }}
       >
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={6}>
-            <Select
-              placeholder="Lọc theo đánh giá"
-              allowClear
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12} md={6}>
+                        <Select
+                            placeholder="Lọc theo đánh giá"
+                            allowClear
               style={{ width: "100%" }}
               onChange={(value) =>
                 setStarFilter(value === "all" ? null : parseInt(value))
@@ -307,10 +307,10 @@ const Comments = () => {
                   {renderStars(r)} ({starCounts[r - 1]})
                 </Option>
               ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Select
+                        </Select>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <Select
               placeholder="Sắp xếp theo ngày"
               style={{ width: "100%" }}
               value={sortOrder}
@@ -318,18 +318,18 @@ const Comments = () => {
             >
               <Option value="desc">Mới nhất trước</Option>
               <Option value="asc">Cũ nhất trước</Option>
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Checkbox
+                        </Select>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <Checkbox 
               checked={notRepliedOnly}
               onChange={(e) => setNotRepliedOnly(e.target.checked)}
-            >
+                        >
               Chưa trả lời
-            </Checkbox>
-          </Col>
-        </Row>
-      </div>
+                        </Checkbox>
+                    </Col>
+                </Row>
+            </div>
 
       {Object.keys(groupedComments).length > 0 ? (
         <Collapse
@@ -370,7 +370,7 @@ const Comments = () => {
                 </div>
               }
             >
-              <Table
+            <Table
                 dataSource={product.comments}
                 columns={commentColumns}
                 rowKey="id"
@@ -392,14 +392,14 @@ const Comments = () => {
         </div>
       )}
 
-      <Modal
+            <Modal
         title={`Trả lời bình luận của: ${currentComment?.fullName}`}
-        open={replyModalVisible}
+                open={replyModalVisible}
         onOk={handleSubmitReply}
-        onCancel={() => setReplyModalVisible(false)}
-      >
-        {currentComment && (
-          <div style={{ marginBottom: 16 }}>
+                onCancel={() => setReplyModalVisible(false)}
+            >
+                {currentComment && (
+                    <div style={{ marginBottom: 16 }}>
             <p>
               <strong>Email:</strong> {currentComment.customerEmail}
             </p>
@@ -414,20 +414,20 @@ const Comments = () => {
                 <strong>Phản hồi hiện tại:</strong> {currentComment.adminReply}
               </p>
             )}
-          </div>
-        )}
-        <Form form={replyForm}>
-          <Form.Item
+                    </div>
+                )}
+                <Form form={replyForm}>
+                    <Form.Item
             name="adminReply"
-            label="Phản hồi"
+                        label="Phản hồi"
             rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
-          >
-            <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
+                    >
+                        <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
 };
 
 export default Comments;
