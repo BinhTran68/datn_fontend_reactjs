@@ -58,7 +58,6 @@ const schema = yup.object().shape({
   fullName: yup
     .string()
     .required("Vui lòng nhập họ và tên.")
-    .matches(/^[a-zA-ZÀ-ỹ\s]+$/, "Họ và tên không hợp lệ")
     .max(50, "Họ và tên không được quá 50 ký tự"),
   phone: yup
     .string()

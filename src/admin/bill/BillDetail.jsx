@@ -1042,7 +1042,7 @@ const BillDetail = () => {
                                 </Button>
                             )}
 
-                            {["CHO_XAC_NHAN", "DA_XAC_NHAN"].includes(currentBill?.status) && (
+                            {["CHO_XAC_NHAN"].includes(currentBill?.status) && (
                                 <Button onClick={handleCancelBill} type="default">
                                     {handleOnShowCancelBill()}
                                 </Button>

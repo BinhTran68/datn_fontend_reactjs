@@ -121,6 +121,10 @@ const ModalEditBillInfo = ({currentBill, handleOnEdit}) => {
             >
                 <Input />
             </Form.Item>
+            <Form.Item label={<span className="fw-bold text-black">Email khách hàng</span>} name="email">
+                <Input />
+            </Form.Item>
+
             <Form.Item
                 label={<span className="fw-bold text-black">Số điện thoại</span>}
                 name="customerPhone"

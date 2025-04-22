@@ -471,7 +471,7 @@ const [showApp,setShowApp]= useState(false)
 
                     let isFreeShip = false;
                     if(freeShipData != null) {
-                        isFreeShip =  newTotalAmount > freeShipData?.minOrderValue
+                        isFreeShip =  newTotalAmount >= freeShipData?.minOrderValue
                     }
 
                     return {

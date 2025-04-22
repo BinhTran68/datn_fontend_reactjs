@@ -587,7 +587,7 @@ const CartPage = () => {
                       navigate("/payment");
                       toast.warn("xác nhận mua hàng");
                     } else {
-                      toast.warn("chưa chọn sản phẩm nào hoặc Tổng tiền bằng 0");
+                      toast.warn("Chưa chọn sản phẩm nào hoặc tổng tiền bằng 0");
                     }
                   }}
                 >
