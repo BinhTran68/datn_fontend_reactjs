@@ -1094,10 +1094,7 @@ const CustomerProfile = () => {
             ) : (
               <div>Đang tải bộ chọn địa chỉ...</div> // Hoặc một spinner
             )}
-            <small>
-              Chỉnh sửa tại đây sẽ cập nhật địa chỉ mặc định hoặc thêm mới nếu
-              chưa có.
-            </small>
+           
           </div>
         </div>
 
