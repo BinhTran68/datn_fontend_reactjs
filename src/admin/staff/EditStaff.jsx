@@ -219,7 +219,7 @@ const EditStaff = () => {
     };
     return (
         <div style={{ padding: '20px' }}>
-            <h2 style={{ color: '#1890ff', marginBottom: '20px' }}>Chỉnh sửa nhân viên</h2>
+            <h2 style={{ marginBottom: '20px' }}>Chỉnh sửa nhân viên</h2>
 
             <Row gutter={16}>
                 <Col span={6}>
@@ -279,7 +279,8 @@ const EditStaff = () => {
                                         rules={[
                                             { required: true, message: 'Vui lòng nhập họ và tên!' },
                                             { pattern: /^[^\d!@#$%^&*()_+={}[\]:;"'<>,.?/\\|`~]+$/, message: 'Tên không được chứa số hoặc ký tự đặc biệt!' },
-                                            { min: 2, message: 'Tên quá ngắn!' }
+                                            { min: 2, message: 'Tên quá ngắn!' },
+                                            { max: 50, message: 'Họ và tên không được vượt quá 50 ký tự!' },
                                         ]}
                                     >
                                         <Input />
@@ -352,6 +353,7 @@ const EditStaff = () => {
                                         rules={[
                                             { required: true, message: 'Vui lòng nhập email!' },
                                             { type: 'email', message: 'Email không hợp lệ!' },
+                                            { max: 100, message: 'Email không được vượt quá 100 ký tự!' },
                                             { pattern: /^\S+@\S+\.\S+$/, message: 'Email không được chứa khoảng trắng!' }
                                         ]}
                                     >

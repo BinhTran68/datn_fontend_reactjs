@@ -349,7 +349,11 @@ const AddStaff = () => {
                                         <Form.Item
                                             name="fullName"
                                             label="Họ và tên"
-                                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
+                                            rules={[
+                                                { required: true, message: 'Vui lòng nhập họ và tên!' },
+                                                { min: 3, message: 'Họ và tên phải có ít nhất 3 ký tự!' },
+                                                { max: 50, message: 'Họ và tên không được vượt quá 50 ký tự!' },
+                                            ]}
                                         >
                                             <Input />
                                         </Form.Item>
@@ -410,6 +414,7 @@ const AddStaff = () => {
                                             label="Email"
                                             rules={[
                                                 { required: true, message: 'Vui lòng nhập email!' },
+                                                { max: 100, message: 'Email không được vượt quá 100 ký tự!' },
                                                 { type: 'email', message: 'Email không hợp lệ!' },
                                                 () => ({
                                                     validator(_, value) {

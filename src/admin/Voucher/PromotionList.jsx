@@ -255,7 +255,6 @@ const PromotionList = () => {
                         current: pagination.page + 1,
                         pageSize: pagination.size,
                         total: pagination.total,
-                        showSizeChanger: true,
                     }}
                     onChange={handleTableChange}
                 />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Table, Tag, Button, Space, Select, DatePicker, Input, Modal, Form, Row, Col, Checkbox, Collapse, Card,
+  Table, Tag, Button, Space, Select, DatePicker, Input, Modal, Form, Row, Col, Checkbox, Collapse, Pagination,
 } from "antd";
 import { CommentOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { toast } from "react-toastify";
@@ -36,6 +36,13 @@ const Comments = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [productOptions, setProductOptions] = useState([]);
   const [productFilter, setProductFilter] = useState(null);
+  const [globalPagination, setGlobalPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+  const [currentPage1, setCurrentPage1] = useState(1); // State lưu trang hiện tại
+
 
   const handleProductTableChange = (productId, pagination) => {
     setProductPagination(prev => ({
@@ -105,7 +112,23 @@ const Comments = () => {
     }
 
     const filteredGroups = groupCommentsByProduct(filteredComments);
-    setGroupedComments(filteredGroups);
+    
+    // Phân trang cho danh sách sản phẩm
+    const startIndex = (globalPagination.current - 1) * globalPagination.pageSize;
+    const endIndex = startIndex + globalPagination.pageSize;
+    const paginatedGroups = {};
+    
+    Object.keys(filteredGroups)
+      .slice(startIndex, endIndex)
+      .forEach(key => {
+        paginatedGroups[key] = filteredGroups[key];
+      });
+
+    setGroupedComments(paginatedGroups);
+    setGlobalPagination(prev => ({
+      ...prev,
+      total: Object.keys(filteredGroups).length
+    }));
   };
 
   useEffect(() => {
@@ -122,7 +145,9 @@ const Comments = () => {
     return () => client?.deactivate();
   }, []);
 
-  useEffect(() => applyFilters(), [starFilter, notRepliedOnly, comments, productFilter]);
+  useEffect(() => {
+    applyFilters();
+  }, [globalPagination.current, starFilter, notRepliedOnly, comments, productFilter]);
 
   const fetchComments = async (page = 0, pageSize = 10) => {
     setLoading(true);
@@ -210,7 +235,16 @@ const Comments = () => {
   };
 
   const commentColumns = [
-    { title: "STT", align: "center", width: 50, render: (_, __, i) => i + 1 },
+    { 
+      title: "STT", 
+      align: "center", 
+      width: 50, 
+      render: (_, __, index) => {
+        const currentPage = productPagination[_.productId]?.current || 1;
+        return (currentPage - 1) * 1 + index + 1;
+      }
+    },
+    
     {
       title: "Khách hàng",
       dataIndex: "fullName",
@@ -292,184 +326,213 @@ const Comments = () => {
     (c) => c.rate >= 1 && c.rate <= 5 && starCounts[c.rate - 1]++
   );
 
+  const handleGlobalPageChange = (page) => {
+    setGlobalPagination(prev => ({ 
+      ...prev, 
+      current: page 
+    }));
+  };
+
   return (
-      <Card>
-        <div style={{padding: "20px"}}>
-          <div
-              style={{
-                marginBottom: 16,
-                backgroundColor: "white",
-                padding: "16px",
-                borderRadius: "8px",
-              }}
-          >
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} md={6}>
-                <Select
-                    placeholder="Lọc theo đánh giá"
-                    allowClear
-                    style={{width: "100%"}}
-                    onChange={(value) =>
-                        setStarFilter(value === "all" ? null : parseInt(value))
-                    }
-                    defaultValue="all"
-                >
-                  <Option value="all">Tất cả ({comments.length})</Option>
-                  {[5, 4, 3, 2, 1].map((r) => (
-                      <Option key={r} value={r}>
-                        {renderStars(r)} ({starCounts[r - 1]})
-                      </Option>
-                  ))}
-                </Select>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Select
-                    showSearch
-                    placeholder="Lọc theo tên sản phẩm"
-                    allowClear
-                    style={{width: "100%"}}
-                    onSearch={fetchProductNames}
-                    onFocus={() => fetchProductNames()}
-                    onChange={(value) => setProductFilter(value || null)}
-                    filterOption={false}
-                >
-                  {productOptions.map(option => (
-                      <option key={option.productName} value={option.productName}>
-                        {option.productName}
-                      </option>
-                  ))}
-                </Select>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Select
-                    placeholder="Sắp xếp theo ngày"
-                    style={{width: "100%"}}
-                    value={sortOrder}
-                    onChange={(value) => setSortOrder(value)}
-                >
-                  <Option value="desc">Mới nhất trước</Option>
-                  <Option value="asc">Cũ nhất trước</Option>
-                </Select>
-              </Col>
-              <Col xs={24} sm={12} md={6}>
-                <Checkbox
-                    checked={notRepliedOnly}
-                    onChange={(e) => setNotRepliedOnly(e.target.checked)}
-                >
-                  Chưa trả lời
-                </Checkbox>
-              </Col>
-            </Row>
-          </div>
+    <div style={{ padding: "20px" }}>
+      <div
+        style={{
+          marginBottom: 16,
+          backgroundColor: "white",
+          padding: "16px",
+          borderRadius: "8px",
+        }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Lọc theo đánh giá"
+              allowClear
+              style={{ width: "100%" }}
+              onChange={(value) =>
+                setStarFilter(value === "all" ? null : parseInt(value))
+              }
+              defaultValue="all"
+            >
+              <Option value="all">Tất cả ({comments.length})</Option>
+              {[5, 4, 3, 2, 1].map((r) => (
+                <Option key={r} value={r}>
+                  {renderStars(r)} ({starCounts[r - 1]})
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              showSearch
+              placeholder="Lọc theo tên sản phẩm"
+              allowClear
+              style={{ width: "100%" }}
+              onSearch={fetchProductNames}
+              onFocus={() => fetchProductNames()}
+              onChange={(value) => setProductFilter(value || null)}
+              filterOption={false}
+            >
+              {productOptions.map(option => (
+                <option key={option.productName} value={option.productName}>
+                  {option.productName}
+                </option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              placeholder="Sắp xếp theo ngày"
+              style={{ width: "100%" }}
+              value={sortOrder}
+              onChange={(value) => setSortOrder(value)}
+            >
+              <Option value="desc">Mới nhất trước</Option>
+              <Option value="asc">Cũ nhất trước</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={6}>
+            <Checkbox
+              checked={notRepliedOnly}
+              onChange={(e) => setNotRepliedOnly(e.target.checked)}
+            >
+              Chưa trả lời
+            </Checkbox>
+          </Col>
+        </Row>
+      </div>
 
-          {Object.keys(groupedComments).length > 0 ? (
-              <Collapse
-                  activeKey={expandedProducts}
-                  onChange={setExpandedProducts}
-                  expandIcon={({isActive}) =>
-                      isActive ? <UpOutlined/> : <DownOutlined/>
-                  }
-                  style={{
-                    backgroundColor: "white",
-                    padding: "16px",
-                    borderRadius: "8px",
+      {Object.keys(groupedComments).length > 0 ? (
+        <>
+          <Collapse
+            activeKey={expandedProducts}
+            onChange={setExpandedProducts}
+            expandIcon={({ isActive }) =>
+              isActive ? <UpOutlined /> : <DownOutlined />
+            }
+            style={{
+              backgroundColor: "white",
+              padding: "16px",
+              borderRadius: "8px",
+            }}
+          >
+            {Object.values(groupedComments).map((product) => (
+              <Panel
+                key={product.productId}
+                header={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span>
+                      <strong>{product.productName}</strong> (
+                      {product.totalComments} bình luận)
+                    </span>
+                    <span>
+                      <Tag color="gold">{product.averageRating.toFixed(1)} ⭐</Tag>
+                      {product.unrepliedCount > 0 && (
+                        <Tag color="blue">
+                          {product.unrepliedCount} chưa trả lời
+                        </Tag>
+                      )}
+                    </span>
+                  </div>
+                }
+              >
+                <Table
+                  dataSource={product.comments}
+                  columns={commentColumns}
+                  rowKey="id"
+                  pagination={{
+                    ...productPagination[product.productId],
+                    pageSize: 5,
+                    showSizeChanger: false,
+                    showQuickJumper: true,
+                    locale: {
+                      jump_to: 'Đến trang',
+                      page: ''
+                    },
+                    showTotal: false,
+                    position: ['bottomCenter']
                   }}
-              >
-                {Object.values(groupedComments).map((product) => (
-                    <Panel
-                        key={product.productId}
-                        header={
-                          <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                          >
-                  <span>
-                    <strong>{product.productName}</strong> (
-                    {product.totalComments} bình luận)
-                  </span>
-                            <span>
-                    <Tag color="gold">{product.averageRating.toFixed(1)} ⭐</Tag>
-                              {product.unrepliedCount > 0 && (
-                                  <Tag color="blue">
-                                    {product.unrepliedCount} chưa trả lời
-                                  </Tag>
-                              )}
-                  </span>
-                          </div>
-                        }
-                    >
-                      <Table
-                          dataSource={product.comments}
-                          columns={commentColumns}
-                          rowKey="id"
-                          pagination={{
-                            ...productPagination[product.productId],
-                            pageSize: 1,
-                            showSizeChanger: false,
-                            showQuickJumper: true,
-                            locale: {
-                              jump_to: 'Đến trang',
-                              page: ''
-                            },
-                            showTotal: false,
-                            position: ['bottomCenter']
-                          }}
-                          loading={loading}
-                          onChange={(pagination) => handleProductTableChange(product.productId, pagination)}
-                      />
-                    </Panel>
-                ))}
-              </Collapse>
-          ) : (
-              <div style={{
-                backgroundColor: "white",
-                padding: "16px",
-                borderRadius: "8px",
-                textAlign: "center"
-              }}>
-                <p>{loading ? "Đang tải..." : "Không có dữ liệu bình luận"}</p>
-              </div>
-          )}
+                  loading={loading}
+                  onChange={(pagination) => handleProductTableChange(product.productId, pagination)}
+                />
+              </Panel>
+            ))}
+          </Collapse>
 
-          <Modal
-              title={`Trả lời bình luận của: ${currentComment?.fullName}`}
-              open={replyModalVisible}
-              onOk={handleSubmitReply}
-              onCancel={() => setReplyModalVisible(false)}
-          >
-            {currentComment && (
-                <div style={{marginBottom: 16}}>
-                  <p>
-                    <strong>Email:</strong> {currentComment.customerEmail}
-                  </p>
-                  <p>
-                    <strong>Bình luận:</strong> {currentComment.comment}
-                  </p>
-                  <p>
-                    <strong>Đánh giá:</strong> {currentComment.rate} ⭐
-                  </p>
-                  {currentComment.adminReply && (
-                      <p>
-                        <strong>Phản hồi hiện tại:</strong> {currentComment.adminReply}
-                      </p>
-                  )}
-                </div>
-            )}
-            <Form form={replyForm}>
-              <Form.Item
-                  name="adminReply"
-                  label="Phản hồi"
-                  rules={[{required: true, message: "Vui lòng nhập nội dung"}]}
-              >
-                <TextArea rows={4} placeholder="Nhập nội dung phản hồi..."/>
-              </Form.Item>
-            </Form>
-          </Modal>
+          <div style={{
+            backgroundColor: "white",
+            padding: "16px",
+            borderRadius: "8px",
+            marginTop: "16px",
+            display: "flex",
+            justifyContent: "center"
+          }}>
+            <Pagination
+              current={globalPagination.current}
+              pageSize={globalPagination.pageSize}
+              total={globalPagination.total}
+              onChange={handleGlobalPageChange}
+              showSizeChanger={false}
+              showQuickJumper={true}
+              locale={{
+                jump_to: 'Đến trang',
+                page: ''
+              }}
+            />
+          </div>
+        </>
+      ) : (
+        <div style={{
+          backgroundColor: "white",
+          padding: "16px",
+          borderRadius: "8px",
+          textAlign: "center"
+        }}>
+          <p>{loading ? "Đang tải..." : "Không có dữ liệu bình luận"}</p>
         </div>
-      </Card>
+      )}
+
+      <Modal
+        title={`Trả lời bình luận của: ${currentComment?.fullName}`}
+        open={replyModalVisible}
+        onOk={handleSubmitReply}
+        onCancel={() => setReplyModalVisible(false)}
+      >
+        {currentComment && (
+          <div style={{ marginBottom: 16 }}>
+            <p>
+              <strong>Email:</strong> {currentComment.customerEmail}
+            </p>
+            <p>
+              <strong>Bình luận:</strong> {currentComment.comment}
+            </p>
+            <p>
+              <strong>Đánh giá:</strong> {currentComment.rate} ⭐
+            </p>
+            {currentComment.adminReply && (
+              <p>
+                <strong>Phản hồi hiện tại:</strong> {currentComment.adminReply}
+              </p>
+            )}
+          </div>
+        )}
+        <Form form={replyForm}>
+          <Form.Item
+            name="adminReply"
+            label="Phản hồi"
+            rules={[{ required: true, message: "Vui lòng nhập nội dung" }]}
+          >
+            <TextArea rows={4} placeholder="Nhập nội dung phản hồi..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
   );
 };
 

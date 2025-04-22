@@ -43,8 +43,10 @@ import { FaLocationDot } from "react-icons/fa6";
 import { apiGetAddressDefaut, apiGetFreeShip } from "./apiPayment";
 import { FaMoneyBill } from "react-icons/fa6";
 import { DollarOutlined } from "@ant-design/icons";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { apiFindVoucherValid, apiVoucherBest } from "./apiCart";
+import AddressSelectDefault from "./AddressSelectDefault";
+import { u } from "framer-motion/client";
 
 const { Text } = Typography;
 
@@ -53,9 +55,11 @@ const { Option } = Select;
 // Schema validation
 
 const schema = yup.object().shape({
-  fullName: yup.string().required("Vui lòng nhập họ và tên.")
-  .matches(/^[a-zA-ZÀ-ỹ\s]+$/, "Họ và tên không hợp lệ")
-  .max(50, "Họ và tên không được quá 50 ký tự"),
+  fullName: yup
+    .string()
+    .required("Vui lòng nhập họ và tên.")
+    .matches(/^[a-zA-ZÀ-ỹ\s]+$/, "Họ và tên không hợp lệ")
+    .max(50, "Họ và tên không được quá 50 ký tự"),
   phone: yup
     .string()
     .required("Vui lòng nhập số điện thoại.")
@@ -64,7 +68,10 @@ const schema = yup.object().shape({
     .string()
     .email("Email không hợp lệ")
     .required("Vui lòng nhập email.")
-    .matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Email không hợp lệ"),
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Email không hợp lệ"
+    ),
   // city: yup.string().required("Vui lòng chọn tỉnh/thành phố."),
   // district: yup.string().required("Vui lòng chọn quận/huyện."),
   // notes: yup.string()("Vui lòng nhập lưu ý khi giao hàng."),
@@ -100,7 +107,7 @@ const PayMent = () => {
     totalMoney: 0,
     moneyAfter: 0,
     isFreeShip: false,
-    moneyBeforeDiscount:0,
+    moneyBeforeDiscount: 0,
     desiredDateOfReceipt: null,
     shipDate: null,
     shippingAddressId: null,
@@ -143,9 +150,9 @@ const PayMent = () => {
         customerId: user?.id,
         totalBillMoney: caculamoneyBeforeDiscount,
       });
-      if(voucher[0]?.voucherId==null){
+      if (voucher[0]?.voucherId == null) {
         setDiscountCode(res.data?.voucher?.id);
-      }else{
+      } else {
         setDiscountCode(voucher[0]?.voucherId);
         setDiscount(voucher[0]?.discountValue);
       }
@@ -224,7 +231,7 @@ const PayMent = () => {
     console.log("🛒 vocher:", getVoucher());
 
     console.log("🛒 Đây là user hiện tại:", user || []);
-   
+
     apiGetFreeShip().then((res) => {
       setMinOrderValue(res);
     });
@@ -236,7 +243,6 @@ const PayMent = () => {
   }, []);
 
   useEffect(() => {
- 
     if (user) {
       getAddressDf(user?.id);
     }
@@ -265,10 +271,13 @@ const PayMent = () => {
       };
 
       setSelectedAddress(newAddress);
-      const totalFee = caculamoneyBeforeDiscount >=await apiGetFreeShip() ? 0 : await calculateShippingFee({
-        toWardCode: String(newAddress?.wardId),
-        toDistrictId: Number(newAddress?.districtId),
-      });
+      const totalFee =
+        caculamoneyBeforeDiscount >= (await apiGetFreeShip())
+          ? 0
+          : await calculateShippingFee({
+              toWardCode: String(newAddress?.wardId),
+              toDistrictId: Number(newAddress?.districtId),
+            });
       setbill((prevbill) => ({
         ...prevbill,
         detailAddressShipping: newAddress,
@@ -308,10 +317,13 @@ const PayMent = () => {
   ) => {
     let totalFee = 0;
     if (selectedWard != null) {
-      totalFee = caculamoneyBeforeDiscount >=await apiGetFreeShip() ? 0 :  await calculateShippingFee({
-        toWardCode: String(selectedWard),
-        toDistrictId: selectedDistrict,
-      });
+      totalFee =
+        caculamoneyBeforeDiscount >= (await apiGetFreeShip())
+          ? 0
+          : await calculateShippingFee({
+              toWardCode: String(selectedWard),
+              toDistrictId: selectedDistrict,
+            });
     }
 
     const newAddress = {
@@ -379,12 +391,9 @@ const PayMent = () => {
         sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
-    sum =
-      sum +
-      parseFloat(bill?.shipMoney) -
-      parseFloat(discount|| 0);
+    sum = sum + parseFloat(bill?.shipMoney) - parseFloat(discount || 0);
     return sum;
-  }, [productData, bill?.shipMoney,discount]);
+  }, [productData, bill?.shipMoney, discount]);
 
   const totalAmountNoship = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
@@ -394,9 +403,9 @@ const PayMent = () => {
         sum + parsePrice(item.price || 0) * (item.quantityAddCart || 1),
       0
     );
-    sum = sum - parseFloat(discount|| 0);
+    sum = sum - parseFloat(discount || 0);
     return sum;
-  }, [productData, bill?.shipMoney,discount]);
+  }, [productData, bill?.shipMoney, discount]);
 
   const caculamoneyBeforeDiscount = useMemo(() => {
     if (!productData || productData.length === 0) return 0; // Nếu chưa có dữ liệu, trả về 0
@@ -485,7 +494,7 @@ const PayMent = () => {
       moneyBeforeDiscount: caculamoneyBeforeDiscount,
       moneyAfter: totalAmount,
       totalMoney: totalAmountNoship,
-      isFreeShip:  bill.shipMoney==0 ? true : false,
+      isFreeShip: bill.shipMoney == 0 ? true : false,
       // discountMoney: voucher[0]?.totalAfterDiscount,
     }));
 
@@ -504,15 +513,15 @@ const PayMent = () => {
 
             try {
               const data = await createBillClient();
-              if (user) {
-                if (data) {
-                  window.location.href = data; // Chuyển hướng người dùng ngay lập tức
-                } else {
-                  alert("Lỗi khi tạo đơn hàng!");
-                }
+              // if (user) {
+              if (data) {
+                window.location.href = data; // Chuyển hướng người dùng ngay lập tức
               } else {
-                navigate("/warn-veritify");
+                alert("Lỗi khi tạo đơn hàng!");
               }
+              // } else {
+              // navigate("/warn-veritify");
+              // }
             } catch (error) {
               console.error("Lỗi khi tạo đơn hàng:", error);
               toast.error("Đặt hàng thất bại!");
@@ -572,7 +581,11 @@ const PayMent = () => {
                 name="fullName"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Nhập họ và tên" />
+                  <Input
+                    {...field}
+                    maxLength={50}
+                    placeholder="Nhập họ và tên"
+                  />
                 )}
               />
             </Form.Item>
@@ -586,7 +599,11 @@ const PayMent = () => {
                 name="phone"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} maxLength={10} placeholder="Nhập số điện thoại" />
+                  <Input
+                    {...field}
+                    maxLength={10}
+                    placeholder="Nhập số điện thoại"
+                  />
                 )}
               />
             </Form.Item>
@@ -600,12 +617,20 @@ const PayMent = () => {
                 name="email"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Nhập email" />
+                  <Input {...field} maxLength={50} placeholder="Nhập email" />
                 )}
               />
             </Form.Item>
           </Form>
           <h5>Chọn địa chỉ nhận hàng</h5>
+          <AddressSelectDefault
+            customerId={user?.id}
+            formData={user}
+            onDefaultAddressChange={() => {
+              getAddressDf(user?.id); // gọi lại dữ liệu từ cha
+            }}
+          />
+          {/* <AddressSelector
           {/* <AddressSelectorGHN onAddressChange={onAddressChange} /> */}
 
           <AddressSelectorGHN
@@ -634,25 +659,22 @@ const PayMent = () => {
               )}
             />
           </Form.Item>
-         
         </Col>
 
         {/* Thông tin đơn hàng */}
         <Col span={12} style={{ padding: "1rem", border: "1px solid #ddd" }}>
           <Title level={5}>ĐƠN HÀNG CỦA BẠN</Title>
           <p>
-            <FcAbout size={25}/> Anh/Chị:  {watch("fullName")} 
+            <FcAbout size={25} /> Anh/Chị: {watch("fullName")}
           </p>
           <p>
-          <FcPhone size={25} /> số điện thoại: {watch("phone")}
+            <FcPhone size={25} /> Số điện thoại: {watch("phone")}
           </p>
           <p>
             <FaLocationDot size={25} style={{ color: "#bd1727" }} />
             Địa chỉ nhận hàng: {fullAddress}{" "}
           </p>
-          <p>
-            Thời gian giao hàng dự kiến: {timeGiaoHang?.thoiGianGiaoHang}
-          </p>
+          <p>Thời gian giao hàng dự kiến: {timeGiaoHang?.thoiGianGiaoHang}</p>
           <Table
             columns={columns}
             dataSource={productData}
@@ -660,28 +682,42 @@ const PayMent = () => {
           />
           <Flex justify="space-between">
             <Col>
-              <DollarOutlined style={{
-                color: COLORS.primary,
-                fontSize: "1.3rem"
-              }}  /> Tổng tiền Hàng mua:{" "}
+              <DollarOutlined
+                style={{
+                  color: COLORS.primary,
+                  fontSize: "1.3rem",
+                }}
+              />{" "}
+              Tổng tiền Hàng mua:{" "}
             </Col>
             + {formatVND(parseInt(caculamoneyBeforeDiscount) || 0)}
           </Flex>
           <Flex justify="space-between">
             <Col>
-              <FcShipped size={27} /> Phí vận chuyển (GHN): {caculamoneyBeforeDiscount >= minOrderValue ? <span style={{color: "green"}}>(Miễn phí vận chuyển đơn hàng trên {formatVND(minOrderValue)}  )</span> : ""}
+              <FcShipped size={27} /> Phí vận chuyển (GHN):{" "}
+              {caculamoneyBeforeDiscount >= minOrderValue ? (
+                <span style={{ color: "green" }}>
+                  (Miễn phí vận chuyển đơn hàng trên {formatVND(minOrderValue)}{" "}
+                  )
+                </span>
+              ) : (
+                ""
+              )}
             </Col>
-            {caculamoneyBeforeDiscount >= minOrderValue ? 0 : "+"+ formatVND(parseInt(bill?.shipMoney) || 0)}
+            {caculamoneyBeforeDiscount >= minOrderValue
+              ? 0
+              : "+" + formatVND(parseInt(bill?.shipMoney) || 0)}
           </Flex>
 
           {discountCode && (
             <Flex justify="space-between">
               <Col>
                 <LuTicket size={27} style={{ color: `${COLORS.primary}` }} />
-                Voucher: {appliedDiscount===""?voucher[0]?.note:appliedDiscount} 
+                Voucher:{" "}
+                {appliedDiscount === "" ? voucher[0]?.note : appliedDiscount}
               </Col>
               - {discount?.toLocaleString("vi-VN")} đ
-              </Flex>
+            </Flex>
           )}
           <Divider />
           <h3 style={{ textAlign: "right" }}>
@@ -690,13 +726,13 @@ const PayMent = () => {
           <Divider />
           <Row>
             <Col>
-            <Content
+              <Content
                 title="Mã ưu đãi"
                 style={{
                   marginTop: "1rem",
                 }}
               >
-                <Row gutter={1} >
+                <Row gutter={1}>
                   <Col>
                     {" "}
                     <LuTicket
@@ -733,18 +769,19 @@ const PayMent = () => {
                             }}
                           >
                             {/* Ảnh thương hiệu */}
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: '70px',
-                              height: '70px',
-                              border: '1px solid #ddd',
-                              borderRadius: '4px',
-                              overflow: 'hidden',
-                              backgroundColor: "#e74c3c"
-
-                            }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "70px",
+                                height: "70px",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                overflow: "hidden",
+                                backgroundColor: "#e74c3c",
+                              }}
+                            >
                               <img
                                 src={
                                   item.image ||
@@ -782,7 +819,9 @@ const PayMent = () => {
                               <span>{item.endDate}</span>
                               <div>
                                 <Text type="danger">
-                                  {item.voucherType=="PRIVATE"? "Số lượng 1": "Số lượng "+item.quantity}
+                                  {item.voucherType == "PRIVATE"
+                                    ? "Số lượng 1"
+                                    : "Số lượng " + item.quantity}
                                 </Text>
                               </div>
                             </div>
@@ -815,7 +854,7 @@ const PayMent = () => {
                 Thực hiện thanh toán bằng ứng dụng zalo pay.
               </Paragraph>
             </div>
-      
+
             <div>
               <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
             </div>
