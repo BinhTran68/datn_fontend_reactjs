@@ -109,7 +109,8 @@ const SalePaymentInfo = ({
                     {isShipping && (
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item label="Tên người nhận">
+                                <Form.Item label="Tên người nhận"
+                                >
                                     <Input value={recipientName}
                                            maxLength={50}
                                            onChange={handleOnChangerRecipientName}

@@ -62,18 +62,30 @@ const Register = () => {
         if (!formData.fullName.trim()) {
             newErrors.fullName = "Tên đăng nhập không được để trống";
             isValid = false;
+        } else if (formData.fullName.trim().length < 3) {
+            newErrors.fullName = "Tên đăng nhập phải có ít nhất 3 ký tự";
+            isValid = false;
+        } else if (formData.fullName.trim().length > 50) {
+            newErrors.fullName = "Tên đăng nhập không được vượt quá 50 ký tự";
+            isValid = false;
         }
+
         if (!formData.email.trim()) {
             newErrors.email = "Email không được để trống";
             isValid = false;
         } else if (!validateEmail(formData.email)) {
             newErrors.email = "Email không hợp lệ";
             isValid = false;
+        } else if (formData.email.trim().length > 50) {
+            newErrors.email = "Email không được vượt quá 50 ký tự";
+            isValid = false;
         }
+
         if (!formData.password.trim()) {
             newErrors.password = "Vui lòng nhập mật khẩu";
             isValid = false;
         }
+
         if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = "Mật khẩu không khớp";
             isValid = false;
@@ -82,6 +94,7 @@ const Register = () => {
         setErrors(newErrors);
         return isValid;
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();

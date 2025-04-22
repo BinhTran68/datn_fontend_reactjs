@@ -373,7 +373,11 @@ const AddCustomer = ({
                                         <Form.Item
                                             name="fullName"
                                             label="Tên khách hàng"
-                                            rules={[{required: true, message: 'Vui lòng nhập tên khách hàng!'}]}
+                                            rules={[{required: true, message: 'Vui lòng nhập tên khách hàng!'},
+                                                { min: 3, message: 'Họ và tên phải có ít nhất 3 ký tự!' },
+                                                { max: 50, message: 'Họ và tên không được vượt quá 50 ký tự!' }
+                                            ]}
+
                                         >
                                             <Input/>
                                         </Form.Item>
@@ -433,6 +437,7 @@ const AddCustomer = ({
                                             rules={[
                                                 {required: true, message: 'Vui lòng nhập email!'},
                                                 {type: 'email', message: 'Email không hợp lệ!'},
+                                                { max: 100, message: 'Email không được vượt quá 100 ký tự!' },
                                             ]}
 
                                         >
