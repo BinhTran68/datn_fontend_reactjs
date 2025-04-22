@@ -32,6 +32,7 @@ const { Option } = Select;
 
 const CustomerProfile = () => {
   // --- Trạng thái hiện có ---
+  const [form] = Form.useForm();
   const [formData, setFormData] = useState({
     fullName: "",
     birthDate: "",
@@ -584,13 +585,14 @@ const CustomerProfile = () => {
 
   // Lưu Dữ liệu Khách hàng Đã cập nhật (Form Chỉnh sửa Chính)
   const saveCustomerData = async () => {
-    if (!customerId) {
-      message.error("Không tìm thấy ID khách hàng để cập nhật.");
-      return;
-    }
-    setLoading(true);
-
     try {
+      await form.validateFields(); // Validate the form fields
+      if (!customerId) {
+        message.error("Không tìm thấy ID khách hàng để cập nhật.");
+        return;
+      }
+      setLoading(true);
+
       // 1. Chuẩn bị Dữ liệu Avatar
       let finalAvatarUrl = avatar; // Bắt đầu với URL avatar hiện có
       let finalAvatarPublicId = avatarPublicId; // Bắt đầu với public ID hiện có
@@ -918,7 +920,20 @@ const CustomerProfile = () => {
   // --- renderEditForm (Phần Địa chỉ ĐÃ SỬA ĐỔI) ---
   const renderEditForm = () => {
     return (
-      <div className={styles.editFormContainer}>
+      <Form
+        form={form}
+        layout="vertical"
+        className={styles.editFormContainer}
+        initialValues={{
+          fullName: editFormData.fullName,
+          birthDate: editFormData.birthDate,
+          gender: selectedGender,
+          citizenId: editFormData.citizenId,
+          phoneNumber: editFormData.phoneNumber,
+          email: editFormData.email,
+          status: editFormData.status,
+        }}
+      >
         {/* Phần Chỉnh sửa Avatar - Giữ nguyên */}
         <div className={styles.avatarEditSection}>
           <Upload
@@ -956,41 +971,56 @@ const CustomerProfile = () => {
 
         <div className={styles.formGrid}>
           {/* Các trường nhập khác giữ nguyên */}
-          <div className={styles.formGroup}>
-            <label>Họ và tên:</label>
+          <Form.Item
+            label="Họ và tên:"
+            name="fullName"
+            rules={[{ required: true, message: "Vui lòng nhập họ và tên!" }]}
+          >
             <Input
-              value={editFormData.fullName}
               onChange={(e) => handleFormChange("fullName", e.target.value)}
             />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Ngày sinh:</label>
+          </Form.Item>
+          <Form.Item
+            label="Ngày sinh:"
+            name="birthDate"
+          >
             <DatePicker
-              value={editFormData.birthDate} // Nên là một đối tượng moment
-              onChange={(date) => handleFormChange("birthDate", date)}
               format="DD/MM/YYYY"
               style={{ width: "100%" }}
               placeholder="Chọn ngày sinh"
+              onChange={(date) => handleFormChange("birthDate", date)}
             />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Giới tính:</label>
+          </Form.Item>
+          <Form.Item
+            label="Giới tính:"
+            name="gender"
+          >
             <Radio.Group
-              value={selectedGender} // Gắn với state selectedGender
               onChange={(e) => setSelectedGender(e.target.value)}
             >
               <Radio value={true}>Nam</Radio>
               <Radio value={false}>Nữ</Radio>
               <Radio value={null}>Khác</Radio> {/* Tùy chọn */}
             </Radio.Group>
-          </div>
-          <div className={styles.formGroup}>
-            <label>Số CMND/CCCD:</label>
+          </Form.Item>
+          <Form.Item
+            label="Số CMND/CCCD:"
+            name="citizenId"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập số CMND/CCCD!",
+              },
+              {
+                pattern: /^[0-9]{9}$|^[0-9]{12}$/,
+                message: "Vui lòng nhập số CMND/CCCD hợp lệ (9 hoặc 12 số)!",
+              },
+            ]}
+          >
             <Input
-              value={editFormData.citizenId}
               onChange={(e) => handleFormChange("citizenId", e.target.value)}
             />
-          </div>
+          </Form.Item>
           {/* <div className={styles.formGroup}>
             <label>Trạng thái:</label>
             <Select
@@ -1002,20 +1032,42 @@ const CustomerProfile = () => {
               <Option value={0}>Khóa</Option>
             </Select>
           </div> */}
-          <div className={styles.formGroup}>
-            <label>Số điện thoại:</label>
+          <Form.Item
+            label="Số điện thoại:"
+            name="phoneNumber"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập số điện thoại!",
+              },
+              {
+                pattern: /^(0[3|5|7|8|9])+([0-9]{8})\b$/,
+                message: "Vui lòng nhập số điện thoại hợp lệ!",
+              },
+            ]}
+          >
             <Input
-              value={editFormData.phoneNumber}
               onChange={(e) => handleFormChange("phoneNumber", e.target.value)}
             />
-          </div>
-          <div className={styles.formGroup}>
-            <label>Email:</label>
+          </Form.Item>
+          <Form.Item
+            label="Email:"
+            name="email"
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập địa chỉ email!",
+              },
+              {
+                type: "email",
+                message: "Vui lòng nhập địa chỉ email hợp lệ!",
+              },
+            ]}
+          >
             <Input
-              value={editFormData.email}
               onChange={(e) => handleFormChange("email", e.target.value)}
             />
-          </div>
+          </Form.Item>
 
           {/* Phần Địa chỉ trong Chế độ Chỉnh sửa - Cho Địa chỉ MẶC ĐỊNH */}
           <div
@@ -1061,7 +1113,7 @@ const CustomerProfile = () => {
             Hủy
           </Button>
         </div>
-      </div>
+      </Form>
     );
   };
 
