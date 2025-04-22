@@ -34,8 +34,7 @@ const exportToExcel = (data, dateRange, fileName = "RevenueReport.xlsx") => {
             "Tổng số đơn",
             "Số sản phẩm đã bán",
             "Đơn thành công",
-            "Đơn hủy",
-            "Đơn hoàn",
+            "Đơn hủy"
         ], // Hàng tiêu đề chi tiết
         [
             data.totalRevenue || 0,
@@ -80,8 +79,7 @@ const RevenueCards = ({ showCustomCard, customData }) => {
                         totalOrders: 0,
                         totalProductsSold: 0,
                         successfulOrders: 0,
-                        cancelledOrders: 0,
-                        returnedOrders: 0
+                        cancelledOrders: 0
                     }
                 }));
             } catch (error) {
