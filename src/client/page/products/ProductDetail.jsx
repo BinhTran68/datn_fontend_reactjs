@@ -594,7 +594,7 @@ function ProductDetail() {
                         colorName: getProductDetail.colorName,
                       });
                       navigate("/payment");
-                      toast.warn("xác nhận mua hàng");
+                      toast.success("Xác nhận mua hàng");
                     }}
                   >
                     Mua Ngay
