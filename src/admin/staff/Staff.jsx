@@ -72,7 +72,8 @@ const Staff = () => {
                 CitizenId: item.CitizenId,
                 phoneNumber: item.phoneNumber,
                 dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
-                status: item.status === 0 ? 'Kích hoạt' : 'Khóa',
+                // status: item.status === 0 ? 'Kích hoạt' : 'Khóa',
+                status: item.status,
                 email: item.email,
                 gender: item.gender,
             }));
@@ -327,7 +328,7 @@ const Staff = () => {
                     <Select value={status} onChange={(value) => setStatus(value)} style={{ width: '250px', marginRight: "20px" }}>
                         <Option value="Tất cả">Tất cả</Option>
                         <Option value="HOAT_DONG">Hoạt động</Option>
-                        <Option value="CHO_KICH_HOAT">Chờ kích hoạt</Option>
+                        <Option value="CHUA_KICH_HOAT">Chờ kích hoạt</Option>
                         <Option value="NGUNG_HOAT_DONG">Ngừng hoạt động</Option>
                     </Select>
 
