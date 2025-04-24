@@ -612,7 +612,7 @@ const Product = () => {
                 marginRight: "8px",
               }}
             />
-            <span style={{ color: colorCode }}>{text}</span>
+            <span >{text}</span>
           </div>
         );
       },

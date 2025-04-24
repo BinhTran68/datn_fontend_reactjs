@@ -26,7 +26,7 @@ import PropProduct from "../products/PropProduct";
 import { COLORS } from "../../../constants/constants";
 import { apiAddViewProduct, getAllProducthadSoldDesc } from "../products/api";
 import HomeCarousel from "./HomeCarousel";
-
+import style from "./HomePage.module.css";
 const { Title, Text, Paragraph } = Typography;
 
 const HomePage = () => {
@@ -442,15 +442,17 @@ const HomePage = () => {
           }
           bordered={false}
         >
-          <Row gutter={[16, 24]}>
+          <Row gutter={[10, 10]}>
             {productHadSolDescs?.map((product, index) => (
               <Col
                 key={index}
-                xs={24}
-                sm={12}
-                md={8}
-                lg={6}
-                xl={{ flex: "20%" }}
+                // xs={24}
+                // sm={12}
+                // md={8}
+                // lg={6}
+                // xl={{ flex: "20%"}}
+                className={`${style['custom-col']}`} 
+                // `${style['custom-col']}` do có dấu -
               >
                 <Link
                   to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
