@@ -632,15 +632,6 @@ const AddVoucher = () => {
                                         Làm mới bộ lọc
                                     </Button>
 
-                                    <Link to="/admin/customer-create">
-                                        <Button
-                                            type="primary"
-                                            icon={<PlusOutlined/>}
-                                            style={{marginRight: "10px"}}
-                                        >
-                                            Thêm mới
-                                        </Button>
-                                    </Link>
 
 
                                 </div>
