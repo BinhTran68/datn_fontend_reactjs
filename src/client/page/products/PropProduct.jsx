@@ -75,7 +75,7 @@ function PropProduct({ product }) {
   return (
     <>
       <div
-        className={clsx("card", styles.productcard)}
+        className={clsx("card", styles.productcard,"p-0")}
         style={{
           height: "23rem",
           // height: "24rem",
@@ -90,6 +90,9 @@ function PropProduct({ product }) {
           style={{
             objectFit: "contain", // Giữ tỉ lệ ảnh ban đầu
             height: "55%",
+            maxWidth: "100%",
+            width: "100%",
+            // borderRadius: "0.5rem",
           }}
         />
         <div className="position-absolute top">
@@ -177,7 +180,7 @@ function PropProduct({ product }) {
                   </div>
                 ) : (
                   <div >
-                    <div > {formatPriceRange(product.price)}</div>
+                    <div  > {formatPriceRange(product.price)}</div>
                     <span className="text-decoration-line-through text-secondary fw-normal fs-6 text-white">
                        ko co
                     </span>

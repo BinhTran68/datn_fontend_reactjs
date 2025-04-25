@@ -92,9 +92,7 @@ useEffect(() => {
   };
 
   return (
-    <Content>
-      <Layout>
-        <Content style={{ padding: "0 0 0 7px", minHeight: 280 }}>
+        <Content >
           {/* Bán chạy */}
           <Card
             style={{ borderRadius: 0, marginBottom: "0.3rem" }}
@@ -104,7 +102,7 @@ useEffect(() => {
                   fontSize: "19px",
                   fontWeight: "normal",
                   backgroundColor: COLORS.backgroundcolor2,
-                  padding: "10px",
+                  // padding: "10px",
                   margin: "1rem",
                   color: COLORS.pending,
                 }}
@@ -115,7 +113,7 @@ useEffect(() => {
           >
             <Row gutter={[5, 5]} wrap>
               {productHadSolDescs.map((product, index) => (
-                <Col key={index} flex="20%">
+                <Col key={index} flex="20%" style={{maxWidth: "20%"}}>
                   <Link
                     to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
                     style={{ textDecoration: "none", color: "black" }}
@@ -206,8 +204,6 @@ useEffect(() => {
           </Card>
 
         </Content>
-      </Layout>
-    </Content>
   );
 }
 

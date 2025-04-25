@@ -266,7 +266,7 @@ const SearchBill = () => {
               >
                 Hóa đơn #{billData.billCode}
               </h2>
-              <div className={styles.billMeta}>
+              {/* <div className={styles.billMeta}>
                 <div className={styles.metaItem}>
                   <FaRegCalendarAlt className={styles.metaIcon} />
                   <span>Ngày đặt: {billData.orderDate}</span>
@@ -275,7 +275,7 @@ const SearchBill = () => {
                   <FaTruck className={styles.metaIcon} />
                   <span>Giao hàng: {billData.deliveryDate}</span>
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className={styles.billHeaderRight}>
               <span

@@ -109,3 +109,14 @@
     font-size: 24px;
   }
 }
+/* Đây là file CSS của bạn */
+.custom-col {
+  flex: none; /* override ant flex: 0 0 auto */
+}
+
+@media (min-width: 1200px) {
+  .custom-col {
+    width: 20%;
+    max-width: 20%;
+  }
+}
