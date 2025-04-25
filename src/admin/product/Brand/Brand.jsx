@@ -45,7 +45,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Category = () => {
   const { Title } = Typography;
@@ -438,15 +438,21 @@ const Category = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin hãng mới...</p>

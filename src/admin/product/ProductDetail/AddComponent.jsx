@@ -204,7 +204,25 @@ const ProductDetailDrawer = () => {
       )
     );
   };
+  const showConfirm = () => {
+    Modal.confirm({
+        title: "Xác nhận thêm Sản phẩm",
+        content: "Bạn có chắc chắn muốn thêm các chi tiết của sản phẩm này không?",
+        okText: "Xác nhận",
 
+        okButtonProps: {
+            style: {
+                backgroundColor: '#ff974d', // Nền cam
+                borderColor: '#ff974d', // Viền cam
+                color: '#fff', // Chữ trắng để dễ nhìn
+            },
+        },
+        cancelText: "Hủy",
+        centered: true,
+        onOk: handleCreateProductDetail, // Gọi hàm handleOk khi nhấn xác nhận
+
+    });
+}
   const onChange = (color, { fileList }) => {
     const updatedImages = fileList.map((file) => ({
       url: file.response?.url || file.url,
@@ -746,7 +764,7 @@ const ProductDetailDrawer = () => {
           {tableData.length > 0 && (
             <Row gutter={[16, 16]}>
               <Col>
-                <Button type="primary" onClick={handleCreateProductDetail}>
+                <Button type="primary" onClick={showConfirm}>
                   Lưu thông tin
                 </Button>
               </Col>
