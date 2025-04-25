@@ -93,7 +93,7 @@ export const createBrand = async (brandData) => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message)
+    toast.error(error.response?.data?.message)
     throw error;
   }
 };
@@ -123,7 +123,7 @@ export const updateBrand = async (brandId, brandData) => {
       error.response?.data?.message ||
       "Có lỗi xảy ra khi cập nhật thương hiệu.";
     console.error(errorMessage);
-    message.error(errorMessage)
+    toast.error(errorMessage)
     throw error;
   }
 };

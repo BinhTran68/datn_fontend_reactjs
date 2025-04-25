@@ -835,6 +835,7 @@ const [showApp,setShowApp]= useState(false)
                             customerMoney: 0,
                             cashCustomerMoney: 0,
                             bankCustomerMoney: 0,
+                            change: 0
                         }
                     };
                 }

@@ -154,10 +154,7 @@ function Admin() {
       <Layout>
         <Header
           style={{
-            position: "fixed",
-            top: 0,
-            zIndex: 1000,
-            width: "100%",
+
             padding: "0 10px",
             display: "flex",
             justifyContent: "space-between",
@@ -295,7 +292,7 @@ function Admin() {
             )}
           </div>
         </Header>
-        <Content style={{ marginTop: 64 }}>
+        <Content >
           <div style={{ padding: "20px" }}>
             <Outlet />
             <ChatWidget
