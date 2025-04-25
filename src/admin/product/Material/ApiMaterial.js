@@ -1,5 +1,6 @@
 import { message } from "antd";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const token = localStorage.getItem("token");
 
@@ -71,9 +72,9 @@ export const createMaterial = async (materialData) => {
     return response.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Chất liệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message)
+    toast.error(error.response?.data?.message)
     throw error;
   }
 };
@@ -88,7 +89,7 @@ export const existsByMaterialName = async (materialName) => {
     return response.data.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Chất liệu.";
     console.error(errorMessage);
     throw error;
   }
@@ -101,7 +102,7 @@ export const updateMaterial = async (materialId, materialData) => {
   } catch (error) {
     const errorMessage =
       error.response?.data?.message ||
-      "Có lỗi xảy ra khi cập nhật thương hiệu.";
+      "Có lỗi xảy ra khi cập nhật Chất liệu.";
     console.error(errorMessage);
     message.error(errorMessage)
     throw error;
@@ -113,7 +114,7 @@ export const deleteMaterial = async (materialId) => {
     await api.delete(`/material/delete/${materialId}`);
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi xóa thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi xóa Chất liệu.";
     console.error(errorMessage);
     throw error;
   }
@@ -124,7 +125,7 @@ export const getMaterial = async (materialId) => {
     return response.data; // Assuming you want to return the fetched data
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi get thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi get Chất liệu.";
     console.error(errorMessage);
     throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
   }

@@ -1,5 +1,6 @@
 import { message } from "antd";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const token = localStorage.getItem("token");
 
@@ -73,7 +74,7 @@ export const createSole = async (soleData) => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    message.error(error.response?.data?.message)
+    toast.error(error.response?.data?.message)
     throw error;
   }
 };

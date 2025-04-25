@@ -154,7 +154,7 @@ const Product = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchProductsData(); // Refresh data after creation
-      toast.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Tên sản phẩm đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -176,7 +176,7 @@ const Product = () => {
       fetchProductsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật Sản phẩm.");
     } finally {
       setLoading(false);
     }
@@ -188,10 +188,10 @@ const Product = () => {
       setLoading(true);
       await deleteProduct(productId);
       fetchProductsData(); // Refresh data after deletion
-      toast.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa Sản phẩm thành công.");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa Sản phẩm.");
     } finally {
       setLoading(false);
     }
@@ -211,7 +211,7 @@ const Product = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         toast.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Sản phẩm."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -547,15 +547,21 @@ const Product = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formUpdate.submit()}
-                // disabled={!isActiveUpdate}
-              >
-                Xác nhận
-              </Button>,
+             <Popconfirm
+             title="Bạn có chắc chắn muốn xác nhận không?"
+             okText="Có"
+             cancelText="Không"
+             onConfirm={() => formCreate.submit()}
+           >
+             <Button
+               key="submit"
+               type="primary"
+               loading={loading}
+               // disabled={!isActive}
+             >
+               Xác nhận
+             </Button>
+           </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin Muốn sửa...</p>

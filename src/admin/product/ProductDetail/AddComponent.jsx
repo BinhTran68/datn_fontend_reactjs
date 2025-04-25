@@ -525,7 +525,7 @@ const ProductDetailDrawer = () => {
     <Row gutter={[16, 16]}>
       <Col span={24}>
         <Card style={{ marginBottom: "1rem" }}>
-          <h6>Thông tin cơ bản</h6>
+          <h6 style={{fontWeight: "bold"}}>Thông tin cơ bản</h6>
           <Row gutter={[16, 0]}>
             <Col span={24}>
               <div>Tên sản phẩm</div>

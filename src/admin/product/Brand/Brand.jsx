@@ -169,7 +169,7 @@ const Category = () => {
       toast.success("Thương hiệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   message.error(error.message || "Có lỗi xảy ra khi tạo Thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -185,7 +185,7 @@ const Category = () => {
       fetchBrandsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật Thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -197,10 +197,10 @@ const Category = () => {
       setLoading(true);
       await deleteBrand(brandId);
       fetchBrandsData(); // Refresh data after deletion
-      toast.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa Thương hiệu thành công.");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa Thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -221,7 +221,7 @@ const Category = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         toast.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Thương hiệu."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading

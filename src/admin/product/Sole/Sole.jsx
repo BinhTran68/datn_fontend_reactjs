@@ -46,7 +46,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { color } from "framer-motion";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Sole = () => {
   const { Title } = Typography;
@@ -116,7 +116,7 @@ const Sole = () => {
 
     formUpdate.resetFields(); // Reset form sau khi submit
   };
-  
+
   // Hàm fetch dữ liệu soles
   useEffect(() => {
     fetchSolesData();
@@ -162,7 +162,7 @@ const Sole = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchSolesData(); // Refresh data after creation
-      toast.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Đế đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -399,7 +399,6 @@ const Sole = () => {
                 }));
               }}
               onPressEnter={searchName}
-
             />
           </Col>
 
@@ -412,7 +411,6 @@ const Sole = () => {
             >
               Tìm kiếm
             </Button>
-            
           </Col>
         </Row>
 
@@ -432,7 +430,7 @@ const Sole = () => {
               setRequestSearch({ name: "" });
               setPagination({ current: 1, pageSize: pagination.pageSize });
             }}
-            style={{marginLeft:"2rem"}}
+            style={{ marginLeft: "2rem" }}
           >
             Làm mới
           </Button>
@@ -451,15 +449,21 @@ const Sole = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin đế giày mới...</p>

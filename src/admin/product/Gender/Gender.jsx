@@ -45,7 +45,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Color = () => {
   const { Title } = Typography;
@@ -159,10 +159,10 @@ const Color = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchColorsData(); // Refresh data after creation
-      toast.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Giới tính đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   message.error(error.message || "Có lỗi xảy ra khi tạo Giới tính.");
     } finally {
       setLoading(false);
     }
@@ -180,7 +180,7 @@ const Color = () => {
       fetchColorsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật Giới tính.");
     } finally {
       setLoading(false);
     }
@@ -192,10 +192,10 @@ const Color = () => {
       setLoading(true);
       await deleteColor(brandId);
       fetchColorsData(); // Refresh data after deletion
-      toast.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa Giới tính thành công.");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa Giới tính.");
     } finally {
       setLoading(false);
     }
@@ -215,7 +215,7 @@ const Color = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         toast.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Giới tính."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -437,7 +437,7 @@ const Color = () => {
               setRequestSearch({ name: "" });
               setPagination({ current: 1, pageSize: pagination.pageSize });
             }}
-            style={{marginLeft:"2rem"}}
+            style={{ marginLeft: "2rem" }}
           >
             Làm mới
           </Button>
@@ -456,15 +456,21 @@ const Color = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin giới tính mới...</p>
