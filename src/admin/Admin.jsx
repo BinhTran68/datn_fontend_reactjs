@@ -132,6 +132,16 @@ function Admin() {
       <Sider
         width={230}
         collapsed={collapse}
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'sticky',
+          insetInlineStart: 0,
+          top: 0,
+          bottom: 0,
+          scrollbarWidth: 'thin',
+          scrollbarGutter: 'stable',
+        }}
         collapsible
         trigger={null}
         theme={darkTheme ? "dark" : "light"}
@@ -154,7 +164,10 @@ function Admin() {
       <Layout>
         <Header
           style={{
-
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            width: '100%',
             padding: "0 10px",
             display: "flex",
             justifyContent: "space-between",
