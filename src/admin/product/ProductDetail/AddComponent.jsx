@@ -789,23 +789,23 @@ const ProductDetailDrawer = () => {
             </Col>
           </Row>
         </Card>
+        {tableData.length > 0 && (
+          <Row gutter={[16, 16]}>
+            <Col>
+              <Button type="primary" onClick={showConfirm}>
+                Lưu thông tin
+              </Button>
+            </Col>
+            <Col>
+              <Button type="primary" onClick={() => setIsModalVisible(true)}>
+                Chỉnh số lượng và giá chung
+              </Button>
+            </Col>
+          </Row>
+        )}
       </Col>
       <Col span={24}>
         <Row gutter={[16, 16]}>
-          {tableData.length > 0 && (
-            <Row gutter={[16, 16]}>
-              <Col>
-                <Button type="primary" onClick={showConfirm}>
-                  Lưu thông tin
-                </Button>
-              </Col>
-              <Col>
-                <Button type="primary" onClick={() => setIsModalVisible(true)}>
-                  Chỉnh số lượng và giá chung
-                </Button>
-              </Col>
-            </Row>
-          )}
           {groupedData.map((group) => (
             <Col span={24} key={group.colorName}>
               <Card title={`Sản phẩm chi tiết: ${group.colorName}`}>
