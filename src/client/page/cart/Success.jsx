@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { apiStartCheck, apiStopCheck } from "./sussess";
 import { clearBill } from "./bill";
+import { formatVND } from "../../../helpers/Helpers";
 
 const { Title, Text } = Typography;
 
@@ -11,7 +12,7 @@ function Success() {
   const navigate = useNavigate();
 
   // Lấy dữ liệu từ URL
-  const amount = searchParams.get("amount") || "0";
+  const amountParam = searchParams.get("amount") || "0";
   const apptransid = searchParams.get("apptransid") || "Không xác định";
   const status = searchParams.get("status") || "0";
   const itemData = searchParams.get("item"); // Lấy dữ liệu sản phẩm (JSON string)
@@ -39,6 +40,8 @@ function Success() {
       apiStopCheck()
     }
   }, []);
+  const amount = Number(amountParam)|| 0; 
+  const formattedAmount = amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
   return (
     <Card style={{ backgroundColor: "white", padding: 20, minHeight: 600 }}>
       {/* <div>Mã đơn hàng: {billCode}</div> */}
@@ -47,7 +50,7 @@ function Success() {
         title={isSuccess ? "Cảm ơn bạn đã mua hàng!" : "Thanh toán thất bại!"}
         subTitle={
           isSuccess
-            ? `Đơn hàng của bạn đã được đặt thành công với số tiền ${amount} VND.`
+            ? `Đơn hàng của bạn đã được đặt thành công với số tiền ${formattedAmount}.`
             : "Có lỗi xảy ra trong quá trình thanh toán, vui lòng thử lại!"
         }
         extra={[
