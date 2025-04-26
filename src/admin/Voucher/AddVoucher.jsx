@@ -48,11 +48,11 @@ const columnsCustomers = [
         dataIndex: 'fullName',
         key: 'fullName',
     },
-    {
-        title: 'CCCD',
-        dataIndex: 'citizenId',
-        key: 'citizenId',
-    },
+    // {
+    //     title: 'CCCD',
+    //     dataIndex: 'citizenId',
+    //     key: 'citizenId',
+    // },
     {
         title: 'Email',
         dataIndex: 'email',
@@ -67,7 +67,8 @@ const columnsCustomers = [
         title: 'Ngày sinh',
         dataIndex: 'dateBirth',
         key: 'dateBirth',
-    },
+        render: (date) => date ? dayjs(date).format('DD/MM/YYYY') : '',
+    }
 
 ];
 
@@ -203,7 +204,7 @@ const AddVoucher = () => {
                     fullName: item.fullName,
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
-                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    dateBirth: item.dateBirth,
                     status: item.status,
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
@@ -245,7 +246,7 @@ const AddVoucher = () => {
                     fullName: item.fullName,
                     CitizenId: item.citizenId,
                     phoneNumber: item.phoneNumber,
-                    dateBirth: moment(item.dateBirth).format('YYYY-MM-DD HH:mm:ss'),
+                    dateBirth: item.dateBirth,
                     status: item.status,
                     email: item.email,
                     gender: item.gender === 1 ? 'Nam' : 'Nữ',
@@ -631,15 +632,6 @@ const AddVoucher = () => {
                                         Làm mới bộ lọc
                                     </Button>
 
-                                    <Link to="/admin/customer-create">
-                                        <Button
-                                            type="primary"
-                                            icon={<PlusOutlined/>}
-                                            style={{marginRight: "10px"}}
-                                        >
-                                            Thêm mới
-                                        </Button>
-                                    </Link>
 
 
                                 </div>

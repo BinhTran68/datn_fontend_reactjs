@@ -993,7 +993,7 @@ const ProductDetailDrawer = () => {
         >
           <Row gutter={[16, 0]}>
             <Col>
-              <h6>Thông tin cơ bản</h6>
+              <h5>Thông tin cơ bản</h5>
             </Col>
             <Col span={24}>
               <div>Tên sản phẩm</div>
