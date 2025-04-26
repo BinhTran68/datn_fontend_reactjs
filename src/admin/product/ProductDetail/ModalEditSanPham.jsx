@@ -263,7 +263,7 @@ const exits = async (productData) => {
       .max(999999, "Số lượng không được vượt quá 99999"), // Thay đổi giá trị tối đa theo nhu cầu
     price: Yup.number()
       .required("Giá bán là bắt buộc")
-      .min(1, "Giá bán phải lớn hơn  0")
+      .min(1000, "Giá bán phải lớn hơn hoặc bằng 1.000 VNĐ")
       .max(99999999, "Giá bán không được vượt quá 99.999.999 VNĐ"), // Thay đổi giá trị tối đa theo nhu cầu
     weight: Yup.number()
       .required("Cân nặng là bắt buộc")

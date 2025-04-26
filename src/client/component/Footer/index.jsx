@@ -17,7 +17,7 @@ function Home() {
 
   return (
     <>
-      <div className={clsx(stype.footer, "border-top border-2 py-4")} style={{background: "linear-gradient(to right, #f8f9fa, #e9ecef)"}}>
+      <div className={clsx(stype.footer, "border-top border-2 py-4")} style={{background: "white"}}>
         <div className="container">
           <div className="row justify-content-between">
             {/* Company info column */}
@@ -175,7 +175,7 @@ function Home() {
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+          background: linear-gradient(90deg, transparent, rgba(168, 52, 52, 0.8), transparent);
           animation: shine 2s infinite;
         }
         

@@ -214,7 +214,7 @@ const FilterSelect = ({
   return (
     <Row gutter={[16, 16]}>
       <h5 className="p-2" style={{ color: `${COLORS.primary}` }}>
-        Bộ Lọc tìm Kiếm
+        Bộ Lọc Tìm Kiếm
       </h5>
       {/* Select sản phẩm */}
       <Col>
@@ -319,7 +319,7 @@ const FilterSelect = ({
       {/* Button reset filter */}
       <Col>
         <Button onClick={handleResetFilter} type="primary">
-          Xóa Bộ lọc
+          Xóa bộ lọc
         </Button>
       </Col>
     </Row>

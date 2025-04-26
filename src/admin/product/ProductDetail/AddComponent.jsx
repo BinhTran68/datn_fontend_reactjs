@@ -99,8 +99,7 @@ const ProductDetailDrawer = () => {
     cleanUpImageRef.current = cleanUpImage;
   }, [cleanUpImage]);
   useEffect(() => {
-    console.log("dữ liiwu",tableData);
-    
+    console.log("dữ liiwu", tableData);
   }, [tableData]);
   useEffect(() => {
     return () => {
@@ -168,14 +167,14 @@ const ProductDetailDrawer = () => {
       }));
     }
   }, [
-        dataSelectProduct,
-        dataSelectSize,
-        dataSelectColor,
-        dataSelectBrand,
-        dataSelectGender,
-        dataSelectMaterial,
-        dataSelectSole,
-        dataSelectType,
+    dataSelectProduct,
+    dataSelectSize,
+    dataSelectColor,
+    dataSelectBrand,
+    dataSelectGender,
+    dataSelectMaterial,
+    dataSelectSole,
+    dataSelectType,
   ]);
 
   // Cloudinary functions
@@ -204,7 +203,25 @@ const ProductDetailDrawer = () => {
       )
     );
   };
+  const showConfirm = () => {
+    Modal.confirm({
+      title: "Xác nhận thêm Sản phẩm",
+      content:
+        "Bạn có chắc chắn muốn thêm các chi tiết của sản phẩm này không?",
+      okText: "Xác nhận",
 
+      okButtonProps: {
+        style: {
+          backgroundColor: "#ff974d", // Nền cam
+          borderColor: "#ff974d", // Viền cam
+          color: "#fff", // Chữ trắng để dễ nhìn
+        },
+      },
+      cancelText: "Hủy",
+      centered: true,
+      onOk: handleCreateProductDetail, // Gọi hàm handleOk khi nhấn xác nhận
+    });
+  };
   const onChange = (color, { fileList }) => {
     const updatedImages = fileList.map((file) => ({
       url: file.response?.url || file.url,
@@ -212,7 +229,9 @@ const ProductDetailDrawer = () => {
     }));
     setTableData((prev) =>
       prev.map((item) =>
-        item.color === color ? { ...item, image: updatedImages.slice(0, 6) } : item
+        item.color === color
+          ? { ...item, image: updatedImages.slice(0, 6) }
+          : item
       )
     );
   };
@@ -229,7 +248,9 @@ const ProductDetailDrawer = () => {
           item.color === color
             ? {
                 ...item,
-                image: item.image.filter((img) => img.publicId !== file.response.public_id),
+                image: item.image.filter(
+                  (img) => img.publicId !== file.response.public_id
+                ),
               }
             : item
         )
@@ -238,7 +259,9 @@ const ProductDetailDrawer = () => {
   };
 
   const onPreview = async (file) => {
-    let src = file.url || (file.originFileObj && URL.createObjectURL(file.originFileObj));
+    let src =
+      file.url ||
+      (file.originFileObj && URL.createObjectURL(file.originFileObj));
     if (src) {
       const image = new Image();
       image.src = src;
@@ -248,7 +271,11 @@ const ProductDetailDrawer = () => {
   };
 
   // Handlers
-  const generateTableData = (selectedColors, selectedSizes, selectedProduct) => {
+  const generateTableData = (
+    selectedColors,
+    selectedSizes,
+    selectedProduct
+  ) => {
     if (!selectedColors.length || !selectedSizes.length || !selectedProduct) {
       setTableData([]);
       return;
@@ -263,32 +290,34 @@ const ProductDetailDrawer = () => {
         return;
       }
 
-      const variants = selectedSizes.map((sizeId) => {
-        const sizeItem = sizes.find((item) => item.id === sizeId);
-        if (!sizeItem) {
-          console.error("Missing size:", sizeId);
-          return null;
-        }
-        return {
-          key: `${colorId}-${sizeId}`,
-          colorId,
-          sizeId,
-          productId: selectedProduct,
-          productName: `${productItem.productName} [ ${sizeItem.sizeName}-${colorItem.colorName} ]`,
-          quantity: 1,
-          price: 1,
-          weight: 500,
-          image: [],
-          status: 1,
-          color: colorId,
-          brandId: request.brandId,
-          genderId: request.genderId,
-          materialId: request.materialId,
-          typeId: request.typeId,
-          soleId: request.soleId,
-          description: request.description,
-        };
-      }).filter(Boolean);
+      const variants = selectedSizes
+        .map((sizeId) => {
+          const sizeItem = sizes.find((item) => item.id === sizeId);
+          if (!sizeItem) {
+            console.error("Missing size:", sizeId);
+            return null;
+          }
+          return {
+            key: `${colorId}-${sizeId}`,
+            colorId,
+            sizeId,
+            productId: selectedProduct,
+            productName: `${productItem.productName} [ ${sizeItem.sizeName}-${colorItem.colorName} ]`,
+            quantity: 1,
+            price: 1000,
+            weight: 500,
+            image: [],
+            status: 1,
+            color: colorId,
+            brandId: request.brandId,
+            genderId: request.genderId,
+            materialId: request.materialId,
+            typeId: request.typeId,
+            soleId: request.soleId,
+            description: request.description,
+          };
+        })
+        .filter(Boolean);
 
       newData.push(...variants);
     });
@@ -330,7 +359,9 @@ const ProductDetailDrawer = () => {
     if (numericValue < 0) {
       notification.error({
         message: "Lỗi nhập liệu",
-        description: `${dataIndex === "quantity" ? "Số lượng" : "Giá"} không được nhỏ hơn 0`,
+        description: `${
+          dataIndex === "quantity" ? "Số lượng" : "Giá"
+        } không được nhỏ hơn 0`,
       });
       return;
     }
@@ -426,7 +457,7 @@ const ProductDetailDrawer = () => {
       dataIndex: "price",
       render: (text, record) => (
         <InputNumber
-          min={1}
+          min={1000}
           max={99999999}
           step={10000}
           maxLength={8}
@@ -441,7 +472,7 @@ const ProductDetailDrawer = () => {
       dataIndex: "weight",
       render: (text, record) => (
         <InputNumber
-          min={1}
+          min={100}
           max={9999}
           maxLength={4}
           value={record.weight}
@@ -465,7 +496,8 @@ const ProductDetailDrawer = () => {
       fixed: "right",
       render: (text, record) => {
         const isFirst =
-          record.key === tableData.find((item) => item.color === record.color)?.key;
+          record.key ===
+          tableData.find((item) => item.color === record.color)?.key;
         const imageList = Array.isArray(record.image) ? record.image : [];
         return isFirst ? (
           <Form.Item>
@@ -507,7 +539,7 @@ const ProductDetailDrawer = () => {
     <Row gutter={[16, 16]}>
       <Col span={24}>
         <Card style={{ marginBottom: "1rem" }}>
-          <h6>Thông tin cơ bản</h6>
+          <h6 style={{ fontWeight: "bold" }}>Thông tin cơ bản</h6>
           <Row gutter={[16, 0]}>
             <Col span={24}>
               <div>Tên sản phẩm</div>
@@ -540,7 +572,10 @@ const ProductDetailDrawer = () => {
               <ReactQuill
                 theme="snow"
                 value={request.description}
-                onChange={(value) => handleAttributeChange("description", value)}
+                onChange={(value) =>
+                  handleAttributeChange("description", value)
+                }
+                maxLength={1000}
               />
             </Col>
           </Row>
@@ -557,7 +592,9 @@ const ProductDetailDrawer = () => {
                     style={{ width: "15rem" }}
                     placeholder="Chọn thương hiệu"
                     value={request.brandId}
-                    onChange={(value) => handleAttributeChange("brandId", value)}
+                    onChange={(value) =>
+                      handleAttributeChange("brandId", value)
+                    }
                     options={dataSelectBrand.map((b) => ({
                       value: b.id,
                       label: b.brandName,
@@ -583,7 +620,9 @@ const ProductDetailDrawer = () => {
                     style={{ width: "15rem" }}
                     placeholder="Chọn giới tính"
                     value={request.genderId}
-                    onChange={(value) => handleAttributeChange("genderId", value)}
+                    onChange={(value) =>
+                      handleAttributeChange("genderId", value)
+                    }
                     options={dataSelectGender.map((g) => ({
                       value: g.id,
                       label: g.genderName,
@@ -601,7 +640,9 @@ const ProductDetailDrawer = () => {
                     style={{ width: "15rem" }}
                     placeholder="Chọn chất liệu"
                     value={request.materialId}
-                    onChange={(value) => handleAttributeChange("materialId", value)}
+                    onChange={(value) =>
+                      handleAttributeChange("materialId", value)
+                    }
                     options={dataSelectMaterial.map((m) => ({
                       value: m.id,
                       label: m.materialName,
@@ -670,9 +711,10 @@ const ProductDetailDrawer = () => {
                 </Col>
               </Row>
             </Col>
-           
           </Row>
-          <Row> <Col span={8}>
+          <Row>
+            {" "}
+            <Col span={8}>
               <div>Màu sắc</div>
               <Row gutter={[5, 0]}>
                 <Col>
@@ -686,7 +728,13 @@ const ProductDetailDrawer = () => {
                     options={dataSelectColor.map((c) => ({
                       value: c.id,
                       label: (
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
                           <div
                             style={{
                               width: "1.2rem",
@@ -738,7 +786,8 @@ const ProductDetailDrawer = () => {
                   </Button>
                 </Col>
               </Row>
-            </Col></Row>
+            </Col>
+          </Row>
         </Card>
       </Col>
       <Col span={24}>
@@ -746,7 +795,7 @@ const ProductDetailDrawer = () => {
           {tableData.length > 0 && (
             <Row gutter={[16, 16]}>
               <Col>
-                <Button type="primary" onClick={handleCreateProductDetail}>
+                <Button type="primary" onClick={showConfirm}>
                   Lưu thông tin
                 </Button>
               </Col>
@@ -783,7 +832,7 @@ const ProductDetailDrawer = () => {
         onCancel={() => setOpenCreateProduct(false)}
       />
       <Modal
-        title="Set số lượng và giá chung"
+        title="Chỉnh số lượng và giá chung"
         open={isModalVisible}
         onCancel={handleModalCancel}
         footer={[
@@ -796,7 +845,26 @@ const ProductDetailDrawer = () => {
         ]}
       >
         <Form form={formModalSLVaGia} layout="vertical">
-          <Form.Item label="Số lượng chung" name="commonQuantity" rules={[{ required: true }]}>
+          <Form.Item
+            label="Số lượng chung"
+            name="commonQuantity"
+            rules={[
+              {
+                required: true,
+                message: "Số lượng không được để trống và lớn hơn hoặc bằng 1",
+              },
+              {
+                type: "number",
+                min: 1,
+                message: "Số lượng phải lớn hơn 0",
+              },
+              {
+                type: "number",
+                max: 9999,
+                message: "Số lượng không được lớn hơn 9999",
+              },
+            ]}
+          >
             <InputNumber
               style={{ width: "100%" }}
               min={1}
@@ -807,10 +875,21 @@ const ProductDetailDrawer = () => {
               suffix="Đôi"
             />
           </Form.Item>
-          <Form.Item label="Giá chung" name="commonPrice" rules={[{ required: true }]}>
+          <Form.Item
+            label="Giá chung"
+            name="commonPrice"
+            rules={[
+              { required: true, message: "Giá không được để trống" },
+              {
+                type: "number",
+                min: 1000,
+                message: "Giá phải lớn hơn 1000",
+              },
+            ]}
+          >
             <InputNumber
               style={{ width: "100%" }}
-              min={1}
+              min={100}
               max={99999999}
               maxLength={8}
               step={10000}
@@ -819,7 +898,21 @@ const ProductDetailDrawer = () => {
               suffix="VNĐ"
             />
           </Form.Item>
-          <Form.Item label="Cân nặng chung" name="commonWeight" rules={[{ required: true }]}>
+          <Form.Item
+            label="Cân nặng chung"
+            name="commonWeight"
+            rules={[
+              {
+                required: true,
+                message: "Cân nặng không được để trống",
+              },
+              {
+                type: "number",
+                min: 100,
+                message: "Cân nặng phải lớn hơn 100",
+              },
+            ]}
+          >
             <InputNumber
               style={{ width: "100%" }}
               min={1}

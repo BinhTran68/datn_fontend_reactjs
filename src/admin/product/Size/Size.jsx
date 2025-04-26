@@ -45,7 +45,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Size = () => {
   const { Title } = Typography;
@@ -160,7 +160,7 @@ const Size = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchSizesData(); // Refresh data after creation
-      toast.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Kích cỡ đã được tạo thành công!");
     } catch (error) {
       console.error(error);
       //   message.error(error.toast || "Có lỗi xảy ra khi tạo thương hiệu.");
@@ -181,7 +181,7 @@ const Size = () => {
       fetchSizesData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật kích cỡ.");
     } finally {
       setLoading(false);
     }
@@ -193,10 +193,10 @@ const Size = () => {
       setLoading(true);
       await deleteSize(sizeId);
       fetchSizesData(); // Refresh data after deletion
-      toast.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa Kích cỡ thành công.");
     } catch (error) {
       console.error(error);
-      toast.error(error.toast || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.toast || "Có lỗi xảy ra khi xóa Kích cỡ.");
     } finally {
       setLoading(false);
     }
@@ -216,7 +216,7 @@ const Size = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         toast.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Kích cỡ."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -397,7 +397,6 @@ const Size = () => {
                 }));
               }}
               onPressEnter={searchName}
-
             />
           </Col>
 
@@ -410,7 +409,6 @@ const Size = () => {
             >
               Tìm kiếm
             </Button>
-            
           </Col>
         </Row>
 
@@ -430,7 +428,7 @@ const Size = () => {
               setRequestSearch({ name: "" });
               setPagination({ current: 1, pageSize: pagination.pageSize });
             }}
-            style={{marginLeft:"2rem"}}
+            style={{ marginLeft: "2rem" }}
           >
             Làm mới
           </Button>
@@ -449,15 +447,21 @@ const Size = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin kích cỡ mới...</p>
@@ -491,7 +495,10 @@ const Size = () => {
                           new Error(`Tên kích cỡ tối đa 20 ký tự`)
                         );
                       }
-                      if (Number(value.trim()) > 49||Number(value.trim()) <36) {
+                      if (
+                        Number(value.trim()) > 49 ||
+                        Number(value.trim()) < 36
+                      ) {
                         return Promise.reject(
                           new Error(`kích cỡ nằm trong khoảng 36 đến 49`)
                         );

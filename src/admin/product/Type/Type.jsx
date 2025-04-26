@@ -46,7 +46,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Type = () => {
   const { Title } = Typography;
@@ -118,8 +118,6 @@ const Type = () => {
     });
   };
 
-
-
   const [errorMessageUpdate, setErrorMessageUpdate] = useState("");
   const [formCreate] = Form.useForm();
   const [formUpdate] = Form.useForm();
@@ -153,7 +151,6 @@ const Type = () => {
 
     formUpdate.resetFields(); // Reset form sau khi submit
   };
-  
 
   // Hàm fetch dữ liệu types
   useEffect(() => {
@@ -200,10 +197,10 @@ const Type = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchTypesData(); // Refresh data after creation
-      // toast.success("Thương hiệu đã được tạo thành công!");
+      toast.success("Loại giày đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   toast.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+        // toast.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
     } finally {
       setLoading(false);
     }
@@ -341,7 +338,7 @@ const Type = () => {
         return (
           <>
             <Row gutter={[16, 16]}>
-            <Col>
+              <Col>
                 <Tooltip title="Thay đổi trạng thái">
                   <Switch
                     checked={record.status === "HOAT_DONG"}
@@ -389,7 +386,6 @@ const Type = () => {
                   </Button>
                 </Popconfirm>
               </Col> */}
-           
             </Row>
           </>
         );
@@ -445,7 +441,6 @@ const Type = () => {
                 }));
               }}
               onPressEnter={searchName}
-
             />
           </Col>
 
@@ -477,7 +472,7 @@ const Type = () => {
               setRequestSearch({ name: "" });
               setPagination({ current: 1, pageSize: pagination.pageSize });
             }}
-            style={{marginLeft:"2rem"}}
+            style={{ marginLeft: "2rem" }}
           >
             Làm mới
           </Button>
@@ -496,15 +491,21 @@ const Type = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin loại giày mới...</p>

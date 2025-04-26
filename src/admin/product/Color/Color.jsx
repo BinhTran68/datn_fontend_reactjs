@@ -46,7 +46,7 @@ import clsx from "clsx";
 import { debounce } from "lodash";
 import { FaEdit } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Color = () => {
   const { Title } = Typography;
@@ -196,7 +196,7 @@ const Color = () => {
       toast.success("Màu sắc đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   message.error(error.message || "Có lỗi xảy ra khi tạo Màu sắc.");
     } finally {
       setLoading(false);
       setRequest({
@@ -219,7 +219,7 @@ const Color = () => {
       fetchColorsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật Màu sắc.");
     } finally {
       setLoading(false);
       setRequest({
@@ -236,10 +236,10 @@ const Color = () => {
       setLoading(true);
       await deleteColor(brandId);
       fetchColorsData(); // Refresh data after deletion
-      toast.success("Xóa thương hiệu thành công.");
+      toast.success("Xóa Màu sắc thành công.");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      toast.error(error.message || "Có lỗi xảy ra khi xóa Màu sắc.");
     } finally {
       setLoading(false);
     }
@@ -260,7 +260,7 @@ const Color = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         toast.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Màu sắc."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -439,7 +439,6 @@ const Color = () => {
                 }));
               }}
               onPressEnter={searchName}
-
             />
           </Col>
 
@@ -471,7 +470,7 @@ const Color = () => {
               setRequestSearch({ name: "" });
               setPagination({ current: 1, pageSize: pagination.pageSize });
             }}
-            style={{marginLeft:"2rem"}}
+            style={{ marginLeft: "2rem" }}
           >
             Làm mới
           </Button>
@@ -490,15 +489,21 @@ const Color = () => {
               >
                 Hủy
               </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                onClick={() => formCreate.submit()}
-                // disabled={!isActive}
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin giới tính mới...</p>

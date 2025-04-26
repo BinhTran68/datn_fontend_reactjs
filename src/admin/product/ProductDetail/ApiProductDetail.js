@@ -327,7 +327,7 @@ export const createProductDetailList = async (request) => {
     const errorMessage =
       error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
     console.error(errorMessage);
-    toast.error(error.response?.data?.message);
+    // toast.error(error.response?.data?.message);
     throw error;
   }
 };

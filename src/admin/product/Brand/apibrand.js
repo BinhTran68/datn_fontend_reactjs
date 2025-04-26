@@ -1,5 +1,6 @@
 import { message } from "antd";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const token = localStorage.getItem("token");
 
@@ -91,7 +92,7 @@ export const createBrand = async (brandData) => {
     return response.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Hãng.";
     console.error(errorMessage);
     toast.error(error.response?.data?.message)
     throw error;
@@ -108,7 +109,7 @@ export const existsByBrandName = async (brandName) => {
     return response.data.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Hãng.";
     console.error(errorMessage);
     throw error;
   }
@@ -121,7 +122,7 @@ export const updateBrand = async (brandId, brandData) => {
   } catch (error) {
     const errorMessage =
       error.response?.data?.message ||
-      "Có lỗi xảy ra khi cập nhật thương hiệu.";
+      "Có lỗi xảy ra khi cập nhật Hãng.";
     console.error(errorMessage);
     toast.error(errorMessage)
     throw error;
@@ -133,7 +134,7 @@ export const deleteBrand = async (brandId) => {
     await api.delete(`/brand/${brandId}`);
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi xóa thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi xóa Hãng.";
     console.error(errorMessage);
     throw error;
   }
@@ -144,7 +145,7 @@ export const getBrand = async (brandId) => {
     return response.data; // Assuming you want to return the fetched data
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi get thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi get Hãng.";
     console.error(errorMessage);
     throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
   }

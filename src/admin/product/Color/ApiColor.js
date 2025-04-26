@@ -72,7 +72,7 @@ export const createColor = async (colorData) => {
     return response.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Màu sắc.";
     console.error(errorMessage);
     toast.error(error.response?.data?.message)
     throw error;
@@ -89,7 +89,7 @@ export const existsByColorName = async (colorName) => {
     return response.data.data;
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi tạo thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi tạo Màu sắc.";
     console.error(errorMessage);
     throw error;
   }
@@ -102,7 +102,7 @@ export const updateColor = async (colorId, colorData) => {
   } catch (error) {
     const errorMessage =
       error.response?.data?.message ||
-      "Có lỗi xảy ra khi cập nhật thương hiệu.";
+      "Có lỗi xảy ra khi cập nhật Màu sắc.";
     console.error(errorMessage);
     message.error(errorMessage)
     throw error;
@@ -114,7 +114,7 @@ export const deleteColor = async (colorId) => {
     await api.delete(`/color/delete/${colorId}`);
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi xóa thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi xóa Màu sắc.";
     console.error(errorMessage);
     throw error;
   }
@@ -125,7 +125,7 @@ export const getColor = async (colorId) => {
     return response.data; // Assuming you want to return the fetched data
   } catch (error) {
     const errorMessage =
-      error.response?.data?.message || "Có lỗi xảy ra khi get thương hiệu.";
+      error.response?.data?.message || "Có lỗi xảy ra khi get Màu sắc.";
     console.error(errorMessage);
     throw new Error(errorMessage); // It's a good practice to throw a new error with a clear message
   }

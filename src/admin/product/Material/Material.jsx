@@ -164,10 +164,10 @@ const Material = () => {
       setPagination({ current: 1, pageSize: pagination.pageSize });
 
       fetchMaterialsData(); // Refresh data after creation
-      message.success("Thương hiệu đã được tạo thành công!");
+      message.success("Chất liệu đã được tạo thành công!");
     } catch (error) {
       console.error(error);
-      //   message.error(error.message || "Có lỗi xảy ra khi tạo thương hiệu.");
+      //   message.error(error.message || "Có lỗi xảy ra khi tạo Chất liệu.");
     } finally {
       setLoading(false);
     }
@@ -185,7 +185,7 @@ const Material = () => {
       fetchMaterialsData(); // Refresh data after update
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi cập nhật thương hiệu.");
+      message.error(error.message || "Có lỗi xảy ra khi cập nhật Chất liệu.");
     } finally {
       setLoading(false);
     }
@@ -197,10 +197,10 @@ const Material = () => {
       setLoading(true);
       await deleteMaterial(materialId);
       fetchMaterialsData(); // Refresh data after deletion
-      message.success("Xóa thương hiệu thành công.");
+      message.success("Xóa Chất liệu thành công.");
     } catch (error) {
       console.error(error);
-      message.error(error.message || "Có lỗi xảy ra khi xóa thương hiệu.");
+      message.error(error.message || "Có lỗi xảy ra khi xóa Chất liệu.");
     } finally {
       setLoading(false);
     }
@@ -220,7 +220,7 @@ const Material = () => {
         setOpenUpdate(true); // Hiển thị modal
       } catch (error) {
         message.error(
-          error.message || "Có lỗi xảy ra khi tải thông tin thương hiệu."
+          error.message || "Có lỗi xảy ra khi tải thông tin Chất liệu."
         );
       } finally {
         setLoading(false); // Tắt trạng thái loading
@@ -454,15 +454,21 @@ const Material = () => {
               >
                 Hủy
               </Button>,
+              <Popconfirm
+              title="Bạn có chắc chắn muốn xác nhận không?"
+              okText="Có"
+              cancelText="Không"
+              onConfirm={() => formCreate.submit()}
+            >
               <Button
                 key="submit"
                 type="primary"
                 loading={loading}
-                onClick={() => formCreate.submit()}
                 // disabled={!isActive}
               >
                 Xác nhận
-              </Button>,
+              </Button>
+            </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin chất liệu mới...</p>

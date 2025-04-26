@@ -112,7 +112,7 @@ function ProductDetail() {
   const navigate = useNavigate();
   useEffect(() => {
     window.scrollTo(0, 0);
-  },[])
+  }, []);
   useEffect(() => {
     // console.log(id);
     console.log(
@@ -125,7 +125,7 @@ function ProductDetail() {
     getSizesOfProduct(productId);
     getAllProductHadViewsDescs();
     clearBill();
-    clearVoucher()
+    clearVoucher();
   }, [productId, colorId, sizeId]);
   // Khi thay đổi color, cập nhật danh sách size tương ứng
   useEffect(() => {
@@ -336,8 +336,8 @@ function ProductDetail() {
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                      minimumFractionDigits: 1, // Hiển thị tối thiểu 2 chữ số sau dấu phẩy
-                      maximumFractionDigits: 1, // Giới hạn tối đa 2 chữ số sau dấu phẩy
+                      // minimumFractionDigits: 1, // Hiển thị tối thiểu 2 chữ số sau dấu phẩy
+                      // maximumFractionDigits: 1, // Giới hạn tối đa 2 chữ số sau dấu phẩy
                     }).format(
                       getProductDetail.price -
                         (getProductDetail.price *
@@ -355,11 +355,13 @@ function ProductDetail() {
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
-                        minimumFractionDigits: 1,
-                        maximumFractionDigits: 1,
+                        // minimumFractionDigits: 1,
+                        // maximumFractionDigits: 1,
                       }).format(getProductDetail.price)}
                     </span>
-                    <sup style={{fontSize:"2rem", color:"red"}}>-{getProductDetail.promotion?.discountValue}%</sup>
+                    <sup style={{ fontSize: "2rem", color: "red" }}>
+                      -{getProductDetail.promotion?.discountValue}%
+                    </sup>
                   </div>
                 ) : (
                   new Intl.NumberFormat("vi-VN", {
@@ -584,11 +586,12 @@ function ProductDetail() {
                         productDetailId: getProductDetail.id,
                         quantityAddCart: quantityAddCart,
                         price: getProductDetail.promotion?.discountValue
-                        ? getProductDetail.price -
-                          (getProductDetail.price *
-                            getProductDetail.promotion.discountValue) /
-                            100
-                        : getProductDetail.price,                        productName: getProductDetail.productName,
+                          ? getProductDetail.price -
+                            (getProductDetail.price *
+                              getProductDetail.promotion.discountValue) /
+                              100
+                          : getProductDetail.price,
+                        productName: getProductDetail.productName,
                         image: getProductDetail.image[0]?.url || "",
                         sizeName: getProductDetail.sizeName,
                         colorName: getProductDetail.colorName,
@@ -711,42 +714,13 @@ function ProductDetail() {
           >
             Mô TẢ SẢN PHẨM
           </Col>
-          <Col style={{ marginLeft: "1rem", margin: "1rem" }}>
-            {getProductDetail.description}
-            ▶️ HƯỚNG DẪN SỬ DỤNG VÀ BẢO QUẢN GIÀY : Để đôi giày của bạn luôn bền
-            đẹp và giữ được chất lượng lâu dài, vui lòng lưu ý một số hướng dẫn
-            sau:
-            <br /> 👉Giặt giày đúng cách: Tránh sử dụng các chất tẩy rửa mạnh
-            như thuốc tẩy, thay vào đó bạn có thể sử dụng các nguyên liệu tự
-            nhiên để làm sạch như vỏ chuối, sữa tươi, giấm… Giúp giày sạch sẽ mà
-            không làm hư hại chất liệu.
-            <br /> 👉Không ngâm giày quá lâu trong nước: Việc ngâm giày trong
-            nước lâu có thể làm giảm độ bền của chất liệu, đặc biệt là các loại
-            da, vải hay cao su.
-            <br /> 👉Vệ sinh thường xuyên với sản phẩm sáng màu: Với các đôi
-            giày có màu sáng, bạn nên vệ sinh giày thường xuyên để giữ màu sắc
-            tươi mới và tránh vết bẩn bám lâu ngày khó làm sạch.
-            <br /> 👉Cất giữ giày đúng cách: Tránh để giày ướt hoặc ẩm ướt khi
-            cất giữ, vì điều này có thể gây mùi và làm giảm tuổi thọ của giày.
-            Hãy để giày khô thoáng trước khi cất trong tủ.
-            <br /> ▶️CHÍNH SÁCH BẢO HÀNH VÀ DỊCH VỤ CHĂM SÓC KHÁCH HÀNG Chúng
-            tôi cam kết mang đến sự hài lòng tuyệt đối cho khách hàng với chính
-            sách bảo hành và chăm sóc chu đáo:
-            <br /> 👉Bảo hành 15 ngày: Bạn sẽ được bảo hành miễn phí trong 15
-            ngày kể từ ngày nhận sản phẩm nếu giày bị lỗi từ nhà sản xuất hoặc
-            không đúng mẫu mã. Miễn phí đổi trả: Nếu sản phẩm gặp phải sự cố như
-            sai size, lỗi sản phẩm, chúng tôi sẽ hỗ trợ đổi trả hoàn toàn miễn
-            phí. Chính sách đổi sản phẩm: Quý khách có thể đổi sản phẩm mới có
-            giá trị tương đương hoặc cao hơn so với sản phẩm cũ, giúp bạn dễ
-            dàng tìm được sản phẩm phù hợp hơn.
-            <br /> 👉Chỉ đổi trả 1 lần: Mỗi sản phẩm chỉ có thể đổi trả 1 lần
-            duy nhất, vì vậy hãy chắc chắn chọn lựa sản phẩm kỹ càng trước khi
-            quyết định đổi.
-            <br /> ▶️CẢM ƠN QUÝ KHÁCH Chúng tôi rất cảm ơn quý khách đã tin
-            tưởng và ủng hộ shop. Đừng quên nhấn "Theo dõi" để cập nhật những
-            sản phẩm mới nhất, ưu đãi hấp dẫn, cũng như thông tin giảm giá đặc
-            biệt từ shop. Chúng tôi luôn sẵn sàng phục vụ và mang đến cho bạn
-            những trải nghiệm mua sắm tuyệt vời!
+          <Col style={{ marginLeft: "1rem", margin: "1rem" ,justifyContent:"start"}} span={24}>
+            {/* {getProductDetail.description} */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: getProductDetail.description || "Không có mô tả",
+              }}
+            />
           </Col>
         </Row>
       </Content>
@@ -766,7 +740,7 @@ function ProductDetail() {
             ĐÁNH GIÁ SẢN PHẨM
           </Col>
           <Col span={24}>
-            <CommentSection id={productId } />
+            <CommentSection id={productId} />
           </Col>
         </Row>
       </Content>
@@ -800,16 +774,17 @@ function ProductDetail() {
                   style={{ cursor: "pointer" }}
                 >
                   <PropProduct
-                      product={{
-                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
-                        price: product.price ?? 0,
-                        promotionView: product.promotionView,
-                        sale: product.sold ?? 0,
-                        url: product.imageUrl || "https://placehold.co/50",
-                        views: product.views ?? 0,
-                        rate: product.rate ?? 5,
-                      }}
-                    />
+                    product={{
+                      name:
+                        product.productName?.trim() || "Sản phẩm chưa có tên",
+                      price: product.price ?? 0,
+                      promotionView: product.promotionView,
+                      sale: product.sold ?? 0,
+                      url: product.imageUrl || "https://placehold.co/50",
+                      views: product.views ?? 0,
+                      rate: product.rate ?? 5,
+                    }}
+                  />
                 </Col>
               ))}
             </Row>
