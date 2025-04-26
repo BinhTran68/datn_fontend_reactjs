@@ -13,8 +13,8 @@ const ChartStatusBill = () => {
   const [customRange, setCustomRange] = useState(null);
   const [apiData, setApiData] = useState([]);
   const [chartData, setChartData] = useState([]);
-  const [tableTitle, setTableTitle] = useState("Thống kê sản phẩm bán chạy hôm nay");
-  const [chartTitle, setChartTitle] = useState("Biểu đồ trạng thái đơn hàng hôm nay");
+  const [tableTitle, setTableTitle] = useState("Thống kê sản phẩm bán chạy");
+  const [chartTitle, setChartTitle] = useState("Biểu đồ trạng thái đơn hàng");
   const pageSize = 5; // Số lượng sản phẩm mỗi trang
   const [currentPage, setCurrentPage] = useState(1); // State lưu trang hiện tại
   
@@ -235,9 +235,6 @@ const ChartStatusBill = () => {
 
         {/* Bảng thống kê sản phẩm */}
         <Col xs={24} md={14}>
-
-          <ProductOrderChart/>
-
           <Card
             title={<span style={{ color: "black", fontSize: 15 }}>{tableTitle}</span>}
             style={{

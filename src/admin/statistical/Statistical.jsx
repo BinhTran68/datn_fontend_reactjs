@@ -4,6 +4,7 @@ import ChartComponent from "./componets/ChartComponent.jsx";
 import ChartStatusBill from "./componets/ChartStatusBill.jsx";
 import SalesRevenue from "./componets/SalesRevenue.jsx"
 import {Card} from 'antd';
+import ProductOrderChart from "./componets/ProductOrderChart.jsx";
 
 const Statistical = () => {
     return (
@@ -15,6 +16,9 @@ const Statistical = () => {
             {/* Thống kê doanh thu */}
             <Card>
                 <SalesRevenue />
+            </Card>
+               <Card>
+                   <ProductOrderChart/>
             </Card>
             {/* Thống kê sản phẩm bán chạy và biểu đồ tròn */}
             <ChartStatusBill />
