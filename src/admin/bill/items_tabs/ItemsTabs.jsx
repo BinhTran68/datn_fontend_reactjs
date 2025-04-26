@@ -30,8 +30,10 @@ export const itemsTabsBillList = () => {
         { key: 'CHO_VAN_CHUYEN', label: "Chờ vận chuyển" },
         { key: 'DANG_VAN_CHUYEN', label: "Đang vận chuyển" },
         { key: 'DA_THANH_TOAN', label: "Đã thanh toán" },
+        { key: 'DA_GIAO_HANG', label: "Đã giao hàng" },
         { key: 'DA_HOAN_THANH', label: "Đã hoàn thành" },
-        { key: 'DA_HUY', label: "Đã hủy" }
+        { key: 'DA_HUY', label: "Đã hủy" },
+
     ];
     console.log(counts["CHO_XAC_NHAN"]);
     return tabs.map(tab => ({
