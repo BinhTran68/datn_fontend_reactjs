@@ -3,6 +3,7 @@ import { Card, Button, Table, Row, Col, DatePicker, Radio } from "antd";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell, Tooltip, Legend, RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import { FileExcelOutlined } from "@ant-design/icons";
 import axios from "axios";
+import ProductOrderChart from "./ProductOrderChart.jsx";
 // import {convertBillStatusToString} from '../../helpers/Helpers.js';
 
 const { RangePicker } = DatePicker;
@@ -234,6 +235,9 @@ const ChartStatusBill = () => {
 
         {/* Bảng thống kê sản phẩm */}
         <Col xs={24} md={14}>
+
+          <ProductOrderChart/>
+
           <Card
             title={<span style={{ color: "black", fontSize: 15 }}>{tableTitle}</span>}
             style={{

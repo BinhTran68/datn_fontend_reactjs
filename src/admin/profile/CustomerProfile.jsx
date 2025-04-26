@@ -1008,10 +1008,6 @@ const CustomerProfile = () => {
             name="citizenId"
             rules={[
               {
-                required: true,
-                message: "Vui lòng nhập số CMND/CCCD!",
-              },
-              {
                 pattern: /^[0-9]{9}$|^[0-9]{12}$/,
                 message: "Vui lòng nhập số CMND/CCCD hợp lệ (9 hoặc 12 số)!",
               },
