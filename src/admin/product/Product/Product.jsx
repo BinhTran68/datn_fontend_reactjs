@@ -48,7 +48,7 @@ import { FaEdit, FaRegListAlt } from "react-icons/fa";
 import { COLORS } from "../../../constants/constants.js";
 import { Link } from "react-router-dom";
 import { CiBoxList, CiViewList } from "react-icons/ci";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const Product = () => {
   const [formUpdate] = Form.useForm();
@@ -254,7 +254,7 @@ const Product = () => {
       title: "Ảnh",
       dataIndex: "image",
       key: "image",
-      width:"100px",
+      width: "100px",
       render: (text, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {record.id && (
@@ -445,7 +445,7 @@ const Product = () => {
 
   return (
     <Card>
-      <Title level={2}>Sản Phẩm</Title>
+      <h3>Sản Phẩm</h3>{" "}
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>
@@ -547,21 +547,21 @@ const Product = () => {
               >
                 Hủy
               </Button>,
-             <Popconfirm
-             title="Bạn có chắc chắn muốn xác nhận không?"
-             okText="Có"
-             cancelText="Không"
-             onConfirm={() => formCreate.submit()}
-           >
-             <Button
-               key="submit"
-               type="primary"
-               loading={loading}
-               // disabled={!isActive}
-             >
-               Xác nhận
-             </Button>
-           </Popconfirm>,
+              <Popconfirm
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
+              >
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin Muốn sửa...</p>

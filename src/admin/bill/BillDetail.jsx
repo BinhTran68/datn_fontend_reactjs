@@ -1029,7 +1029,7 @@ const BillDetail = () => {
 
 
                     </div>
-                    <div className={"d-flex align-items-center justify-content-between"}>
+                    <div className={"d-flex align-items-center justify-content-between mt-2"}>
                         <div className={"d-flex align-items-center gap-5"}>
                             {!["DANG_XAC_MINH", "DA_HUY", "DA_HOAN_THANH", "TRA_HANG", "HUY_YEU_CAU_TRA_HANG", "TU_CHOI_TRA_HANG"].includes(currentBill?.status) && (
                                 <Button type={"primary"} onClick={handleOnConfirmUpdateValue}>

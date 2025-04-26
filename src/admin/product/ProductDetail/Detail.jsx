@@ -84,9 +84,9 @@ const Detail = () => {
     <Card
       style={{ borderRadius: 10, boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)" }}
     >
-      <Title level={2} style={{ textAlign: "left", color: `${COLORS.color}` }}>
+      <h3 style={{ textAlign: "left", color: `${COLORS.color}` }}>
         Thông tin sản phẩm
-      </Title>
+      </h3>
       <Descriptions bordered column={1} size="middle">
         <Descriptions.Item label="Tên sản phẩm">
           {product.productName}

@@ -39,7 +39,7 @@ function Home() {
               
               <h5 className="text-primary fw-bold mb-3 d-flex align-items-center">
                 <span className="gradient-text">HỆ THỐNG CỬA HÀNG</span>
-                <div className="animated-line ms-2"></div>
+                {/* <div className="animated-line ms-2"></div> */}
               </h5>
               
               <div className="contact-item d-flex align-items-center mb-3">
@@ -74,7 +74,7 @@ function Home() {
             <div className="col-md-3 mb-4">
               <h5 className="text-primary fw-bold mb-3 d-flex align-items-center">
                 <span className="gradient-text">VỀ CHÚNG TÔI</span>
-                <div className="animated-line ms-2"></div>
+                {/* <div className="animated-line ms-2"></div> */}
               </h5>
               
               {["Giới Thiệu", "Tuyển Dụng", "Dịch Vụ Spa, Sửa Giày", "Tin Tức-Sự Kiện"].map((item, index) => (
@@ -120,7 +120,7 @@ function Home() {
             <div className="col-md-3 mb-4">
               <h5 className="text-primary fw-bold mb-3 d-flex align-items-center">
                 <span className="gradient-text">HỖ TRỢ KHÁCH HÀNG</span>
-                <div className="animated-line ms-2"></div>
+                {/* <div className="animated-line ms-2"></div> */}
               </h5>
               
               {[
@@ -152,7 +152,7 @@ function Home() {
       <style jsx>{`
         /* Modern Gradient Text */
         .gradient-text {
-          background: linear-gradient(45deg, #f8971d, #ffc107);
+          background: linear-gradient(45deg, #F37021);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;

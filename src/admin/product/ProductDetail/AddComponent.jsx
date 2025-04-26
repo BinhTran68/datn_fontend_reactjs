@@ -355,13 +355,21 @@ const ProductDetailDrawer = () => {
   };
 
   const handleInputChange = (key, dataIndex, value) => {
-    const numericValue = parseFloat(value);
-    if (numericValue < 0) {
+    const numericValue = Number(value);
+    if (numericValue <= 0 && dataIndex !== "weight") {
       notification.error({
         message: "Lỗi nhập liệu",
         description: `${
           dataIndex === "quantity" ? "Số lượng" : "Giá"
-        } không được nhỏ hơn 0`,
+        } không được nhỏ hơn hoặc bằng 0!`,
+      });
+      return;
+    }
+    if (dataIndex === "price" && numericValue < 1000) {  
+      notification.error({
+        message: "Lỗi nhập liệu",
+        description: `
+       Giá không được nhỏ hơn 1.000đ!`,
       });
       return;
     }
@@ -422,7 +430,7 @@ const ProductDetailDrawer = () => {
           weight: commonWeight,
         }))
       );
-      formModalSLVaGia.resetFields();
+      // formModalSLVaGia.resetFields();
       setIsModalVisible(false);
     } catch (error) {
       console.log("Validation failed:", error);
@@ -443,7 +451,7 @@ const ProductDetailDrawer = () => {
       dataIndex: "quantity",
       render: (text, record) => (
         <InputNumber
-          min={1}
+          // min={1}
           max={9999}
           maxLength={4}
           value={record.quantity}
@@ -455,16 +463,22 @@ const ProductDetailDrawer = () => {
     {
       title: "Giá",
       dataIndex: "price",
-      render: (text, record) => (
-        <InputNumber
-          min={1000}
-          max={99999999}
-          step={10000}
-          maxLength={8}
-          value={record.price}
-          onChange={(value) => handleInputChange(record.key, "price", value)}
-          addonAfter="VNĐ"
-        />
+      render: (text, record,index) => (
+      
+          <InputNumber
+            // min={100}
+            max={99999999}
+            step={10000}
+            maxLength={8}
+            value={record.price}
+            onChange={(value) => handleInputChange(record.key, "price", value)}
+            addonAfter="VNĐ"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+          />
+        
       ),
     },
     {
@@ -582,7 +596,7 @@ const ProductDetailDrawer = () => {
         </Card>
         <Card>
           <h6>Thuộc tính</h6>
-          <Row gutter={[16, 16]}>
+          <Row gutter={[0, 16]} className="mb-2">
             <Col span={8}>
               <div>Thương hiệu</div>
               <Row gutter={[5, 0]}>
@@ -789,23 +803,23 @@ const ProductDetailDrawer = () => {
             </Col>
           </Row>
         </Card>
+        {tableData.length > 0 && (
+          <Row gutter={[16, 16]}>
+            <Col>
+              <Button type="primary" onClick={showConfirm}>
+                Lưu thông tin
+              </Button>
+            </Col>
+            <Col>
+              <Button type="primary" onClick={() => setIsModalVisible(true)}>
+                Chỉnh số lượng và giá chung
+              </Button>
+            </Col>
+          </Row>
+        )}
       </Col>
       <Col span={24}>
         <Row gutter={[16, 16]}>
-          {tableData.length > 0 && (
-            <Row gutter={[16, 16]}>
-              <Col>
-                <Button type="primary" onClick={showConfirm}>
-                  Lưu thông tin
-                </Button>
-              </Col>
-              <Col>
-                <Button type="primary" onClick={() => setIsModalVisible(true)}>
-                  Chỉnh số lượng và giá chung
-                </Button>
-              </Col>
-            </Row>
-          )}
           {groupedData.map((group) => (
             <Col span={24} key={group.colorName}>
               <Card title={`Sản phẩm chi tiết: ${group.colorName}`}>
@@ -867,7 +881,7 @@ const ProductDetailDrawer = () => {
           >
             <InputNumber
               style={{ width: "100%" }}
-              min={1}
+              // min={1}
               max={9999}
               maxLength={4}
               value={commonQuantity}
@@ -889,13 +903,17 @@ const ProductDetailDrawer = () => {
           >
             <InputNumber
               style={{ width: "100%" }}
-              min={100}
+              // min={100}
               max={99999999}
-              maxLength={8}
+              maxLength={10}
               step={10000}
               value={commonPrice}
               onChange={setCommonPrice}
               suffix="VNĐ"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
             />
           </Form.Item>
           <Form.Item

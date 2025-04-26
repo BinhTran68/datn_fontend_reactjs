@@ -387,7 +387,7 @@ const Material = () => {
 
   return (
     <Card>
-      <Title level={2}>Chất Liệu</Title>
+      <h3>Chất liệu</h3>{" "}
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>
@@ -455,20 +455,20 @@ const Material = () => {
                 Hủy
               </Button>,
               <Popconfirm
-              title="Bạn có chắc chắn muốn xác nhận không?"
-              okText="Có"
-              cancelText="Không"
-              onConfirm={() => formCreate.submit()}
-            >
-              <Button
-                key="submit"
-                type="primary"
-                loading={loading}
-                // disabled={!isActive}
+                title="Bạn có chắc chắn muốn xác nhận không?"
+                okText="Có"
+                cancelText="Không"
+                onConfirm={() => formCreate.submit()}
               >
-                Xác nhận
-              </Button>
-            </Popconfirm>,
+                <Button
+                  key="submit"
+                  type="primary"
+                  loading={loading}
+                  // disabled={!isActive}
+                >
+                  Xác nhận
+                </Button>
+              </Popconfirm>,
             ]}
           >
             <p>Nhập thông tin chất liệu mới...</p>

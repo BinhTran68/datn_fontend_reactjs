@@ -12,7 +12,7 @@ const { RangePicker } = DatePicker;
 
 const cardStyles = {
     borderRadius: "12px",
-    boxShadow: "0 2px 8px rgba(3, 120, 255, 0.15)",
+    boxShadow: "0 2px 8px rgba(255, 140, 0, 0.30)",
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     background: "white",
     color: "black",
