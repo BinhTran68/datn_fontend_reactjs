@@ -382,7 +382,7 @@ const Sole = () => {
 
   return (
     <Card>
-      <Title level={2}>Đế giày</Title>
+      <h3>Đế giày</h3>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>

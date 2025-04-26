@@ -575,8 +575,8 @@ const CustomerTest = () => {
     }
 
     return (
-        <div style={{padding: '20px'}}>
-            <h2>Quản lý tài khoản khách hàng</h2>
+        <div>
+            <h3>Quản lý tài khoản khách hàng</h3>
 
             <Modal
                 title={`Danh sách địa chỉ của ${recordSelected?.fullName} - ${recordSelected?.phoneNumber}`}
@@ -663,7 +663,7 @@ const CustomerTest = () => {
             </Drawer>
 
             <Card>
-                <h3>Bộ lọc</h3>
+                <h4>Bộ lọc</h4>
                 <hr/>
                 <div style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                     <label style={{marginRight: '10px', fontWeight: '500'}}>Tìm kiếm:</label>

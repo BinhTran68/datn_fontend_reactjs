@@ -424,7 +424,7 @@ const Type = () => {
   return (
     <Card>
       {contextHolder}
-      <Title level={2}>Loại</Title>
+      <h3>Loại</h3>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>

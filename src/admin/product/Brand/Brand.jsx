@@ -371,7 +371,7 @@ const Category = () => {
 
   return (
     <Card>
-      <Title level={2}>Hãng</Title>
+      <h3>Hãng</h3>{" "}
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>

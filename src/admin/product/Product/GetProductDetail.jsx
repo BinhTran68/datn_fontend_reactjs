@@ -765,7 +765,7 @@ const GetProductDetail = () => {
 
   return (
     <Card>
-      <Title level={2}>Sản Phẩm: {idProduct}</Title>
+      <h3>Sản Phẩm: {idProduct}</h3>
       <div className={"d-flex justify-content-center gap-4 flex-column"}>
         <Row gutter={[16, 16]}>
           <Col span={20}>

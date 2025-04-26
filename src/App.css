@@ -102,3 +102,52 @@ a {
   color: red !important;
 }
 
+/* cong */
+/* Cho riêng phần menu bên trái */
+.ant-layout-sider::-webkit-scrollbar,
+.ant-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb,
+.ant-menu::-webkit-scrollbar-thumb {
+  background-color: #F37021;
+  border-radius: 4px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb:hover,
+.ant-menu::-webkit-scrollbar-thumb:hover {
+  background-color: #c55510;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track,
+.ant-menu::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+/* Firefox cho menu */
+.ant-layout-sider,
+.ant-menu {
+  scrollbar-width: thin;
+  scrollbar-color: #F37021 #ffffff;
+}
+/* Style cho thanh cuộn */
+::-webkit-scrollbar {
+  width: 8px; /* chiều rộng scrollbar */
+}
+
+/* Phần thumb (kéo được) */
+::-webkit-scrollbar-thumb {
+  background-color: #F37021; /* màu xanh giống màu chủ đạo Ant Design */
+  border-radius: 4px;
+}
+
+/* Hover vào thumb */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #c55510;
+}
+
+Track (nền của scrollbar)
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
