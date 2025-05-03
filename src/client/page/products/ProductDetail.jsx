@@ -32,9 +32,16 @@ import { FcNext } from "react-icons/fc";
 import {
   apiAddCart,
   apiGetColorsOfProduct,
+  apiGetColorsOfProductAndSoleId,
+  apiGetGendersOfProduct,
+  apiGetMaterialsOfProductAndGenderId,
+  apiGetMaterialssOfProduct,
   apigetProductDetail,
   apiGetSizesOfProduct,
   apiGetSizesOfProductAndColor,
+  apiGetSolesOfProduct,
+  apiGetSolesOfProductAndMaterialId,
+  getAllProducthadSoldDesc,
   getAllProducthadViewsDesc,
 } from "./api";
 import { addToCart, clearCart, getCart } from "../cart/cart.js";
@@ -50,52 +57,17 @@ function ProductDetail() {
   // const productId = searchParams.get("productId");
   const colorId = searchParams.get("colorId");
   const sizeId = searchParams.get("sizeId");
-  // const products = {
-  //   name: "Nike - Giày thời trang thể thao Nữ Air Max SC Women's Shoes",
-  //   price: 50000,
-  //   promotion: "giảm 20%",
-  //   sale: "342",
-  //   url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //   statusSale: "Best Sale",
-  // };
-  // const productDetail = {
-  //   productName: "Giày Nike Wmns Air Jordan 1 Low ‘White Wolf Grey’ DC0774-105",
-  //   image: [
-  //     {
-  //       url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //       publicId: "abc",
-  //     },
-  //     {
-  //       url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //       publicId: "abc",
-  //     },
-  //     {
-  //       url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //       publicId: "abc",
-  //     },
-  //     {
-  //       url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //       publicId: "abc",
-  //     },
-  //     {
-  //       url: "https://res.cloudinary.com/dieyhvcou/image/upload/v1739012023/1-removebg-preview_m7nq8q.png",
-  //       publicId: "abc",
-  //     },
-  //   ],
-  //   price: 200000,
-  //   quantity: 12,
-  //   colorName: "xanh",
-  //   brandName: "Nike",
-  //   sizeName: "20",
-  //   materialName: "lether",
-  //   typeName: "Nam",
-  //   genderName: "Nam",
-  //   soleName: "đế giày",
-  //   description: "mô tả về giày",
-  // };
+  const soleId = searchParams.get("soleId");
+  const materialId = searchParams.get("materialId");
+  const genderId = searchParams.get("genderId");
   const [loading, setLoading] = useState(false);
   const [size, setSize] = useState(Number(sizeId));
   const [color, setColor] = useState(Number(colorId));
+  const [material, setMaterial] = useState(Number(materialId));
+  const [brand, setBrand] = useState(null);
+  const [type, setType] = useState(null);
+  const [sole, setSole] = useState(Number(soleId));
+  const [gender, setGender] = useState(Number(genderId));
 
   const [quantityAddCart, setQuantityAddCart] = useState(1);
 
@@ -103,15 +75,28 @@ function ProductDetail() {
   const [getProductDetail, setGetProductDetail] = useState({});
   const [sizes, setSizes] = useState([]);
   const [sizesOfColor, setSizesOfColor] = useState([]);
+  const [colorOfSole, setColorOfSole] = useState([]);
+  const [soleOfMaterial, setSoleOfMaterial] = useState([]);
+  const [materialOfGender, setMaterialOfGender] = useState([]);
+
   const [colors, setColors] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [genders, setGenders] = useState([]);
+  const [soles, setSoles] = useState([]);
   const [productHadviewsDescs, setProductHadviewsDescs] = useState();
   const [PageProductHadviewsDescs, setPageProductHadviewsDescs] = useState({
     current: 1,
     pageSize: 6,
   });
+  const [ren, setRen] = useState();
   const navigate = useNavigate();
+
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    getAllProductHadViewsDescs();
   }, []);
   useEffect(() => {
     // console.log(id);
@@ -119,24 +104,65 @@ function ProductDetail() {
       "🛒 Đây là user hiện tại:",
       JSON.parse(localStorage.getItem(`user`)) || []
     );
-    getProductDetails(productId, colorId, sizeId);
-    getSizesOfProductAndColors(productId, colorId);
-    getColorsOfProduct(productId);
-    getSizesOfProduct(productId);
-    getAllProductHadViewsDescs();
+    fetchAttributeProduct(productId);
+    getProductDetails(productId, colorId, sizeId, genderId, materialId, soleId);
+
+    // getColorsOfProduct(productId);
+    // getSizesOfProduct(productId);
     clearBill();
     clearVoucher();
   }, [productId, colorId, sizeId]);
+  useEffect(() => {
+    const fetchSole = async () => {
+      if (productId && sole && sole) {
+        await getColorsOfProductAndSoleId(productId, sole, material, gender);
+      }
+    };
+
+    fetchSole();
+  }, [sole, ren]);
+  useEffect(() => {
+    const fetchColors = async () => {
+      if (productId && material) {
+        await getSolesOfProductAndMaterialId(productId, material, gender);
+      }
+    };
+
+    fetchColors();
+  }, [material]);
+  useEffect(() => {
+    const fetchColors = async () => {
+      if (productId && gender) {
+        await getMaterialsOfProductAndGenderId(productId, gender);
+      }
+    };
+
+    fetchColors();
+  }, [gender]);
   // Khi thay đổi color, cập nhật danh sách size tương ứng
+
   useEffect(() => {
     const fetchSizesAndProductDetails = async () => {
       if (productId && color) {
         try {
-          const sizesData = await getSizesOfProductAndColors(productId, color);
+          const sizesData = await getSizesOfProductAndColors(
+            productId,
+            color,
+            sole,
+            material,
+            gender
+          );
 
           if (Array.isArray(sizesData) && sizesData.length > 0) {
             setSize(sizesData[0].id); // Cập nhật size với giá trị đầu tiên trong danh sách
-            await getProductDetails(productId, color, sizesData[0].id); // Gọi API sau khi đã có size
+            // await getProductDetails(
+            //   productId,
+            //   color,
+            //   sizesData[0].id,
+            //   gender,
+            //   material,
+            //   sole
+            // ); // Gọi API sau khi đã có size
           } else {
             setSize(null); // Nếu không có size nào, reset size
           }
@@ -152,27 +178,62 @@ function ProductDetail() {
   // Khi thay đổi size, cập nhật chi tiết sản phẩm
   useEffect(() => {
     if (productId && color && size) {
-      getProductDetails(productId, color, size);
+      getProductDetails(productId, color, size, gender, material, sole);
     }
   }, [size]);
 
   // Khi danh sách size của color thay đổi, chọn giá trị đầu tiên làm default
   useEffect(() => {
     if (sizesOfColor.length > 0) {
-      setSize(sizesOfColor[0]?.id);
+      const isCurrentSizeValid = sizesOfColor.some(item => item.id === size);
+      if (!isCurrentSizeValid) {
+        setSize(sizesOfColor[0]?.id);
+      }
     }
-  }, [sizesOfColor]);
+  }, [sizesOfColor]);  
+  useEffect(() => {
+    if (colorOfSole.length > 0) {
+      const isColorExist = colorOfSole.some((item) => item.id === color);
+      if (!isColorExist) {
+        const newColor = colorOfSole[0]?.id;
+        setColor(newColor);
+      } else {
+        getSizesOfProductAndColors(productId, color, sole, material, gender);
+      }
+    }
+  }, [colorOfSole]);
+  
+  useEffect(() => {
+    if (soleOfMaterial.length > 0) {
+      const isSoleExist = soleOfMaterial.some((item) => item.id === sole);
+      if (!isSoleExist) {
+        const newSoleId = soleOfMaterial[0]?.id;
+        setSole(newSoleId);
+      } else {
+        getColorsOfProductAndSoleId(productId, sole, material, gender);
+      }
+    }
+  }, [soleOfMaterial]);
+  
+
+  useEffect(() => {
+    if (materialOfGender.length > 0) {
+      const isMaterialExist = materialOfGender.some((item) => item.id === material);
+      if (!isMaterialExist) {
+        const newMaterial = materialOfGender[0]?.id;
+        setMaterial(newMaterial);
+      } else {
+        getSolesOfProductAndMaterialId(productId, material, gender);
+      }
+    }
+  }, [materialOfGender]);
+  
 
   const getAllProductHadViewsDescs = async () => {
     setLoading(true);
     try {
-      const response = await getAllProducthadViewsDesc(
-        PageProductHadviewsDescs
-      );
-      console.log(
-        "Response tất cá sản phẩm có view từ nhiều tới ít:",
-        response
-      ); // Log response để kiểm tra dữ liệu trả về
+      const response = await getAllProducthadSoldDesc(PageProductHadviewsDescs);
+      console.log("Response tất cá sản phẩm lượt bán:", response); // Log response để kiểm tra dữ liệu trả về
       setProductHadviewsDescs(response.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
@@ -180,10 +241,24 @@ function ProductDetail() {
       setLoading(false);
     }
   };
-  const getProductDetails = async (productId, colorId, sizeId) => {
+  const getProductDetails = async (
+    productId,
+    colorId,
+    sizeId,
+    genderId,
+    materialId,
+    soleId
+  ) => {
     setLoading(true);
     try {
-      const response = await apigetProductDetail(productId, colorId, sizeId);
+      const response = await apigetProductDetail(
+        productId,
+        colorId,
+        sizeId,
+        genderId,
+        materialId,
+        soleId
+      );
       console.log("Response get product detail:", response); // Log response để kiểm tra dữ liệu trả về
       setGetProductDetail(response.data);
     } catch (error) {
@@ -192,22 +267,22 @@ function ProductDetail() {
       setLoading(false);
     }
   };
-  const getSizesOfProduct = async (productId) => {
+  const getSizesOfProductAndColors = async (
+    productId,
+    colorId,
+    soleId,
+    materialId,
+    genderId
+  ) => {
     setLoading(true);
     try {
-      const response = await apiGetSizesOfProduct(productId);
-      console.log("Response get sizes:", response); // Log response để kiểm tra dữ liệu trả về
-      setSizes(response.data);
-    } catch (error) {
-      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const getSizesOfProductAndColors = async (productId, colorId) => {
-    setLoading(true);
-    try {
-      const response = await apiGetSizesOfProductAndColor(productId, colorId);
+      const response = await apiGetSizesOfProductAndColor(
+        productId,
+        colorId,
+        soleId,
+        materialId,
+        genderId
+      );
       console.log("Response get sizes of product and color:", response); // Log response để kiểm tra dữ liệu trả về
       setSizesOfColor(response.data);
     } catch (error) {
@@ -216,12 +291,88 @@ function ProductDetail() {
       setLoading(false);
     }
   };
-  const getColorsOfProduct = async (productId) => {
+  const getColorsOfProductAndSoleId = async (
+    productId,
+    sole,
+    material,
+    gender
+  ) => {
     setLoading(true);
     try {
-      const response = await apiGetColorsOfProduct(productId);
-      console.log("Response get colors:", response); // Log response để kiểm tra dữ liệu trả về
-      setColors(response.data);
+      const response = await apiGetColorsOfProductAndSoleId(
+        productId,
+        sole,
+        material,
+        gender
+      );
+      console.log(
+        "Responseádisasdsdsdsdsdsdsdsssdudisadasdis color:",
+        response
+      ); // Log response để kiểm tra dữ liệu trả về
+      setColorOfSole(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getSolesOfProductAndMaterialId = async (
+    productId,
+    materialId,
+    genderId
+  ) => {
+    setLoading(true);
+    try {
+      const response = await apiGetSolesOfProductAndMaterialId(
+        productId,
+        materialId,
+        genderId
+      );
+      console.log("Response get sizes of product and color:", response); // Log response để kiểm tra dữ liệu trả về
+      setSoleOfMaterial(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getMaterialsOfProductAndGenderId = async (productId, genderId) => {
+    setLoading(true);
+    try {
+      const response = await apiGetMaterialsOfProductAndGenderId(
+        productId,
+        genderId
+      );
+      console.log("Response get sizes of product and color:", response); // Log response để kiểm tra dữ liệu trả về
+      setMaterialOfGender(response.data);
+    } catch (error) {
+      message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchAttributeProduct = async (productId) => {
+    setLoading(true);
+    try {
+      const [
+        colorsResponse,
+        materialsResponse,
+        gendersResponse,
+        solesResponse,
+        sizesResponse,
+      ] = await Promise.all([
+        apiGetColorsOfProduct(productId),
+        apiGetMaterialssOfProduct(productId),
+        apiGetGendersOfProduct(productId),
+        apiGetSolesOfProduct(productId),
+        apiGetSizesOfProduct(productId),
+      ]);
+
+      setColors(colorsResponse.data);
+      setMaterials(materialsResponse.data);
+      setGenders(gendersResponse.data);
+      setSoles(solesResponse.data);
+      setSizes(sizesResponse.data);
     } catch (error) {
       message.error(error.message || "Có lỗi xảy ra khi tải dữ liệu.");
     } finally {
@@ -373,7 +524,7 @@ function ProductDetail() {
                 )}
               </h2>
             </Col>
-            <Row gutter={[20, 30]}>
+            <Row gutter={[10, 10]}>
               <Col
                 span={24}
                 style={{
@@ -383,6 +534,136 @@ function ProductDetail() {
                 <Row>
                   <Col span={6}>Vận chuyển</Col>
                   <Col span={18}>Giao hàng nhanh</Col>
+                </Row>
+              </Col>
+              <Col span={24}>
+                <Row>
+                  <Col span={6}>Giới tính</Col>
+                  <Col span={18}>
+                    <Col span={18}>
+                      <Radio.Group
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                      >
+                        <Space>
+                          {Array.isArray(genders) &&
+                            genders.map((item) => (
+                              <Radio.Button
+                                key={item.id}
+                                value={item.id}
+                                style={{
+                                  borderRadius: "10px",
+                                  border: "1px solid #ccc",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  padding: "8px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <span>{item.genderName}</span>
+                                </div>
+                              </Radio.Button>
+                            ))}
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={24}>
+                <Row>
+                  <Col span={6}>Chất liệu</Col>
+                  <Col span={18}>
+                    <Col span={18}>
+                      <Radio.Group
+                        value={material}
+                        onChange={(e) => setMaterial(e.target.value)}
+                      >
+                        <Space>
+                          {Array.isArray(materials) &&
+                            materials.map((item) => (
+                              <Radio.Button
+                                key={item.id}
+                                value={item.id}
+                                style={{
+                                  borderRadius: "10px",
+                                  border: "1px solid #ccc",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  padding: "8px",
+                                }}
+                                disabled={
+                                  !materialOfGender.some(
+                                    (size) => size.id === item.id
+                                  )
+                                } // Đúng logic disable
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <span>{item.materialName}</span>
+                                </div>
+                              </Radio.Button>
+                            ))}
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={24}>
+                <Row>
+                  <Col span={6}>Loại đế giày</Col>
+                  <Col span={18}>
+                    <Col span={18}>
+                      <Radio.Group
+                        value={sole}
+                        onChange={(e) => setSole(e.target.value)}
+                      >
+                        <Space>
+                          {Array.isArray(soles) &&
+                            soles.map((item) => (
+                              <Radio.Button
+                                key={item.id}
+                                value={item.id}
+                                style={{
+                                  borderRadius: "10px",
+                                  border: "1px solid #ccc",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  padding: "8px",
+                                }}
+                                disabled={
+                                  !soleOfMaterial.some(
+                                    (size) => size.id === item.id
+                                  )
+                                } // Đúng logic disable
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <span>{item.soleName}</span>
+                                </div>
+                              </Radio.Button>
+                            ))}
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Col>
                 </Row>
               </Col>
               <Col span={24}>
@@ -407,6 +688,11 @@ function ProductDetail() {
                                   alignItems: "center",
                                   padding: "8px",
                                 }}
+                                disabled={
+                                  !colorOfSole.some(
+                                    (size) => size.id === item.id
+                                  )
+                                } // Đúng logic disable
                               >
                                 <div
                                   style={{
@@ -714,7 +1000,14 @@ function ProductDetail() {
           >
             Mô TẢ SẢN PHẨM
           </Col>
-          <Col style={{ marginLeft: "1rem", margin: "1rem" ,justifyContent:"start"}} span={24}>
+          <Col
+            style={{
+              marginLeft: "1rem",
+              margin: "1rem",
+              justifyContent: "start",
+            }}
+            span={24}
+          >
             {/* {getProductDetail.description} */}
             <div
               dangerouslySetInnerHTML={{
@@ -768,7 +1061,7 @@ function ProductDetail() {
                   span={4}
                   onClick={() => {
                     window.location.replace(
-                      `/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`
+                      `/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}&genderId=${product.genderId}&materialId=${product.materialId}&soleId=${product.soleId}`
                     );
                   }}
                   style={{ cursor: "pointer" }}

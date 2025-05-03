@@ -466,3 +466,18 @@ export const filterDataWithPromotion = async (pagination, requestFilter) => {
     throw error;
   }
 };
+export const apiGetAttributeOfproductExists = async (productId) => {
+
+  try {
+    const response = await api.get("/product/get-attribute-of-product", {
+      params: {productId},
+    });
+
+    return response.data;
+  } catch (error) {
+    const errorMessage =
+        error.response?.data?.message || "Có lỗi xảy ra khi tải dữ liệu.";
+    console.error(errorMessage);
+    throw error;
+  }
+};
