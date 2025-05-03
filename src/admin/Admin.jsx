@@ -12,7 +12,7 @@ import {
 } from "antd";
 
 // import MenuList from "../component/sidebar/MenuList";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Content } from "antd/es/layout/layout";
@@ -127,6 +127,28 @@ function Admin() {
   const handleLogoutStatus = async () => {
     await axiosInstance.get("/api/admin/staff/logout-status/" + `${user.id}`);
   };
+
+  const isValidUrl = (url) => {
+    if (!url) return false;
+
+    // Check if the URL is a string and has a minimum length
+    if (typeof url !== 'string' || url.length < 5) return false;
+
+    // Simple check if it starts with http:// or https:// or data:
+    return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:');
+  };
+
+  // Generate avatar initials from name
+  const getInitials = (name) => {
+    if (!name) return '?';
+
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}${parts[parts.length-1].charAt(0)}`.toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <Layout>
       <Sider
@@ -283,14 +305,32 @@ function Admin() {
                   }
                   trigger="click"
                 >
+                  {/*<Avatar*/}
+                  {/*  size={40}*/}
+                  {/*  src={*/}
+                  {/*    user.avatar ??*/}
+                  {/*    "https://t4.ftcdn.net/jpg/02/27/45/09/360_F_227450952_KQCMShHPOPebUXklULsKsROk5AvN6H1H.jpg"*/}
+                  {/*  }*/}
+                  {/*  style={{ cursor: "pointer" }}*/}
+                  {/*/>*/}
+
                   <Avatar
-                    size={40}
-                    src={
-                      user.avatar ??
-                      "https://t4.ftcdn.net/jpg/02/27/45/09/360_F_227450952_KQCMShHPOPebUXklULsKsROk5AvN6H1H.jpg"
-                    }
-                    style={{ cursor: "pointer" }}
-                  />
+                      src={isValidUrl(user.avatar) ? user.avatar : null}
+                      style={{
+                        backgroundColor: !isValidUrl(user.avatar) ? '#1890ff' : 'transparent',
+                        color: '#fff',
+                        fontSize: '16px',
+                        border: '1px solid #f0f0f0',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}
+                      size={40}
+                      alt={user.fullName}
+                  >
+                    {!isValidUrl(user.avatar) && getInitials(user.fullName)}
+                  </Avatar>
+
                 </Popover>
               </>
             ) : (

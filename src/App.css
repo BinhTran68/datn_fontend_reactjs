@@ -104,4 +104,7 @@ a {
 
 /* cong */
 /* Cho riêng phần menu bên trái */
-
+.ant-segmented-item.ant-segmented-item-selected {
+  background-color: #F37021 !important; /* Màu primary trong Ant Design */
+  color: white; /* Đổi màu chữ khi được chọn */
+}
