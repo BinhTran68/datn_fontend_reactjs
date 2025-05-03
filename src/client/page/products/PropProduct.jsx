@@ -203,13 +203,13 @@ function PropProduct({ product }) {
             </div>
           </div>
           <div>
-            <Rate
-              value={product.rate}
-              disabled
-              style={{
-                fontSize: "0.8rem",
-              }}
-            />
+            {/*<Rate*/}
+            {/*  value={product.rate}*/}
+            {/*  disabled*/}
+            {/*  style={{*/}
+            {/*    fontSize: "0.8rem",*/}
+            {/*  }}*/}
+            {/*/>*/}
           </div>
           <div className="d-flex justify-content-between align-items-center">
             {/* <div className={style.stars}>
