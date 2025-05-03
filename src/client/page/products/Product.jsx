@@ -115,7 +115,7 @@ useEffect(() => {
               {productHadSolDescs.map((product, index) => (
                 <Col key={index} flex="20%" style={{maxWidth: "20%"}}>
                   <Link
-                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}&genderId=${product.genderId}&materialId=${product.materialId}&soleId=${product.soleId}`}
                     style={{ textDecoration: "none", color: "black" }}
                     onClick={() => addViewProduct(product.productId)}
                   >
@@ -168,9 +168,9 @@ useEffect(() => {
           >
             <Row gutter={[5, 5]}>
               {productHadPromotions.map((product, index) => (
-                <Col key={index} flex="20%">
+                <Col key={index} flex="20%" style={{maxWidth:"20%"}}>
                   <Link
-                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                    to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}&genderId=${product.genderId}&materialId=${product.materialId}&soleId=${product.soleId}`}
                     style={{ textDecoration: "none", color: "black" }}
                     onClick={() => addViewProduct(product.productId)}
                   >

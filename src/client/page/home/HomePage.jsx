@@ -163,7 +163,7 @@ const HomePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   useEffect(() => {
     window.scrollTo(0, 0);
-  },[])
+  }, []);
   return (
     <Card bodyStyle={{ padding: 0 }}>
       {/* Banner Carousel */}
@@ -451,11 +451,11 @@ const HomePage = () => {
                 // md={8}
                 // lg={6}
                 // xl={{ flex: "20%"}}
-                className={`${style['custom-col']}`} 
+                className={`${style["custom-col"]}`}
                 // `${style['custom-col']}` do có dấu -
               >
                 <Link
-                  to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                  to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}&genderId=${product.genderId}&materialId=${product.materialId}&soleId=${product.soleId}`}
                   style={{
                     textDecoration: "none",
                     color: "black",
@@ -466,16 +466,17 @@ const HomePage = () => {
                   onClick={() => addViewProduct(product.productId)}
                 >
                   <PropProduct
-                      product={{
-                        name: product.productName?.trim() || "Sản phẩm chưa có tên",
-                        price: product.price ?? 0,
-                        promotionView: product.promotionView,
-                        sale: product.sold ?? 0,
-                        url: product.imageUrl || "https://placehold.co/50",
-                        views: product.views ?? 0,
-                        rate: product.rate ?? 5,
-                      }}
-                    />
+                    product={{
+                      name:
+                        product.productName?.trim() || "Sản phẩm chưa có tên",
+                      price: product.price ?? 0,
+                      promotionView: product.promotionView,
+                      sale: product.sold ?? 0,
+                      url: product.imageUrl || "https://placehold.co/50",
+                      views: product.views ?? 0,
+                      rate: product.rate ?? 5,
+                    }}
+                  />
                 </Link>
               </Col>
             ))}
@@ -539,7 +540,14 @@ const HomePage = () => {
                 }
               >
                 <Card.Meta
-                  title={<a style={{color:`${COLORS.primary}`}} href={`/blogs/${blog.id}`}>{blog.title}</a>}
+                  title={
+                    <a
+                      style={{ color: `${COLORS.primary}` }}
+                      href={`/blogs/${blog.id}`}
+                    >
+                      {blog.title}
+                    </a>
+                  }
                   description={
                     <a
                       href={`/blogs/${blog.id}`}
@@ -559,8 +567,6 @@ const HomePage = () => {
           ))}
         </Row>
       </div>
-
-   
     </Card>
   );
 };

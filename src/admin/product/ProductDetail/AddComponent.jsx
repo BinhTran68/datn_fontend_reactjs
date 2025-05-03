@@ -15,6 +15,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
+  apiGetAttributeOfproductExists,
   createProductDetailList,
   fetchDataSelectBrandHD,
   fetchDataSelectColorHD,
@@ -40,7 +41,8 @@ import { useNavigate } from "react-router-dom";
 import { COLORS } from "../../../constants/constants";
 import ModalAddNew from "./ModalAddNew";
 import ModalAddNewSize from "./ModalAddNewSize";
-import { table } from "framer-motion/client";
+import { a, table } from "framer-motion/client";
+import { set } from "lodash";
 
 const ProductDetailDrawer = () => {
   const navigate = useNavigate();
@@ -94,7 +96,7 @@ const ProductDetailDrawer = () => {
 
   const [cleanUpImage, setCleanUpImage] = useState([]);
   const cleanUpImageRef = useRef(cleanUpImage);
-
+  const [attributeOfproductExist, setAttributeOfproductExist] = useState();
   useEffect(() => {
     cleanUpImageRef.current = cleanUpImage;
   }, [cleanUpImage]);
@@ -150,22 +152,29 @@ const ProductDetailDrawer = () => {
 
   // Đồng bộ state với dữ liệu từ API
   useEffect(() => {
+   const init = async () => {
     setProducts(dataSelectProduct);
     setSizes(dataSelectSize);
     setColors(dataSelectColor);
 
     if (dataSelectProduct.length > 0 && !product) {
+      const attributeOfproductExits = await apiGetAttributeOfproductExists(
+        dataSelectProduct[0]?.id
+      );    
+      attributeOfproductExits.data == null ?setAttributeOfproductExist(false):setAttributeOfproductExist(true)
       setProduct(dataSelectProduct[0]?.id || null);
       setRequest((prev) => ({
         ...prev,
         productId: dataSelectProduct[0]?.id || null,
-        brandId: dataSelectBrand[0]?.id || null,
         genderId: dataSelectGender[0]?.id || null,
         materialId: dataSelectMaterial[0]?.id || null,
-        typeId: dataSelectType[0]?.id || null,
         soleId: dataSelectSole[0]?.id || null,
+        brandId: attributeOfproductExits.data?.brandId || dataSelectBrand[0]?.id,
+        typeId: attributeOfproductExits.data?.typeId || dataSelectType[0]?.id,
       }));
-    }
+    } 
+  }
+  init();
   }, [
     dataSelectProduct,
     dataSelectSize,
@@ -337,9 +346,18 @@ const ProductDetailDrawer = () => {
     generateTableData(color, selectedSizes, product);
   };
 
-  const handleProductChange = (selectedProduct) => {
+  const handleProductChange = async (selectedProduct) => {
+    const attributeOfproductExits = await apiGetAttributeOfproductExists(
+      selectedProduct
+    );    
+    attributeOfproductExits.data == null ?setAttributeOfproductExist(false):setAttributeOfproductExist(true)
     setProduct(selectedProduct);
-    setRequest((prev) => ({ ...prev, productId: selectedProduct }));
+    setRequest((prev) => ({
+      ...prev,
+      productId: selectedProduct,
+      brandId: attributeOfproductExits.data?.brandId || dataSelectBrand[0]?.id,
+      typeId: attributeOfproductExits.data?.typeId || dataSelectType[0]?.id,
+    }));
     generateTableData(color, size, selectedProduct);
   };
 
@@ -365,7 +383,7 @@ const ProductDetailDrawer = () => {
       });
       return;
     }
-    if (dataIndex === "price" && numericValue < 1000) {  
+    if (dataIndex === "price" && numericValue < 1000) {
       notification.error({
         message: "Lỗi nhập liệu",
         description: `
@@ -463,22 +481,20 @@ const ProductDetailDrawer = () => {
     {
       title: "Giá",
       dataIndex: "price",
-      render: (text, record,index) => (
-      
-          <InputNumber
-            // min={100}
-            max={99999999}
-            step={10000}
-            maxLength={8}
-            value={record.price}
-            onChange={(value) => handleInputChange(record.key, "price", value)}
-            addonAfter="VNĐ"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-          />
-        
+      render: (text, record, index) => (
+        <InputNumber
+          // min={100}
+          max={99999999}
+          step={10000}
+          maxLength={8}
+          value={record.price}
+          onChange={(value) => handleInputChange(record.key, "price", value)}
+          addonAfter="VNĐ"
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          }
+          parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+        />
       ),
     },
     {
@@ -569,6 +585,7 @@ const ProductDetailDrawer = () => {
                       value: p.id,
                       label: p.productName,
                     }))}
+                    
                   />
                 </Col>
                 <Col>
@@ -613,6 +630,7 @@ const ProductDetailDrawer = () => {
                       value: b.id,
                       label: b.brandName,
                     }))}
+                    disabled={attributeOfproductExist}
                   />
                 </Col>
                 <Col>
@@ -687,6 +705,8 @@ const ProductDetailDrawer = () => {
                       value: t.id,
                       label: t.typeName,
                     }))}
+                    disabled={attributeOfproductExist}
+
                   />
                 </Col>
                 <Col>

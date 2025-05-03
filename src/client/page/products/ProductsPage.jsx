@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+} from "react";
 import style from "../TestComponent/TestComponent.module.css";
 import clsx from "clsx";
 import styles from "./Product.module.css";
@@ -23,7 +29,11 @@ import {
   Space,
 } from "antd";
 import Sider from "antd/es/layout/Sider.js";
-import { LaptopOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  LaptopOutlined,
+  NotificationOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { COLORS } from "../../../constants/constants.js";
 import {
   apiAddViewProduct,
@@ -50,7 +60,6 @@ import {
 const url =
   "https://res.cloudinary.com/dieyhvcou/image/upload/v1742735758/5_1_b5fisz.png";
 
-
 const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
   (icon, index) => {
     const key = String(index + 1);
@@ -71,16 +80,19 @@ const items2 = [UserOutlined, LaptopOutlined, NotificationOutlined].map(
 
 function ProductsPage() {
   const [searchParams] = useSearchParams();
-  
+
   // Memoize URL parameters
-  const urlParams = useMemo(() => ({
-    productName: searchParams.get("productName"),
-    brandName: searchParams.get("brandName"),
-    typeName: searchParams.get("typeName"),
-    colorName: searchParams.get("colorName"),
-    materialName: searchParams.get("materialName"),
-    genderName: searchParams.get("genderName")
-  }), [searchParams]);
+  const urlParams = useMemo(
+    () => ({
+      productName: searchParams.get("productName"),
+      brandName: searchParams.get("brandName"),
+      typeName: searchParams.get("typeName"),
+      colorName: searchParams.get("colorName"),
+      materialName: searchParams.get("materialName"),
+      genderName: searchParams.get("genderName"),
+    }),
+    [searchParams]
+  );
 
   const [filteredData, setFilteredData] = useState({
     products: [],
@@ -107,25 +119,28 @@ function ProductsPage() {
   const [dataSelectType, setDataSelectType] = useState([]);
   useEffect(() => {
     window.scrollTo(0, 0);
-  },[])
+  }, []);
   // Memoize filter handler
-  const handleFilter = useCallback((data) => {
-    setFilteredData(data);
-    if (
-      data?.pagination.totalPages !== pagination.totalPages ||
-      data?.pagination.totalElements !== pagination.totalElements
-    ) {
-      setPagination(prev => ({
-        ...prev,
-        totalPages: data?.pagination.totalPages || 0,
-        totalElements: data?.pagination.totalElements || 0,
-      }));
-    }
-  }, [pagination.totalPages, pagination.totalElements]);
+  const handleFilter = useCallback(
+    (data) => {
+      setFilteredData(data);
+      if (
+        data?.pagination.totalPages !== pagination.totalPages ||
+        data?.pagination.totalElements !== pagination.totalElements
+      ) {
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: data?.pagination.totalPages || 0,
+          totalElements: data?.pagination.totalElements || 0,
+        }));
+      }
+    },
+    [pagination.totalPages, pagination.totalElements]
+  );
 
   // Memoize pagination handler
   const handlePaginationChange = useCallback((newPagination) => {
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       current: newPagination.current,
       pageSize: newPagination.pageSize,
@@ -133,56 +148,80 @@ function ProductsPage() {
   }, []);
 
   // Memoize page change handler
-  const onPageChange = useCallback((page, pageSize) => {
-    handlePaginationChange({ current: page, pageSize });
-  }, [handlePaginationChange]);
+  const onPageChange = useCallback(
+    (page, pageSize) => {
+      handlePaginationChange({ current: page, pageSize });
+    },
+    [handlePaginationChange]
+  );
 
   // Memoize filter string formatter
-  const formatFiltersToString = useCallback((filters) => {
-    const filterParts = [];
+  const formatFiltersToString = useCallback(
+    (filters) => {
+      const filterParts = [];
 
-    if (filters.productId) {
-      const product = dataSelectProduct.find((p) => p.id === filters.productId);
-      filterParts.push(`Sản phẩm: ${product?.productName || "N/A"}`);
-    }
-    if (filters.brandId) {
-      const brand = dataSelectBrand.find((b) => b.id === filters.brandId);
-      filterParts.push(`Thương hiệu: ${brand?.brandName || "N/A"}`);
-    }
-    if (filters.typeId) {
-      const type = dataSelectType.find((t) => t.id === filters.typeId);
-      filterParts.push(`Loại giày: ${type?.typeName || "N/A"}`);
-    }
-    if (filters.colorId) {
-      const color = dataSelectColor.find((c) => c.id === filters.colorId);
-      filterParts.push(`Màu sắc: ${color?.colorName || "N/A"}`);
-    }
-    if (filters.materialId) {
-      const material = dataSelectMaterial.find((m) => m.id === filters.materialId);
-      filterParts.push(`Chất liệu: ${material?.materialName || "N/A"}`);
-    }
-    if (filters.sizeId) {
-      const size = dataSelectSize.find((s) => s.id === filters.sizeId);
-      filterParts.push(`Kích cỡ: ${size?.sizeName || "N/A"}`);
-    }
-    if (filters.soleId) {
-      const sole = dataSelectSole.find((s) => s.id === filters.soleId);
-      filterParts.push(`Đế giày: ${sole?.soleName || "N/A"}`);
-    }
-    if (filters.genderId) {
-      const gender = dataSelectGender.find((g) => g.id === filters.genderId);
-      filterParts.push(`Giới tính: ${gender?.genderName || "N/A"}`);
-    }
-    if (filters.minPrice !== null) {
-      filterParts.push(`Giá tối thiểu: ${filters.minPrice?.toLocaleString()||0}`);
-    }
-    if (filters.maxPrice !== null) {
-      filterParts.push(`Giá tối đa: ${filters.maxPrice?.toLocaleString()||0}`);
-    }
+      if (filters.productId) {
+        const product = dataSelectProduct.find(
+          (p) => p.id === filters.productId
+        );
+        filterParts.push(`Sản phẩm: ${product?.productName || "N/A"}`);
+      }
+      if (filters.brandId) {
+        const brand = dataSelectBrand.find((b) => b.id === filters.brandId);
+        filterParts.push(`Thương hiệu: ${brand?.brandName || "N/A"}`);
+      }
+      if (filters.typeId) {
+        const type = dataSelectType.find((t) => t.id === filters.typeId);
+        filterParts.push(`Loại giày: ${type?.typeName || "N/A"}`);
+      }
+      if (filters.colorId) {
+        const color = dataSelectColor.find((c) => c.id === filters.colorId);
+        filterParts.push(`Màu sắc: ${color?.colorName || "N/A"}`);
+      }
+      if (filters.materialId) {
+        const material = dataSelectMaterial.find(
+          (m) => m.id === filters.materialId
+        );
+        filterParts.push(`Chất liệu: ${material?.materialName || "N/A"}`);
+      }
+      if (filters.sizeId) {
+        const size = dataSelectSize.find((s) => s.id === filters.sizeId);
+        filterParts.push(`Kích cỡ: ${size?.sizeName || "N/A"}`);
+      }
+      if (filters.soleId) {
+        const sole = dataSelectSole.find((s) => s.id === filters.soleId);
+        filterParts.push(`Đế giày: ${sole?.soleName || "N/A"}`);
+      }
+      if (filters.genderId) {
+        const gender = dataSelectGender.find((g) => g.id === filters.genderId);
+        filterParts.push(`Giới tính: ${gender?.genderName || "N/A"}`);
+      }
+      if (filters.minPrice !== null) {
+        filterParts.push(
+          `Giá tối thiểu: ${filters.minPrice?.toLocaleString() || 0}`
+        );
+      }
+      if (filters.maxPrice !== null) {
+        filterParts.push(
+          `Giá tối đa: ${filters.maxPrice?.toLocaleString() || 0}`
+        );
+      }
 
-    return filterParts.length > 0 ? filterParts.join(", ") : "Chưa có dữ liệu lọc";
-  }, [dataSelectProduct, dataSelectBrand, dataSelectType, dataSelectColor, 
-      dataSelectMaterial, dataSelectSize, dataSelectSole, dataSelectGender]);
+      return filterParts.length > 0
+        ? filterParts.join(", ")
+        : "Chưa có dữ liệu lọc";
+    },
+    [
+      dataSelectProduct,
+      dataSelectBrand,
+      dataSelectType,
+      dataSelectColor,
+      dataSelectMaterial,
+      dataSelectSize,
+      dataSelectSole,
+      dataSelectGender,
+    ]
+  );
 
   // Memoize add view handler
   const addViewProduct = useCallback(async (productId) => {
@@ -205,7 +244,7 @@ function ProductsPage() {
           materialData,
           sizeData,
           soleData,
-          genderData
+          genderData,
         ] = await Promise.all([
           fetchDataSelectBrand(),
           fetchDataSelectProduct(),
@@ -214,7 +253,7 @@ function ProductsPage() {
           fetchDataSelectMaterial(),
           fetchDataSelectSize(),
           fetchDataSelectSole(),
-          fetchDataSelectGender()
+          fetchDataSelectGender(),
         ]);
 
         setDataSelectBrand(brandData.data);
@@ -275,16 +314,17 @@ function ProductsPage() {
                     color: `${COLORS.pending}`,
                   }}
                 >
-                  SẢN PHẨM LỌC THEO: {formatFiltersToString(filteredData?.filters)}
+                  SẢN PHẨM LỌC THEO:{" "}
+                  {formatFiltersToString(filteredData?.filters)}
                 </Row>
               }
             >
               <Row gutter={[5, 5]} wrap>
                 {filteredData.products.length > 0 ? (
                   filteredData.products.map((product, index) => (
-                    <Col key={index} flex={"20%"} style={{maxWidth:"20%"}}>
+                    <Col key={index} flex={"20%"} style={{ maxWidth: "20%" }}>
                       <Link
-                        to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}`}
+                        to={`/products/product-detail/${product.productId}?colorId=${product.colorId}&sizeId=${product.sizeId}&genderId=${product.genderId}&materialId=${product.materialId}&soleId=${product.soleId}`}
                         style={{
                           textDecoration: "none",
                           color: "black",
@@ -294,19 +334,21 @@ function ProductsPage() {
                       >
                         <PropProduct
                           product={{
-                            name: product.productName?.trim() || "Sản phẩm chưa có tên",
+                            name:
+                              product.productName?.trim() ||
+                              "Sản phẩm chưa có tên",
                             price: product.price ?? 0,
-                            promotionView:{
-                              rangePriceRoot: product.promotionView?.rangePriceRoot,
-                              rangePriceAfterPromotion: product.promotionView?.rangePriceAfterPromotion,
-                              maxDiscount: product.promotionView?.maxDiscount
-                            }
-                            ,
+                            promotionView: {
+                              rangePriceRoot:
+                                product.promotionView?.rangePriceRoot,
+                              rangePriceAfterPromotion:
+                                product.promotionView?.rangePriceAfterPromotion,
+                              maxDiscount: product.promotionView?.maxDiscount,
+                            },
                             sale: product.sold ?? 0,
                             url: product.imageUrl || "https://placehold.co/50",
                             views: product.views ?? 0,
                             rate: product.rate ?? 5,
-                            
                           }}
                         />
                       </Link>
@@ -316,18 +358,17 @@ function ProductsPage() {
                   <div>Không tìm thấy sản phẩm nào!</div>
                 )}
               </Row>
-            <Row className="p-3">
-            <Pagination
-                current={pagination.current}
-                pageSize={pagination.pageSize}
-                total={pagination.totalElements}
-                onChange={onPageChange}
-                showSizeChanger
-                pageSizeOptions={["10", "20", "50"]}
-              />
-            </Row>
+              <Row className="p-3">
+                <Pagination
+                  current={pagination.current}
+                  pageSize={pagination.pageSize}
+                  total={pagination.totalElements}
+                  onChange={onPageChange}
+                  showSizeChanger
+                  pageSizeOptions={["10", "20", "50"]}
+                />
+              </Row>
             </Card>
-
           </Content>
         </Layout>
       </Content>
