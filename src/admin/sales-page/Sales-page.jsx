@@ -910,9 +910,12 @@ const [showApp,setShowApp]= useState(false)
                 return;
             }
 
-            if (bill?.phoneError !== "") {
-                toast.error("Số điện thoại không hợp lệ!");
-                return
+            if (recipientPhoneNumber) {
+                const isValidPhone = /^0\d{9}$/.test(recipientPhoneNumber);
+                if(!isValidPhone) {
+                    toast.error("Số điện thoại không hợp lệ!")
+                    return;
+                }
             }
 
             if (!recipientName || !recipientPhoneNumber) {
