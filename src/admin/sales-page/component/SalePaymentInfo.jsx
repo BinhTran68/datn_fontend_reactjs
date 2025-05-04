@@ -165,9 +165,6 @@ const SalePaymentInfo = ({
                 <hr/>
                 <div className={"row"}>
                     <div className={"col-md-6"}>
-                        Hello
-                    </div>
-                    <div className={"col-md-6"}>
                         <div className={"py-2"}>
                             <Collapse
                                 expandIconPosition={"end"}
@@ -182,8 +179,8 @@ const SalePaymentInfo = ({
                                     ),
                                     children: (
                                         <>
-                                            { selectedVouchers && (
-                                                <div 
+                                            {selectedVouchers && (
+                                                <div
                                                     style={{
                                                         padding: '10px',
                                                         marginBottom: '10px',
@@ -221,14 +218,18 @@ const SalePaymentInfo = ({
                                                                 borderRadius: '4px'
                                                             }}
                                                         >
-                                                            <div style={{fontWeight: 'bold', marginBottom: '4px' }}>
+                                                            <div style={{fontWeight: 'bold', marginBottom: '4px'}}>
                                                                 Gợi ý tối ưu voucher:
                                                             </div>
                                                             {selectedVouchers.suggestions.map((suggestion, index) => (
-                                                                <div key={index} style={{ fontSize: '13px', marginBottom: '4px' }}>
-                                                                    Mua thêm {formatVND(suggestion.amountNeeded)} để dùng voucher{' '}
-                                                                    <strong>{suggestion.voucherName}</strong> và tiết kiệm thêm{' '}
-                                                                    <strong style={{ color: '#ff4d4f' }}>{formatVND(suggestion.additionalBenefit)}</strong>
+                                                                <div key={index}
+                                                                     style={{fontSize: '13px', marginBottom: '4px'}}>
+                                                                    Mua thêm {formatVND(suggestion.amountNeeded)} để
+                                                                    dùng voucher{' '}
+                                                                    <strong>{suggestion.voucherName}</strong> và tiết
+                                                                    kiệm thêm{' '}
+                                                                    <strong
+                                                                        style={{color: '#ff4d4f'}}>{formatVND(suggestion.additionalBenefit)}</strong>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -247,37 +248,44 @@ const SalePaymentInfo = ({
                                                         return (
                                                             <List.Item
                                                                 actions={[
-                                                                    (selectedVouchers?.bestVoucher?.id === item.id ? 
-                                                                        <FaCheckCircle size={25} color={`${COLORS.success}`}/> 
-                                                                        : 
-                                                                        <Button
-                                                                            type={"primary"}
-                                                                            onClick={() => isVoucherApplicable ? handleOnSelectedVoucher(item) : null}
-                                                                            disabled={!isVoucherApplicable} // Disable if not applicable
-                                                                        >
-                                                                            Chọn
-                                                                        </Button>
+                                                                    (selectedVouchers?.bestVoucher?.id === item.id ?
+                                                                            <FaCheckCircle size={25}
+                                                                                           color={`${COLORS.success}`}/>
+                                                                            :
+                                                                            <Button
+                                                                                type={"primary"}
+                                                                                onClick={() => isVoucherApplicable ? handleOnSelectedVoucher(item) : null}
+                                                                                disabled={!isVoucherApplicable} // Disable if not applicable
+                                                                            >
+                                                                                Chọn
+                                                                            </Button>
                                                                     )
                                                                 ]}
                                                             >
                                                                 <List.Item.Meta
                                                                     avatar={<img width={55} src={voucher_image}
                                                                                  alt={"img voucher"}/>}
-                                                                    title={<a href="https://ant.design">{item?.voucherName}</a>}
+                                                                    title={<a
+                                                                        href="https://ant.design">{item?.voucherName}</a>}
                                                                     description={
                                                                         <div>
                                                                             <div>Số lượng : {item?.quantity ?? 0}</div>
-                                                                            <div>Ngày hết hạn : {convertDate(item.endDate)}</div>
-                                                                            <div>Giá trị giảm : {item?.discountType === "MONEY" 
-                                                                                ? formatVND(item.discountValue) 
-                                                                                : `${item.discountValue}% (tối đa ${formatVND(item.discountMaxValue)})`
-                                                                            }</div>
-                                                                            <div>Giá trị đơn hàng tối thiểu: {formatVND(item?.billMinValue || 0)}</div>
-                                                                            <div>Giảm tối đa: {item?.discountMaxValue && item.discountType === "PERCENT" 
-                                                                                ? formatVND(item.discountMaxValue) 
-                                                                                : 'Không giới hạn'
-                                                                            }</div>
-                                                                            <div>Loại voucher: {item?.voucherType === "PUBLIC" ? "Công khai" : "Riêng tư"}</div>
+                                                                            <div>Ngày hết hạn
+                                                                                : {convertDate(item.endDate)}</div>
+                                                                            <div>Giá trị giảm
+                                                                                : {item?.discountType === "MONEY"
+                                                                                    ? formatVND(item.discountValue)
+                                                                                    : `${item.discountValue}% (tối đa ${formatVND(item.discountMaxValue)})`
+                                                                                }</div>
+                                                                            <div>Giá trị đơn hàng tối
+                                                                                thiểu: {formatVND(item?.billMinValue || 0)}</div>
+                                                                            <div>Giảm tối
+                                                                                đa: {item?.discountMaxValue && item.discountType === "PERCENT"
+                                                                                    ? formatVND(item.discountMaxValue)
+                                                                                    : 'Không giới hạn'
+                                                                                }</div>
+                                                                            <div>Loại
+                                                                                voucher: {item?.voucherType === "PUBLIC" ? "Công khai" : "Riêng tư"}</div>
                                                                         </div>
                                                                     }
                                                                 />
@@ -291,6 +299,9 @@ const SalePaymentInfo = ({
                                 }]}
                             />
                         </div>
+                    </div>
+                    <div className={"col-md-6"}>
+
                         <Form layout="vertical" onFinish={handleOnPayment}>
                             <Form.Item label="Tổng tiền hàng">
                                 <Text strong>{formatVND((amount + discount))}</Text>
@@ -306,13 +317,13 @@ const SalePaymentInfo = ({
                             </Form.Item>
                             <Form.Item label="Tổng tiền cần thanh toán">
                                 <Text strong style={{color: "red"}}>{formatVND(amount
-                                    + parseInt(!isFreeShip ? shippingFee : 0 ))}</Text>
+                                    + parseInt(!isFreeShip ? shippingFee : 0))}</Text>
                             </Form.Item>
                             <Form.Item label="Chọn phương thức thanh toán">
                                 <Select
                                     disabled={transactionCode}
                                     onChange={handleChangePaymentMethod} value={paymentMethods} defaultValue="cash"
-                                        style={{width: "100%"}}>
+                                    style={{width: "100%"}}>
                                     <Option value="cash">
                                         <MdOutlineDonutLarge/> Tiền mặt
                                     </Option>
@@ -355,11 +366,11 @@ const SalePaymentInfo = ({
                                     onChange={handleBankCustomerMoneyChange}
                                     value={parseInt(bankCustomerMoney)}
                                     suffix="VNĐ"
-                                    disabled={paymentMethods === "bank" || paymentMethods === "cashAndBank" }
+                                    disabled={paymentMethods === "bank" || paymentMethods === "cashAndBank"}
                                 />
                             </Form.Item>
 
-                            {(paymentMethods === "bank" || paymentMethods === "cashAndBank" ) && (
+                            {(paymentMethods === "bank" || paymentMethods === "cashAndBank") && (
                                 <Form.Item label="Quét mã QR để thanh toán">
                                     <PaymentQRComponent
                                         key={currentBill}
@@ -370,7 +381,7 @@ const SalePaymentInfo = ({
                                         paymentMethods={paymentMethods}
                                     />
                                     <div>
-                                       Mã giao dịch :  {transactionCode ? transactionCode : ""}
+                                        Mã giao dịch : {transactionCode ? transactionCode : ""}
                                     </div>
                                 </Form.Item>
                             )}
